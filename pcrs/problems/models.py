@@ -1,8 +1,9 @@
 from django.db import models
 from django.db.models import Max
+
 from django.utils import timezone
 
-from users.models import PCRSUser, Section
+from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
 
 class ProblemTag(models.Model):
@@ -18,7 +19,7 @@ class ProblemTag(models.Model):
         return self.name
 
 
-class AbstractProblem(models.Model):
+class AbstractProblem(AbstractLimitedVisibilityObject):
     """
     Base class for problems.
 
@@ -27,17 +28,10 @@ class AbstractProblem(models.Model):
     """
     type_name = None  # the name of the problem type to use in urls
 
-    visibility_levels = (
-        ('closed', 'closed'),
-        ('draft', 'draft'),
-        ('open', 'open')
-    )
-
     description = models.TextField()
     solution = models.TextField(blank=True)
     tags = models.ManyToManyField(ProblemTag, null=True, blank=True,
                                   related_name='%(app_label)s_%(class)s_related')
-    visibility = models.CharField(choices=visibility_levels, max_length=10)
 
     class Meta:
         abstract = True

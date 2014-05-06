@@ -2,13 +2,14 @@ from crispy_forms.layout import Submit, HTML, ButtonHolder, Div
 from django import forms
 
 from pcrs.form_mixins import CrispyFormMixin
-from problems.models import ProblemTag, AbstractProblem
+from problems.models import ProblemTag
+from users.models import VISIBILITY_LEVELS
 
 
 class ProblemForm(CrispyFormMixin):
     tags = forms.ModelMultipleChoiceField(queryset=ProblemTag.objects.all(),
         widget=forms.CheckboxSelectMultiple(), required=False)
-    visibility = forms.ChoiceField(choices=AbstractProblem.visibility_levels)
+    visibility = forms.ChoiceField(choices=VISIBILITY_LEVELS)
 
     clear_button = HTML('<a class="btn btn-danger" role="button" '
                  'href="{{ object.get_absolute_url }}/clear">'

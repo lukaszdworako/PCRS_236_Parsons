@@ -7,6 +7,13 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import (BaseUserManager)
 
 
+VISIBILITY_LEVELS = (
+    ('closed', 'closed'),
+    ('draft', 'draft'),
+    ('open', 'open')
+)
+
+
 @python_2_unicode_compatible
 class CustomAbstractBaseUser(models.Model):
     """
@@ -194,3 +201,10 @@ class Section(models.Model):
 
     def __str__(self):
         return '%s @ %s' % (self.lecture_time, self.location)
+
+
+class AbstractLimitedVisibilityObject(models.Model):
+    visibility = models.CharField(choices=VISIBILITY_LEVELS, max_length=10)
+
+    class Meta:
+        abstract = True
