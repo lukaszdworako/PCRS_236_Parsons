@@ -5,8 +5,7 @@ from django.db.models.signals import post_delete
 from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from pcrs.settings import LANGUAGE_CHOICES
-from problems.models import (
-                             AbstractNamedProblem, AbstractSubmission,
+from problems.models import (AbstractNamedProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete)
 

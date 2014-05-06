@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Max
 
 from django.utils import timezone
+from pcrs.models import AbstractNamedObject
 
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
@@ -70,17 +71,10 @@ class AbstractProblem(AbstractLimitedVisibilityObject):
             .values('student_id').annotate(score=Max('score'))
 
 
-class AbstractNamedProblem(AbstractProblem):
+class AbstractNamedProblem(AbstractNamedObject, AbstractProblem):
     """
     A problem extended to have a required name.
     """
-    name = models.CharField(max_length=255)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.name
 
 
 class AbstractSubmission(models.Model):
