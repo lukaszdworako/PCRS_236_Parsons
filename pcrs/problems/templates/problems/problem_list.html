@@ -1,0 +1,5 @@
+{% extends "pcrs/item_list.html" %}
+
+{% block item_title %}
+    <a href="{{ object.get_absolute_url }}/submit">{{ object }}</a>
+{% endblock %}

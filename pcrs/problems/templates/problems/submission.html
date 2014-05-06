@@ -1,0 +1,17 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% block content %}
+
+    <div class="problem-description">
+        {{ problem.description }}
+    </div>
+
+    {{ block.super }}
+
+    <div class="feedback">
+        {% block feedback %}
+        {% endblock %}
+    </div>
+
+{% endblock %}
+

@@ -1,0 +1,11 @@
+{% extends "pcrs/check_delete.html" %}
+
+{% block page_title %}
+    Clear submissions to <i>{{ object }}</i>?
+{% endblock %}
+
+{% block alerts %}
+    <div class="alert alert-danger">
+        All submissions to this problem will be removed.
+    </div>
+{% endblock %}

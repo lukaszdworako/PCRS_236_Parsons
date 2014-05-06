@@ -1,0 +1,13 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% block page_title %}
+{% if object %}
+    Edit option
+{% else %}
+    New option
+{% endif %}
+{% endblock %}
+
+{% block links %}
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to problem</a>
+{% endblock %}

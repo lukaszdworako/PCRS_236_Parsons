@@ -1,0 +1,11 @@
+{% extends "problems/problem_form.html" %}
+
+{% block related_items %}
+    {% if object %}
+            {% with list_name='Answer options' object_list=object.option_set.all %}
+                {% include "problems/testcase_list.html" %}
+            {% endwith %}
+            {% include "problems_multiple_choice/add_option.html" %}
+        {% endif %}
+    <hr>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "pcrs/base.html" %}
+{% block links %}
+        {% if user.is_instructor %}
+            {% include "pcrs/buttons/add.html" %}
+        {% endif %}
+    {% endblock %}
+
+{% block content %}
+    <div class="item-list">
+        {% for object in object_list %}
+            <div class="item">
+                {% block item_title %}
+                    {{ object }}
+                {% endblock %}
+
+                <span>
+                {% block item_controls %}
+                    {% include "pcrs/buttons/edit.html" %}
+                {% endblock %}
+                </span>
+
+                <div>
+                    {% block item_details %}
+                    {% endblock %}
+                </div>
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
