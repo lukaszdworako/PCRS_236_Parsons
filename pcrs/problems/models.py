@@ -75,6 +75,8 @@ class AbstractNamedProblem(AbstractNamedObject, AbstractProblem):
     """
     A problem extended to have a required name.
     """
+    class Meta:
+        abstract = True
 
 
 class AbstractSubmission(models.Model):

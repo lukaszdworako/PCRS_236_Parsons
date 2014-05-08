@@ -23,6 +23,7 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, CreateView):
             'problem': problem,
             'student': self.request.user,
             'section': self.get_section(),
+            'submission': problem.starter_code
         }
 
     def get_success_url(self):
