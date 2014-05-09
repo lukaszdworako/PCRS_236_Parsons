@@ -1,6 +1,9 @@
+import json
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.views.generic import CreateView, UpdateView, DeleteView, View
+from django.views.generic.detail import SingleObjectMixin
 
 from problems.views import SubmissionViewMixin
 from problems_code.forms import SubmissionForm
@@ -37,6 +40,17 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, CreateView):
         submission.set_score()
 
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class SubmissionAsyncView(SingleObjectMixin, SubmissionViewMixin, View):
+    def post(self, request, *args, **kwargs):
+        submission_code = request.POST.get('submission', None)
+        submission = Submission.objects.create(
+            student=request.user, problem=self.get_problem(),
+            section=self.get_section(), submission_code=submission_code)
+        results = submission.run_testcases()
+
+        return HttpResponse(json.dumps(results), mimetype='application/json')
 
 
 class TestCaseView(CourseStaffViewMixin):

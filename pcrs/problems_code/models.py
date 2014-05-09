@@ -5,7 +5,8 @@ from django.db.models.signals import post_delete
 from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from pcrs.settings import LANGUAGE_CHOICES
-from problems.models import (AbstractNamedProblem, AbstractSubmission,
+from problems.models import (
+                             AbstractNamedProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete)
 
@@ -34,11 +35,15 @@ class Submission(AbstractSubmission):
     def run_testcases(self):
         """
         Run all testcases for the submission and create testrun objects.
+        Return the list of testrun results.
         """
+        results = []
         for testcase in self.problem.testcase_set.all():
             run = testcase.run(self.submission)
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=run['passed_test'])
+            results.append(run)
+        return results
 
     def set_score(self):
         """
@@ -83,7 +88,7 @@ class TestCase(AbstractTestCase):
 
     def clean(self):
         super().clean()
-        if not self.pk and self.problem.submission_set.all():
+        if self.pk and self.problem.submission_set.all():
             raise ValidationError(
                 'Submissions must be cleared before adding a testcase.')
 

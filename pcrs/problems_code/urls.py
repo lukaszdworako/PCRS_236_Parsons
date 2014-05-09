@@ -4,7 +4,8 @@ from problems.views import *
 from problems_code.forms import ProblemForm, TestCaseForm
 from problems_code.models import Problem, TestCase
 from problems_code.views import SubmissionView, TestCaseCreateManyView, \
-    TestCaseCreateView, TestCaseUpdateView, TestCaseDeleteView
+    TestCaseCreateView, TestCaseUpdateView, TestCaseDeleteView, \
+    SubmissionAsyncView
 
 
 urlpatterns = patterns('',
@@ -40,6 +41,6 @@ urlpatterns = patterns('',
         TestCaseDeleteView.as_view(model=TestCase),
         name='coding_problem_delete_testcase'),
     url(r'^(?P<problem>[0-9]+)/submit$',
-        SubmissionView.as_view(),
+        SubmissionAsyncView.as_view(),
         name='coding_problem_submit'),
 )
