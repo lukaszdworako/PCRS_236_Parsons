@@ -1,3 +1,4 @@
+from crispy_forms.bootstrap import StrictButton
 from crispy_forms.layout import ButtonHolder, Layout, Fieldset, Submit, Div
 from django import forms
 from pcrs.form_mixins import CrispyFormMixin
@@ -62,7 +63,7 @@ class SubmissionForm(CrispyFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
-        submit_button = Submit('submit', 'Submit',
-                               css_class='btn-success pull-right')
+        submit_button = StrictButton('Submit', name='submit', css_id='submit',
+                                     css_class='btn-success')
         self.helper.layout = Layout(
             Fieldset('', 'submission'), submit_button)
