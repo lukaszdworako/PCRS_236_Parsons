@@ -31,15 +31,21 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, CreateView):
 
     def get_success_url(self):
         return reverse('coding_problem_submit',
-                        kwargs={'problem': self.object.problem.pk})
+                       kwargs={'problem': self.object.problem.pk})
 
     def form_valid(self, form):
         form.cleaned_data['section'] = self.get_section()
         submission = form.save()
-        submission.run_testcases()
+        results = submission.run_testcases()
         submission.set_score()
 
         return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submissions'] = self.model.objects.filter(
+            student=self.request.user).all()
+        return context
 
 
 class SubmissionAsyncView(SingleObjectMixin, SubmissionViewMixin, View):
@@ -49,6 +55,7 @@ class SubmissionAsyncView(SingleObjectMixin, SubmissionViewMixin, View):
             student=request.user, problem=self.get_problem(),
             section=self.get_section(), submission_code=submission_code)
         results = submission.run_testcases()
+        submission.set_score()
 
         return HttpResponse(json.dumps(results), mimetype='application/json')
 

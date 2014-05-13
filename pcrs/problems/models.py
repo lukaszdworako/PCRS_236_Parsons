@@ -99,6 +99,7 @@ class AbstractSubmission(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['timestamp']
 
     def __str__(self):
         return '{problem} by {student} on {time}'.format(
