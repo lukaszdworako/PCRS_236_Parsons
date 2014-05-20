@@ -1,6 +1,6 @@
 from django.views.generic import FormView
-from users.forms import SectionSelectionForm
 
+from users.forms import SectionSelectionForm
 from users.views_mixins import ProtectedViewMixin
 
 

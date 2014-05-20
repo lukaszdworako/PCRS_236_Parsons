@@ -4,6 +4,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
                                   DeleteView, FormView, View)
 from django.views.generic.detail import SingleObjectMixin
+from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
 from problems.forms import SubmissionForm
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -28,20 +29,15 @@ class ProblemView:
         return self.model.get_problem_type_name().replace('_', ' ').capitalize()
 
 
-class ProblemListView(ProtectedViewMixin, ProblemView, ListView):
+class ProblemListView(ProtectedViewMixin, ProblemView, GenericItemListView):
     """
     List all problems.
     """
     template_name = 'problems/problem_list.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = '{} problems'\
-            .format(self.get_problem_type_name())
-        return context
 
-
-class ProblemCreateView(CourseStaffViewMixin, ProblemView, CreateView):
+class ProblemCreateView(CourseStaffViewMixin, ProblemView,
+                        GenericItemCreateView):
     """
     Create a new problem.
     """
@@ -49,12 +45,6 @@ class ProblemCreateView(CourseStaffViewMixin, ProblemView, CreateView):
 
     def get_success_url(self):
         return self.model.get_base_url() + '/list'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'New {} problem'\
-            .format(self.get_problem_type_name())
-        return context
 
 
 class ProblemCloneView(ProblemCreateView):
@@ -87,11 +77,6 @@ class ProblemUpdateView(CourseStaffViewMixin, ProblemView, UpdateView):
 
     def get_success_url(self):
         return self.model.get_base_url() + '/list'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Edit'
-        return context
 
 
 class ProblemDeleteView(CourseStaffViewMixin, ProblemView, DeleteView):
@@ -147,7 +132,7 @@ class TestCaseView(CourseStaffViewMixin):
         return self.get_problem().get_absolute_url()
 
 
-class TestCaseCreateManyView(TestCaseView, CreateView):
+class TestCaseCreateManyView(TestCaseView, GenericItemCreateView):
     """
     Create multiple new testcases for a problem.
     """
@@ -155,7 +140,7 @@ class TestCaseCreateManyView(TestCaseView, CreateView):
         return '{}/testcase'.format(self.object.problem.get_absolute_url())
 
 
-class TestCaseCreateView(TestCaseView, CreateView):
+class TestCaseCreateView(TestCaseView, GenericItemCreateView):
     """
     Create a new testcase for a problem.
     """

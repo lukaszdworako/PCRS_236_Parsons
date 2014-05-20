@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, FormView, \
     View
 from django.views.generic.detail import SingleObjectMixin
+from pcrs.generic_views import GenericItemCreateView
 
 import problems.views
 from problems_multiple_choice.forms import SubmissionForm, OptionForm
@@ -31,7 +32,7 @@ class OptionView(problems.views.TestCaseView):
                        kwargs={'problem': self.object.problem.pk})
 
 
-class OptionCreateView(OptionView, CreateView):
+class OptionCreateView(OptionView, GenericItemCreateView):
     """
     Create a new multiple choice answer option.
     """
@@ -40,7 +41,7 @@ class OptionCreateView(OptionView, CreateView):
                        kwargs={'pk': self.object.problem.pk})
 
 
-class OptionsCreateView(OptionView, CreateView):
+class OptionsCreateView(OptionView, GenericItemCreateView):
     """
     Create new multiple choice answer options.
     """
