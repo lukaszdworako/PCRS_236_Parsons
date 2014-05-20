@@ -1,3 +1,7 @@
 Django==1.5.1
-psycopg2==2.4.5
+coverage==3.7.1
 django-crispy-forms==1.4.0
+pep8==1.4.6
+psycopg2==2.4.5
+pyparsing==2.0.1
+rapt==0.0.1
