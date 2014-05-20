@@ -1,0 +1,15 @@
+; Grammar rules for defining conditions in relational algebra.
+; Uses rules from proto_grammar.bnf
+
+conditions ::= condition | condition logical_binary_op conditions
+
+condition ::= operand comparator_op operand | not_op condition |
+              paren_left condition paren_right
+
+operand ::= identifier | string_literal | number
+
+not_op ::= "not" | "NOT"
+logical_binary_op ::=  "and" | "or" | "AND" | "OR"
+
+comparator_op ::= "<" | "<=" | "=" | ">" | ">=" | "!=" | "<>"
+

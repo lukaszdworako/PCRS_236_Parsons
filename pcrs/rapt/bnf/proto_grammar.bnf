@@ -1,0 +1,29 @@
+; A proto grammar for relation algebra.
+
+attribute_reference ::= relation_name "." attribute_name | attribute_name
+attribute_name ::= identifier
+relation_name ::= identifier
+identifier ::= letter | letter string
+
+string_literal ::= "'" string "'" | | "\"" string "\""
+string ::= character | character string
+character ::= letter | digit | "_"
+
+number ::= float | integer | natural_number
+float ::= integer "." natural_number
+integer ::= natural_number | "-" natural_number
+natural_number ::= digit | digit natural_number
+
+letter ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" |
+           "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" |
+           "W" | "X" | "Y" | "Z" |
+           "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" |
+           "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" |
+           "w" | "x" | "y" | "z"
+
+digit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+paren_left ::= "("
+paren_right ::= ")"
+delim ::= ","
+terminate ::= ";"
