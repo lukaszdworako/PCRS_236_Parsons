@@ -64,7 +64,8 @@ class TestCodingProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.object = self.model.objects.create(pk=1, name='test_problem')
+        self.object = self.model.objects.create(pk=1, name='test_problem',
+                                                visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
         self.post_data = {
@@ -160,7 +161,8 @@ class TestCodingProblemClearView(CourseStaffViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.object = self.model.objects.create(pk=1, name='test_problem')
+        self.object = self.model.objects.create(pk=1, name='test_problem',
+                                                visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
@@ -185,7 +187,8 @@ class TestCodingProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.object = self.model.objects.create(pk=1, name='test_problem')
+        self.object = self.model.objects.create(pk=1, name='test_problem',
+                                                visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
@@ -223,7 +226,8 @@ class TestCodingProblemAddTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem')
+        self.problem = self.model.objects.create(pk=1, name='test_problem',
+                                                 visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
     def test_add_minimal(self):
@@ -301,16 +305,17 @@ class TestCodingProblemAddTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
     """
     Test adding a testcase with submissions.
     """
-    url = reverse('coding_problem_update_testcase',
-                  kwargs={'problem': 1, 'pk': 1})
-    successful_redirect_url = reverse('coding_problem_update', kwargs={'pk': 1})
+    url = reverse('coding_problem_add_testcase', kwargs={'problem': 1})
     template = 'testcase'
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem')
+        self.problem = self.model.objects.create(pk=1, name='test_problem',
+                                                 visibility='draft')
+        self.assertTrue(self.model.objects.filter(pk=1).exists())
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
+        self.assertTrue(TestCase.objects.filter(pk=1).exists())
 
         CourseStaffViewTestMixin.setUp(self)
         Submission.objects.create(problem=self.problem,
@@ -318,79 +323,15 @@ class TestCodingProblemAddTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
         self.assertTrue(self.problem.submission_set.exists())
 
     def test_add(self):
-        url = reverse('coding_problem_add_testcase', kwargs={'problem': 1})
         post_data = {
             'test_input': 'question',
             'expected_output': '42',
             'problem': 1
         }
-        response = self.client.post(url, post_data)
+        response = self.client.get(self.url, post_data)
         self.assertEqual(200, response.status_code)
-        self.assertFormError(response, 'form', '',
-                             'Submissions must be cleared '
-                             'before adding a testcase.')
-        self.assertEqual(1, self.problem.testcase_set.count())
-
-    def test_edit_description(self):
-        self.assertTrue(TestCase.objects.all().exists())
-        post_data = {
-            'test_input': 'question',
-            'expected_output': '42',
-            'problem': 1,
-            'description': 'desc'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertRedirects(response, self.successful_redirect_url)
-
-        self.assertEqual(1, self.problem.testcase_set.count())
-        testcase = self.problem.testcase_set.all()[0]
-        self.assertEqual('question', testcase.test_input)
-        self.assertEqual('42', testcase.expected_output)
-        self.assertEqual('desc', testcase.description)
-        self.assertFalse(testcase.is_visible)
-
-    def test_edit_visibility(self):
-        self.assertTrue(TestCase.objects.all().exists())
-        post_data = {
-            'test_input': 'question',
-            'expected_output': '42',
-            'problem': 1,
-            'is_visible': 'on'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertRedirects(response, self.successful_redirect_url)
-
-        self.assertEqual(1, self.problem.testcase_set.count())
-        testcase = self.problem.testcase_set.all()[0]
-        self.assertEqual('question', testcase.test_input)
-        self.assertEqual('42', testcase.expected_output)
-        self.assertEqual('', testcase.description)
-        self.assertTrue(testcase.is_visible)
-
-    def test_edit_input(self):
-        post_data = {
-            'test_input': 'changed',
-            'expected_output': '42',
-            'problem': 1
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertFormError(response, 'form', 'test_input',
-                             'Submissions must be cleared '
-                             'before editing a testcase.')
-        self.assertEqual(1, self.problem.testcase_set.count())
-
-    def test_edit_output(self):
-        post_data = {
-            'test_input': 'question',
-            'expected_output': 'changed',
-            'problem': 1
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertFormError(response, 'form', 'expected_output',
-                             'Submissions must be cleared '
-                             'before editing a testcase.')
+        self.assertContains(response,
+            'Submissions must be cleared before adding a testcase.')
         self.assertEqual(1, self.problem.testcase_set.count())
 
 
@@ -398,14 +339,15 @@ class TestUpdateTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     """
     Test editing a testcase with no submissions.
     """
-    url = reverse('coding_problem_update_testcase', kwargs={'problem': 1, 'pk': 1})
+    url = reverse('coding_problem_update_testcase',
+                  kwargs={'problem': 1, 'pk': 1})
     successful_redirect_url = reverse('coding_problem_update', kwargs={'pk': 1})
     template = 'problems/crispy_form.html'
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem')
-        self.problem2 = self.model.objects.create(pk=2, name='test_problem')
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='draft')
+        self.problem2 = self.model.objects.create(pk=2, name='test_problem', visibility='draft')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
@@ -527,8 +469,8 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem')
-        self.problem2 = self.model.objects.create(pk=2, name='test_problem')
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='draft')
+        self.problem2 = self.model.objects.create(pk=2, name='test_problem', visibility='draft')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
 
@@ -657,7 +599,8 @@ class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     template = 'problems/check_delete.html'
 
     def setUp(self):
-        self.problem = Problem.objects.create(pk=1, name='test_problem')
+        self.problem = Problem.objects.create(pk=1, name='test_problem',
+                                              visibility='draft')
 
         TestCase(pk=1, problem=self.problem, test_input='question',
                  expected_output='42').save()
@@ -691,7 +634,7 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(pk=1, name='test_problem',
-                                                 visibility='draft')
+                                                 visibility='open')
         TestCase.objects.create(test_input='foo(True)', expected_output='True',
                                 pk=1, problem=self.problem)
 
@@ -821,5 +764,7 @@ class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.problem = self.problem_class.objects.create(pk=1, name='Problem1')
-        self.problem2 = self.problem_class.objects.create(pk=2, name='Problem2')
+        self.problem = self.problem_class.objects.create(pk=1, name='Problem1',
+                                                         visibility='open')
+        self.problem2 = self.problem_class.objects.create(pk=2, name='Problem2',
+                                                          visibility='opne')

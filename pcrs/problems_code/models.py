@@ -5,8 +5,7 @@ from django.db.models.signals import post_delete
 from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from pcrs.settings import LANGUAGE_CHOICES
-from problems.models import (
-                             AbstractNamedProblem, AbstractSubmission,
+from problems.models import (AbstractNamedProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete)
 
@@ -19,8 +18,6 @@ class Problem(AbstractNamedProblem):
     a language and starter code
     """
 
-    type_name = 'coding'
-
     language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES,
                                 default='python')
     starter_code = models.TextField(blank=True)
@@ -32,7 +29,7 @@ class Submission(AbstractSubmission):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    def run_testcases(self):
+    def run_testcases(self, request):
         """
         Run all testcases for the submission and create testrun objects.
         Return the list of testrun results.
@@ -47,19 +44,7 @@ class Submission(AbstractSubmission):
                 run['test_input'] = testcase.test_input
                 run['expected_output'] = testcase.expected_output
             results.append(run)
-        return results
-
-    def set_score(self):
-        """
-        Set the score of this submission to the number of testcases that
-        the submission passed.
-        """
-        self.score = self.testrun_set.filter(test_passed=True).count()
-        self.save(update_fields=['score'])
-
-    @classmethod
-    def get_problem_class(cls):
-        return Problem
+        return results, None
 
 
 class TestCase(AbstractTestCase):
@@ -78,10 +63,6 @@ class TestCase(AbstractTestCase):
     is_visible = models.BooleanField(null=False, default=False,
         verbose_name='Test input and output visible to students')
 
-    @classmethod
-    def get_problem_class(cls):
-        return Problem
-
     def __str__(self):
         testcase = '{input} -> {output}'.format(input=self.test_input,
                                                 output=self.expected_output)
@@ -89,12 +70,6 @@ class TestCase(AbstractTestCase):
             return self.description + ' : ' + testcase
         else:
             return testcase
-
-    def clean(self):
-        super().clean()
-        if self.pk and self.problem.submission_set.all():
-            raise ValidationError(
-                'Submissions must be cleared before adding a testcase.')
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)

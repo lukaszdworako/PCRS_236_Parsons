@@ -1,18 +1,15 @@
 from django.conf.urls import patterns, url
 
 from problems.views import *
+from problems.views import SubmissionView, SubmissionAsyncView
 from problems_code.forms import ProblemForm, TestCaseForm
-from problems_code.models import Problem, TestCase
-from problems_code.views import SubmissionView, TestCaseCreateManyView, \
-    TestCaseCreateView, TestCaseUpdateView, TestCaseDeleteView, \
-    SubmissionAsyncView
+from problems_code.models import Problem, TestCase, Submission
 
 
 urlpatterns = patterns('',
     url(r'^list$',
         ProblemListView.as_view(model=Problem),
         name='coding_problem_list'),
-
     url(r'^create$',
         ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
         name='coding_problem_create'),
@@ -41,6 +38,10 @@ urlpatterns = patterns('',
         TestCaseDeleteView.as_view(model=TestCase),
         name='coding_problem_delete_testcase'),
     url(r'^(?P<problem>[0-9]+)/submit$',
-        SubmissionAsyncView.as_view(),
+        SubmissionView.as_view(model=Submission,
+                               template_name='problems_code/submission.html'),
         name='coding_problem_submit'),
+    url(r'^(?P<problem>[0-9]+)/run$',
+        SubmissionAsyncView.as_view(),
+        name='coding_problem_async_submit'),
 )

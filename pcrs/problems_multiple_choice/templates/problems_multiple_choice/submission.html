@@ -3,3 +3,15 @@
 {% block page_title %}
     Multiple choice question
 {% endblock %}
+
+{% block feedback %}
+    {% if submission.score == problem.option_set.count %}
+        <div class="alert alert-success">
+            Correct!
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            Your answer is not entirely incorrect!
+        </div>
+    {% endif %}
+{% endblock %}

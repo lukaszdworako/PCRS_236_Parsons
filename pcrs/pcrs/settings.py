@@ -24,6 +24,11 @@ DATABASES = {
     }
 }
 
+
+# RDB problems database information
+RDB_DATABASE = 'crs_data'
+RDB_DATABASE_test = 'crs_data_test'
+
 # Site prefix
 SITE_PREFIX = ''
 if PRODUCTION:
@@ -149,7 +154,12 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'crispy_forms',
-    'problems', 'problems_code', 'users', 'problems_multiple_choice',
+    'helpers',
+    'users',
+    'content',
+    'problems',
+    'problems_code', 'problems_multiple_choice',
+    'problems_rdb', 'problems_sql', 'problems_ra'
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'

@@ -1,8 +1,10 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Max
 
 from django.utils import timezone
-from pcrs.models import AbstractNamedObject
+from pcrs.models import AbstractNamedObject, AbstractGenericObjectForeignKey, \
+    AbstractSelfAwareModel
 
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
@@ -20,16 +22,14 @@ class ProblemTag(models.Model):
         return self.name
 
 
-class AbstractProblem(AbstractLimitedVisibilityObject):
+class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
     """
     Base class for problems.
 
     A problem has a description, and optionally tags and solution and
     may no be visible to students.
     """
-    type_name = None  # the name of the problem type to use in urls
 
-    description = models.TextField()
     solution = models.TextField(blank=True)
     tags = models.ManyToManyField(ProblemTag, null=True, blank=True,
                                   related_name='%(app_label)s_%(class)s_related')
@@ -43,18 +43,20 @@ class AbstractProblem(AbstractLimitedVisibilityObject):
             description += '...'
         return description
 
-    def clear_submissions(self):
-        """
-        Delete all submissions to this problem.
-        """
-        self.submission_set.all().delete()
+    @property
+    def max_score(self):
+        return self.testcase_set.count()
+
+    @classmethod
+    def get_problem_type_name(cls):
+        return cls.get_app_label().replace('problems_', '')
 
     @classmethod
     def get_base_url(cls):
         """
         Return the url prefix for the problem type.
         """
-        return '/problems/{}'.format(cls.type_name)
+        return '/problems/{}'.format(cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
@@ -67,19 +69,47 @@ class AbstractProblem(AbstractLimitedVisibilityObject):
 
         Used for generating CSV reports and problem analysis.
         """
-        return self.submission_set.filter(problem=self, timestamp__lt=deadline)\
+        print (self.submission_set.filter(problem=self, timestamp__lt=deadline))
+        print (self.submission_set.filter(problem=self, timestamp__lt=deadline)\
+            .values('student').annotate(score=Max('score')))
+        return self.get_submission_class().objects.filter(problem=self, timestamp__lt=deadline)\
             .values('student_id').annotate(score=Max('score'))
+
+    def get_best_score(self, user, deadline=timezone.now()):
+        """
+        Return the best score for the user on this problem.
+        """
+        return self.submission_set\
+            .filter(problem=self, student=user, timestamp__lt=deadline)\
+            .aggregate(score=Max('score'))['score__max']
+
+    def clear_submissions(self):
+        """
+        Delete all submissions to this problem.
+        """
+        self.submission_set.all().delete()
 
 
 class AbstractNamedProblem(AbstractNamedObject, AbstractProblem):
     """
-    A problem extended to have a required name.
+    A problem extended to have a required name and description.
     """
     class Meta:
         abstract = True
 
 
-class AbstractSubmission(models.Model):
+class CompletedProblem(AbstractGenericObjectForeignKey):
+    #TODO: add docstring
+    objects = models.Q(model='problem')
+    user = models.ForeignKey(PCRSUser)
+
+    @classmethod
+    def get_completed(cls, user):
+        return {problem.content_object
+                for problem in cls.objects.filter(user=user)}
+
+
+class AbstractSubmission(AbstractSelfAwareModel):
     """
     Base submission class.
 
@@ -106,8 +136,27 @@ class AbstractSubmission(models.Model):
             problem=self.problem, student=self.student.username,
             time=self.timestamp)
 
+    def set_score(self):
+        """
+        Set the score of this submission to the number of testcases that
+        the submission passed.
+        Create a record of the student completing the problem if the score on
+        the submission is the highest score possible on the problem.
+        """
+        self.score = self.testrun_set.filter(test_passed=True).count()
+        self.save(update_fields=['score'])
 
-class AbstractTestCase(models.Model):
+        #
+        problem_type = ContentType.objects.get_for_model(self.problem)
+
+        if self.score == self.problem.max_score:
+            if not CompletedProblem.objects.filter(content_type=problem_type.id,
+                                                   object_id=self.problem.pk):
+                CompletedProblem(content_object=self.problem,
+                                 user=self.student).save()
+
+
+class AbstractTestCase(AbstractSelfAwareModel):
     """
     Base testcase class.
 
@@ -126,10 +175,6 @@ class AbstractTestCase(models.Model):
     def get_absolute_url(self):
         return '{problem}/testcase/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
-
-    @classmethod
-    def get_problem_class(cls):
-        raise NotImplementedError('Must be implemented by subclasses.')
 
 
 class AbstractTestRun(models.Model):

@@ -1,18 +1,9 @@
-{% extends "pcrs/crispy_form.html" %}
-
-{% block links %}
-    {% include "pcrs/buttons/back_to_list.html" %}
-{% endblock %}
+{% extends "pcrs/item_form.html" %}
 
 {% block related_items %}
     {% if object %}
-        {% with list_name='Testcases' object_list=object.testcase_set.all %}
-            {% include "problems/testcase_list.html" %}
+        {% with list_name='Testcases' object_list=object.testcase_set.all related_item_name='testcase' %}
+            {% include "pcrs/related_items.html" %}
         {% endwith %}
-        <a type="button" class="btn btn-sm btn-default"
-           href="{{ object.get_absolute_url }}/testcase">
-            <i class="glyphicon glyphicon-plus"></i>
-        </a>
-        <hr>
     {% endif %}
 {% endblock %}

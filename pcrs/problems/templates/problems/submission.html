@@ -1,17 +1,37 @@
 {% extends "pcrs/crispy_form.html" %}
 
-{% block content %}
+{% block page_title %}
+    {{ problem.name }}
+{% endblock %}
 
-    <div class="problem-description">
-        {{ problem.description }}
-    </div>
+{% block content %}
+    {% block problem_description %}
+        <div class="problem-description">
+            <h5>{{ problem.description }}</h5>
+        </div>
+    {% endblock %}
 
     {{ block.super }}
 
-    <div class="feedback">
-        {% block feedback %}
-        {% endblock %}
-    </div>
+    <br>
 
+    {% block feedback %}
+        <div>
+            {% if submission %}
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% else %}
+                    {% if submission.score == submission.problem.testcase_set.count %}
+                        <div class="alert alert-success">
+                            Your solution is correct!
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            Your solution is incorrect!
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endblock %}
 {% endblock %}
-

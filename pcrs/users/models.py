@@ -204,7 +204,8 @@ class Section(models.Model):
 
 
 class AbstractLimitedVisibilityObject(models.Model):
-    visibility = models.CharField(choices=VISIBILITY_LEVELS, max_length=10)
+    visibility = models.CharField(choices=VISIBILITY_LEVELS, max_length=10,
+                                  default='closed', blank=True, null=False)
 
     class Meta:
         abstract = True

@@ -22,7 +22,7 @@
 </head>
 
 <body>
-{% if user.is_instructor %}
+{% if user.is_instructor or user.is_ta %}
     {% include "pcrs/instructor_navigation.html" %}
 {% else %}
     {#    {% include "pcrs/nav-bar_student.html" %}#}

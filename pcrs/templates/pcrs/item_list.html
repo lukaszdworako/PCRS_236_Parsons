@@ -1,9 +1,9 @@
 {% extends "pcrs/base.html" %}
 {% block links %}
-        {% if user.is_instructor %}
-            {% include "pcrs/buttons/add.html" %}
-        {% endif %}
-    {% endblock %}
+    {% if user.is_instructor or user.is_ta %}
+        {% include "pcrs/buttons/add.html" %}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     <div class="item-list">
@@ -13,11 +13,13 @@
                     {{ object }}
                 {% endblock %}
 
-                <span>
+                {% if user.is_instructor or user.is_ta %}
+                    <span>
                 {% block item_controls %}
                     {% include "pcrs/buttons/edit.html" %}
                 {% endblock %}
                 </span>
+                {% endif %}
 
                 <div>
                     {% block item_details %}

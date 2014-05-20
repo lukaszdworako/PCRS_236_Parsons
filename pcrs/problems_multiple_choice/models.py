@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from pcrs.model_helpers import has_changed
+from pcrs.models import AbstractSelfAwareModel
 from problems.models import AbstractSubmission, ProblemTag, AbstractProblem
 
 
@@ -11,7 +12,7 @@ class Problem(AbstractProblem):
     A multiple choice problem.
     """
 
-    type_name = 'multiple_choice'
+    description = models.TextField(unique=True)
 
 
 class Submission(AbstractSubmission):
@@ -20,12 +21,8 @@ class Submission(AbstractSubmission):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    @classmethod
-    def get_problem_class(cls):
-        return Problem
 
-
-class Option(models.Model):
+class Option(AbstractSelfAwareModel):
     """
     A multiple choice problem answer option.
     """
@@ -47,10 +44,6 @@ class Option(models.Model):
     def get_absolute_url(self):
         return '{problem}/option/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
-
-    @classmethod
-    def get_problem_class(cls):
-        return Problem
 
 
 class OptionSelection(models.Model):

@@ -3,6 +3,7 @@ from django.conf.urls import patterns, url
 from problems.views import (ProblemClearView, ProblemListView,
                             ProblemDeleteView, ProblemCreateView,
                             ProblemUpdateView)
+
 from problems_multiple_choice.forms import ProblemForm
 from problems_multiple_choice.models import Problem
 from problems_multiple_choice.views import (OptionCreateView,
@@ -17,7 +18,10 @@ urlpatterns = patterns('',
     url(r'^create$',
         ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_create'),
-    url(r'^create_and_add_option$',
+    url(r'^clone$',
+        ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
+        name='mc_problem_clone'),
+    url(r'^clone$',
         ProblemCreateAndAddOptView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_create_and_add_option'),
     url(r'^(?P<pk>[0-9]+)/?$',

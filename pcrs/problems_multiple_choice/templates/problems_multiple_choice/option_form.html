@@ -1,13 +1,22 @@
 {% extends "pcrs/crispy_form.html" %}
 
 {% block page_title %}
-{% if object %}
-    Edit option
-{% else %}
-    New option
-{% endif %}
+    {% if object %}
+        Edit option
+    {% else %}
+        New option
+    {% endif %}
 {% endblock %}
 
 {% block links %}
-    <a class="button" href="{{ problem.get_absolute_url }}">< Back to problem</a>
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to
+        problem</a>
+{% endblock %}
+
+{% block content %}
+    {% with object_list=problem.option_set.all list_name='Existing Options' %}
+        {% include "pcrs/related_items_list.html" %}
+        <hr>
+    {% endwith %}
+    {{ block.super }}
 {% endblock %}

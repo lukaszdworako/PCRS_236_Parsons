@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^logout$', login.logout_view, name = 'logout_view'),
 
     url(r'^problems/', include('problems.urls')),
+    url(r'^content/', include('content.urls')),
 )
