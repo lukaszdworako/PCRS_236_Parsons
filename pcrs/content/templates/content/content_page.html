@@ -1,0 +1,41 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    {{ content_page.challenge.name }} - Part {{ content_page.order }}
+{% endblock %}
+
+{% load filters %}
+{% block content %}
+    {{ block.super }}
+
+    {% for object in object_list %}
+
+        {% with object_type=object.content_object|classname|lower %}
+            {% if object_type == "contentproblem" %}
+                {% with problem=object.content_object.content_object %}
+                    {% include object|problem_type|add:"/submission_widget.html" %}
+                {% endwith %}
+            {% else %}
+                {% with name="content/"|add:object_type|add:".html" %}
+                    {% include name %}
+                {% endwith %}
+            {% endif %}
+
+        {% endwith %}
+        <hr>
+
+    {% endfor %}
+
+    {% if content_page.order %}
+        <a class="btn btn-success" role="button" href="{{ content_page.order|add:-1 }}">
+        <i class="glyphicon glyphicon-chevron-left"></i>
+        </a>
+    {% endif %}
+
+    {% if content_page.next %}
+        <a class="btn btn-success pull-right" role="button" href="{{ content_page.order|add:1 }}">
+        <i class="glyphicon glyphicon-chevron-right"></i>
+        </a>
+    {% endif %}
+
+{% endblock %}
