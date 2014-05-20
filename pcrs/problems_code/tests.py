@@ -346,8 +346,10 @@ class TestUpdateTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='draft')
-        self.problem2 = self.model.objects.create(pk=2, name='test_problem', visibility='draft')
+        self.problem = self.model.objects.create(pk=1, name='test_problem',
+                                                 visibility='draft')
+        self.problem2 = self.model.objects.create(pk=2, name='test_problem2',
+                                                  visibility='draft')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
@@ -469,8 +471,10 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='draft')
-        self.problem2 = self.model.objects.create(pk=2, name='test_problem', visibility='draft')
+        self.problem = self.model.objects.create(pk=1, name='test_problem',
+                                                 visibility='draft')
+        self.problem2 = self.model.objects.create(pk=2, name='test_problem2',
+                                                  visibility='draft')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
 

@@ -290,7 +290,8 @@ class StudentWrapper(PostgresWrapper):
 
         return same
 
-    def run_testcase(self, solution, submission, namespace, order_matters):
+    def run_testcase(self, solution, submission, namespace,
+                     order_matters=False):
         """
         Run a single testcase:
         run the solution and the submission within the namespace, and

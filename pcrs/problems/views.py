@@ -24,6 +24,9 @@ class ProblemView:
         else:
             return self.model.objects.all()
 
+    def get_problem_type_name(self):
+        return self.model.get_problem_type_name().replace('_', ' ').capitalize()
+
 
 class ProblemListView(ProtectedViewMixin, ProblemView, ListView):
     """
@@ -34,12 +37,11 @@ class ProblemListView(ProtectedViewMixin, ProblemView, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = '{} problems'\
-            .format(self.model.get_problem_type_name()
-            .replace('_', ' ').capitalize())
+            .format(self.get_problem_type_name())
         return context
 
 
-class ProblemCreateView(CourseStaffViewMixin, CreateView):
+class ProblemCreateView(CourseStaffViewMixin, ProblemView, CreateView):
     """
     Create a new problem.
     """
@@ -50,8 +52,8 @@ class ProblemCreateView(CourseStaffViewMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'New {} problem'.format(
-            self.model.get_problem_type_name())
+        context['page_title'] = 'New {} problem'\
+            .format(self.get_problem_type_name())
         return context
 
 
@@ -201,7 +203,8 @@ class SubmissionViewMixin:
     def get_initial(self):
         problem = self.get_problem()
         initial = super().get_initial()
-        initial['submission'] = problem.starter_code
+        if problem.get_app_label() == 'problems_code':
+            initial['submission'] = problem.starter_code
         return initial
 
     def get_context_data(self, **kwargs):
@@ -223,10 +226,10 @@ class SubmissionViewMixin:
             submission = submission_model.objects.create(
                 student=request.user, problem=self.get_problem(),
                 section=self.get_section(), submission=submission_code)
-            results = submission.run_testcases(request)
+            results, error = submission.run_testcases(request)
             submission.set_score()
             self.object = submission
-        return results, None
+        return results, error
 
     def post(self, request, *args, **kwargs):
         """
@@ -234,7 +237,6 @@ class SubmissionViewMixin:
         with latest submission prefilled.
         """
         form = self.get_form(self.get_form_class())
-        print(self.record_submission(request))
         results, error = self.record_submission(request)
         return self.render_to_response(
             self.get_context_data(form=form, results=results, error=error,
