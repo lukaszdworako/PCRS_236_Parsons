@@ -1,0 +1,32 @@
+{% extends "problems/submission.html" %}
+
+{% load filters %}
+
+{% block problem_description %}
+    {% if problem.schema.representation %}
+        <div id="schema" class="well">
+            {% autoescape off %}
+                {{ problem.schema.representation }}
+            {% endautoescape %}
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}
+
+{% block feedback %}
+    {{ block.super }}
+    {% for result in results %}
+        {% with testcase=result|get_item:"testcase" %}
+            <h4>Dataset: {{ testcase.dataset.name }}</h4>
+            <div class="row-fluid testrun">
+                {% if result|get_item:"error" %}
+                    <div class="alert alert-danger">
+                        {{ result|get_item:"error" }}
+                    </div>
+                {% else %}
+                    {% include 'problems_rdb/result_table.html' %}
+                {% endif %}
+            </div>
+        {% endwith %}
+    {% endfor %}
+{% endblock %}

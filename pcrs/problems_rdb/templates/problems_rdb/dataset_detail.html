@@ -1,0 +1,22 @@
+{% extends "pcrs/item_form.html" %}
+
+{% block links %}
+    <a class="button" href="{{ schema.get_absolute_url }}">< Back to schema</a>
+{% endblock %}
+
+{% block content %}
+        <h3>Schema</h3>
+        <div class="well">
+            {% autoescape off %}
+                {{ schema.representation }}
+            {% endautoescape %}
+        </div>
+
+    <h3>Definition</h3>
+    <pre>{{ object.definition }}</pre>
+
+
+    {% block controls %}
+        {% include "pcrs/buttons/delete.html" %}
+    {% endblock %}
+{% endblock %}

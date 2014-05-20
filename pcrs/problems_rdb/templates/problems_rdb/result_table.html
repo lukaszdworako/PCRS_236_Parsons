@@ -1,0 +1,44 @@
+{# ACTUAL RESULTS #}
+{% with attributes=result|get_item:'actual_attrs'  %}
+<div class="col-lg-6">
+    <h4>Actual</h4>
+    <table class="table table-bordered">
+        <tr>
+            {% for name in attributes %}
+                <th>{{ name }}</th>
+            {% endfor %}
+        </tr>
+
+        {% for row in result|get_item:'actual' %}
+            <tr class="{% if row|get_item:'extra' %}danger{% endif %} {% if row|get_item:'out_of_order' %}info{% endif %}">
+                {% for name in attributes %}
+                    <td>{{ row|get_item:name }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endwith %}
+
+{# EXPECTED RESULTS #}
+{% with attributes=result|get_item:'expected_attrs'  %}
+<div class="col-lg-6">
+    <h4>Expected</h4>
+    <table class="table table-bordered">
+        <tr>
+            {% for name in attributes %}
+                <th>{{ name }}</th>
+            {% endfor %}
+        </tr>
+        {% for result in results %}
+            {% for row in result|get_item:'expected' %}
+                <tr class="{% if row|get_item:'missing' %}danger{% endif %}">
+                    {% for name in attributes %}
+                        <td>{{ row|get_item:name }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </table>
+</div>
+{% endwith %}

@@ -1,0 +1,11 @@
+{% extends "pcrs/check_delete.html" %}
+
+{% block alerts %}
+    <div class="alert alert-danger">
+        All datasets with this schema will be removed.
+    </div>
+    <div class="alert alert-danger">
+        All problems using this schema, and all submissions to this problem will
+        be removed.
+    </div>
+{% endblock %}

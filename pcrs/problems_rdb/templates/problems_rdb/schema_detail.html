@@ -1,0 +1,27 @@
+{% extends "pcrs/item_form.html" %}
+
+
+{% block content %}
+    {% if object.representation %}
+        <h3>Schema</h3>
+        <div class="well">
+            {% autoescape off %}
+                {{ object.representation }}
+            {% endautoescape %}
+        </div>
+    {% endif %}
+
+    <h3>Definition</h3>
+    <pre>{{ object.definition }}</pre>
+        {% block related_items %}
+            {% if object %}
+                {% with list_name='Datasets' object_list=object.dataset_set.all related_item_name='dataset' %}
+                    {% include "pcrs/related_items.html" %}
+                {% endwith %}
+            {% endif %}
+        {% endblock %}
+
+    {% block controls %}
+        {% include "pcrs/buttons/delete.html" %}
+    {% endblock %}
+{% endblock %}

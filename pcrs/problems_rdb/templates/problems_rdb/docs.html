@@ -1,0 +1,118 @@
+{% extends "instructor/base.html" %}
+
+{% block title %}
+    RDB documentation
+{% endblock %}
+
+{% block headline %}
+    Relational Database Problems
+{% endblock %}
+
+{% block content %}
+    <h3>Set Up</h3>
+    In order to be able to use the module, you must create a database to store
+    the datasets for the SQL and Relational Algebra problems.
+    Ask your database administrator to run <code>admin_scripts/create_crs_data.sql</code>.
+    This will create the <code>crs_data</code> database and
+    instructors and students user groups.
+    <br>
+    To create schemas and problems, a logged-in instructor must be able to
+    log in to <code>crs_data</code>
+    with their username, and be in the instructors user group.
+    Students, in order to submit the solutions, must be able to log in to
+    <code>crs_data</code> and be in the students group.
+
+    <h3>Schemas and Datasets</h3>
+    <p>
+        A schema defines the tables for a database schema as a sequence of SQL
+        create table statements.
+        A schema has a name and a representation, and may be used in any number
+        of RDB problems.
+        The representation of a schema is HTML formatted text that students will
+        see when solving a problem in the schema.
+    </p>
+
+    <p>
+        A schema may have any number of Datasets.
+        A dataset defines the data as a sequence of SQL insert statements.
+        Datasets are used as testcases for a Relational Database (RDB) problem.
+    </p>
+
+    <h5>Managing Schemas and Datasets</h5>
+    <ul>
+        <li>Schemas and datasets may not be edited.</li>
+        <li>
+            Deleting a schema will remove all datasets and problems associated
+            with that schema.
+        </li>
+        <li>
+            Deleting a dataset will remove all tescases associated with that
+            dataset.
+        </li>
+    </ul>
+
+
+    <h3>Problems and Testcases</h3>
+
+    <p>A problem describes the problem and defines a solution to it.</p>
+    <p>
+        An RDB Problem may have any number of testcases associated with it.
+        Each testcase maps to a dataset. Submissions will be verified against
+        each testcase by running the problem solution and the student submission
+        on the test dataset.
+    </p>
+
+    <h5>Managing Problems and Testcases</h5>
+    <ul>
+        <li>
+            Editing some properties of a problem invalidates the submitted
+            solutions to the problem. For any RDB problem, editing the
+            solution and the schema requires clearing the submissions to the
+            problem before applying the changes.
+        </li>
+        <li>
+            Similarly, adding a testcase invalidates previous solution attempts.
+            Adding a testcase to a problem will clear all submissions.
+        </li>
+        <li>
+            Deleting a problem will remove all testcases associated with that
+            problem, as well as all student submissions.
+        </li>
+        <li>
+            Deleting a dataset will remove all tescases associated with that
+            dataset.
+        </li>
+    </ul>
+
+
+    <h3>SQL Problems</h3>
+    <p>
+        A SQL problem is an RDB problem with a solution that is a SQL query.
+        A problem may optionally require the order of tuples to
+        match exactly with the order of tuples in the defined solution.
+    </p>
+    <p>
+
+    </p>
+
+    <h3>Relational Algebra Problems</h3>
+    A relational algebra problem is an RDB problem with a solution that is a
+    relational algebra expression. An RA problems needs to know the semantic
+    and which grammar semantic should be used to parse the solution.
+
+    <h4>Semantics</h4>
+    Semantics can be set or bag.
+
+    <h4>Grammars</h4>
+    Grammars are defined in the rapt module.
+    There are currently two grammars: the Core Grammar and the Extended Grammar.
+
+    <h4>Core Grammar</h4>
+    The core grammar includes the unary operators for assign, select, project,
+    rename, and the binary operators join, union, and difference.
+    The unary operators have the highest precedence, followed by join,
+    followed by the set operators union and difference.
+
+    {% include "problems_rdb/ra_syntax.html" %}
+
+{% endblock %}

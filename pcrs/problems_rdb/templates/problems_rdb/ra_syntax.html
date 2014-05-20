@@ -1,0 +1,113 @@
+<html>
+<body>
+<dl>
+    <dt>Relation</dt>
+    <dd>A relation name is a valid RA expression that evaluates to all its
+        rows and columns.
+    </dd>
+
+    <dt>Attributes</dt>
+    <dd>An attribute may be referenced by its name, with or without the
+        relation
+        prefix, if and only if it is unambiguous in the context of the
+        expression being evaluated. If the attribute is ambiguous,
+        for example following a join, the attribute must be referenced
+        with its relation prefix.
+    </dd>
+</dl>
+<h5>Unary operators</h5>
+<dl>
+
+    <dt>Assignment</dt>
+    <dd>
+        Assignment uses the keyword <code>:=</code> as the operator.
+        The left-hand side of the assignment operation must be a name of a
+        relation that does not already exist in the context of evaluating
+        the expression on the right-hand side.
+        The right-hand side must be a relational algebra expression.
+
+        <li><code>Q := Questions</code></li>
+        <li><code>Q := \project_{answer} Questions</code></li>
+
+        Assignment operation may optionally rename the relation attributes:
+        <li><code>Q(q, a) := Questions</code></li>
+        The new attribute names must not contain any duplicates.
+        The number of attribute names must match the number of attributes in
+        the relation that the right-hand side evaluates to.
+    </dd>
+
+    <dt>Select</dt>
+    <dd>
+        Select uses the keyword <code>\select_</code> and must be followed
+        by a boolean expression enclosed in curly braces, and an expression.
+        If a condition references an attribute, the attribute must exist in
+        the context of the expression.
+        <li><code>\select_{answer=42} Questions</code></li>
+        <li><code>\select_{question='life' and answer=42} Questions</code>
+        </li>
+
+    </dd>
+
+    <dt>Project</dt>
+    <dd>
+        Project uses the keyword <code>\project_</code> and must be followed
+        by a comma-separated list of attributes enclosed in curly braces,
+        and an expression.
+        Every referenced attribute must exist in the context of the
+        expression.
+        <li><code>\project_{question, answer} Questions</code></li>
+        If an attribute is ambiguous, the reference to it must
+        include the relation prefix.
+    </dd>
+
+    <dt>Rename</dt>
+    <dd>
+        Rename uses the keyword <code>\rename_</code> and must be followed,
+        in curly braces by:
+        <li>a relation name, or</li>
+        <li>a bracketed comma-separated list of attribute names, or</li>
+        <li>a relation name followed by a bracketed comma-separated list of
+            attribute names
+        </li>
+        As with assignment, the new relation name must be unique within
+        the evaluation context. The list of attribute names must not contain
+        any duplicates and the number of attributes must match the number
+        of atributes in the relation being renamed.
+        <li><code>\rename_{Q} Questions</code></li>
+        <li><code>\rename_{(q, a)} Questions</code></li>
+        <li><code>\rename_{Q(q, a)} Questions</code></li>
+    </dd>
+</dl>
+
+<h5>Binary operators</h5>
+<dl>
+    <dt>Join</dt>
+    <dd>
+        Join uses the keyword <code>\join</code> as the operator.
+        The right-hand and left-hand sides of the operator must be
+        expressions.
+        <li><code>Questions \join Answers</code></li>
+        <li><code>\rename_{Q1} Questions \join \rename_{Q2} Questions</code>
+        </li>
+    </dd>
+</dl>
+
+<h5>Binary set operators</h5>
+The right-hand and left-hand sides of the operator must be expressions.
+The attribute names of the relations that the expressions evaluate to must
+match exactly in names and order.
+<dl>
+    <dt>Union</dt>
+    <dd>
+        Union uses the keyword <code>\union</code> as the operator.
+        <li><code>Questions \union MoreQuestions</code></li>
+    </dd>
+
+    <dt>Difference</dt>
+    <dd>
+        Difference uses the keyword <code>\difference</code> as the operator.
+        <li><code>MoreQuestions \difference Questions</code></li>
+    </dd>
+</dl>
+</body>
+</html>
