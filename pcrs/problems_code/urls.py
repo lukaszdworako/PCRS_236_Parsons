@@ -7,6 +7,8 @@ from problems_code.views import SubmissionView, TestCaseCreateManyView, \
     TestCaseCreateView, TestCaseUpdateView, TestCaseDeleteView, \
     SubmissionAsyncView
 
+from problems_code import st_async_requests
+
 
 urlpatterns = patterns('',
     url(r'^list$',
@@ -41,6 +43,11 @@ urlpatterns = patterns('',
         TestCaseDeleteView.as_view(model=TestCase),
         name='coding_problem_delete_testcase'),
     url(r'^(?P<problem>[0-9]+)/submit$',
-        SubmissionAsyncView.as_view(),
+        SubmissionView.as_view(),
         name='coding_problem_submit'),
+    url(r'^(?P<problem>[0-9]+)/run$',
+        SubmissionAsyncView.as_view(),
+        name='coding_problem_run'),
+
+    url(r'^(?P<problem>[0-9]+)/visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
 )

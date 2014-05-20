@@ -1,5 +1,103 @@
 {% extends "problems/submission.html" %}
 
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        var cmh_list = [];
+        var language = "{{ problem.language }}";
+        var problem_id = "{{ problem.pk }}";
+        var visualizer = "bob";
+
+
+        var happyFace = $('<img id="dynamic">').attr({
+            src: '{% static "problems_code/img/yellow-happy-face.png" %}',
+            alt: 'Smiley Face',
+            height:"36",
+            width:"36"
+            });
+        var sadFace = $('<img id="dynamic">').attr({
+            src: '{% static "problems_code/img/red-sad-face.jpg" %}',
+            alt: 'Sad Face',
+            height:"36",
+            width:"36"
+            });
+        var dURL = "{% static "problems_code/img/download-icon.png" %}";
+
+        //Delay to allow the window to change
+        function delay_refresh_cm(){
+            setTimeout(function(){
+                refresh_cm()},1
+            );
+        }
+
+        //Refresh the code mirrors to fit the newly sized window
+        function refresh_cm(){
+            var len = cmh_list.length;
+            for (var i=0; i < len; i++){
+                cmh_list[i].refresh();
+            }
+        }
+    </script>
+
+    {% if problem.language == 'python' %}
+		{% include "problems_code/visualizer_python_includes.html" %}
+	{% endif %}
+
+    <script src="{% static "codemirror-4.1/lib/codemirror.js" %}"></script>
+
+    {# To load more languages add additional scripts, like python below #}
+    <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
+
+    {# When another language is added modify code_mirror.js #}
+    <script src="{% static "code_mirror.js" %}"></script>
+
+    {# working on && also add the csrftoken script right before calling the js#}
+    <script src="{% static "csrf_protection.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_code/js/problem.js" %}" type="text/javascript"></script>
+
+    <script src="{% static "problems_code/js/visualizer.js" %}" type="text/javascript"></script>
+
+
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "codemirror-4.1/lib/codemirror.css" %}">
+    {# Current style, load/create others #}
+    <link rel="stylesheet" href="{% static "codemirror-4.1/theme/monokai.css" %}">
+{% endblock %}
+
+{% block content %}
+
+    {% if problem.description %}
+        <h4>{{ problem.description|safe }}</h4>
+        <hr>
+    {% endif %}
+
+    {{ block.super }}
+
+    <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#submission_{{ problem.pk }}" style="margin-top:-35px;">
+        View Submission History
+    </button>
+
+    {# html code for showing submission history #}
+    {% include "problems_code/sub_history.html" %}
+
+    {# html code for showing testcases for a submission #}
+    <p></p>
+    {% include "problems_code/grade_table.html" %}
+
+    {% include "problems_code/code_trace.html" %}
+
+
+{# Code Tracing #}
+
+
+{% endblock %}
+
 {% block page_title %}
     {{ problem.name }}
 {% endblock %}

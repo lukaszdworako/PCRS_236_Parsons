@@ -49,11 +49,12 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, CreateView):
 
 
 class SubmissionAsyncView(SingleObjectMixin, SubmissionViewMixin, View):
+    model = Submission
     def post(self, request, *args, **kwargs):
         submission_code = request.POST.get('submission', None)
         submission = Submission.objects.create(
             student=request.user, problem=self.get_problem(),
-            section=self.get_section(), submission_code=submission_code)
+            section=self.get_section(), submission=submission_code)
         results = submission.run_testcases()
         submission.set_score()
 
