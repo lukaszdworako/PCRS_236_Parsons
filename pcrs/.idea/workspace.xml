@@ -26,7 +26,16 @@
       <file leaf-file-name="submission.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/submission.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="92" column="40" selection-start="2975" selection-end="2975" vertical-scroll-proportion="-12.222222" vertical-offset="1326" max-vertical-offset="1944">
+            <state line="11" column="30" selection-start="296" selection-end="296" vertical-scroll-proportion="0.6666667" vertical-offset="216" max-vertical-offset="1944">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sub_history.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/sub_history.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="5" column="17" selection-start="426" selection-end="426" vertical-scroll-proportion="-3.3333333" vertical-offset="0" max-vertical-offset="1170">
               <folding />
             </state>
           </provider>
@@ -37,7 +46,12 @@
           <provider selected="true" editor-type-id="text-editor">
             <state line="10" column="6" selection-start="449" selection-end="449" vertical-scroll-proportion="-6.6666665" vertical-offset="0" max-vertical-offset="288">
               <folding>
-                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <marker date="1400589785000" expanded="true" signature="114:448" placeholder="..." />
+                <marker date="1400589785000" expanded="true" signature="154:183" placeholder="..." />
+                <marker date="1400589785000" expanded="true" signature="184:441" placeholder="..." />
+                <marker date="1400589785000" expanded="true" signature="217:286" placeholder="..." />
+                <marker date="1400589785000" expanded="true" signature="255:271" placeholder="..." />
+                <marker date="1400589785000" expanded="true" signature="321:430" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -46,7 +60,16 @@
       <file leaf-file-name="problem.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/problems_code/static/problems_code/js/problem.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="168" column="9" selection-start="5624" selection-end="5624" vertical-scroll-proportion="4.965517" vertical-offset="0" max-vertical-offset="3294">
+            <state line="84" column="21" selection-start="2468" selection-end="2468" vertical-scroll-proportion="0.51083034" vertical-offset="1229" max-vertical-offset="3708">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="code_mirror.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2" column="66" selection-start="85" selection-end="85" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="900">
               <folding />
             </state>
           </provider>
@@ -83,18 +106,18 @@
         <option value="$PROJECT_DIR$/resources/visualizer/python/holistic.js" />
         <option value="$PROJECT_DIR$/resources/visualizer/python/holistic.css" />
         <option value="$PROJECT_DIR$/resources/visualizer/python/togetherjs-min.js" />
-        <option value="$PROJECT_DIR$/problems_code/templates/problems_code/sub_history.html" />
         <option value="$PROJECT_DIR$/problems_code/templates/problems_code/grade_table.html" />
         <option value="$PROJECT_DIR$/problems_code/static/problems_code/test_code/opt-frontend.js" />
         <option value="$PROJECT_DIR$/problems_code/templates/problems_code/test.html" />
         <option value="$PROJECT_DIR$/problems_code/static/problems_code/test_code/opt-frontend-common.js" />
-        <option value="$PROJECT_DIR$/resources/code_mirror.js" />
         <option value="$PROJECT_DIR$/problems_code/templates/problems_code/visualizer_python_includes.html" />
         <option value="$PROJECT_DIR$/problems_code/urls.py" />
         <option value="$PROJECT_DIR$/problems_code/st_async_requests.py" />
         <option value="$PROJECT_DIR$/problems_code/static/problems_code/js/visualizer.js" />
         <option value="$PROJECT_DIR$/problems_code/templates/problems_code/code_trace.html" />
         <option value="$PROJECT_DIR$/problems_code/templates/problems_code/submission.html" />
+        <option value="$PROJECT_DIR$/resources/code_mirror.js" />
+        <option value="$PROJECT_DIR$/problems_code/templates/problems_code/sub_history.html" />
         <option value="$PROJECT_DIR$/problems_code/static/problems_code/js/problem.js" />
       </list>
     </option>
@@ -182,6 +205,36 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="problems_code" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="pcrs" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="pcrs" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="problems_code" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="static" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="problems_code" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="js" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -469,7 +522,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1215" height="1000" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -477,7 +530,7 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3340708" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19674936" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19674936" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
@@ -526,7 +579,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="81" selection-start="659" selection-end="684" vertical-scroll-proportion="0.0" vertical-offset="378" max-vertical-offset="522" />
+        <state line="21" column="81" selection-start="659" selection-end="684" vertical-scroll-proportion="0.0" vertical-offset="378" max-vertical-offset="522">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/submission.html">
@@ -552,7 +607,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="139" selection-end="139" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="450" />
+        <state line="6" column="0" selection-start="139" selection-end="139" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="450">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/static/problems_code/js/problem.js">
@@ -585,7 +642,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="139" selection-end="139" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="450" />
+        <state line="6" column="0" selection-start="139" selection-end="139" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="450">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/static/problems_code/js/problem.js">
@@ -681,12 +740,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/visualizer/python/jquery-ui-1.8.24.custom.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="291" selection-end="327" vertical-scroll-proportion="0.38779175" vertical-offset="0" max-vertical-offset="5796" />
+        <state line="12" column="0" selection-start="291" selection-end="327" vertical-scroll-proportion="0.38779175" vertical-offset="0" max-vertical-offset="5796">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/visualizer/python/pytutor.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="22" selection-start="1428" selection-end="1450" vertical-scroll-proportion="0.4329897" vertical-offset="432" max-vertical-offset="13194" />
+        <state line="38" column="22" selection-start="1428" selection-end="1450" vertical-scroll-proportion="0.4329897" vertical-offset="432" max-vertical-offset="13194">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/visualizer/python/holistic.js">
@@ -696,7 +759,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/visualizer/python/holistic.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="180" column="1" selection-start="3447" selection-end="3447" vertical-scroll-proportion="0.9419355" vertical-offset="2656" max-vertical-offset="3348" />
+        <state line="180" column="1" selection-start="3447" selection-end="3447" vertical-scroll-proportion="0.9419355" vertical-offset="2656" max-vertical-offset="3348">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/codemirror-4.1/package.json">
@@ -757,7 +822,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/grade_table.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="4" selection-start="664" selection-end="664" vertical-scroll-proportion="0.5944954" vertical-offset="0" max-vertical-offset="545" />
+        <state line="18" column="4" selection-start="664" selection-end="664" vertical-scroll-proportion="0.5944954" vertical-offset="0" max-vertical-offset="545">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/urls.py">
@@ -774,19 +841,9 @@
         <state line="5" column="0" selection-start="104" selection-end="104" vertical-scroll-proportion="0.15873016" vertical-offset="0" max-vertical-offset="720" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="1" selection-start="1220" selection-end="1220" vertical-scroll-proportion="1.0854272" vertical-offset="0" max-vertical-offset="900" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/visualizer_python_includes.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="4" column="0" selection-start="152" selection-end="152" vertical-scroll-proportion="0.12926391" vertical-offset="0" max-vertical-offset="557" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/sub_history.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="67" selection-start="153" selection-end="190" vertical-scroll-proportion="0.030927835" vertical-offset="0" max-vertical-offset="1134" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/static/problems_code/js/visualizer.js">
@@ -796,25 +853,44 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/resources/code_mirror.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="66" selection-start="85" selection-end="85" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="900">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/code_trace.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="6" selection-start="449" selection-end="449" vertical-scroll-proportion="-6.6666665" vertical-offset="0" max-vertical-offset="288">
           <folding>
-            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <marker date="1400589785000" expanded="true" signature="114:448" placeholder="..." />
+            <marker date="1400589785000" expanded="true" signature="154:183" placeholder="..." />
+            <marker date="1400589785000" expanded="true" signature="184:441" placeholder="..." />
+            <marker date="1400589785000" expanded="true" signature="217:286" placeholder="..." />
+            <marker date="1400589785000" expanded="true" signature="255:271" placeholder="..." />
+            <marker date="1400589785000" expanded="true" signature="321:430" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/submission.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="92" column="40" selection-start="2975" selection-end="2975" vertical-scroll-proportion="-12.222222" vertical-offset="1326" max-vertical-offset="1944">
+        <state line="11" column="30" selection-start="296" selection-end="296" vertical-scroll-proportion="0.6666667" vertical-offset="216" max-vertical-offset="1944">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/problems_code/templates/problems_code/sub_history.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="17" selection-start="426" selection-end="426" vertical-scroll-proportion="-3.3333333" vertical-offset="0" max-vertical-offset="1170">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/problems_code/static/problems_code/js/problem.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="168" column="9" selection-start="5624" selection-end="5624" vertical-scroll-proportion="4.965517" vertical-offset="0" max-vertical-offset="3294">
+        <state line="84" column="21" selection-start="2468" selection-end="2468" vertical-scroll-proportion="0.51083034" vertical-offset="1229" max-vertical-offset="3708">
           <folding />
         </state>
       </provider>
