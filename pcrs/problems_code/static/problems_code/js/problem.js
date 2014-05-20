@@ -57,10 +57,11 @@ function getTestcases() {
 
     var postParams = { csrftoken: csrftoken, submission: myCodeMirror.getValue() };
 
-    $.post('/problems/coding/'+problem_id+'/run',
+    $.post('/problems/code/'+problem_id+'/run',
             postParams,
             function(data) {
-                testcases = data;
+                testcases = data[0];
+                console.log('da', testcases);
                 $("#grade-code").show();
                 prepareGradingTable();
             },
@@ -186,7 +187,8 @@ $( document).ready(function() {
 
     $("#grade-code").hide();
 
-    $('#submit').click(function(){
+    $('#submit-id-submit').click(function(event){
+        event.preventDefault();
         if (myCodeMirror.getValue() == ''){
             alert('There is no code to submit.');
         }

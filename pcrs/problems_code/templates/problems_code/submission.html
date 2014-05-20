@@ -79,10 +79,6 @@
 
     {{ block.super }}
 
-    <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#submission_{{ problem.pk }}" style="margin-top:-35px;">
-        View Submission History
-    </button>
-
     {# html code for showing submission history #}
     {% include "problems_code/sub_history.html" %}
 

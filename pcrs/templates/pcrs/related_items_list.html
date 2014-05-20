@@ -1,0 +1,13 @@
+<h3>{{ list_name }}</h3>
+{% for object in object_list %}
+    <div class="item">
+        {% block item_title %}
+            {{ object }}
+        {% endblock %}
+        <span>
+                {% block item_controls %}
+                    {% include "pcrs/buttons/edit.html" %}
+                {% endblock %}
+            </span>
+    </div>
+{% endfor %}

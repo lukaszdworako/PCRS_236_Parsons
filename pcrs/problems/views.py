@@ -198,6 +198,12 @@ class SubmissionViewMixin:
         kwargs['problem'] = self.get_problem()
         return kwargs
 
+    def get_initial(self):
+        problem = self.get_problem()
+        initial = super().get_initial()
+        initial['submission'] = problem.starter_code
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         problem = self.get_problem()
@@ -212,7 +218,7 @@ class SubmissionViewMixin:
         """
         submission_model = self.model.get_submission_class()
         submission_code = request.POST.get('submission', '')
-        results = []
+        results, error = [], None
         if submission_code:
             submission = submission_model.objects.create(
                 student=request.user, problem=self.get_problem(),
@@ -220,7 +226,7 @@ class SubmissionViewMixin:
             results = submission.run_testcases(request)
             submission.set_score()
             self.object = submission
-        return results
+        return results, None
 
     def post(self, request, *args, **kwargs):
         """
@@ -228,6 +234,7 @@ class SubmissionViewMixin:
         with latest submission prefilled.
         """
         form = self.get_form(self.get_form_class())
+        print(self.record_submission(request))
         results, error = self.record_submission(request)
         return self.render_to_response(
             self.get_context_data(form=form, results=results, error=error,
@@ -243,7 +250,7 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     object = None
 
 
-class SubmissionAsyncView(SubmissionViewMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     Create a submission for a problem asynchronously.
     """

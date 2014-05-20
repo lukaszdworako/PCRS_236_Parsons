@@ -44,7 +44,7 @@ urlpatterns = patterns('',
                                template_name='problems_code/submission.html'),
         name='coding_problem_submit'),
     url(r'^(?P<problem>[0-9]+)/run$',
-        SubmissionAsyncView.as_view(),
+        SubmissionAsyncView.as_view(model=Submission),
         name='coding_problem_async_submit'),
 
     url(r'^(?P<problem>[0-9]+)/visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
