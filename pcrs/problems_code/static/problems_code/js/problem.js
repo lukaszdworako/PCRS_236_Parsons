@@ -103,8 +103,8 @@ function prepareGradingTable() {
                 newRow.append('<td class="expectedCell">' + testcaseOutput + '</td>');
             }
             else {
-                newRow.append('<td colspan=1>' + "Hidden Test" +'</td>');
-                newRow.append('<td colspan=1>' + "Hidden Result" +'</td>');
+                newRow.append('<td >' + "Hidden Test" +'</td>');
+                newRow.append('<td >' + "Hidden Result" +'</td>');
             }
 
             newRow.append('<td class="testDescription">' + description + '</td>');

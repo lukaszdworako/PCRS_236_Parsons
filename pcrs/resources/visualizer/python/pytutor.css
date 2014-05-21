@@ -710,18 +710,28 @@ td.debugCell {
     vertical-align: middle;
 }
 tr.gradeMatrixRow > td:nth-child(1) {
-    width: 16.66%;
+    width: 20%;
+    vertical-align: middle;
 }
 tr.gradeMatrixRow > td:nth-child(2) {
-    width: 33.33%;
+    width: 20%;
+    vertical-align: middle;
 }
 
 tr.gradeMatrixRow > td:nth-child(3) {
-    width: 33.33%;
+    width: 25%;
+    vertical-align: middle;
 }
 tr.gradeMatrixRow > td:nth-child(4) {
-    width: 8.33%;
+    width: 25%;
+    vertical-align: middle;
 }
 tr.gradeMatrixRow > td:nth-child(5) {
-    width: 8.33%;
+    width: 10%;
+    vertical-align: middle;
 }
+tr.gradeMatrixRow > td:nth-child(6) {
+    width: 10%;
+    vertical-align: middle;
+}
+
