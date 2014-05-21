@@ -2,7 +2,7 @@ var myCodeMirror;
 
 function create_history_code_mirror (language, version, location){
     hcm = history_code_mirror(language, version, location, $('#'+location).text());
-    cmh_list.push(hcm);
+    cmh_list[location] = hcm;
 }
 
 function history_code_mirror (language, version, location, value){
