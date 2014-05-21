@@ -6,7 +6,7 @@
     {{ block.super }}
 
     <script type="text/javascript">
-        var cmh_list = [];
+        var cmh_list = {};
         var language = "{{ problem.language }}";
         var problem_id = "{{ problem.pk }}";
         var visualizer = null;
@@ -27,18 +27,15 @@
         var dURL = "{% static "problems_code/img/download-icon.png" %}";
 
         //Delay to allow the window to change
-        function delay_refresh_cm(){
+        function delay_refresh_cm(key){
             setTimeout(function(){
-                refresh_cm()},1
+                refresh_cm(key)},1
             );
         }
 
         //Refresh the code mirrors to fit the newly sized window
-        function refresh_cm(){
-            var len = cmh_list.length;
-            for (var i=0; i < len; i++){
-                cmh_list[i].refresh();
-            }
+        function refresh_cm(key){
+            cmh_list[key].refresh();
         }
     </script>
 

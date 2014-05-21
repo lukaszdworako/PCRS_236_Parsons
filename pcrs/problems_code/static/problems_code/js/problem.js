@@ -157,7 +157,8 @@ function add_to_history(score){
     datetime = create_timestamp(datetime);
 
     var new_entry = '<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">'
-    new_entry += '<a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + code_problem_id + '" onclick="delay_refresh_cm()">'
+    var local_name = "'history_mirror_999_"+code_problem_id+"'";
+    new_entry += '<a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + code_problem_id + '" onclick="delay_refresh_cm('+local_name+')">'
     new_entry += datetime + '<td> Score : ' + score +' / '+ testcases.length + '</td></a></h4></div>'
     new_entry += '<div id="collapse_'+ code_problem_id + '" class="panel-collapse collapse">'
     new_entry += '<div id="history_mirror_999_'+code_problem_id+'">' + myCodeMirror.getValue() + '</div>'

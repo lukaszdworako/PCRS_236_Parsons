@@ -12,7 +12,7 @@
                         <div class="panel-heading">
                             <h4 class="panel-title">
                                 <a data-toggle="collapse" data-parent="#accordion"
-                                   href="#collapse_{{ s.pk }}" onclick="delay_refresh_cm()">
+                                   href="#collapse_{{ s.pk }}" onclick="delay_refresh_cm('history_mirror_{{ problem.pk }}_{{ s.pk }}')">
                                 {{ s.timestamp }}
                                 <td> Score : {{ s.score }} / {{ problem.testcase_set.all.count }} </td>
                                 </a>
