@@ -76,11 +76,8 @@ class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
 
         Used for generating CSV reports and problem analysis.
         """
-        print (self.submission_set.filter(problem=self, timestamp__lt=deadline))
-        print (self.submission_set.filter(problem=self, timestamp__lt=deadline)\
-            .values('student').annotate(score=Max('score')))
-        return self.get_submission_class().objects.filter(problem=self, timestamp__lt=deadline)\
-            .values('student_id').annotate(score=Max('score'))
+        return self.submission_set.filter(timestamp__lt=deadline)\
+            .values('student_id').annotate(score=Max('score')).order_by()
 
     def get_best_score(self, user, deadline=timezone.now()):
         """
