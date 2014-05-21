@@ -288,3 +288,27 @@ class ProblemSet(AbstractNamedObject, AbstractSelfAwareModel):
                                                model='problem')
         return ProblemSetProblem.objects.filter(problem_set=self,
                                                 content_type= content_type)
+
+
+class Tag(models.Model):
+    """
+    An object tag.
+    """
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class AbstractTaggedObject(models.Model):
+    """
+    An object that may have any number of tags.
+    """
+    tags = models.ManyToManyField(Tag, null=True, blank=True,
+                                  related_name='%(app_label)s_%(class)s_related')
+
+    class Meta:
+        abstract = True

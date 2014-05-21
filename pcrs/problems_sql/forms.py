@@ -13,8 +13,8 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
 
     class Meta:
         model = Problem
-        fields = ('visibility', 'schema', 'name', 'description', 'solution',
-                  'order_matters')
+        fields = ('visibility', 'schema', 'name', 'description', 'starter_code',
+                  'solution', 'order_matters')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

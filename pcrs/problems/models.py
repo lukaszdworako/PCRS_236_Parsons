@@ -1,11 +1,11 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Max, Q
-
 from django.utils import timezone
+from content.models import AbstractTaggedObject
+
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
-
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
 
@@ -16,31 +16,13 @@ def get_problem_labels():
     return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
 
 
-class ProblemTag(models.Model):
+class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
+                      AbstractTaggedObject):
     """
-    Tags for problems.
+    A base class for all problems.
+
+    All problems have visibility level, and optionally tags, and are self-aware.
     """
-    name = models.CharField(max_length=100, unique=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
-class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
-    """
-    Base class for problems.
-
-    A problem has a description, and optionally tags and solution and
-    may no be visible to students.
-    """
-
-    solution = models.TextField(blank=True)
-    tags = models.ManyToManyField(ProblemTag, null=True, blank=True,
-                                  related_name='%(app_label)s_%(class)s_related')
-
     class Meta:
         abstract = True
 
@@ -49,10 +31,6 @@ class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
         if len(self.description) > 150:
             description += '...'
         return description
-
-    @property
-    def max_score(self):
-        return self.testcase_set.count()
 
     @classmethod
     def get_problem_type_name(cls):
@@ -79,14 +57,6 @@ class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
         return self.submission_set.filter(timestamp__lt=deadline)\
             .values('student_id').annotate(score=Max('score')).order_by()
 
-    def get_best_score(self, user, deadline=timezone.now()):
-        """
-        Return the best score for the user on this problem.
-        """
-        return self.submission_set\
-            .filter(problem=self, student=user, timestamp__lt=deadline)\
-            .aggregate(score=Max('score'))['score__max']
-
     def clear_submissions(self):
         """
         Delete all submissions to this problem.
@@ -94,7 +64,25 @@ class AbstractProblem(AbstractLimitedVisibilityObject, AbstractSelfAwareModel):
         self.submission_set.all().delete()
 
 
-class AbstractNamedProblem(AbstractNamedObject, AbstractProblem):
+class AbstractProgrammingProblem(AbstractProblem):
+    """
+    Base class for programming problems.
+
+    Programming problems may have starter starter code and solution.
+    """
+
+    starter_code = models.TextField(blank=True)
+    solution = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def max_score(self):
+        return self.testcase_set.count()
+
+
+class AbstractNamedProblem(AbstractNamedObject, AbstractProgrammingProblem):
     """
     A problem extended to have a required name and description.
     """

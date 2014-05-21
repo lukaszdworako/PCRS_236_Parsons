@@ -30,6 +30,7 @@ class Problem(RDBProblem):
 
     When a RAProblem is deleted, any associated RATestCases are also deleted.
     """
+    language = 'ra'
     GRAMMARS = [(name, name) for name, cls in GRAMMARS.items()]
     SEMANTICS = ((SET_SEMANTICS, 'Set'), (BAG_SEMANTICS, 'Bag'),)
     grammar = models.TextField(blank=False, null=False, choices=GRAMMARS)

@@ -20,7 +20,6 @@ class Problem(AbstractNamedProblem):
 
     language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES,
                                 default='python')
-    starter_code = models.TextField(blank=True)
 
 
 class Submission(AbstractSubmission):

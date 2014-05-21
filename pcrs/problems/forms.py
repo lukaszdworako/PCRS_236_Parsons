@@ -50,12 +50,13 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
                                            css_class='btn-default')
 
 
-class SubmissionForm(BaseSubmissionForm):
+class ProgrammingSubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
 
     def __init__(self, *args, **kwargs):
+        problem = kwargs.get('problem', None)
         super().__init__(*args, **kwargs)
-
+        self.fields['submission'].initial = problem.starter_code
         self.helper.layout = Layout(
             Fieldset('', 'submission'),
             self.history_button,

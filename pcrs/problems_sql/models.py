@@ -18,6 +18,8 @@ class Problem(RDBProblem):
 
     When a SQLProblem is deleted, any associated SQLTestCases are also deleted.
     """
+    language = 'sql'
+
     order_matters = models.BooleanField(null=False, default=False)
 
     @property

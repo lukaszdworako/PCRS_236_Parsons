@@ -2,9 +2,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
-from problems.models import AbstractSubmission, ProblemTag, AbstractProblem
+from problems.models import AbstractProblem, AbstractSubmission
 
 
 class Problem(AbstractProblem):

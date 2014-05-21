@@ -8,7 +8,7 @@ from problems_code.models import Problem, TestCase
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('language', 'name', 'description', 'starter_code',
+        fields = ('name', 'description', 'starter_code',
                   'solution', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):

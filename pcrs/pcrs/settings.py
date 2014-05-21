@@ -1,6 +1,6 @@
 # Django settings for pcrs project.
 
-LANGUAGE_CHOICES = (('python', 'Python'),)
+LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'),)
 
 PRODUCTION = False
 

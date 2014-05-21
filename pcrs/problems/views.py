@@ -6,7 +6,7 @@ from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
-from problems.forms import SubmissionForm
+from problems.forms import ProgrammingSubmissionForm
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -185,13 +185,6 @@ class SubmissionViewMixin:
         kwargs['problem'] = self.get_problem()
         return kwargs
 
-    def get_initial(self):
-        problem = self.get_problem()
-        initial = super().get_initial()
-        if problem.get_app_label() == 'problems_code':
-            initial['submission'] = problem.starter_code
-        return initial
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         problem = self.get_problem()
@@ -233,7 +226,7 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     """
     Create a submission for a problem.
     """
-    form_class = SubmissionForm
+    form_class = ProgrammingSubmissionForm
     object = None
 
 
