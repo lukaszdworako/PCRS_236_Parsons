@@ -7,8 +7,9 @@ from pyparsing import (CaselessKeyword, OneOrMore, Suppress, Word, ZeroOrMore,
                        alphanums, nums, originalTextFor,
                        Group, Literal, ParseException)
 
-from pcrs.models import AbstractNamedObject, AbstractGenericObjectForeignKey, \
-    AbstractOrderedGenericObjectSequence, AbstractSelfAwareModel
+from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
+                         AbstractOrderedGenericObjectSequence,
+                         AbstractSelfAwareModel)
 from users.models import AbstractLimitedVisibilityObject
 
 
@@ -34,7 +35,8 @@ class ContentProblem(AbstractGenericObjectForeignKey):
         pass
 
 
-class Challenge(AbstractLimitedVisibilityObject, AbstractNamedObject):
+class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
+                AbstractNamedObject):
     """
     A Challenge is a sequence of ContentPages, which are defined in markup.
     """
@@ -269,12 +271,20 @@ class OrderedContainerItem(models.Model):
         )
 
 
-class ProblemSet(AbstractNamedObject, AbstractSelfAwareModel):
-    problems = generic.GenericRelation('ProblemSetProblem',
-                               content_type_field='content_type',
-                               object_id_field='object_id')
-
-
 class ProblemSetProblem(AbstractGenericObjectForeignKey):
-    problem_set = models.ForeignKey(ProblemSet)
+    problem_set = models.ForeignKey('ProblemSet')
     objects = models.Q(model='problem')
+
+
+class ProblemSet(AbstractNamedObject, AbstractSelfAwareModel):
+    def get_absolute_url(self):
+        return '/content/problem_set/{}'.format(self.pk)
+
+    def get_main_page(self):
+        return '{}/list'.format(self.get_absolute_url())
+
+    def get_problems_for_type(self, app_label):
+        content_type = ContentType.objects.get(app_label=app_label,
+                                               model='problem')
+        return ProblemSetProblem.objects.filter(problem_set=self,
+                                                content_type= content_type)

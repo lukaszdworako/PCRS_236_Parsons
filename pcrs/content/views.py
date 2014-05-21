@@ -1,16 +1,14 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import UpdateView, View, ListView, CreateView, \
+from django.shortcuts import get_object_or_404
+from django.views.generic import UpdateView, ListView, CreateView, \
     DeleteView, DetailView
-from django.db import models
 
-
-from content.parse_page import parse
-from content.forms import ChallengeForm,  ProblemSetForm
+from content.forms import ChallengeForm
 from content.models import Challenge, ContentPage, Container, \
-    OrderedContainerItem, ProblemSet, ProblemSetProblem
+    OrderedContainerItem
+from pcrs.generic_views import GenericItemListView, GenericItemCreateView
 from problems.models import CompletedProblem
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
@@ -24,17 +22,13 @@ class ChallengeView:
         return reverse('challenge_list')
 
 
-class ChallengeListView(ProtectedViewMixin, ListView):
+class ChallengeListView(ProtectedViewMixin, GenericItemListView):
     model = Challenge
     template_name = 'content/challenge_list.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Challenges'
-        return context
 
-
-class ChallengeCreateView(CourseStaffViewMixin, ChallengeView, CreateView):
+class ChallengeCreateView(CourseStaffViewMixin, ChallengeView,
+                          GenericItemCreateView):
     """
     Create a new Challenge, its ContentPages and ContentObjects.
     """
@@ -44,8 +38,6 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView, UpdateView):
     """
     Update a new Challenge, its ContentPages and ContentObjects.
     """
-    def form_invalid(self, form):
-        print(form)
 
 
 class ChallengeDeleteView(ChallengeView, DeleteView):
@@ -121,29 +113,3 @@ class ContainerListView(ProtectedViewMixin, ListView):
 #
 #         return HttpResponse(json.dumps({'success': True}),
 #                             mimetype='application/json')
-
-
-class ProblemSetCreateView(CourseStaffViewMixin, CreateView):
-    model = ProblemSet
-    form_class = ProblemSetForm
-
-    def form_valid(self, form):
-        self.object = form.save()
-        for key, value in form.cleaned_data.items():
-            # add all selected problems regardless of type to the problem set
-            if key.startswith('problems_'):
-                for problem in form.cleaned_data[key]:
-                    ProblemSetProblem(problem_set=self.object,
-                                      content_object=problem).save()
-        return redirect(self.object.get_absolute_url())
-
-
-class ProblemSetDetailView(ProtectedViewMixin, ListView):
-    model = ProblemSetProblem
-
-    def get_problem_set(self):
-        return get_object_or_404(ProblemSet,
-                                 self.kwargs.get('problemset', None))
-
-    def get_queryset(self):
-        return self.model.objects.filter(problem_set_id=1)

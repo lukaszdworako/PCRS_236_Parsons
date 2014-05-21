@@ -1,6 +1,8 @@
 from crispy_forms.bootstrap import TabHolder, Tab
 from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Field, Div
 from django import forms
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 
 from content.models import Challenge, ProblemSet
 from pcrs.form_mixins import CrispyFormMixin
@@ -39,27 +41,27 @@ class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
     A form for creating a ProblemSet.
     """
 
-
-    name = forms.CharField(required=True)
-    description = forms.CharField(required=True)
-    problems_code = forms.ModelMultipleChoiceField(
-        queryset=CodeProblem.objects.all(),
-        widget=forms.CheckboxSelectMultiple(),
-        required=False)
-    problems_multiple_choice = forms.ModelMultipleChoiceField(
-        queryset=MCProblem.objects.all(),
-        widget=forms.CheckboxSelectMultiple(),
-        required=False)
-
     class Meta:
         model = ProblemSet
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        problem_ctypes = ContentType.objects.filter(Q(model='problem'))
+        for problem_ctype in problem_ctypes:
+            field = forms.ModelMultipleChoiceField(
+                        queryset=problem_ctype.model_class().objects.all(),
+                        widget=forms.CheckboxSelectMultiple(),
+                        required=False)
+            self.fields[problem_ctype.app_label] = field
+
+
         self.helper.layout = Layout(
             'name', 'description',
-            TabHolder(Tab('Code', 'problems_code'),
-                      Tab('MC', 'problems_multiple_choice')
+            TabHolder(
+                *[Tab(ctype.model_class().get_problem_type_name().replace('_', ' '),
+                      ctype.app_label)
+                   for ctype in problem_ctypes]
             ),
             ButtonHolder(self.save_button)
         )
