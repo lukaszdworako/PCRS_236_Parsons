@@ -378,19 +378,23 @@ ExecutionVisualizer.prototype.render = function() {
 	this.domRoot.find("#jmpFirstInstr").click(function() {
 		myViz.curInstr = 0;
 		myViz.updateOutput();
+        resizer();
 	});
 
 	this.domRoot.find("#jmpLastInstr").click(function() {
 		myViz.curInstr = myViz.curTrace.length - 1;
 		myViz.updateOutput();
+        resizer();
 	});
 
 	this.domRoot.find("#jmpStepBack").click(function() {
 		myViz.stepBack();
+        resizer();
 	});
 
 	this.domRoot.find("#jmpStepFwd").click(function() {
 		myViz.stepForward();
+        resizer();
 	});
 
 	// disable controls initially ...
@@ -3364,4 +3368,22 @@ function renderData_ignoreID(obj, jDomElt) {
   else {
     alert("Error: renderData_ignoreID FAIL!");
   }
+}
+
+//custom resize for bootstrap module
+function resizer(){
+    console.log($(".visualizer").width());
+    console.log($("#myModal"));
+    console.log($(window).width());
+    if ($(".visualizer").width() > $("#myModal").width()){
+        $(".modal-content").width($(".visualizer").width() + 50);
+    }
+    else if ($(".visualizer").width() < $("#myModal").width()){
+        if ($(window).width() > 1050){
+            $(".modal-content").width($(window).width() - ($(window).width()/100*11) );
+        }
+        else {
+            $(".modal-content").width(1050);
+        }
+    }
 }
