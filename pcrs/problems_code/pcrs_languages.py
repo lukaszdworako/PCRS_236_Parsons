@@ -1,7 +1,8 @@
 import os
 import subprocess
 import sys
-from subprocess import TimeoutExpired
+# from subprocess import TimeoutExpired
+import subprocess
 
 
 def set_path_to_languages():

@@ -2,54 +2,52 @@
     <div class="modal-content" style="width:90%; top: 5%; left: 5%;">
         <div class="modal-header">
             <h4 class="modal-title" id="myModalLabel">{{ problem.name }}
-                <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             </h4>
         </div>
         <div class="modal-body">
             <div class="panel-group" id="accordion">
-                {% for s in problem.submission_set.all.reverse %}
-                    {% if s.student == user %}
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4 class="panel-title">
-                                    <a data-toggle="collapse" data-parent="#accordion"
-                                       href="#collapse_{{ s.pk }}" onclick="delay_refresh_cm()">
-                                    {{ s.timestamp }}
-                                    <td> Score : {{ s.score }} / {{ problem.testcase_set.all.count }} </td>
-                                    </a>
-                                </h4>
-                            </div>
-                            <div id="collapse_{{ s.pk }}" class="panel-collapse collapse">
-                                <div id="history_mirror_{{ problem.pk }}_{{ s.pk }}">{{ s.submission }}</div>
-                                <ul class="list-group">
-                                    <script type="text/javascript">
-                                        create_history_code_mirror(language, 3,
-                                                "history_mirror_{{ problem.pk }}_{{ s.pk }}");
-                                    </script>
-                                    {% for tr in s.testrun_set.all %}
-                                        {% if tr.test_passed %}
-                                            <li class="list-group-item list-group-item-success">
-                                                <icon class="glyphicon glyphicon-ok"></icon>
-                                        {% else %}
-                                            <li class="list-group-item list-group-item-danger">
-                                                <icon class="glyphicon glyphicon-remove"></icon>
-                                        {% endif %}
-                                        &nbsp;&nbsp;
-                                        {% if tr.testcase.is_visible %}
-                                            {{ tr.testcase.test_input }} -> {{ tr.testcase.expected_output }}
-                                        {% else %}
-                                            {%  if tr.testcase.description == "" %}
-                                                Hidden Test
-                                            {% else %}
-                                                {{ tr.testcase.description }}
-                                            {% endif %}
-                                        {% endif %}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
+                {% for s in submissions %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion"
+                                   href="#collapse_{{ s.pk }}" onclick="delay_refresh_cm()">
+                                {{ s.timestamp }}
+                                <td> Score : {{ s.score }} / {{ problem.testcase_set.all.count }} </td>
+                                </a>
+                            </h4>
                         </div>
-                    {% endif %}
+                        <div id="collapse_{{ s.pk }}" class="panel-collapse collapse">
+                            <div id="history_mirror_{{ problem.pk }}_{{ s.pk }}">{{ s.submission }}</div>
+                            <ul class="list-group">
+                                <script type="text/javascript">
+                                    create_history_code_mirror(language, 3,
+                                            "history_mirror_{{ problem.pk }}_{{ s.pk }}");
+                                </script>
+                                {% for tr in s.testrun_set.all %}
+                                    {% if tr.test_passed %}
+                                        <li class="list-group-item list-group-item-success">
+                                            <icon class="glyphicon glyphicon-ok"></icon>
+                                    {% else %}
+                                        <li class="list-group-item list-group-item-danger">
+                                            <icon class="glyphicon glyphicon-remove"></icon>
+                                    {% endif %}
+                                    &nbsp;&nbsp;
+                                    {% if tr.testcase.is_visible %}
+                                        {{ tr.testcase.test_input }} -> {{ tr.testcase.expected_output }}
+                                    {% else %}
+                                        {%  if tr.testcase.description == "" %}
+                                            Hidden Test
+                                        {% else %}
+                                            {{ tr.testcase.description }}
+                                        {% endif %}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
         </div>

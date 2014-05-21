@@ -72,11 +72,6 @@
 
 {% block content %}
 
-    {% if problem.description %}
-        <h4>{{ problem.description|safe }}</h4>
-        <hr>
-    {% endif %}
-
     {{ block.super }}
 
     {# html code for showing submission history #}

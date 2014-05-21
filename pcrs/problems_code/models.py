@@ -40,6 +40,7 @@ class Submission(AbstractSubmission):
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=run['passed_test'])
             run['test_input'], run['expected_output'] = None, None
+            run['test_desc'] = testcase.description
             if testcase.is_visible:
                 run['test_input'] = testcase.test_input
                 run['expected_output'] = testcase.expected_output
