@@ -6,9 +6,9 @@
 
 {% block content %}
     {% block alerts %}
-        {% if alert %}
-            <div class="alert alert-danger">{{ alert }}</div>
-        {% endif %}
+        <div class="alert alert-danger">
+            {{ alert|default:'This action cannot be undone.' }}
+        </div>
     {% endblock %}
 
     <form method="post">

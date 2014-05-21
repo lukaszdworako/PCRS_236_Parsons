@@ -1,0 +1,5 @@
+{% extends "pcrs/item_list.html" %}
+
+{% block item_title %}
+    <a href="{{ object.get_main_page }}">{{ object.name }}</a>
+{% endblock %}

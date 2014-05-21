@@ -4,6 +4,11 @@ from django.db import models
 
 
 class AbstractSelfAwareModel(models.Model):
+    """
+    A model that is aware of its ContentType and app.
+    """
+    class Meta:
+        abstract = True
 
     @classmethod
     def get_content_type(cls):
@@ -26,9 +31,6 @@ class AbstractSelfAwareModel(models.Model):
         """
         return cls.get_content_type().app_label
 
-    class Meta:
-        abstract = True
-
     @classmethod
     def get_problem_class(cls):
         app_label = cls.get_app_label()
@@ -40,6 +42,15 @@ class AbstractSelfAwareModel(models.Model):
         app_label = cls.get_app_label()
         c_type = ContentType.objects.get(model='submission', app_label=app_label)
         return c_type.model_class()
+
+    @classmethod
+    def get_pretty_name(cls):
+        name = str(cls.get_content_type()).replace('_', ' ')
+        if name == 'problem':
+            name = '{kind} problem'\
+                .format(kind=cls.get_app_label()
+                .replace('_', ' ').replace('problems ', ''))
+        return name
 
 
 class AbstractNamedObject(models.Model):

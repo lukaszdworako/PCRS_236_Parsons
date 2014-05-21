@@ -7,11 +7,12 @@ from django.db import models
 from django.db.models.signals import pre_delete
 
 from pcrs.model_helpers import has_changed, get_stored_value
-from problems.models import AbstractNamedProblem, AbstractTestCase
+from problems.models import (AbstractSelfAwareModel, AbstractNamedProblem,
+                             AbstractTestCase)
 from problems_rdb.db_wrapper import InstructorWrapper
 
 
-class Schema(models.Model):
+class Schema(AbstractSelfAwareModel):
     """
     A database schema. A Schema consists of a name and a definition.
 
@@ -74,7 +75,7 @@ class Schema(models.Model):
                     raise ValidationError({'definition': [error, error_message]})
 
 
-class Dataset(models.Model):
+class Dataset(AbstractSelfAwareModel):
     """
     A collection of data. A Dataset consists of a name, a definition for
     the data and an associated Schema.

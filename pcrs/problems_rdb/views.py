@@ -1,11 +1,12 @@
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+from django.views.generic import (CreateView, DeleteView, DetailView,
                                   TemplateView)
-from problems.views import TestCaseCreateManyView, TestCaseCreateView, \
-    TestCaseView
 
-from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
+from pcrs.generic_views import GenericItemListView, GenericItemCreateView
+from problems.views import TestCaseView
+
+from users.views_mixins import CourseStaffViewMixin
 from problems_rdb.forms import SchemaForm, DatasetForm
 from problems_rdb.models import Schema, Dataset
 
@@ -20,30 +21,20 @@ class SchemaView(CourseStaffViewMixin):
         return reverse('schema_list')
 
 
-class SchemaListView(SchemaView, ListView):
+class SchemaListView(SchemaView, GenericItemListView):
     """
     List schemas.
     """
     template_name = 'pcrs/item_list.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Schema list'
-        return context
 
-
-class SchemaCreateView(SchemaView, CreateView):
+class SchemaCreateView(SchemaView, GenericItemCreateView):
     """
     Create a new schema.
     """
-    model = Schema
     form_class = SchemaForm
     template_name = 'pcrs/item_form.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'New schema'
-        return context
 
 
 class SchemaCreateAndAddDatasetView(SchemaCreateView):
@@ -88,7 +79,7 @@ class DatasetView(CourseStaffViewMixin):
         return self.get_schema().get_absolute_url()
 
 
-class DatasetCreateView(DatasetView, CreateView):
+class DatasetCreateView(DatasetView, GenericItemCreateView):
     """
     Create a new dataset.
     """
@@ -115,7 +106,7 @@ class DatasetDeleteView(DatasetView, DeleteView):
     template_name = 'problems_rdb/dataset_check_delete.html'
 
 
-class RDBTestCaseView(TestCaseView):
+class RDBTestCaseView(TestCaseView, GenericItemCreateView):
     """
     Base view for creating and updating testcases for an RDB problem.
     """
@@ -130,13 +121,13 @@ class RDBTestCaseView(TestCaseView):
         return kwargs
 
 
-class RDBTestCaseCreateView(RDBTestCaseView, CreateView):
+class RDBTestCaseCreateView(RDBTestCaseView):
     """
     Create a new TestCase for an RDB problem.
     """
 
 
-class RDBTestCaseCreateManyView(RDBTestCaseView, CreateView):
+class RDBTestCaseCreateManyView(RDBTestCaseView):
     """
     Create new TestCases for an RDB problem.
     """

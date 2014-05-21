@@ -61,7 +61,6 @@ function getTestcases() {
             postParams,
             function(data) {
                 testcases = data[0];
-                console.log('da', testcases);
                 $("#grade-code").show();
                 prepareGradingTable();
             },
@@ -73,7 +72,6 @@ function prepareGradingTable() {
 
     var gradingTable = $("#gradeMatrix");
     var score = 0;
-    console.log(testcases[0]);
 
     for (var i = 0; i < testcases.length; i++) {
         var current_testcase = testcases[i];

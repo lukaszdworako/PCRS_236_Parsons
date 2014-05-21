@@ -1,12 +1,19 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Max
+from django.db.models import Max, Q
 
 from django.utils import timezone
-from pcrs.models import AbstractNamedObject, AbstractGenericObjectForeignKey, \
-    AbstractSelfAwareModel
+from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
+                         AbstractSelfAwareModel)
 
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
+
+
+def get_problem_labels():
+    """
+    Return the list app_labels of apps that contain a Problem class.
+    """
+    return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
 
 
 class ProblemTag(models.Model):

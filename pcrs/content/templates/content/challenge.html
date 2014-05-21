@@ -1,0 +1,15 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block content %}
+    <div>
+        {{ object.description }}
+    </div>
+    <div class="btn-block">
+        <a role="button" class="btn btn-success pull-right"
+           href="{{ object.get_first_page }}">Go!</a>
+    </div>
+{% endblock %}

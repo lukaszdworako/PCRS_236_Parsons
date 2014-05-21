@@ -1,0 +1,26 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    {{ problem_set.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="well">
+        {{ problem_set.description }}
+    </div>
+
+    {% load filters %}
+    {% regroup object_list by content_type as problem_list %}
+    {% for problem in problem_list %}
+        <h3>{{ problem.grouper.app_label|problem_type_from_label|title }}
+            Problems
+        </h3>
+        <ul>
+        {% for item in problem.list %}
+            <li><a href="{{ item.get_absolute_url }}/submit">
+                {{ item.content_object }}
+            </a></li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+{% endblock %}
