@@ -190,7 +190,7 @@ class SubmissionViewMixin:
         problem = self.get_problem()
         context['problem'] = problem
         context['submissions'] = self.model.get_submission_class().objects\
-            .filter(student=self.request.user).all()
+            .filter(student=self.request.user, problem=problem).all()
         return context
 
     def record_submission(self, request):
