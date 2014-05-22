@@ -76,8 +76,6 @@ function prepareGradingTable() {
     for (var i = 0; i < testcases.length; i++) {
         var current_testcase = testcases[i];
 
-        console.log(current_testcase);
-
         var description = current_testcase.test_desc;
         if (description == ""){
             description = "No Description Provided"

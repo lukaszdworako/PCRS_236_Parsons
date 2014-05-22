@@ -1,17 +1,29 @@
 {% extends "problems/submission.html" %}
+{% load staticfiles %}
+
+{% block scripts %}
+
+    {{ block.super }}
+    <script src="{% static "csrf_protection.js" %}" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        var problem_pk = {{ problem.pk }};
+    </script>
+
+    <script src="{% static "problems_multiple_choice/js/mc_submit.js" %}" type="text/javascript"></script>
+
+{% endblock %}
 
 {% block page_title %}
     Multiple choice question
 {% endblock %}
 
 {% block feedback %}
-    {% if submission.score == problem.option_set.count %}
-        <div class="alert alert-success">
-            Correct!
-        </div>
-    {% elif submission %}
-        <div class="alert alert-danger">
-            Your answer is not entirely incorrect!
-        </div>
-    {% endif %}
+    <div id="correct{{ problem.pk }}" class="alert alert-success">
+        <icon class="glyphicon glyphicon-ok"> Correct! </icon>
+    </div>
+
+    <div id="incorrect{{ problem.pk }}" class="alert alert-danger">
+        <icon class="glyphicon glyphicon-remove"> Your answer is not entirely incorrect! </icon>
+    </div>
 {% endblock %}
