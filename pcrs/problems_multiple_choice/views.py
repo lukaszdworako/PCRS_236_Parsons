@@ -68,8 +68,9 @@ class OptionDeleteView(OptionView, DeleteView):
                        kwargs={'pk': self.kwargs.get('problem')})
 
 
-class SubmissionViewMixin(problems.views.SubmissionViewMixin):
+class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
     model = Submission
+    form_class = SubmissionForm
     template_name = 'problems_multiple_choice/submission.html'
 
     def record_submission(self, request):
@@ -80,10 +81,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin):
         self.submission = self.model.objects.create(
             problem=problem, student=request.user, section=request.user.section)
 
-        form = self.get_form(self.get_form_class())
-
-        form.full_clean()
-        selected_options = form.cleaned_data['options']
+        selected_options = Option.objects.filter(pk__in=request.POST.getlist('options[]', None))
         all_options = problem.option_set.all()
         correct_options = all_options.filter(is_correct=True)
 
@@ -120,10 +118,14 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
     """
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps(results), mimetype='application/json')
+        return HttpResponse(json.dumps({
+            'score': self.submission.score,
+            'max_score': self.get_problem().option_set.all().count()
+        }
+        ), mimetype='application/json')

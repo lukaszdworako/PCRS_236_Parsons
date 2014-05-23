@@ -5,11 +5,12 @@ from problems.views import (ProblemClearView, ProblemListView,
                             ProblemUpdateView)
 
 from problems_multiple_choice.forms import ProblemForm
-from problems_multiple_choice.models import Problem
+from problems_multiple_choice.models import (Problem, Submission) #added by alex
 from problems_multiple_choice.views import (OptionCreateView,
                                             OptionDeleteView, OptionUpdateView,
                                             ProblemCreateAndAddOptView,
-                                            SubmissionView, OptionsCreateView)
+                                            SubmissionView, OptionsCreateView,
+                                            SubmissionAsyncView) #added by alex
 
 
 urlpatterns = patterns('',
@@ -46,4 +47,8 @@ urlpatterns = patterns('',
         name='mc_problem_delete_option'),
     url(r'^(?P<problem>[0-9]+)/submit$', SubmissionView.as_view(),
         name='mc_problem_submit'),
+
+    url(r'^(?P<problem>[0-9]+)/run$',
+        SubmissionAsyncView.as_view(model=Submission),
+        name='mc_problem_async_submit'),
 )
