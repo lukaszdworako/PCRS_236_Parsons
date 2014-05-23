@@ -79,7 +79,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         """
         problem = self.get_problem()
         self.submission = self.model.objects.create(
-            problem=problem, student=request.user, section=request.user.section)
+            problem=problem, user=request.user, section=request.user.section)
 
         selected_options = Option.objects.filter(pk__in=request.POST.getlist('options[]', None))
         all_options = problem.option_set.all()

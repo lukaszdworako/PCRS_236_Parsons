@@ -190,7 +190,7 @@ class SubmissionViewMixin:
         problem = self.get_problem()
         context['problem'] = problem
         context['submissions'] = self.model.get_submission_class().objects\
-            .filter(student=self.request.user, problem=problem).all()
+            .filter(user=self.request.user, problem=problem).all()
         return context
 
     def record_submission(self, request):
@@ -202,7 +202,7 @@ class SubmissionViewMixin:
         results, error = [], None
         if submission_code:
             submission = submission_model.objects.create(
-                student=request.user, problem=self.get_problem(),
+                user=request.user, problem=self.get_problem(),
                 section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             submission.set_score()

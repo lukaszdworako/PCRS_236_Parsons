@@ -1,6 +1,7 @@
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count, F
 from django.utils import timezone
 from content.models import AbstractTaggedObject
 
@@ -46,16 +47,16 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
-    def best_per_student_before_time(self, deadline=timezone.now()):
+    def best_per_user_before_time(self, deadline=timezone.now()):
         """
-        Return a list of dictionaries of the form {student_id: , score:)
-        representing the best submissions for every student who submitted a
+        Return a list of dictionaries of the form {user_id: , score:)
+        representing the best submissions for every user who submitted a
         solution to this problem BEFORE deadline.
 
         Used for generating CSV reports and problem analysis.
         """
         return self.submission_set.filter(timestamp__lt=deadline)\
-            .values('student_id').annotate(score=Max('score')).order_by()
+            .values('user_id').annotate(score=Max('score')).order_by()
 
     def clear_submissions(self):
         """
@@ -105,11 +106,11 @@ class AbstractSubmission(AbstractSelfAwareModel):
     """
     Base submission class.
 
-    Submission is associated with a student and a problem, and optionally
+    Submission is associated with a user and a problem, and optionally
     a section, and has a score, usually out of the total number of testcases
     that the associated problem has.
     """
-    student = models.ForeignKey(PCRSUser, to_field='username',
+    user = models.ForeignKey(PCRSUser, to_field='username',
                                 on_delete=models.CASCADE,
                                 related_name='%(app_label)s_%(class)s_related')
     section = models.ForeignKey(Section, blank=True,  null=True,
@@ -124,15 +125,15 @@ class AbstractSubmission(AbstractSelfAwareModel):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return '{problem} by {student} on {time}'.format(
-            problem=self.problem, student=self.student.username,
+        return '{problem} by {user} on {time}'.format(
+            problem=self.problem, user=self.user.username,
             time=self.timestamp)
 
     def set_score(self):
         """
         Set the score of this submission to the number of testcases that
         the submission passed.
-        Create a record of the student completing the problem if the score on
+        Create a record of the user completing the problem if the score on
         the submission is the highest score possible on the problem.
         """
         self.score = self.testrun_set.filter(test_passed=True).count()
@@ -145,7 +146,7 @@ class AbstractSubmission(AbstractSelfAwareModel):
             if not CompletedProblem.objects.filter(content_type=problem_type.id,
                                                    object_id=self.problem.pk):
                 CompletedProblem(content_object=self.problem,
-                                 user=self.student).save()
+                                 user=self.user).save()
 
 
 class AbstractTestCase(AbstractSelfAwareModel):

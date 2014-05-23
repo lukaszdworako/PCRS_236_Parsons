@@ -147,7 +147,7 @@ class TestCodingProblemUpdateViewWithSubmissions(TestCodingProblemUpdateView):
     def setUp(self):
         TestCodingProblemUpdateView.setUp(self)
         Submission.objects.create(problem=self.object,
-            student=self.student, section=self.section, score=0)
+            user=self.student, section=self.section, score=0)
         self.assertTrue(self.object.submission_set.exists())
 
 
@@ -166,7 +166,7 @@ class TestCodingProblemClearView(CourseStaffViewTestMixin, test.TestCase):
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
-            student=self.student, section=self.section, score=0)
+            user=self.student, section=self.section, score=0)
         self.assertTrue(self.object.submission_set.exists())
 
     def test_clear(self):
@@ -192,7 +192,7 @@ class TestCodingProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
-            student=self.student, section=self.section, score=0)
+            user=self.student, section=self.section, score=0)
         self.assertTrue(self.object.submission_set.exists())
 
     def test_delete_no_testcases(self):
@@ -319,7 +319,7 @@ class TestCodingProblemAddTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
 
         CourseStaffViewTestMixin.setUp(self)
         Submission.objects.create(problem=self.problem,
-            student=self.student, section=self.section, score=0)
+            user=self.student, section=self.section, score=0)
         self.assertTrue(self.problem.submission_set.exists())
 
     def test_add(self):
@@ -480,7 +480,7 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
 
         CourseStaffViewTestMixin.setUp(self)
         Submission.objects.create(problem=self.problem,
-            student=self.student, section=self.section, score=0)
+            user=self.student, section=self.section, score=0)
         self.assertTrue(self.problem.submission_set.exists())
 
     def test_edit_description_visibility(self):
@@ -618,7 +618,7 @@ class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
         self.assertFalse(TestRun.objects.filter(testcase_id=1).exists())
 
     def test_delete_with_submissions(self):
-        Submission.objects.create(problem=self.problem, student=self.student,
+        Submission.objects.create(problem=self.problem, user=self.student,
                                   section=self.section, score=0)
 
         response = self.client.post(self.url, {})
@@ -648,7 +648,7 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'submission': 'my awesome submission',
-            'student': self.student
+            'user': self.student
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -668,7 +668,7 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'submission': 'my awesome submission',
-            'student': self.student,
+            'user': self.student,
             'section': self.section.pk
         }
         response = self.client.post(self.url, post_data)
@@ -709,7 +709,7 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'submission': code,
-            'student': self.student.username
+            'user': self.student.username
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -739,7 +739,7 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
                                           expected_output='42')
         self.t2 = TestCase.objects.create(pk=2, problem=self.problem,
                                           test_input='2+2', expected_output='4')
-        self.submission = Submission(section=self.section, student=self.student,
+        self.submission = Submission(section=self.section, user=self.student,
                                      submission='sub', problem=self.problem,
                                      score=1, pk=1)
         self.submission.save()

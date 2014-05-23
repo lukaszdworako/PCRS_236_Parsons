@@ -1,35 +1,40 @@
 {% load filters %}
+{% load feedback %}
 
 {% with template='content/containers.html' %}
-    {% for container in object_list %}
-        <div class="container-title">
-            <h4>{{ container.name }}
+    {% for ordered_container in object_list %}
+        {% with container=ordered_container.child_content_object %}
+            <div class="container-title">
+                <h4>{{ container.name }}
                 <span class="pull-right">
-                    {{ container.due_on|default_if_none:""  }}
+                    {{ container.due_on|default_if_none:"" }}
                 </span>
-            </h4>
-        </div>
+                </h4>
+            </div>
 
-        {% with children=container.get_children_containers %}
-            {% if children %}
-                <div class="well">
-                    {% with object_list=children %}
-                        {% include template %}
-                    {% endwith %}
-                </div>
-            {% endif %}
+            {% with children=container.children.all %}
+                {% if children %}
+                    <div class="well">
+                        {% with object_list=children %}
+                            {{ object_list }}
+{#                            {% include template %}#}
+                        {% endwith %}
+                    </div>
+                {% endif %}
+            {% endwith %}
         {% endwith %}
 
-        <ol>
-            {% for challenge in container.get_children_challenges %}
-                <li>
-                    <a href="{{ challenge.get_main_page }}">{{ challenge.name }}</a>
 
-                    {% with scores=challenges|get_item:challenge.pk %}
-                        {{ scores.0 }}/{{ scores.1 }}
-                   {% endwith %}
-                </li>
-            {% endfor %}
-        </ol>
+{#        <ol>#}
+{#            {% for challenge in container.get_children_challenges %}#}
+{#                <li>#}
+{#                    <a href="{{ challenge.get_main_page }}">{{ challenge.name }}</a>#}
+{##}
+{#                    {% with scores=challenges|get_item:challenge.pk %}#}
+{#                        {{ scores.0 }}/{{ scores.1 }}#}
+{#                    {% endwith %}#}
+{#                </li>#}
+{#            {% endfor %}#}
+{#        </ol>#}
     {% endfor %}
 {% endwith %}
