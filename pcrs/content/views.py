@@ -7,7 +7,7 @@ from django.views.generic import UpdateView, ListView, CreateView, \
 
 from content.forms import ChallengeForm
 from content.models import Challenge, ContentPage, Container, \
-    OrderedContainerItem
+    OrderedContainerItem, ContentSequenceItem
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView
 from problems.models import CompletedProblem
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -61,7 +61,8 @@ class ContentPageView(ProtectedViewMixin, ListView):
                                  challenge_id=self.kwargs.get('challenge', None))
 
     def get_queryset(self):
-        return self.get_page().contentsequenceitem_set.all()
+        return ContentSequenceItem.objects.filter(content_page=self.get_page())\
+            .prefetch_related('content_object').all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

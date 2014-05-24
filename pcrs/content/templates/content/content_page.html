@@ -1,7 +1,7 @@
 {% extends "pcrs/base.html" %}
 
 {% block page_title %}
-    {{ content_page.challenge.name }} - Part {{ content_page.order }}
+    {{ object.challenge.name }} - Part {{ object.order }}
 {% endblock %}
 
 {% load filters %}
@@ -11,6 +11,8 @@
     {% for object in object_list %}
         {% with item=object.content_object %}
             {% if item|classname|lower == "textblock" %}
+                {% include "content/textblock.html" %}
+            {% elif item|classname|lower == "video" %}
                 {% include "content/textblock.html" %}
             {% elif item|classname|lower == "problem" %}
                 <div id="{{ item|problem_type }}-{{ item.pk }}">
