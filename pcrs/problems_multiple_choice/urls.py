@@ -10,6 +10,7 @@ from problems_multiple_choice.models import (Problem, Submission) #added by alex
 from problems_multiple_choice.views import (OptionCreateView,
                                             OptionDeleteView, OptionUpdateView,
                                             ProblemCreateAndAddOptView,
+                                            ProblemCloneView,
                                             SubmissionView, OptionsCreateView,
                                             SubmissionAsyncView) #added by alex
 
@@ -20,8 +21,8 @@ urlpatterns = patterns('',
     url(r'^create$',
         ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_create'),
-    url(r'^clone$',
-        ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
+    url(r'^(?P<pk>[0-9])/clone$',
+        ProblemCloneView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_clone'),
     url(r'^create_and_add_option$',
         ProblemCreateAndAddOptView.as_view(model=Problem, form_class=ProblemForm),

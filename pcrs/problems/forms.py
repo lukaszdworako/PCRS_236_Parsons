@@ -17,20 +17,24 @@ class BaseProblemForm(CrispyFormMixin):
     save_and_add = Submit('submit', 'Save and add testcases',
                            css_class='btn-success pull-right',
                            formaction='create_and_add_testcase')
-    clone = Submit('clone', 'Clone',
-                   css_class='btn-success',
-                   formaction='clone')
 
     buttons = None
 
     def __init__(self, *args, **kwargs):
         if self.instance.pk:
+            clone = Submit('clone', 'Clone', css_class='btn-success',
+                           formaction='{}/clone'.format(
+                               self.instance.get_absolute_url()))
             self.buttons = (Div(CrispyFormMixin.delete_button,
                                 self.clear_button,
                                 css_class='btn-group'),
-                            Div(self.clone, self.save_button,
+                            Div(clone, self.save_button,
                                 css_class='btn-group pull-right'))
+        elif self.instance:
+            # cloning
+            self.buttons = self.save_button,
         else:
+            # creating a new one
             self.buttons = self.save_and_add,
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),

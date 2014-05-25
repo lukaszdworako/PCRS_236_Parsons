@@ -37,11 +37,18 @@ class Schema(AbstractSelfAwareModel):
         """
         return _get_db()
 
+    @classmethod
+    def get_base_url(cls):
+        """
+        Return the url for a schema.
+        """
+        return '/problems/rdb/schema'
+
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return '/problems/rdb/schema/{pk}'.format(pk=self.pk)
+        return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
     def clean_fields(self, exclude=None):
         """

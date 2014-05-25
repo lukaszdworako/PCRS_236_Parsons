@@ -50,16 +50,21 @@ class ProblemCreateView(CourseStaffViewMixin, ProblemView,
 
 class ProblemCloneView(ProblemCreateView):
     """
-    Create a new problem.
+    Clone an existing problem, with its testcases.
     """
-    template_name = 'problems/problem_form.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.get_object()
+        return context
 
-    def get_initial(self):
-        return self.get_object()
-
-    def get(self, request, *args, **kwargs):
-        form = self.get_form(self.get_form_class())
-        return redirect(self.get_context_data(form=form))
+    def form_valid(self, form):
+        new_problem = form.save()
+        # copy the testcases
+        for testcase in self.get_object().testcase_set.all():
+            testcase.pk = None
+            testcase.problem = new_problem
+            testcase.save(force_insert=True)
+        return redirect(new_problem.get_absolute_url())
 
 
 class ProblemCreateAndAddTCView(ProblemCreateView):

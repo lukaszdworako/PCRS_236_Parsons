@@ -1,6 +1,7 @@
 import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.views.generic import CreateView, UpdateView, DeleteView, FormView, \
     View
 from django.views.generic.detail import SingleObjectMixin
@@ -12,6 +13,21 @@ from problems_multiple_choice.forms import SubmissionForm, OptionForm
 from problems_multiple_choice.models import (Problem, Option, OptionSelection,
                                              Submission)
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
+
+
+class ProblemCloneView(CourseStaffViewMixin, CreateView):
+    """
+    Clone an existing problem, with its options.
+    """
+
+    def form_valid(self, form):
+        new_problem = form.save()
+        # copy the testcases
+        for option in self.get_object().option_set.all():
+            option.pk = None
+            option.problem = new_problem
+            option.save(force_insert=True)
+        return redirect(new_problem.get_absolute_url())
 
 
 class ProblemCreateAndAddOptView(CourseStaffViewMixin, CreateView):
