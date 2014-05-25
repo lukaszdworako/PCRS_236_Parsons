@@ -1,9 +1,11 @@
 from crispy_forms.bootstrap import StrictButton
 from crispy_forms.layout import Submit, HTML, ButtonHolder, Div, Layout, \
-    Fieldset
+    Fieldset, Button
 from django import forms
+from django.utils.timezone import now
 
 from pcrs.form_mixins import CrispyFormMixin
+from users.models import Section
 
 
 class BaseProblemForm(CrispyFormMixin):
@@ -62,3 +64,15 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right')
         )
+
+
+class MonitoringForm(CrispyFormMixin, forms.Form):
+    time = forms.DateTimeField(initial=now())
+    section = forms.ModelChoiceField(queryset=Section.objects.all())
+    final = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        go = Button('Go', value='Go', css_class='btn-success')
+        super().__init__(*args, **kwargs)
+        self.helper.layout = Layout(Fieldset('', 'time', 'section', 'final',
+                                    ButtonHolder(go)))

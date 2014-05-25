@@ -79,9 +79,10 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         """
         problem = self.get_problem()
         self.submission = self.model.objects.create(
-            problem=problem, user=request.user, section=request.user.section)
+            problem=problem, user=request.user, section=self.get_section())
 
-        selected_options = Option.objects.filter(pk__in=request.POST.getlist('options[]', None))
+        selected_options = Option.objects.filter(
+            pk__in=request.POST.getlist('options', None))
         all_options = problem.option_set.all()
         correct_options = all_options.filter(is_correct=True)
 
@@ -91,10 +92,9 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
                        option in selected_options) or \
                       (not option in correct_options and
                        not option in selected_options)
-            self.submission.score += int(correct)
             OptionSelection(submission=self.submission, option=option,
                             is_correct=correct, was_selected=selected).save()
-        self.submission.save()
+        self.submission.set_score()
         return []
 
 

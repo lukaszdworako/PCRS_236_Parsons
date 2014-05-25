@@ -2,7 +2,8 @@ from django.conf.urls import patterns, url
 
 from problems.views import (ProblemClearView, ProblemListView,
                             ProblemDeleteView, ProblemCreateView,
-                            ProblemUpdateView)
+                            ProblemUpdateView, MonitoringView,
+                            MonitoringAsyncView)
 
 from problems_multiple_choice.forms import ProblemForm
 from problems_multiple_choice.models import (Problem, Submission) #added by alex
@@ -51,4 +52,13 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='mc_problem_async_submit'),
+
+    # monitoring
+    url(r'^(?P<pk>[0-9]+)/monitor$',
+        MonitoringView.as_view(model=Problem,
+            template_name='problems_multiple_choice/monitor.html'),
+        name='mc_problem_monitor'),
+    url(r'^(?P<pk>[0-9]+)/monitor_data$',
+        MonitoringAsyncView.as_view(model=Problem),
+        name='mc_problem_get_monitor_data'),
 )

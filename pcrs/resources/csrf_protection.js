@@ -1,5 +1,6 @@
 var csrftoken = getCookie('csrftoken');
 
+    jQuery.ajaxSettings.traditional = true;
 
     function getCookie(name) {
         var cookieValue = null;

@@ -6,7 +6,8 @@ from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
-from problems.forms import ProgrammingSubmissionForm
+from problems.forms import ProgrammingSubmissionForm, MonitoringForm
+from users.models import Section
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -236,4 +237,32 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
+        return HttpResponse(json.dumps(results), mimetype='application/json')
+
+
+class MonitoringView(CourseStaffViewMixin, SingleObjectMixin, FormView):
+    """
+    Create a submission for a problem.
+    """
+    form_class = MonitoringForm
+    template_name = 'problems/monitor.html'
+    object = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.get_object()
+        return context
+
+
+class MonitoringAsyncView(MonitoringView):
+    """
+    Return a JSON-encoded object summarizing the number of correct and incorrect
+    submission made to this problem.
+    """
+    def post(self, request, *args, **kwargs):
+        form = self.get_form(self.get_form_class())
+        form.full_clean()
+        section, time = form.cleaned_data['section'], form.cleaned_data['time']
+        problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
+        results = problem.get_monitoring_data(section, time)
         return HttpResponse(json.dumps(results), mimetype='application/json')

@@ -679,6 +679,7 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         submission = Submission.objects.all()[0]
         self.assertEqual('my awesome submission', submission.submission)
         self.assertEqual(0, submission.score)
+        self.assertTrue(submission.has_best_score)
 
         self.assertEqual(1, TestRun.objects.count())
         testrun = TestRun.objects.all()[0]
@@ -691,11 +692,13 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
 
         self.assertEqual(2, Submission.objects.count())
-        submission1, submission2 = Submission.objects.all()
+        submission2, submission1 = Submission.objects.all()
         self.assertEqual('my awesome submission', submission1.submission)
         self.assertEqual(0, submission1.score)
         self.assertEqual('my awesome submission', submission2.submission)
         self.assertEqual(0, submission2.score)
+        # self.assertFalse(submission1.has_best_score)
+        self.assertTrue(submission2.has_best_score)
 
         self.assertEqual(2, TestRun.objects.count())
         testrun1, testrun2 = TestRun.objects.all()
@@ -705,6 +708,24 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertFalse(testrun2.test_passed)
 
     def test_add_valid_python(self):
+        post_data = {
+            'problem': '1',
+            'submission': 'submission',
+            'user': self.student,
+            'section': self.section.pk
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        self.assertEqual(1, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual('submission', submission.submission)
+        self.assertEqual(0, submission.score)
+        self.assertTrue(submission.has_best_score)
+
+        # and submit again with bteeter score
+
         code = 'def foo(val):\n    return val'
         post_data = {
             'problem': '1',
@@ -715,13 +736,17 @@ class TestCodingProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(self.template)
 
-        self.assertEqual(1, Submission.objects.count())
-        submission = Submission.objects.all()[0]
-        self.assertEqual(code, submission.submission)
-        self.assertEqual(1, submission.score)
+        self.assertEqual(2, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission='submission')[0]
+        submission2 = Submission.objects\
+                      .filter(submission='def foo(val):\n    return val')[0]
+        self.assertEqual(code, submission2.submission)
+        self.assertEqual(1, submission2.score)
+        self.assertFalse(submission1.has_best_score)
+        self.assertTrue(submission2.has_best_score)
 
-        self.assertEqual(1, TestRun.objects.count())
-        testrun = TestRun.objects.all()[0]
+        self.assertEqual(2, TestRun.objects.count())
+        testrun = TestRun.objects.filter(submission=submission2)[0]
         self.assertEqual(1, testrun.testcase.pk)
         self.assertTrue(testrun.test_passed)
 
@@ -763,6 +788,9 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
 
 
 class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
+    """
+    Test problem grading method.
+    """
     problem_class = Problem
     submission_class = Submission
 
@@ -771,4 +799,93 @@ class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
         self.problem = self.problem_class.objects.create(pk=1, name='Problem1',
                                                          visibility='open')
         self.problem2 = self.problem_class.objects.create(pk=2, name='Problem2',
-                                                          visibility='opne')
+                                                          visibility='open')
+
+
+class TestBestSubmission(UsersMixin, test.TestCase):
+    """
+    Test updating best submission per student.
+
+    Note: submissions are sorted in descending order by timestamp.
+    """
+    def setUp(self):
+        super().setUp()
+        self.problem = Problem.objects.create(pk=1, name='Problem1',
+                                              visibility='open')
+
+    def test_single_submission(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=0)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+    def test_new_better_submission(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=0)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+        s2 = Submission.objects.create(user=self.student, section=self.section,
+                                       problem=self.problem, score=2)
+        s2.set_best_submission()
+        s2, s1 = Submission.objects.all()
+        self.assertFalse(s1.has_best_score)
+        self.assertTrue(s2.has_best_score)
+
+    def test_new_worse_submission(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=2)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+        s2 = Submission.objects.create(user=self.student, section=self.section,
+                                       problem=self.problem, score=0)
+        s2.set_best_submission()
+        s2, s1 = Submission.objects.all()
+        self.assertTrue(s1.has_best_score)
+        self.assertFalse(s2.has_best_score)
+
+    def test_new_same_score_submission(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=2)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+        s2 = Submission.objects.create(user=self.student, section=self.section,
+                                       problem=self.problem, score=2)
+        s2.set_best_submission()
+        s2, s1 = Submission.objects.all()
+        self.assertFalse(s1.has_best_score)
+        self.assertTrue(s2.has_best_score)
+
+    def test_same_score_different_user(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=2)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+        s2 = Submission.objects.create(user=self.ta, section=self.section,
+                                       problem=self.problem, score=2)
+        s2.set_best_submission()
+        s2, s1 = Submission.objects.all()
+        self.assertTrue(s1.has_best_score)
+        self.assertTrue(s2.has_best_score)
+
+    def test_new_submission_for_user(self):
+        s = Submission.objects.create(user=self.student, section=self.section,
+                                      problem=self.problem, score=0)
+        s.set_best_submission()
+        self.assertTrue(s.has_best_score)
+
+        s2 = Submission.objects.create(user=self.ta, section=self.section,
+                                       problem=self.problem, score=2)
+        s2.set_best_submission()
+
+        s3 = Submission.objects.create(user=self.ta, section=self.section,
+                                       problem=self.problem, score=3)
+        s3.set_best_submission()
+
+        s3, s2, s1 = Submission.objects.all()
+        self.assertTrue(s1.has_best_score)
+        self.assertFalse(s2.has_best_score)
+        self.assertTrue(s3.has_best_score)
