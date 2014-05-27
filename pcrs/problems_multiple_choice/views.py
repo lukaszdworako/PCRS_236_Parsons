@@ -1,6 +1,7 @@
 import json
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.views.generic import CreateView, UpdateView, DeleteView, FormView, \
     View
 from django.views.generic.detail import SingleObjectMixin
@@ -12,6 +13,21 @@ from problems_multiple_choice.forms import SubmissionForm, OptionForm
 from problems_multiple_choice.models import (Problem, Option, OptionSelection,
                                              Submission)
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
+
+
+class ProblemCloneView(CourseStaffViewMixin, CreateView):
+    """
+    Clone an existing problem, with its options.
+    """
+
+    def form_valid(self, form):
+        new_problem = form.save()
+        # copy the testcases
+        for option in self.get_object().option_set.all():
+            option.pk = None
+            option.problem = new_problem
+            option.save(force_insert=True)
+        return redirect(new_problem.get_absolute_url())
 
 
 class ProblemCreateAndAddOptView(CourseStaffViewMixin, CreateView):
@@ -68,8 +84,9 @@ class OptionDeleteView(OptionView, DeleteView):
                        kwargs={'pk': self.kwargs.get('problem')})
 
 
-class SubmissionViewMixin(problems.views.SubmissionViewMixin):
+class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
     model = Submission
+    form_class = SubmissionForm
     template_name = 'problems_multiple_choice/submission.html'
 
     def record_submission(self, request):
@@ -78,12 +95,10 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin):
         """
         problem = self.get_problem()
         self.submission = self.model.objects.create(
-            problem=problem, student=request.user, section=request.user.section)
+            problem=problem, user=request.user, section=self.get_section())
 
-        form = self.get_form(self.get_form_class())
-
-        form.full_clean()
-        selected_options = form.cleaned_data['options']
+        selected_options = Option.objects.filter(
+            pk__in=request.POST.getlist('options', None))
         all_options = problem.option_set.all()
         correct_options = all_options.filter(is_correct=True)
 
@@ -93,10 +108,9 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin):
                        option in selected_options) or \
                       (not option in correct_options and
                        not option in selected_options)
-            self.submission.score += int(correct)
             OptionSelection(submission=self.submission, option=option,
                             is_correct=correct, was_selected=selected).save()
-        self.submission.save()
+        self.submission.set_score()
         return []
 
 
@@ -120,10 +134,14 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
     """
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps(results), mimetype='application/json')
+        return HttpResponse(json.dumps({
+            'score': self.submission.score,
+            'max_score': self.get_problem().option_set.all().count()
+        }
+        ), mimetype='application/json')

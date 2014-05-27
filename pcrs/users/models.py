@@ -188,7 +188,7 @@ class PCRSUser(CustomAbstractBaseUser):
 class Section(models.Model):
     """
     Section has an id, location, lecture time, and optional description.
-    A student is enrolled in one section.
+    A user is enrolled in one section.
     Instructors teach one or more sections.
     """
     section_id = models.CharField("section id", primary_key=True, max_length=10)

@@ -2,6 +2,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 
 from pyparsing import (CaselessKeyword, OneOrMore, Suppress, Word, ZeroOrMore,
                        alphanums, nums, originalTextFor,
@@ -10,8 +11,35 @@ from pyparsing import (CaselessKeyword, OneOrMore, Suppress, Word, ZeroOrMore,
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractOrderedGenericObjectSequence,
                          AbstractSelfAwareModel)
-from users.models import AbstractLimitedVisibilityObject
+from users.models import AbstractLimitedVisibilityObject, PCRSUser
 
+
+# TAGS
+class Tag(models.Model):
+    """
+    An object tag.
+    """
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class AbstractTaggedObject(models.Model):
+    """
+    An object that may have any number of tags.
+    """
+    tags = models.ManyToManyField(Tag, null=True, blank=True,
+                                  related_name='%(app_label)s_%(class)s_related')
+
+    class Meta:
+        abstract = True
+
+
+# CONTENT OBJECTS
 
 class Video(AbstractNamedObject):
     """
@@ -27,16 +55,155 @@ class TextBlock(models.Model):
     text = models.TextField()
 
 
-class ContentProblem(AbstractGenericObjectForeignKey):
+# PROBLEM CONTAINERS
+class GradableObjectContainer(AbstractSelfAwareModel, AbstractNamedObject,
+                              AbstractLimitedVisibilityObject):
+    GRADE_MODES = (('attempt', 'Attempt ALL'), ('complete', 'Complete ALL'))
+    grade_mode = models.CharField(max_length=10, choices=GRADE_MODES,
+                                  blank=True)
+
+    @property
+    def gradable_item_set(self):
+        raise NotImplementedError('Must be implemented by subclasses.')
+
+    class Meta:
+        abstract = True
+        ordering = ['ordered__order']
+
+    def was_completed(self, user):
+        """
+        Return True iff the user completed all complete-able objects based on
+        the definition of completion.
+        """
+        if self.grade_mode == 'complete':
+            return self._was_completed(self, user)
+        elif self.grade_mode == 'attempt':
+            return self._was_attmepted(self, user)
+        else:
+            return True
+
+    def _was_completed(self, user):
+        sequence_items = self.gradable_item_set.all()
+        return all(item.content_object.was_completed(user)
+                   for item in sequence_items)
+
+    def _was_attempted(self, user):
+        sequence_items = self.gradable_item_set.all()
+        return all(item.content_object.was_attempted(user)
+                   for item in sequence_items)
+
+    # def get_number_completed(self, user):
+    #     """
+    #     Return the number of complete-able objects that the user has completed
+    #     based on the definition of completion.
+    #     """
+    #     sequence_items = self.gradable_item_set.all()
+    #     if self.grade_mode == 'complete':
+    #         return sum([int(item.content_object.was_completed(user))
+    #                     for item in sequence_items])
+    #     elif self.grade_mode == 'attempt':
+    #         return sum([int(item.content_object.was_attempted(user))
+    #                     for item in sequence_items])
+    #     else:
+    #         return None
+    def get_number_completed(self, user):
+        """
+        Return the number of complete-able objects that the user has completed
+        based on the definition of completion.
+        """
+        problems = self.get_problem_set()
+        if self.grade_mode == 'complete':
+            return sum(ct.model_class().get_number_attempted(user)
+                       for ct in ContentType.objects.filter(model='problem'))
+        elif self.grade_mode == 'attempt':
+            return sum(ct.model_class().get_number_attempted(user)
+                       for ct in ContentType.objects.filter(model='problem'))
+        else:
+            return None
+
+
+class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
+    """
+    A content objects to be displayed on some page.
+    """
+    objects = (models.Q(model='problem') |
+               models.Q(model='video') | models.Q(model='textblock'))
+
+    content_page = models.ForeignKey('ContentPage')
+
+    def __str__(self):
+        return 'challenge: {0}; content_type: {1}, id:{2}'\
+            .format(self.content_page.pk, self.content_type, self.object_id)
+
+
+class ContentPage(models.Model):
+    """
+    A page displaying a sequence of ContentSequenceItems.
+    """
+    challenge = models.ForeignKey('Challenge')
+    order = models.SmallIntegerField()
+
+    @property
+    def gradable_item_set(self):
+        # only include Problems as gradable objects
+        return self.contentsequenceitem_set
+
+    def __str__(self):
+        return '{name}: page {order}'.format(name=self.challenge.name,
+                                             order=self.order)
+
+    def next(self):
+        try:
+            return ContentPage.objects.get(challenge=self.challenge,
+                                           order=self.order+1)
+        except ContentPage.DoesNotExist:
+            return None
+
+    def previous(self):
+        if self.order == 0:
+            return None
+        else:
+            return ContentPage.objects.get(challenge=self.challenge,
+                                           order=self.order-1)
+
+
+# problem sets
+class ProblemSetProblem(AbstractGenericObjectForeignKey):
+    problem_set = models.ForeignKey('ProblemSet')
     objects = models.Q(model='problem')
-    is_graded = models.BooleanField()
-
-    def is_completed(self, user):
-        pass
 
 
-class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
-                AbstractNamedObject):
+class ProblemSet(GradableObjectContainer):
+    ordered = generic.GenericRelation('OrderedContainerItem',
+                               content_type_field='child_content_type',
+                               object_id_field='child_object_id',
+                               related_name='problemset')
+
+    @property
+    def gradable_item_set(self):
+        return self.problemsetproblem_set
+
+    def get_absolute_url(self):
+        return '/content/problem_set/{}'.format(self.pk)
+
+    def get_main_page(self):
+        return '{}/list'.format(self.get_absolute_url())
+
+    def get_problems_for_type(self, app_label):
+        content_type = ContentType.objects.get(app_label=app_label,
+                                               model='problem')
+        return ProblemSetProblem.objects.filter(problem_set=self,
+                                                content_type=content_type)
+
+    def get_problem_set(self):
+        return {
+            (item.app_label, item.object_id)
+            for item in self.gradable_item_set.all()
+        }
+
+
+# challenges
+class Challenge(GradableObjectContainer):
     """
     A Challenge is a sequence of ContentPages, which are defined in markup.
     """
@@ -44,12 +211,10 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     ordered = generic.GenericRelation('OrderedContainerItem',
                                content_type_field='child_content_type',
-                               object_id_field='child_object_id', related_name='challenges')
+                               object_id_field='child_object_id',
+                               related_name='challenges')
 
     pages = None
-
-    class Meta:
-        ordering = ['ordered__order']
 
     def get_absolute_url(self):
         return '/content/challenge/{}'.format(self.pk)
@@ -60,20 +225,16 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_main_page(self):
         return '{}/go'.format(self.get_absolute_url())
 
-    def get_all_problems(self):
-        pages = self.contentpage_set.all()
-        problem_type = ContentType.objects.filter(model='contentproblem')
-        problems = [problem.content_object.content_object
-                    for page in pages
-                    for problem in page.contentsequenceitem_set.all()
-                                       .filter(content_type__in=problem_type)]
-        return problems
+    def get_problem_set(self):
+        problems = ContentType.objects.filter(model='problem')
+        x= {
+            (item.app_label, item.object_id)
+            for page in self.contentpage_set.all()
+            for item in page.gradable_item_set.filter(content_type__in=problems)
+        }
+        print(x)
+        return x
 
-    def get_required(self):
-        pass
-
-    def get_optional(self):
-        pass
 
     def parse(self):
         def parameter(parser):
@@ -82,15 +243,15 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
             """
             return Suppress('_{').leaveWhitespace() + parser + Suppress('}')
 
-        def create_content_problem(start, location, tokens):
-            app_label = 'problems_{}'.format(tokens.type)
-            problem_content_type = ContentType.objects.get(app_label=app_label,
-                                                           model='problem')
-            problem_object = problem_content_type.\
-                get_object_for_this_type(pk=tokens.pk)
-            is_graded = (tokens[0] == '\summative')
-            return ContentProblem.objects.create(content_object=problem_object,
-                                                 is_graded=is_graded)
+        # def create_content_problem(start, location, tokens):
+        #     app_label = 'problems_{}'.format(tokens.type)
+        #     problem_content_type = ContentType.objects.get(app_label=app_label,
+        #                                                    model='problem')
+        #     problem_object = problem_content_type.\
+        #         get_object_for_this_type(pk=tokens.pk)
+        #     is_graded = (tokens[0] == '\summative')
+        #     return ContentProblem.objects.create(content_object=problem_object,
+        #                                          is_graded=is_graded)
 
         def create_text_block(tokens):
             return TextBlock.objects.create(text=tokens[0])
@@ -100,8 +261,8 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         problem_type = (Literal('code') | Literal('multiple_choice'))('type')
         p_kw = (CaselessKeyword('\\summative', identChars=alphanums) |
                 CaselessKeyword('\\formative', identChars=alphanums))
-        problem = (p_kw +
-                   parameter(problem_type + pk)).setParseAction(create_content_problem)
+        # problem = (p_kw +
+        #            parameter(problem_type + pk)).setParseAction(create_content_problem)
 
         video = (CaselessKeyword('\\video', identChars=alphanums) +
                  parameter(pk)).setParseAction(lambda s, l, t: (t.pk))
@@ -109,7 +270,7 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         text = originalTextFor(OneOrMore(Word(alphanums))).addParseAction(
             create_text_block)
 
-        content = Group(ZeroOrMore(problem | video | text))('content')
+        content = Group(ZeroOrMore(text))('content')
 
         page = Suppress(CaselessKeyword('\\page'))
         page_end = Suppress(CaselessKeyword('\\end'))
@@ -145,110 +306,86 @@ class Challenge(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                                                    order=object_order)
 
 
-    # def get_grade_report(self):
-    #     # get problems
-    #     objects = self.contentsequence_set.filter(
-    #         content_type__model='contentproblem')
-    #     for o in objects:
-    #         problem = o.content_object.content_object
-    #         if problem.is_graded:
-    #             print(problem.best_per_student_before_time())
-    #             pass
+    def get_grade_report(self):
+        # get problems
+        objects = self.contentsequence_set.filter(
+            content_type__model='contentproblem')
+        for o in objects:
+            problem = o.content_object.content_object
+            if problem.is_graded:
+                print(problem.best_per_user_before_time())
+                pass
 
 
-class ContentPage(models.Model):
-    challenge = models.ForeignKey(Challenge)
-    order = models.SmallIntegerField()
+# CONTAINERS
 
-    def __str__(self):
-        return '{name}:{order}'.format(name=self.challenge.name,
-                                       order=self.order)
-
-    def next(self):
-        try:
-            return ContentPage.objects.get(challenge=self.challenge,
-                                           order=self.order+1)
-        except ContentPage.DoesNotExist:
-            return None
-
-    def previous(self):
-        if self.order == 0:
-            return None
-        else:
-            return ContentPage.objects.get(challenge=self.challenge,
-                                           order=self.order-1)
-
-
-class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
+class Container(AbstractLimitedVisibilityObject, AbstractNamedObject,
+                AbstractSelfAwareModel):
     """
-    A content objects to be displayed on some page.
-    """
-    objects = (models.Q(model='contentproblem') |
-               models.Q(model='video') | models.Q(model='textblock'))
-
-    content_page = models.ForeignKey(ContentPage)
-
-    def __str__(self):
-        return 'challenge: {0}; content_type: {1}, id:{2}'\
-            .format(self.content_page.pk, self.content_type, self.object_id)
-
-
-class Container(AbstractLimitedVisibilityObject, AbstractNamedObject):
-    """
-    A container of Containers or Challenges.
+    An ordered collection of Containers or ProblemContainers.
     """
     open_on = models.DateTimeField(blank=True, null=True)
     due_on = models.DateTimeField(blank=True, null=True)
     prerequisites = models.ManyToManyField('self', symmetrical=False,
                                            blank=True, null=True)
-    parents = generic.GenericRelation('OrderedContainerItem',
+
+    ordered = generic.GenericRelation('OrderedContainerItem',
                                content_type_field='child_content_type',
-                               object_id_field='child_object_id', related_name='parents')
+                               object_id_field='child_object_id',
+                               related_name='containers')
 
     children = generic.GenericRelation('OrderedContainerItem',
                                content_type_field='parent_content_type',
-                               object_id_field='parent_object_id', related_name='children')
+                               object_id_field='parent_object_id',
+                               related_name='children')
 
-    # def get_challenges(self):
-    #     challenge_pks = OrderedContainerItem.objects\
-    #         .filter(parent_object_id=self.pk)\
-    #         .filter(child_content_type=models.Q(model='challenge'))\
-    #         .values_list('child_object_id', flat=True)
-    #     return Container.objects.filter(pk__in=set(challenge_pks))
+    @classmethod
+    def get_root_containers(cls, queryset):
+        """
+        Return the Containers that have no parents.
+        """
+        # get ids of the Containers that are children
+        # children_containers_pks = queryset\
+        #     .filter(child_content_type=cls.get_content_type())\
+        #     .values_list('child_object_id', flat=True)
+        # include only top-level containers, i.e. those that have no parent
+        return OrderedContainerItem.objects.filter(parent_object_id__isnull=True)
 
-    def _get_children_container_pks(self):
-        container_type = ContentType.objects.get_for_model(self)
+    def get_non_leaf_children_containers(self, queryset):
+        """
+        Return the Containers that are children of this Container.
+        """
+        return [
+            leaf.child_content_object
+            for leaf in queryset\
+                .filter(parent_content_type=self.get_content_type(),
+                        parent_object_id=self.pk)\
+                .filter(child_content_type=self.get_content_type())
+        ]
 
-        pks = OrderedContainerItem.objects\
-            .filter(parent_object_id=self.pk,
-                    child_content_type=container_type.id)\
-            .values_list('child_object_id', flat=True)
-        return set(pks)
-
-    def get_children_containers(self):
-        pks = self._get_children_container_pks()
-        return Container.objects.filter(pk__in=pks)
-
-    def _get_children_challenge_pks(self):
-        container_type = ContentType.objects.get(model='challenge')
-        # print ('type:',container_type)
-        pks = OrderedContainerItem.objects\
-            .filter(parent_object_id=self.pk,
-                    child_content_type=container_type.id)\
-            .values_list('child_object_id', flat=True)
-        return set(pks)
-
-    def get_children_challenges(self):
-        pks = self._get_children_challenge_pks()
-        return Challenge.objects.filter(pk__in=pks)
+    def get_leaf_containers(self, queryset):
+        """
+        Return the content object of ContainerItem objects that are children
+        of this Container and have themselves no children.
+        """
+        # only objects that are not Containers are leaves
+        return [
+            leaf.child_content_object
+            for leaf in queryset\
+                .filter(parent_content_type=self.get_content_type(),
+                        parent_object_id=self.pk)\
+                .filter(~Q(child_content_type=self.get_content_type()))
+        ]
 
 
 class OrderedContainerItem(models.Model):
     parents = models.Q(model='container')
-    children = models.Q(model='container') | models.Q(model='challenge')
+    children = (models.Q(model='container') |
+                models.Q(model='challenge') |
+                models.Q(model='problemset'))
 
-    parent_object_id = models.PositiveIntegerField()
-    parent_content_type = models.ForeignKey(ContentType,
+    parent_object_id = models.PositiveIntegerField(null=True)
+    parent_content_type = models.ForeignKey(ContentType, null=True,
                                             limit_choices_to=parents,
                                             related_name='parent')
     parent_content_object = generic.GenericForeignKey('parent_content_type',
@@ -263,52 +400,13 @@ class OrderedContainerItem(models.Model):
 
     class Meta:
         ordering = ['order']
+        # index_together =
         # order_with_respect_to = 'parent_object_id'
 
     def __str__(self):
-        return '{0}->{1}'.format(
-            self.parent_content_object, self.child_content_object
-        )
+        # return '{0}->{1}'.format(
+        #     self.parent_content_object, self.child_content_object
+        # )
+        return 'foo'
 
 
-class ProblemSetProblem(AbstractGenericObjectForeignKey):
-    problem_set = models.ForeignKey('ProblemSet')
-    objects = models.Q(model='problem')
-
-
-class ProblemSet(AbstractNamedObject, AbstractSelfAwareModel):
-    def get_absolute_url(self):
-        return '/content/problem_set/{}'.format(self.pk)
-
-    def get_main_page(self):
-        return '{}/list'.format(self.get_absolute_url())
-
-    def get_problems_for_type(self, app_label):
-        content_type = ContentType.objects.get(app_label=app_label,
-                                               model='problem')
-        return ProblemSetProblem.objects.filter(problem_set=self,
-                                                content_type= content_type)
-
-
-class Tag(models.Model):
-    """
-    An object tag.
-    """
-    name = models.CharField(max_length=100, unique=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
-class AbstractTaggedObject(models.Model):
-    """
-    An object that may have any number of tags.
-    """
-    tags = models.ManyToManyField(Tag, null=True, blank=True,
-                                  related_name='%(app_label)s_%(class)s_related')
-
-    class Meta:
-        abstract = True

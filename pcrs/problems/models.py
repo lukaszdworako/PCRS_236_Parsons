@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count
 from django.utils import timezone
 from content.models import AbstractTaggedObject
 
@@ -46,22 +46,53 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
-    def best_per_student_before_time(self, deadline=timezone.now()):
+    def best_per_user_before_time(self, deadline=timezone.now()):
         """
-        Return a list of dictionaries of the form {student_id: , score:)
-        representing the best submissions for every student who submitted a
+        Return a list of dictionaries of the form {user_id: , score:)
+        representing the best submissions for every user who submitted a
         solution to this problem BEFORE deadline.
 
         Used for generating CSV reports and problem analysis.
         """
         return self.submission_set.filter(timestamp__lt=deadline)\
-            .values('student_id').annotate(score=Max('score')).order_by()
+            .values('user_id').annotate(score=Max('score')).order_by()
 
     def clear_submissions(self):
         """
         Delete all submissions to this problem.
         """
         self.submission_set.all().delete()
+
+    def get_best_submission_per_student_after_time(self, section, time):
+        """
+        Return the list of best submissions made after time in the section.
+        """
+        return self.submission_set.all().filter(section=section,
+                                                timestamp__gt=time,
+                                                has_best_score=True)
+
+    def get_monitoring_data(self, section, time):
+        """
+        Return data for real-time monitoring.
+        """
+        correct, incorrect = 0, 0
+        s_ids = set()
+        max_score = self.max_score
+
+        for submission in self.get_best_submission_per_student_after_time(
+                section, time):
+            s_ids.add(submission.pk)
+            if submission.score == max_score:
+                correct += 1
+            else:
+                incorrect += 1
+
+        data = self.get_testitem_data_for_submissions(s_ids)
+        return {
+            'submissions': [correct, incorrect],
+            # order by the id of related object
+            'data': [data[key] for key in sorted(data.keys())]
+        }
 
 
 class AbstractProgrammingProblem(AbstractProblem):
@@ -80,6 +111,30 @@ class AbstractProgrammingProblem(AbstractProblem):
     @property
     def max_score(self):
         return self.testcase_set.count()
+
+    def get_testitem_data_for_submissions(self, s_ids):
+        """
+        Return a list of tuples summarizing for each testcase how many times it
+        passed and failed in submissions with pk in s_ids.
+        Each tuple has the form (testcase_id, times_passed, times_failed).
+        """
+        data = self.get_testrun_class().objects.filter(submission_id__in=s_ids)\
+            .values('testcase_id', 'test_passed')\
+            .annotate(count=Count('test_passed'))
+        results = {}
+        # data is a list of dictionaries
+        # {test_case_id: '',  test_passed: ', count: ''}
+        # every dictionary encodes how many times a testcase passed or failed
+        for dict in data:
+            opt_id = dict['testcase_id']
+            count = dict['count']
+            res = results.get(opt_id, [0, 0])
+            if dict['test_passed'] is True:
+                res[0] = count
+            if dict['test_passed'] is False:
+                res[1] = count
+            results[opt_id] = res
+        return results
 
 
 class AbstractNamedProblem(AbstractNamedObject, AbstractProgrammingProblem):
@@ -105,11 +160,11 @@ class AbstractSubmission(AbstractSelfAwareModel):
     """
     Base submission class.
 
-    Submission is associated with a student and a problem, and optionally
+    Submission is associated with a user and a problem, and optionally
     a section, and has a score, usually out of the total number of testcases
     that the associated problem has.
     """
-    student = models.ForeignKey(PCRSUser, to_field='username',
+    user = models.ForeignKey(PCRSUser, to_field='username',
                                 on_delete=models.CASCADE,
                                 related_name='%(app_label)s_%(class)s_related')
     section = models.ForeignKey(Section, blank=True,  null=True,
@@ -118,34 +173,44 @@ class AbstractSubmission(AbstractSelfAwareModel):
     timestamp = models.DateTimeField(default=timezone.now)
     submission = models.TextField(blank=True, null=True)
     score = models.SmallIntegerField(default=0)
+    has_best_score = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
         ordering = ['-timestamp']
 
     def __str__(self):
-        return '{problem} by {student} on {time}'.format(
-            problem=self.problem, student=self.student.username,
+        return '{problem} by {user} on {time}'.format(
+            problem=self.problem, user=self.user.username,
             time=self.timestamp)
+
+    def set_best_submission(self):
+        """
+        Update the submission such that the latest submission with highest score
+        is marked with has_best_score.
+        """
+        try:
+            current_best = self.__class__.objects.get(
+                user=self.user, problem=self.problem, has_best_score=True)
+            if self.score >= current_best.score and self.pk != current_best.pk:
+                current_best.has_best_score = False
+                current_best.save()
+                self.has_best_score = True
+        except self.__class__.DoesNotExist:
+            self.has_best_score = True
+        finally:
+            self.save()
 
     def set_score(self):
         """
         Set the score of this submission to the number of testcases that
         the submission passed.
-        Create a record of the student completing the problem if the score on
+        Create a record of the user completing the problem if the score on
         the submission is the highest score possible on the problem.
         """
         self.score = self.testrun_set.filter(test_passed=True).count()
-        self.save(update_fields=['score'])
-
-        #
-        problem_type = ContentType.objects.get_for_model(self.problem)
-
-        if self.score == self.problem.max_score:
-            if not CompletedProblem.objects.filter(content_type=problem_type.id,
-                                                   object_id=self.problem.pk):
-                CompletedProblem(content_object=self.problem,
-                                 user=self.student).save()
+        self.save()
+        self.set_best_submission()
 
 
 class AbstractTestCase(AbstractSelfAwareModel):
@@ -159,6 +224,7 @@ class AbstractTestCase(AbstractSelfAwareModel):
 
     class Meta:
         abstract = True
+        ordering = ['pk']
 
     def __str__(self):
         return '{problem}: testcase {pk}'.format(

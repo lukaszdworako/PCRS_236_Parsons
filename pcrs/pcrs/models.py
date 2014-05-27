@@ -32,16 +32,22 @@ class AbstractSelfAwareModel(models.Model):
         return cls.get_content_type().app_label
 
     @classmethod
-    def get_problem_class(cls):
+    def get_class_by_name(cls, name):
         app_label = cls.get_app_label()
-        c_type = ContentType.objects.get(model='problem', app_label=app_label)
+        c_type = ContentType.objects.get(model=name, app_label=app_label)
         return c_type.model_class()
 
     @classmethod
+    def get_problem_class(cls):
+        return cls.get_class_by_name('problem')
+
+    @classmethod
     def get_submission_class(cls):
-        app_label = cls.get_app_label()
-        c_type = ContentType.objects.get(model='submission', app_label=app_label)
-        return c_type.model_class()
+        return cls.get_class_by_name('submission')
+
+    @classmethod
+    def get_testrun_class(cls):
+        return cls.get_class_by_name('testrun')
 
     @classmethod
     def get_pretty_name(cls):
