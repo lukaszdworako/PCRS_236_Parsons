@@ -1,37 +1,58 @@
 $( document ).ready(function() {
 
-    $("#correct"+problem_pk).hide();
-    $("#incorrect"+problem_pk).hide();
-
     $('#submit-id-submit').click(function(event){
         event.preventDefault();
-        $("#correct"+problem_pk).hide();
-        $("#incorrect"+problem_pk).hide();
+        var problem_pk = $(this)
+            .parents('div[id^="multiple_choice-"]')
+            .attr('id')
+            .split("-")[1];
 
-        var checkboxes = $($($($(this).parent().siblings('fieldset')[0]).children()[0]).children()[0]).children();
+        var checkboxes = $(this)
+            .parents('#multiple_choice-'+problem_pk)
+            .find('.controls')
+            .children();
+
         var submission = [];
-
         for (var x = 0; x < checkboxes.length; x++){
-            if ($(checkboxes[x]).children()[0].checked){
-                submission.push($(checkboxes[x]).children()[0].value);
+            if ($(checkboxes[x]).children('input').is(':checked')){
+                submission.push($(checkboxes[x]).children('input').val());
             }
         }
-        submit_mc(submission);
+        submit_mc(submission, problem_pk);
     });
 
-    function submit_mc(submission) {
+    function submit_mc(submission, problem_pk) {
 
-        var postParams = { csrftoken: csrftoken, options: submission };
+        var postParams = { csrftoken: csrftoken, options : submission  };
         $.post('/problems/multiple_choice/'+problem_pk+'/run',
                 postParams,
                 function(data) {
+                    var display_element = $('#multiple_choice-'+problem_pk)
+                        .find("#alert");
+
                     var score = data['score'];
                     var max_score = data['max_score'];
-                    if (score == max_score){
-                        $("#correct"+problem_pk).show();
+
+                    var desider = score == max_score;
+                    $(display_element)
+                        .toggleClass("alert-danger", !desider);
+                    $(display_element)
+                        .toggleClass("alert-success", desider);
+                    $(display_element)
+                        .children('icon')
+                        .toggleClass("glyphicon-remove", !desider);
+                    $(display_element)
+                        .children('icon')
+                        .toggleClass("glyphicon-ok", desider);
+                    if (desider){
+                        $(display_element)
+                            .children('span')
+                            .text("Your solution is correct!");
                     }
                     else{
-                        $("#incorrect"+problem_pk).show();
+                        $(display_element)
+                            .children('span')
+                            .text("Your solution is incorrect!");
                     }
                 },
             "json")
