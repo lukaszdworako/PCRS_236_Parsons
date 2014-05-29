@@ -6,7 +6,8 @@ from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
-from problems.forms import ProgrammingSubmissionForm
+from problems.forms import ProgrammingSubmissionForm, MonitoringForm
+from users.models import Section
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -49,16 +50,21 @@ class ProblemCreateView(CourseStaffViewMixin, ProblemView,
 
 class ProblemCloneView(ProblemCreateView):
     """
-    Create a new problem.
+    Clone an existing problem, with its testcases.
     """
-    template_name = 'problems/problem_form.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.get_object()
+        return context
 
-    def get_initial(self):
-        return self.get_object()
-
-    def get(self, request, *args, **kwargs):
-        form = self.get_form(self.get_form_class())
-        return redirect(self.get_context_data(form=form))
+    def form_valid(self, form):
+        new_problem = form.save()
+        # copy the testcases
+        for testcase in self.get_object().testcase_set.all():
+            testcase.pk = None
+            testcase.problem = new_problem
+            testcase.save(force_insert=True)
+        return redirect(new_problem.get_absolute_url())
 
 
 class ProblemCreateAndAddTCView(ProblemCreateView):
@@ -190,7 +196,7 @@ class SubmissionViewMixin:
         problem = self.get_problem()
         context['problem'] = problem
         context['submissions'] = self.model.get_submission_class().objects\
-            .filter(student=self.request.user).all()
+            .filter(user=self.request.user, problem=problem).all()
         return context
 
     def record_submission(self, request):
@@ -202,7 +208,7 @@ class SubmissionViewMixin:
         results, error = [], None
         if submission_code:
             submission = submission_model.objects.create(
-                student=request.user, problem=self.get_problem(),
+                user=request.user, problem=self.get_problem(),
                 section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             submission.set_score()
@@ -236,4 +242,32 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
+        return HttpResponse(json.dumps(results), mimetype='application/json')
+
+
+class MonitoringView(CourseStaffViewMixin, SingleObjectMixin, FormView):
+    """
+    Create a submission for a problem.
+    """
+    form_class = MonitoringForm
+    template_name = 'problems/monitor.html'
+    object = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = self.get_object()
+        return context
+
+
+class MonitoringAsyncView(MonitoringView):
+    """
+    Return a JSON-encoded object summarizing the number of correct and incorrect
+    submission made to this problem.
+    """
+    def post(self, request, *args, **kwargs):
+        form = self.get_form(self.get_form_class())
+        form.full_clean()
+        section, time = form.cleaned_data['section'], form.cleaned_data['time']
+        problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
+        results = problem.get_monitoring_data(section, time)
         return HttpResponse(json.dumps(results), mimetype='application/json')

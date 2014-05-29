@@ -66,20 +66,9 @@ def login_view(request):
                 if user is None:
                     NOTIFICATION = "djangoaccount"
                 else: 
-                    # if is_student:
-                    #     password = "1"
-
                     request.session['section'] = user.section
                     post_link = request.POST['next']
-                    
-                    if user.is_instructor:
-                        redirect_link = post_link or SITE_PREFIX + '/instructor/quests'
-                        
-                    elif user.is_student:
-                        redirect_link = post_link or SITE_PREFIX + '/student/quests'
-
-                    else: 
-                        redirect_link = post_link or SITE_PREFIX + '/admin'
+                    redirect_link = post_link or SITE_PREFIX + '/content/quests'
 
                     login(request, user)
                     return HttpResponseRedirect(redirect_link)

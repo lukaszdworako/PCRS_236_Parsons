@@ -21,22 +21,23 @@ function changeView(mode) {
     // disable button leading to current mode
     $('.' + mode).siblings().removeAttr('disabled');
     $('.' + mode).attr('disabled','disabled');
-
 }
 
 function bindDebugButton(buttonId) {
     $('#'+ buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId + ' td.testInputCell').html();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode)},250
+            prepareVisualizer("debug", testcaseCode, buttonId)},250
         );
     });
 }
 
-function prepareVisualizer(option, data) {
-    var newCode = myCodeMirror.getValue() + "\n";
+function prepareVisualizer(option, data, buttonId) {
 
-    var addCode = (option == "viz") ? myCodeMirror.getValue() : data;
+    key = buttonId.split("_")[0];
+    var newCode = myCodeMirrors[key].getValue() + "\n";
+
+    var addCode = (option == "viz") ? myCodeMirrors[key].getValue() : data;
     newCode += addCode;
     getVisualizerComponents(newCode);
 }
@@ -53,30 +54,27 @@ function getVisualizerComponents(newCode) {
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
-function getTestcases() {
-
-    var postParams = { csrftoken: csrftoken, submission: myCodeMirror.getValue() };
+function getTestcases(div_id) {
+    var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
 
     $.post('/problems/code/'+problem_id+'/run',
             postParams,
             function(data) {
                 testcases = data[0];
-                $("#grade-code").show();
-                prepareGradingTable();
+                $("#"+div_id).find("#grade-code").show();
+                prepareGradingTable(div_id);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
-function prepareGradingTable() {
+function prepareGradingTable(div_id) {
 
-    var gradingTable = $("#gradeMatrix");
+    var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
 
     for (var i = 0; i < testcases.length; i++) {
         var current_testcase = testcases[i];
-
-        console.log(current_testcase);
 
         var description = current_testcase.test_desc;
         if (description == ""){
@@ -87,12 +85,12 @@ function prepareGradingTable() {
         var testcaseOutput = current_testcase.expected_output;
         var result = current_testcase.test_val[2];
 
-        var cleaner = $("#tcase_"+i);
+        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
         if (cleaner){
             cleaner.remove();
         }
 
-        var newRow = $('<tr class="gradeMatrixRow" id="tcase_' + i + '"></tr>');
+        var newRow = $('<tr class="gradeMatrixRow" id="tcase_'+div_id+'_'+i + '"></tr>');
         gradingTable.append(newRow);
         if ("exception" in current_testcase){
             newRow.append('<th class="alert alert-danger" colspan="6">' + current_testcase.exception + '<th>');
@@ -119,17 +117,17 @@ function prepareGradingTable() {
                 var smFace = sadFace;
             }
 
-            $('#tcase_' + i + ' td.statusCell').html(smFace.clone());
+            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.statusCell').html(smFace.clone());
             if (testcaseInput != null){
-                newRow.append('<td class="debugCell"><button id="' + i + '" class="debugBtn btn btn-info btn-mini" type="button" data-toggle="modal" data-target="#myModal">Trace</button></td>');
-                bindDebugButton(i);
+                newRow.append('<td class="debugCell"><button id="' + div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button" data-toggle="modal" data-target="#myModal">Trace</button></td>');
+                bindDebugButton(div_id+"_"+i);
             }
             else{
                 newRow.append('<td></td>')
             }
         }
     }
-    add_to_history(score);
+    add_to_history(score, div_id);
 }
 
 function create_timestamp(datetime){
@@ -151,8 +149,8 @@ function create_timestamp(datetime){
     return formated_datetime;
 }
 
-function add_to_history(score){
-    var sub_history_window = $('#accordion');
+function add_to_history(score, div_id){
+    var sub_history_window = $("#"+div_id).find('#accordion');
     var datetime = new Date();
     datetime = create_timestamp(datetime);
 
@@ -161,11 +159,11 @@ function add_to_history(score){
     new_entry += '<a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + code_problem_id + '" onclick="delay_refresh_cm('+local_name+')">'
     new_entry += datetime + '<td> Score : ' + score +' / '+ testcases.length + '</td></a></h4></div>'
     new_entry += '<div id="collapse_'+ code_problem_id + '" class="panel-collapse collapse">'
-    new_entry += '<div id="history_mirror_999_'+code_problem_id+'">' + myCodeMirror.getValue() + '</div>'
+    new_entry += '<div id="history_mirror_999_'+code_problem_id+'">' + myCodeMirrors[div_id].getValue() + '</div>'
     new_entry += '<ul class="list-group">'
     for (var i = 0; i < testcases.length; i++) {
         var test_case = testcases[i];
-        var test_case_info = $('#tcase_'+ i).children();
+        var test_case_info = $("#"+div_id).find('#tcase_'+div_id+'_'+ i).children();
         var visible = ("Hidden Test" != test_case_info[0].innerHTML);
 
         var passed = test_case.passed_test;
@@ -195,18 +193,22 @@ function add_to_history(score){
 
 $( document).ready(function() {
 
-    $("#grade-code").hide();
+    all_wrappers = $('.code-mirror-wrapper');
+    for (var x = 0; x < all_wrappers.length; x++){
+        $(all_wrappers[x]).children('#grade-code').hide();
 
-    $('#submit-id-submit').click(function(event){
-        event.preventDefault();
-        if (myCodeMirror.getValue() == ''){
-            alert('There is no code to submit.');
-        }
-        else{
-            getTestcases();
-        }
-    });
+        $(all_wrappers[x]).find('#submit-id-submit').click(function(event){
+            event.preventDefault();
+            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
 
+            if (myCodeMirrors[div_id].getValue() == ''){
+                alert('There is no code to submit.');
+            }
+            else{
+                getTestcases(div_id);
+            }
+        });
+    }
 });
 
 

@@ -95,7 +95,7 @@ class TestProblemUpdateViewWithSubmissions(TestProblemUpdateView):
     """
     def setUp(self):
         TestProblemUpdateView.setUp(self)
-        Submission.objects.create(problem=self.object, student=self.student,
+        Submission.objects.create(problem=self.object, user=self.student,
                                   section=self.section, score=0)
         self.assertTrue(self.object.submission_set.exists())
 
@@ -117,7 +117,7 @@ class TestProblemClearView(CourseStaffViewTestMixin, test.TestCase):
                                                 visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
-        Submission.objects.create(problem=self.object, student=self.student,
+        Submission.objects.create(problem=self.object, user=self.student,
                                   section=self.section, score=0)
         self.assertTrue(self.object.submission_set.exists())
 
@@ -141,7 +141,7 @@ class TestProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
             pk=1, description='test_problem', visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
-        Submission.objects.create(problem=self.problem, student=self.student,
+        Submission.objects.create(problem=self.problem, user=self.student,
                                   section=self.section, score=0)
         self.assertTrue(self.problem.submission_set.exists())
 
@@ -276,7 +276,7 @@ class TestProblemAddOptionViewWithSubmissions(CourseStaffViewTestMixin,
             pk=1, description='test_problem', visibility='draft')
         CourseStaffViewTestMixin.setUp(self)
 
-        Submission.objects.create(problem=self.problem, student=self.student,
+        Submission.objects.create(problem=self.problem, user=self.student,
                                   section=self.section, score=0)
         self.assertTrue(self.problem.submission_set.exists())
 
@@ -461,7 +461,7 @@ class TestUpdateOptionViewWithSubmissions(CourseStaffViewTestMixin,
 
         CourseStaffViewTestMixin.setUp(self)
 
-        Submission.objects.create(problem=self.problem, student=self.student,
+        Submission.objects.create(problem=self.problem, user=self.student,
                                   section=self.section, score=0)
         self.assertTrue(self.problem.submission_set.exists())
 
@@ -585,7 +585,7 @@ class TestDeleteOptionView(CourseStaffViewTestMixin, test.TestCase):
         self.assertFalse(OptionSelection.objects.filter(option_id=1).exists())
 
     def test_delete_with_submissions(self):
-        Submission.objects.create(problem=self.problem, student=self.student,
+        Submission.objects.create(problem=self.problem, user=self.student,
                                   section=self.section, score=0)
 
         response = self.client.post(self.url, {})
@@ -609,7 +609,7 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
 
     def test_change(self):
         submission = Submission.objects.create(section=self.section,
-                                               student=self.student,
+                                               user=self.student,
                                                problem=self.problem,
                                                score=2, pk=1)
         OptionSelection.objects.create(option=self.o1, submission=submission,
@@ -623,7 +623,7 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
 
     def test_no_change(self):
         submission = Submission.objects.create(section=self.section,
-                                               student=self.student,
+                                               user=self.student,
                                                problem=self.problem,
                                                score=1, pk=1)
         OptionSelection.objects.create(option=self.o1, submission=submission,
@@ -662,7 +662,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
     def test_add_submission_nothing_selected(self):
         post_data = {
             'problem': '1',
-            'student': self.student.username,
+            'user': self.student.username,
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -684,7 +684,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
     def test_add_submission_all_selected(self):
         post_data = {
             'problem': '1',
-            'student': self.student.username,
+            'user': self.student.username,
             'options': ['1', '2']
         }
         response = self.client.post(self.url, post_data)
@@ -707,7 +707,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
     def test_completely_wrong(self):
         post_data = {
             'problem': '1',
-            'student': self.student.username,
+            'user': self.student.username,
             'options': ['2']
         }
         response = self.client.post(self.url, post_data)
@@ -730,7 +730,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
     def test_completely_correct(self):
         post_data = {
             'problem': '1',
-            'student': self.student.username,
+            'user': self.student.username,
             'options': ['1']
         }
         response = self.client.post(self.url, post_data)

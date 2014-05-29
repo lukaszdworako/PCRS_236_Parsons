@@ -7,7 +7,7 @@ from django.views.generic import UpdateView, ListView, CreateView, \
 
 from content.forms import ChallengeForm
 from content.models import Challenge, ContentPage, Container, \
-    OrderedContainerItem
+    OrderedContainerItem, ContentSequenceItem
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView
 from problems.models import CompletedProblem
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -61,7 +61,8 @@ class ContentPageView(ProtectedViewMixin, ListView):
                                  challenge_id=self.kwargs.get('challenge', None))
 
     def get_queryset(self):
-        return self.get_page().contentsequenceitem_set.all()
+        return ContentSequenceItem.objects.filter(content_page=self.get_page())\
+            .prefetch_related('content_object').all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -71,27 +72,25 @@ class ContentPageView(ProtectedViewMixin, ListView):
 
 class ContainerListView(ProtectedViewMixin, ListView):
     template_name = "content/container_list.html"
-    model = Container
-
-    def get_queryset(self):
-        container_type = ContentType.objects.get(model='container')
-
-        children_pks = OrderedContainerItem.objects\
-            .filter(child_content_type=container_type.id)\
-            .values_list('child_object_id', flat=True)
-        return Container.objects.filter(~Q(pk__in=set(children_pks)))
+    model = OrderedContainerItem
 
     def get_context_data(self, **kwargs):
-        challenges = {}
         context = super().get_context_data(**kwargs)
-        completed_set = CompletedProblem.get_completed(user=self.request.user)
-
-        for challenge in Challenge.objects.select_related().all():
-            problems = challenge.get_all_problems()
-            completed = [p for p in problems if p in completed_set]
-            challenges[challenge.pk] = [len(completed), len(problems)]
-        context['challenges'] = challenges
+        context['containers'] = OrderedContainerItem.objects\
+            .prefetch_related('child_content_object', 'child_content_object__children')
+        # context['challenges'] = Challenge.objects\
+        #     .prefetch_related('child_content_object')
         return context
+
+    def get_queryset(self):
+        return OrderedContainerItem.objects\
+            .filter(parent_object_id__isnull=True)
+            #             \
+            # .prefetch_related('child_content_object',
+            #                   'child_content_object__children')
+
+
+
 
 # class ChallengeSaveContentOrder(SingleObjectMixin, View):
 #     model = Challenge

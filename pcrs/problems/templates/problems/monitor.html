@@ -1,0 +1,62 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% load staticfiles %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "problems/css/style.css" %}"
+          type="text/css">
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static "problems/js/monitor.js" %}"></script>
+    <script src="{% static "csrf_protection.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.common.core.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.bar.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.hbar.js" %}"></script>
+{% endblock %}
+
+{% block page_title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block content %}
+    <h4>{{ object.description }}</h4>
+    {{ block.super }}
+
+    <canvas id="submissions-graph" width="200" height="500">Submissions Graph
+    </canvas>
+    <canvas id="details-graph" height="500">Testcases</canvas>
+
+    {% block items %}
+        <div id="testcases">
+            <h3> Testcases</h3>
+            <table class="table numbered">
+                <tr>
+                    <th>#</th>
+                    <th>Input</th>
+                    <th>Expected output</th>
+                </tr>
+                {% with testcases=object.testcase_set.all %}
+                    {% for testcase in testcases %}
+                        {% if testcase.visibility %}
+                            <tr class="numbered">
+                                <td class="span2"></td>
+                                <td class="span5">{{ testcase.test_input }}</td>
+                                <td class="span5">{{ testcase.test_output }}</td>
+                            </tr>
+                        {% else %}
+                            <tr class="numbered">
+                                <td></td>
+                                <td colspan="2">
+                                    <b>{{ testcase.description|default:"No testcase description available." }}</b>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            </table>
+        </div>
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,14 @@
+/* for numbered table rows */
+table.numbered {
+    counter-reset: rowNumber;
+}
+
+table.numbered tr.numbered {
+    counter-increment: rowNumber;
+}
+
+table.numbered tr.numbered td:first-child::before {
+    content: counter(rowNumber);
+    min-width: 1em;
+    margin-right: 0.5em;
+}

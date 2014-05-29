@@ -1,0 +1,25 @@
+{% extends "problems/monitor.html" %}
+
+{% block page_title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block items %}
+    <div>
+        <h3>Options</h3>
+        <table class="table numbered">
+            <tr>
+                <th>#</th>
+                <th>Option</th>
+            </tr>
+            {% with options=object.option_set.all %}
+                {% for option in options %}
+                    <tr class="numbered">
+                        <td></td>
+                        <td>{{ option.answer_text }}</td>
+                    </tr>
+                {% endfor %}
+            {% endwith %}
+        </table>
+    </div>
+{% endblock %}

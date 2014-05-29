@@ -308,7 +308,7 @@ class TestSQLProblemUpdateViewWithSubmissions(CourseStaffViewTestMixin,
         TestSQLProblemUpdateViewWithNoSubmissions.setUp(self)
 
         Submission.objects.create(
-            pk=1, problem=self.problem, student=self.student, score=1,
+            pk=1, problem=self.problem, user=self.student, score=1,
             section=self.student.section, submission='submission1')
 
     def test_sql_problem_edit_with_submissions(self):

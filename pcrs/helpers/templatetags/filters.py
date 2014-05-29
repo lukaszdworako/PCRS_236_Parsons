@@ -7,7 +7,7 @@ def classname(obj):
 
 @register.filter
 def problem_type(obj):
-    return obj.content_object.content_object._meta.app_label
+    return obj.get_problem_type_name()
 
 @register.filter
 def get_item(dictionary, key):

@@ -1,8 +1,8 @@
-var myCodeMirror;
-
 function create_history_code_mirror (language, version, location){
     hcm = history_code_mirror(language, version, location, $('#'+location).text());
-    cmh_list[location] = hcm;
+    if (!(location in cmh_list)){
+        cmh_list[location] = hcm;
+    }
 }
 
 function history_code_mirror (language, version, location, value){
@@ -35,11 +35,3 @@ function create_code_mirror (language, version, value){
 			flattenSpans: 'False'});
     return newCodeMirror;
 }
-
-$(function() {
-	//Python 3
-	//Other languages might have other versions
-	if (language == 'python'){
-		myCodeMirror = create_code_mirror ("python", 3, $('#id_submission').val());
-	}
-});

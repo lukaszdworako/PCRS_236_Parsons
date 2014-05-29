@@ -27,7 +27,7 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset('', 'name', 'description', 'visibility'),
             Div(Div(TabHolder(Tab('Code', 'problems_code'),
-                      Tab('MC', 'problems_multiple_choice'),
+                            Tab('MC', 'problems_multiple_choice'),
                 ), css_class='col-lg-4'),
             Div(Field('markup', rows=42), css_class='col-lg-8 pull-right'),
                 css_class='row'),
@@ -43,6 +43,7 @@ class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
 
     class Meta:
         model = ProblemSet
+        fields = ('visibility', 'name', 'description', 'grade_mode')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,12 +53,12 @@ class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
             field = forms.ModelMultipleChoiceField(
                         queryset=problem_ctype.model_class().objects.all(),
                         widget=forms.CheckboxSelectMultiple(),
-                        required=False)
+                        required=False, label='')
             self.fields[problem_ctype.app_label] = field
 
 
         self.helper.layout = Layout(
-            'name', 'description',
+            Fieldset('', *self.Meta.fields),
             TabHolder(
                 *[Tab(ctype.model_class().get_problem_type_name().replace('_', ' '),
                       ctype.app_label)
