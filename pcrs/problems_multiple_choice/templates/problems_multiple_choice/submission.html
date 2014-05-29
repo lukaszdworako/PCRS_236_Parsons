@@ -1,29 +1,22 @@
 {% extends "problems/submission.html" %}
 {% load staticfiles %}
 
+{% block page_title %}
+{% endblock %}
+
 {% block scripts %}
 
     {{ block.super }}
     <script src="{% static "csrf_protection.js" %}" type="text/javascript"></script>
-
-    <script type="text/javascript">
-        var problem_pk = {{ problem.pk }};
-    </script>
-
     <script src="{% static "problems_multiple_choice/js/mc_submit.js" %}" type="text/javascript"></script>
 
 {% endblock %}
 
-{% block page_title %}
-    Multiple choice question
-{% endblock %}
+{% block content %}
 
-{% block feedback %}
-    <div id="correct{{ problem.pk }}" class="alert alert-success">
-        <icon class="glyphicon glyphicon-ok"> Correct! </icon>
+    <div id="multiple_choice-{{ problem.pk }}">
+        {% include "problems_multiple_choice/mc_widget.html" %}
     </div>
 
-    <div id="incorrect{{ problem.pk }}" class="alert alert-danger">
-        <icon class="glyphicon glyphicon-remove"> Your answer is not entirely incorrect! </icon>
-    </div>
+<br>
 {% endblock %}

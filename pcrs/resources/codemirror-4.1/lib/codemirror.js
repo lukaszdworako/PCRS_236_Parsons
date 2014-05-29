@@ -3,7 +3,6 @@
 //
 // You can find some technical background for some of the code below
 // at http://marijnhaverbeke.nl/blog/#cm-internals .
-
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     module.exports = mod();
