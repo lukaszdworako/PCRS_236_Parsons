@@ -19,12 +19,18 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Problems
                         <b class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href="/problems/code/list">Code</a></li>
-                        <li><a href="/problems/multiple_choice/list">Multiple Choice</a></li>
+                        <li><a href="{{ site_prefix }}/problems/code/list">Code</a></li>
+                        <li><a href="{{ site_prefix }}/problems/multiple_choice/list">Multiple Choice</a></li>
+                        {% if 'sql' in languages or 'ra' in languages %}
                         <li class="divider"></li>
-                        <li><a href="/problems/rdb/schema/list">Schemas</a></li>
-                        <li><a href="/problems/sql/list">SQL</a></li>
-                        <li><a href="/problems/ra/list">RA</a></li>
+                        <li><a href="{{ site_prefix }}/problems/rdb/schema/list">Schemas</a></li>
+                        {% endif %}
+                        {% if 'sql' in languages %}
+                        <li><a href="{{ site_prefix }}/problems/sql/list">SQL</a></li>
+                        {% endif %}
+                        {% if 'ra' in languages %}
+                        <li><a href="{{ site_prefix }}/problems/ra/list">RA</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             </ul>
@@ -33,8 +39,8 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Content
                         <b class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href="/content/challenge/list">Challenges</a></li>
-                        <li><a href="/content/problem_set/list">Problem Sets</a></li>
+                        <li><a href="{{ site_prefix }}/content/challenge/list">Challenges</a></li>
+                        <li><a href="{{ site_prefix }}/content/problem_set/list">Problem Sets</a></li>
                     </ul>
                 </li>
             </ul>
@@ -42,10 +48,10 @@
             <ul class="nav navbar-nav navbar-right">
                 <li><p class="navbar-text navbar-right">
                     section: {{ request.session.section|default:None }}
-                    <a href="/section" class="navbar-link">(change)</a>
+                    <a href="{{ site_prefix }}/section" class="navbar-link">(change)</a>
                 </p>
                 </li>
-                <li><a href="/logout">Log out</a></li>
+                <li><a href="{{ site_prefix }}/logout">Log out</a></li>
 
             </ul>
         </div>
