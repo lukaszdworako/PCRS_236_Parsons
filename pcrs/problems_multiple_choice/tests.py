@@ -1,6 +1,7 @@
 from django import test
 from django.core.urlresolvers import reverse
-from problems.tests import TestProblemSubmissionGradesBeforeDeadline
+from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
+    TestBestSubmission
 
 from problems_multiple_choice.models import (Problem, Submission, Option,
                                              OptionSelection)
@@ -759,3 +760,16 @@ class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
         super().setUp()
         self.problem = self.problem_class.objects.create(description='Q1')
         self.problem2 = self.problem_class.objects.create(description='Q2')
+
+
+class TestBestSubmissionCode(TestBestSubmission, UsersMixin, test.TestCase):
+    """
+    Test updating best submission per student.
+
+    Note: submissions are sorted in descending order by timestamp.
+    """
+    def setUp(self):
+        super().setUp()
+        self.Submission = Submission
+        self.problem = Problem.objects.create(pk=1, description='Q1',
+                                              visibility='open')
