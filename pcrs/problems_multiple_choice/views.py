@@ -34,8 +34,9 @@ class ProblemCreateAndAddOptView(CourseStaffViewMixin, CreateView):
     model = Problem
 
     def get_success_url(self):
-        return reverse('mc_problem_add_option',
-                       kwargs={'problem': self.object.pk})
+        return self.request.build_absolute_uri(
+            reverse('mc_problem_add_option',
+                    kwargs={'problem': self.object.pk}))
 
 
 class OptionView(problems.views.TestCaseView):
@@ -44,32 +45,31 @@ class OptionView(problems.views.TestCaseView):
     template_name = 'problems_multiple_choice/option_form.html'
 
     def get_success_url(self):
-        return reverse('mc_problem_add_option',
-                       kwargs={'problem': self.object.problem.pk})
+        return self.request.build_absolute_uri(
+            reverse('mc_problem_update',
+                    kwargs={'pk': self.object.problem.pk}))
 
 
 class OptionCreateView(OptionView, GenericItemCreateView):
     """
     Create a new multiple choice answer option.
     """
-    def get_success_url(self):
-        return reverse('mc_problem_update',
-                       kwargs={'pk': self.object.problem.pk})
 
 
 class OptionsCreateView(OptionView, GenericItemCreateView):
     """
     Create new multiple choice answer options.
     """
+    def get_success_url(self):
+        return self.request.build_absolute_uri(
+            reverse('mc_problem_add_option',
+                    kwargs={'problem': self.object.problem.pk}))
 
 
 class OptionUpdateView(OptionView, UpdateView):
     """
     Edit an existing multiple choice answer option.
     """
-    def get_success_url(self):
-        return reverse('mc_problem_update',
-                       kwargs={'pk': self.object.problem.pk})
 
 
 class OptionDeleteView(OptionView, DeleteView):
@@ -78,10 +78,6 @@ class OptionDeleteView(OptionView, DeleteView):
     """
     model = Option
     template_name = 'problems/testcase_check_delete.html'
-
-    def get_success_url(self):
-        return reverse('mc_problem_update',
-                       kwargs={'pk': self.kwargs.get('problem')})
 
 
 class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
