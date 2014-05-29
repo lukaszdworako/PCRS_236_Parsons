@@ -209,3 +209,15 @@ class AbstractLimitedVisibilityObject(models.Model):
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def get_visible_for_user(cls, user):
+        """
+        Return the objects that the user is allowed to see.
+        """
+        if user.is_student:
+            return cls.objects.filter(visibility='open')
+        if user.is_ta:
+            return cls.objects.exclude(visibility='closed')
+        else:
+            return cls.objects.all()

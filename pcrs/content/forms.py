@@ -43,7 +43,7 @@ class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
 
     class Meta:
         model = ProblemSet
-        fields = ('visibility', 'name', 'description', 'grade_mode')
+        fields = ('visibility', 'name', 'description')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
