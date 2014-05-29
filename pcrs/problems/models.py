@@ -34,7 +34,11 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     @classmethod
     def get_problem_type_name(cls):
-        return cls.get_app_label().replace('problems_', '')
+        return cls.__module__.split('.')[0].replace('problems_', '')
+
+    @classmethod
+    def get_module_name(cls):
+        return cls.__module__.split('.')[0]
 
     @classmethod
     def get_base_url(cls):

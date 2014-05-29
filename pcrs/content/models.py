@@ -187,7 +187,7 @@ class Challenge(GradableObjectContainer):
     A Challenge is a sequence of ContentPages, which are defined in markup.
     """
     markup = models.TextField(blank=True)
-    container = models.ForeignKey('Container', null=True)
+    container = models.ForeignKey('Container', blank=True, null=True)
 
     problems = generic.GenericRelation(ContainerProblem,
         content_type_field='container_content_type',

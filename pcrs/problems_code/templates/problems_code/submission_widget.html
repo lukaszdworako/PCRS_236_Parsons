@@ -1,49 +1,31 @@
-{% load staticfiles %}
+<h3> {{ problem.name }} </h3>
 
-{% block scripts %}
-
-    {# To load more languages add additional scripts, like python below #}
-    {% if problem.language == 'python' %}
-        <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
-    {% endif %}
-
+{% block problem_description %}
+    <div class="problem-description">
+        <h5>{{ problem.description }}</h5>
+    </div>
 {% endblock %}
 
-{% block page_title %}
-   <h1> {{ problem.name }} </h1>
-   <hr>
-{% endblock %}
-
-{% block content %}
-    {% block problem_description %}
-        <div class="problem-description">
-            <h5>{{ problem.description }}</h5>
-        </div>
-    {% endblock %}
-
-    {% load crispy_forms_tags %}
-    {% crispy form %}
-    {% block related_items %}
-    {% endblock %}
+{% load crispy_forms_tags %}
+{% crispy form %}
 
 {#    This code creates codemirror for each code problem as the widget is added to the window#}
-    <script>
-{#        imag is problem id#}
-        if (myCodeMirrors == undefined){
-            var myCodeMirrors = {};
-        }
-        if (language == 'python'){
-            myCodeMirrors[$('.code-mirror-wrapper').last()[0].id] =
-                create_code_mirror ("python", 3,
-                $('.code-mirror-wrapper').last().find('#id_submission').val());
-        }
-    </script>
+<script>
+    {#        imag is problem id#}
+    if (myCodeMirrors == undefined) {
+        var myCodeMirrors = {};
+    }
+    if (language == 'python') {
+        myCodeMirrors[$('.code-mirror-wrapper').last()[0].id] =
+                create_code_mirror("python", 3,
+                        $('.code-mirror-wrapper').last().find('#id_submission').val());
+    }
+</script>
 
-    {# html code for showing submission history #}
-    {% include "problems_code/sub_history.html" %}
-    {# html code for showing testcases for a submission #}
-    <p></p>
-    {% include "problems_code/grade_table.html" %}
+{# html code for showing submission history #}
+{% include "problems_code/sub_history.html" %}
+{# html code for showing testcases for a submission #}
+<p></p>
+{% include "problems_code/grade_table.html" %}
 
-{% endblock %}
 

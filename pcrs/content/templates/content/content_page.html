@@ -1,5 +1,15 @@
 {% extends "pcrs/base.html" %}
 
+{% block scripts %}
+    {{ block.super }}
+    {% include "problems_code/code_problem_scripts.html" %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems_code/code_problem_stylesheets.html" %}
+{% endblock %}
+
 {% block page_title %}
     {{ object.challenge.name }} - Part {{ object.order }}
 {% endblock %}
@@ -15,28 +25,34 @@
             {% elif item|classname|lower == "video" %}
                 {% include "content/textblock.html" %}
             {% elif item|classname|lower == "problem" %}
-                <div id="{{ item|problem_type }}-{{ item.pk }}">
-                    {% with problem=item %}
-                        {% include item.get_app_label|add:"/submission_widget.html" %}
+                {% with problem_type=item.get_problem_type_name form=forms|get_item:item.get_problem_type_name %}
+                    {% if problem_type != 'multiple_choice' %}
+                        <div id="{{ problem_type }}-{{ item.pk }}"
+                             class="code-mirror-wrapper">
+                    {% else %}
+                        <div id="{{ problem_type }}-{{ item.pk }}">
+                    {% endif %}
+                    {% with problem=item form=form|get_item:item.pk %}
+                        {% include item.get_module_name|add:"/submission_widget.html" %}
                     {% endwith %}
-                </div>
+                {% endwith %}
+            </div>
             {% endif %}
         {% endwith %}
-
     {% endfor %}
 
-    {% if content_page.order %}
-        <a class="btn btn-success" role="button"
-           href="{{ content_page.order|add:-1 }}">
-            <i class="glyphicon glyphicon-chevron-left"></i>
-        </a>
-    {% endif %}
+{% if content_page.order %}
+    <a class="btn btn-success" role="button"
+       href="{{ content_page.order|add:-1 }}">
+        <i class="glyphicon glyphicon-chevron-left"></i>
+    </a>
+{% endif %}
 
-    {% if content_page.next %}
-        <a class="btn btn-success pull-right" role="button"
-           href="{{ content_page.order|add:1 }}">
-            <i class="glyphicon glyphicon-chevron-right"></i>
-        </a>
-    {% endif %}
+{% if content_page.next %}
+    <a class="btn btn-success pull-right" role="button"
+       href="{{ content_page.order|add:1 }}">
+        <i class="glyphicon glyphicon-chevron-right"></i>
+    </a>
+{% endif %}
 
 {% endblock %}
