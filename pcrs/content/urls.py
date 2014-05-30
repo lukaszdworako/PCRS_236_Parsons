@@ -6,6 +6,8 @@ from content.problemset_views import (ProblemSetCreateView, ProblemSetUpdateView
 from content.views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
 
+from content import views #video
+
 
 
 urlpatterns = patterns('',
@@ -40,5 +42,8 @@ urlpatterns = patterns('',
     url(r'^problem_set/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=ProblemSet)),
     url(r'^problem_set/(?P<problemset>[0-9]+)/list$',
-        ProblemSetDetailView.as_view(template_name='content/problem_set.html'))
+        ProblemSetDetailView.as_view(template_name='content/problem_set.html')),
+
+    # video
+    url(r'^youtube', views.youtube, name = 'youtube'),
 )

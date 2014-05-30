@@ -1,0 +1,76 @@
+
+<script language="JavaScript">
+    var overiFrame = 1;
+    $(document).ready( function() {
+    var time_in = 0;
+    var time_out = 0;
+    $('#video1').hover( function() {
+        overiFrame = overiFrame * (-1);
+        console.log(overiFrame);
+    });
+    });
+
+     $(window).blur( function() {
+        console.log("clicked");
+     });
+
+
+function autoResize(id){
+    console.log("resize");
+    var newheight;
+    var newwidth;
+
+    if(document.getElementById){
+        newheight=document.getElementById(id).contentWindow.document .body.scrollHeight;
+        newwidth=document.getElementById(id).contentWindow.document .body.scrollWidth;
+    }
+
+    document.getElementById(id).height= (newheight) + (20) + "px";
+    document.getElementById(id).width= (newwidth) + (20) + "px";
+}
+
+</script>
+
+
+{#<iframe type="text/html"#}
+{#    width="640"#}
+{#    height="385"#}
+{#    src="http://www.youtube.com/embed/L1vPaTgSuno?hd=1&rel=0&autohide=1&showinfo=0"#}
+{#    frameborder="0" onclick="$('#video_counter').text(2)">#}
+{#</iframe>#}
+
+{#<video id="player1" width="640" height="360" preload="none" style="display:none;"#}
+{#       <source type="video/youtube" src="http://www.youtube.com/embed/L1vPaTgSuno"></source>#}
+{#</video>#}
+
+{#<video width="640"#}
+{#       height="360"#}
+{#       src="http://www.youtube.com/L1vPaTgSuno"#}
+{#       controls preload>#}
+{#<p> Try this page in a modern browser! Or you can <a  href="http://www.youtube.com/demo/google_main.mp4">download the  video</a> instead.</p>#}
+{#</video>#}
+
+{#<video width="640" height="360" controls="">#}
+{#	<object type="application/x-shockwave-flash" data="http://www.youtube.com/v/YE7VzlLtp-4" height="505" width="640">#}
+{#		<param name="movie" value="http://www.youtube.com/v/L1vPaTgSuno">#}
+{#		<!-- fallback image -->#}
+{#		<img src="poster.jpg" alt="Big Buck Bunny" title="No video playback capabilities, please download the video below" height="360" width="640">#}
+{#	</object>#}
+{#</video>#}
+
+{% load staticfiles %}
+<div class="banner" bannerid="yyy">
+    <iframe src="{% static "/content/youtube.html" %}"
+            onLoad="autoResize('video1');"
+            id="video1"
+            onclick="console.log('hi');"
+    </iframe>
+</div>
+
+<br>
+<br>
+<br>
+
+<div id="video_counter"> 1 </div>
+
+

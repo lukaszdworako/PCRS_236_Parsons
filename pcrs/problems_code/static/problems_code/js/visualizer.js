@@ -25,9 +25,10 @@ function executeGenericVisualizer(option, data) {
     
     var supportedVisualization = ['python']; 
 
-    if (language == 'python') {
-        return executePythonVisualizer(option, data);
-    }
+//    if (language == 'python') {
+
+    return executePythonVisualizer(option, data);
+//    }
     /**
      * Return boolean true if global language is in the array supportedVisualization;
      * false otherwise.

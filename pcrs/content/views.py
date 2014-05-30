@@ -15,6 +15,8 @@ from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm
 
+from django.shortcuts import render #video
+
 
 class ChallengeView:
     model = Challenge
@@ -145,3 +147,6 @@ class ContainerListView(ProtectedViewMixin, ListView):
 #
 #         return HttpResponse(json.dumps({'success': True}),
 #                             mimetype='application/json')
+
+def youtube(request):
+    return render(request, 'content/youtube.html')
