@@ -68,7 +68,7 @@ def login_view(request):
                 else: 
                     request.session['section'] = user.section
                     post_link = request.POST['next']
-                    redirect_link = post_link or SITE_PREFIX + '/content/quests'
+                    redirect_link = post_link or SITE_PREFIX + '/content/challenge/list'
 
                     login(request, user)
                     return HttpResponseRedirect(redirect_link)
