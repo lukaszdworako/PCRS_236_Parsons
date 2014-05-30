@@ -26,7 +26,10 @@
             {% if item|classname|lower == "textblock" %}
                 {% include "content/textblock.html" %}
             {% elif item|classname|lower == "video" %}
-                {% include "content/textblock.html" %}
+{#                {% include "content/textblock.html" %}#}
+                <div id="video-{{ item.pk }}">
+                    {% include 'content/video_widget.html'  %}
+                </div>
             {% elif item|classname|lower == "problem" %}
                 {% with problem_type=item.get_problem_type_name form=forms|get_item:item.get_problem_type_name %}
                     {% if problem_type != 'multiple_choice' %}

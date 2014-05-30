@@ -234,7 +234,7 @@ $( document).ready(function() {
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
 
-//      SASHA! only for python
+//      SASHA! only for python; variable language is gone
         myCodeMirrors[all_wrappers[x].id] =
                 history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                         $(all_wrappers[x]).find('#div_id_submission').text(), false);

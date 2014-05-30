@@ -45,7 +45,7 @@ class Video(AbstractNamedObject):
     """
     A Video object has a name, a description, and a link to a video.
     """
-    link = models.URLField()
+    link = models.TextField()
 
 
 class TextBlock(models.Model):
