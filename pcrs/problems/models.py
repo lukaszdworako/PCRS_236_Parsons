@@ -2,8 +2,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Max, Q, Count
 from django.utils import timezone
-from content.models import AbstractTaggedObject
+from django.conf import settings
 
+from content.models import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
@@ -45,7 +46,11 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         """
         Return the url prefix for the problem type.
         """
-        return '/problems/{}'.format(cls.get_problem_type_name())
+        url = '/problems/{}'.format(cls.get_problem_type_name())
+        if settings.SITE_PREFIX:
+            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
+        else:
+            return url
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)

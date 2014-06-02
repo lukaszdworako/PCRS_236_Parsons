@@ -42,13 +42,18 @@ class Schema(AbstractSelfAwareModel):
         """
         Return the url for a schema.
         """
-        return '/problems/rdb/schema'
+        url = '/problems/rdb/'.format(settings.SITE_PREFIX)
+        if settings.SITE_PREFIX:
+            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX,
+                                            url=url)
+        else:
+            return url
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+        return '{base}/schema/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
     def clean_fields(self, exclude=None):
         """
@@ -123,8 +128,8 @@ class Dataset(AbstractSelfAwareModel):
         return '{0}_{1}'.format(self.schema, self.name)
 
     def get_absolute_url(self):
-        return '/problems/rdb/schema/{schema}/dataset/{pk}'\
-            .format(schema=self.schema.pk, pk=self.pk)
+        return '{schema}/dataset/{pk}'\
+            .format(schema=self.schema.get_absolute_url(), pk=self.pk)
 
     def clean_fields(self, exclude=None):
         """
