@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -169,7 +170,7 @@ class ProblemSet(GradableObjectContainer):
         related_name='problemset_problems')
 
     def get_absolute_url(self):
-        return '/content/problem_set/{}'.format(self.pk)
+        return '{prefix}/content/problem_set/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
 
     def get_main_page(self):
         return '{}/list'.format(self.get_absolute_url())
@@ -197,7 +198,7 @@ class Challenge(GradableObjectContainer):
     pages = None
 
     def get_absolute_url(self):
-        return '/content/challenge/{}'.format(self.pk)
+        return '{prefix}/content/challenge/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
 
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())
