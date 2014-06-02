@@ -8,6 +8,8 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
+from pcrs.settings import SITE_PREFIX
+
 
 def get_problem_labels():
     """
@@ -45,7 +47,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         """
         Return the url prefix for the problem type.
         """
-        return '/problems/{}'.format(cls.get_problem_type_name())
+        return '{site}/problems/{typename}'.format(site=SITE_PREFIX, typename=cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)

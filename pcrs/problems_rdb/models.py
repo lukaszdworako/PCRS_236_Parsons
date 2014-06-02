@@ -11,6 +11,8 @@ from problems.models import (AbstractSelfAwareModel, AbstractNamedProblem,
                              AbstractTestCase)
 from problems_rdb.db_wrapper import InstructorWrapper
 
+from pcrs.settings import SITE_PREFIX
+
 
 class Schema(AbstractSelfAwareModel):
     """
@@ -42,7 +44,7 @@ class Schema(AbstractSelfAwareModel):
         """
         Return the url for a schema.
         """
-        return '/problems/rdb/schema'
+        return '{prefix}/problems/rdb/schema'.format(prefix=SITE_PREFIX)
 
     def __str__(self):
         return self.name
@@ -123,8 +125,8 @@ class Dataset(AbstractSelfAwareModel):
         return '{0}_{1}'.format(self.schema, self.name)
 
     def get_absolute_url(self):
-        return '/problems/rdb/schema/{schema}/dataset/{pk}'\
-            .format(schema=self.schema.pk, pk=self.pk)
+        return '{prefix}/problems/rdb/schema/{schema}/dataset/{pk}'\
+            .format(prefix=SITE_PREFIX, schema=self.schema.pk, pk=self.pk)
 
     def clean_fields(self, exclude=None):
         """
