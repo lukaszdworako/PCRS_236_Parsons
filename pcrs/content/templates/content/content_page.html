@@ -26,7 +26,7 @@
             {% if item|classname|lower == "textblock" %}
                 {% include "content/textblock.html" %}
             {% elif item|classname|lower == "video" %}
-{#                {% include "content/textblock.html" %}#}
+                {# {% include "content/textblock.html" %}#}
                 <div id="video-{{ item.pk }}">
                     {% include 'content/video_widget.html'  %}
                 </div>
