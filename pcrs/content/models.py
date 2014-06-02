@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -12,8 +13,6 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractOrderedGenericObjectSequence,
                          AbstractSelfAwareModel)
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
-
-from pcrs.settings import SITE_PREFIX
 
 
 # TAGS
@@ -47,7 +46,7 @@ class Video(AbstractNamedObject):
     """
     A Video object has a name, a description, and a link to a video.
     """
-    link = models.URLField()
+    link = models.TextField()
 
 
 class TextBlock(models.Model):
@@ -171,7 +170,7 @@ class ProblemSet(GradableObjectContainer):
         related_name='problemset_problems')
 
     def get_absolute_url(self):
-        return '{prefix}/content/problem_set/{pk}'.format(prefix=SITE_PREFIX, pk=self.pk)
+        return '{prefix}/content/problem_set/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
 
     def get_main_page(self):
         return '{}/list'.format(self.get_absolute_url())
@@ -199,7 +198,7 @@ class Challenge(GradableObjectContainer):
     pages = None
 
     def get_absolute_url(self):
-        return '{prefix}/content/challenge/{pk}'.format(prefix=SITE_PREFIX, pk=self.pk)
+        return '{prefix}/content/challenge/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
 
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())

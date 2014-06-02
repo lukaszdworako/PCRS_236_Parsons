@@ -1,0 +1,19 @@
+<h3> {{ item }}</h3>
+<div> {{ item.description }} </div>
+<br>
+<object  width='603' height='363'>
+    <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>
+    <param name='allowfullscreen' value='true'>
+    <param name='allowscriptaccess' value='always'>
+    <embed
+            src='https://media.library.utoronto.ca/flashinc/player.swf'
+            width='603'
+            height='363'
+            allowscriptaccess='always'
+            allowfullscreen='true'
+            flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}" />
+</object>
+<br>
+
+
+

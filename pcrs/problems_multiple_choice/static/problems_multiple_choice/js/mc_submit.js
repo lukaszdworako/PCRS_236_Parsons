@@ -1,28 +1,33 @@
 $( document ).ready(function() {
 
-    $('#submit-id-submit').click(function(event){
-        event.preventDefault();
-        var problem_pk = $(this)
-            .parents('div[id^="multiple_choice-"]')
-            .attr('id')
-            .split("-")[1];
+    all_mc = $('div[id^="multiple_choice-"]').find('#submit-id-submit');
 
-        var checkboxes = $(this)
-            .parents('#multiple_choice-'+problem_pk)
-            .find('.controls')
-            .children();
+    for (var x = 0; x < all_mc.length; x++){
+        $(all_mc[x]).click(function(event){
+            event.preventDefault();
+            var problem_pk = $(this)
+                .parents('div[id^="multiple_choice-"]')
+                .attr('id')
+                .split("-")[1];
 
-        var submission = [];
-        for (var x = 0; x < checkboxes.length; x++){
-            if ($(checkboxes[x]).children('input').is(':checked')){
-                submission.push($(checkboxes[x]).children('input').val());
+            var checkboxes = $(this)
+                .parents('#multiple_choice-'+problem_pk)
+                .find('.controls')
+                .children();
+
+            var submission = [];
+            for (var x = 0; x < checkboxes.length; x++){
+                if ($(checkboxes[x]).children('input').is(':checked')){
+                    submission.push($(checkboxes[x]).children('input').val());
+                }
             }
-        }
-        submit_mc(submission, problem_pk);
-    });
+            submit_mc(submission, problem_pk);
+        });
+    }
+});
 
     function submit_mc(submission, problem_pk) {
-
+        console.log(submission, problem_pk);
         var postParams = { csrftoken: csrftoken, options : submission  };
         $.post('/problems/multiple_choice/'+problem_pk+'/run',
                 postParams,
@@ -58,5 +63,3 @@ $( document ).ready(function() {
             "json")
          .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
     }
-
-});

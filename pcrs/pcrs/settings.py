@@ -32,7 +32,7 @@ RDB_DATABASE_test = 'crs_data_test'
 # Site prefix
 SITE_PREFIX = ''
 if PRODUCTION:
-    SITE_PREFIX = '/pcrs_108/'
+    SITE_PREFIX = '/pcrs_108'
 FORCE_SCRIPT_NAME = SITE_PREFIX
 
 # Login details

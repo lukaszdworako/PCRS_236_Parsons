@@ -36,7 +36,6 @@ class SchemaCreateView(SchemaView, GenericItemCreateView):
     template_name = 'pcrs/item_form.html'
 
 
-
 class SchemaCreateAndAddDatasetView(SchemaCreateView):
     def get_success_url(self):
         return '{}/dataset'.format(self.object.get_absolute_url())
