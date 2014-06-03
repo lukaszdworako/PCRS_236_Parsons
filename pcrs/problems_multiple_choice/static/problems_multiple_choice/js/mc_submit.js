@@ -28,7 +28,16 @@ $( document ).ready(function() {
 
     function submit_mc(submission, problem_pk) {
         var postParams = { csrftoken: csrftoken, options : submission  };
+<<<<<<< HEAD
         $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
+=======
+
+        /* Hack to find the site prefix */
+        var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
+        if (prefix == null) { prefix = ''; }
+
+        $.post(prefix + '/problems/multiple_choice/'+problem_pk+'/run',
+>>>>>>> 541ea94b0ac72c6f5710817b705ab31a416e1b3d
                 postParams,
                 function(data) {
                     var display_element = $('#multiple_choice-'+problem_pk)

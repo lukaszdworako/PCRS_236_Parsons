@@ -47,7 +47,12 @@ function getVisualizerComponents(newCode) {
 
     var postParams = { language : 'python', user_script : newCode};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
-    $.post(root+'/problems/code/visualizer-details',
+
+    /* Hack to find the site prefix */
+    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
+    if (prefix == null) { prefix = ''; }
+
+    $.post(prefix + '/problems/code/visualizer-details',
             postParams,
             function(data) {
                 executeGenericVisualizer("create_visualizer", data);
@@ -58,8 +63,12 @@ function getVisualizerComponents(newCode) {
 
 function getTestcases(div_id) {
     var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
-    console.log(document.URL);
-    $.post(root+'/problems/code/'+div_id.split("-")[1]+'/run',
+
+    /* Hack to find the site prefix */
+    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
+    if (prefix == null) { prefix = ''; }
+
+    $.post(prefix + '/problems/code/'+div_id.split("-")[1]+'/run',
             postParams,
             function(data) {
                 testcases = data['results'][0];
