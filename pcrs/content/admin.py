@@ -13,7 +13,8 @@ admin.site.register(ContentSequenceItem)
 admin.site.register(Challenge)
 
 admin.site.register(Container)
-admin.site.register(OrderedContainerItem)
+admin.site.register(SectionContainer)
 
 admin.site.register(ProblemSet)
-admin.site.register(ProblemSetProblem)
+admin.site.register(ContainerProblem)
+admin.site.register(ContainerAttempt)

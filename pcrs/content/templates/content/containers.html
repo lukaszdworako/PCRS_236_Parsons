@@ -1,40 +1,18 @@
 {% load filters %}
 {% load feedback %}
 
-{% with template='content/containers.html' %}
-    {% for ordered_container in object_list %}
-        {% with container=ordered_container.child_content_object %}
-            <div class="container-title">
-                <h4>{{ container.name }}
-                <span class="pull-right">
-                    {{ container.due_on|default_if_none:"" }}
-                </span>
-                </h4>
-            </div>
+{% for container in object_list %}
+    <h3>{{ container.container.name }}
+        <span class="pull-right">{{ container.due_on }}</span>
+    </h3>
+    <div class="well">
 
-            {% with children=container.children.all %}
-                {% if children %}
-                    <div class="well">
-                        {% with object_list=children %}
-                            {{ object_list }}
-{#                            {% include template %}#}
-                        {% endwith %}
-                    </div>
-                {% endif %}
-            {% endwith %}
+        {% with list_title='Challenges' object_list=container.container.challenge_set.all visible_objects=visible_challenges completed=challenge_to_completed %}
+            {% include 'content/gradable_container_list.html' %}
         {% endwith %}
 
-
-{#        <ol>#}
-{#            {% for challenge in container.get_children_challenges %}#}
-{#                <li>#}
-{#                    <a href="{{ challenge.get_main_page }}">{{ challenge.name }}</a>#}
-{##}
-{#                    {% with scores=challenges|get_item:challenge.pk %}#}
-{#                        {{ scores.0 }}/{{ scores.1 }}#}
-{#                    {% endwith %}#}
-{#                </li>#}
-{#            {% endfor %}#}
-{#        </ol>#}
-    {% endfor %}
-{% endwith %}
+        {% with list_title='Problem Sets' object_list=container.container.problemset_set.all visible_objects=visible_problemsets completed=problemset_to_completed %}
+            {% include 'content/gradable_container_list.html' %}
+        {% endwith %}
+    </div>
+{% endfor %}

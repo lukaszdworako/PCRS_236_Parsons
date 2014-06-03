@@ -8,7 +8,7 @@ from problems_code.pcrs_languages import *
 
 
 @csrf_exempt
-def visualizer_details(request, problem):
+def visualizer_details(request):
     """
         Return json encoded dictionary ret containing trace required
         for visualizer. Contents of the ret depend on language implementation.

@@ -2,8 +2,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Max, Q, Count
 from django.utils import timezone
-from content.models import AbstractTaggedObject
+from django.conf import settings
 
+from content.models import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
@@ -34,14 +35,18 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     @classmethod
     def get_problem_type_name(cls):
-        return cls.get_app_label().replace('problems_', '')
+        return cls.__module__.split('.')[0].replace('problems_', '')
+
+    @classmethod
+    def get_module_name(cls):
+        return cls.__module__.split('.')[0]
 
     @classmethod
     def get_base_url(cls):
         """
         Return the url prefix for the problem type.
         """
-        return '/problems/{}'.format(cls.get_problem_type_name())
+        return '{site}/problems/{typename}'.format(site=settings.SITE_PREFIX, typename=cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)

@@ -3,7 +3,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import UpdateView, ListView
 
 from content.forms import ProblemSetForm
-from content.models import ProblemSet, ProblemSetProblem
+from content.models import ProblemSet, ContainerProblem
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView
 from problems.models import get_problem_labels
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
@@ -33,7 +33,7 @@ class ProblemSetCreateOrUpdateView(CourseStaffViewMixin):
             self.object.get_problems_for_type(label).delete()
             # add all selected problems
             for problem in form.cleaned_data[label]:
-                ProblemSetProblem(problem_set=self.object,
+                ContainerProblem(problem_set=self.object,
                                   content_object=problem).save()
         return redirect(reverse('problem_set_list'))
 
@@ -64,7 +64,7 @@ class ProblemSetDetailView(ProtectedViewMixin, ListView):
     """
     List the Problems in this ProblemSet.
     """
-    model = ProblemSetProblem
+    model = ContainerProblem
     template_name = 'content/problem_set.html'
 
     def get_problem_set(self):

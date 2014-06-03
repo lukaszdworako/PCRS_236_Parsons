@@ -1,7 +1,8 @@
 from django import test
 from django.core.urlresolvers import reverse
 
-from problems.tests import TestProblemSubmissionGradesBeforeDeadline
+from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
+    TestBestSubmission
 from problems_code.models import Problem, TestCase, Submission, TestRun
 from tests.ViewTestMixins import (CourseStaffViewTestMixin,
                                   ProtectedViewTestMixin, UsersMixin)
@@ -802,7 +803,7 @@ class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
                                                           visibility='open')
 
 
-class TestBestSubmission(UsersMixin, test.TestCase):
+class TestBestSubmissionCode(TestBestSubmission, UsersMixin, test.TestCase):
     """
     Test updating best submission per student.
 
@@ -810,82 +811,6 @@ class TestBestSubmission(UsersMixin, test.TestCase):
     """
     def setUp(self):
         super().setUp()
+        self.Submission = Submission
         self.problem = Problem.objects.create(pk=1, name='Problem1',
                                               visibility='open')
-
-    def test_single_submission(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=0)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-    def test_new_better_submission(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=0)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-        s2 = Submission.objects.create(user=self.student, section=self.section,
-                                       problem=self.problem, score=2)
-        s2.set_best_submission()
-        s2, s1 = Submission.objects.all()
-        self.assertFalse(s1.has_best_score)
-        self.assertTrue(s2.has_best_score)
-
-    def test_new_worse_submission(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=2)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-        s2 = Submission.objects.create(user=self.student, section=self.section,
-                                       problem=self.problem, score=0)
-        s2.set_best_submission()
-        s2, s1 = Submission.objects.all()
-        self.assertTrue(s1.has_best_score)
-        self.assertFalse(s2.has_best_score)
-
-    def test_new_same_score_submission(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=2)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-        s2 = Submission.objects.create(user=self.student, section=self.section,
-                                       problem=self.problem, score=2)
-        s2.set_best_submission()
-        s2, s1 = Submission.objects.all()
-        self.assertFalse(s1.has_best_score)
-        self.assertTrue(s2.has_best_score)
-
-    def test_same_score_different_user(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=2)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-        s2 = Submission.objects.create(user=self.ta, section=self.section,
-                                       problem=self.problem, score=2)
-        s2.set_best_submission()
-        s2, s1 = Submission.objects.all()
-        self.assertTrue(s1.has_best_score)
-        self.assertTrue(s2.has_best_score)
-
-    def test_new_submission_for_user(self):
-        s = Submission.objects.create(user=self.student, section=self.section,
-                                      problem=self.problem, score=0)
-        s.set_best_submission()
-        self.assertTrue(s.has_best_score)
-
-        s2 = Submission.objects.create(user=self.ta, section=self.section,
-                                       problem=self.problem, score=2)
-        s2.set_best_submission()
-
-        s3 = Submission.objects.create(user=self.ta, section=self.section,
-                                       problem=self.problem, score=3)
-        s3.set_best_submission()
-
-        s3, s2, s1 = Submission.objects.all()
-        self.assertTrue(s1.has_best_score)
-        self.assertFalse(s2.has_best_score)
-        self.assertTrue(s3.has_best_score)

@@ -32,7 +32,7 @@ class BaseProblemForm(CrispyFormMixin):
                                 css_class='btn-group pull-right'))
         elif self.instance:
             # cloning
-            self.buttons = self.save_button,
+            self.buttons = self.save_and_add,
         else:
             # creating a new one
             self.buttons = self.save_and_add,

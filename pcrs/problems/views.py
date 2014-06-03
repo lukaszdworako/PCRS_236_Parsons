@@ -242,7 +242,10 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps(results), mimetype='application/json')
+        return HttpResponse(json.dumps({'results': results,
+                                        'score': self.object.score,
+            'max_score': self.object.problem.max_score}),
+                            mimetype='application/json')
 
 
 class MonitoringView(CourseStaffViewMixin, SingleObjectMixin, FormView):
