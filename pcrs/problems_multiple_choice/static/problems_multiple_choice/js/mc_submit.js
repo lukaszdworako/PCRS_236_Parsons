@@ -27,9 +27,8 @@ $( document ).ready(function() {
 });
 
     function submit_mc(submission, problem_pk) {
-        console.log(submission, problem_pk);
         var postParams = { csrftoken: csrftoken, options : submission  };
-        $.post('/problems/multiple_choice/'+problem_pk+'/run',
+        $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
                 postParams,
                 function(data) {
                     var display_element = $('#multiple_choice-'+problem_pk)
