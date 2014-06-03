@@ -49,10 +49,10 @@ function getVisualizerComponents(newCode) {
     executeGenericVisualizer("gen_execution_trace_params", postParams);
 
     /* Hack to find the site prefix */
-    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
-    if (prefix == null) { prefix = ''; }
+//    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
+//    if (prefix == null) { prefix = ''; }
 
-    $.post(prefix + '/problems/code/visualizer-details',
+    $.post(root + '/problems/code/visualizer-details',
             postParams,
             function(data) {
                 executeGenericVisualizer("create_visualizer", data);
@@ -65,10 +65,10 @@ function getTestcases(div_id) {
     var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
 
     /* Hack to find the site prefix */
-    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
-    if (prefix == null) { prefix = ''; }
+//    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
+//    if (prefix == null) { prefix = ''; }
 
-    $.post(prefix + '/problems/code/'+div_id.split("-")[1]+'/run',
+    $.post(root + '/problems/code/'+div_id.split("-")[1]+'/run',
             postParams,
             function(data) {
                 testcases = data['results'][0];
