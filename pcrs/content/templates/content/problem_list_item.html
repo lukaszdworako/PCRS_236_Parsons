@@ -2,7 +2,7 @@
      id="{{ problem.get_app_label }}-{{ problem.pk }}">
     <i class="glyphicon glyphicon-edit"></i>
     <b>{{ problem }}</b>
-
-    {% include "problems/problem_tags.html" %}
-
+    {% with object=item %}
+        {% include "pcrs/tags.html" %}
+    {% endwith %}
 </div>

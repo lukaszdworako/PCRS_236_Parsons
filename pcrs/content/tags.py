@@ -6,7 +6,7 @@ class Tag(AbstractSelfAwareModel):
     """
     An object tag.
     """
-    name = models.CharField(max_length=100, unique=True)
+    name = models.SlugField(max_length=100, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -24,5 +24,3 @@ class AbstractTaggedObject(models.Model):
 
     class Meta:
         abstract = True
-
-

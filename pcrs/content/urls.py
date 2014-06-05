@@ -50,15 +50,16 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<pk>[0-9]+)/go$', ChallengeStartView.as_view(),
         name=''),
 
-
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
-    url(r'^challenges/(?P<pk>[0-9]+)/objects/pages$', ChallengePagesObjectsView.as_view()),
-    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page/create$', PageCreateView.as_view()),
-    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<pk>[0-9]+)/delete', ItemDeleteView.as_view(model=ContentPage)),
-    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<page>[0-9]+)/text/create$', TextCreateView.as_view()),
-    # url(r'^challenge/(?P<challenge>[0-9]+)/text/update', TextUpdateView.as_view()),
-    url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete', ItemDeleteView.as_view(model=TextBlock))
-    # url(r'^challenge/(?P<challenge>[0-9]+)/video/add', TextDeleteView.as_view()),
-    # url(r'^challenge/(?P<challenge>[0-9]+)/video/delete', TextDeleteView.as_view()),
+    url(r'^challenges/(?P<pk>[0-9]+)/objects/pages$',
+        ChallengePagesObjectsView.as_view()),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page/create$',
+        PageCreateView.as_view()),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<pk>[0-9]+)/delete',
+        ItemDeleteView.as_view(model=ContentPage)),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<page>[0-9]+)/text/create$',
+        TextCreateView.as_view()),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',
+        ItemDeleteView.as_view(model=TextBlock))
 )

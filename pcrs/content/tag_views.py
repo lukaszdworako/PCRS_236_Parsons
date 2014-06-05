@@ -1,3 +1,4 @@
+from django.views.generic import ListView
 from content.forms import TagForm
 from content.tags import Tag
 
@@ -30,4 +31,3 @@ class TagUpdateView(TagDetailEntry, GenericItemUpdateView):
     """
     Update a Tag.
     """
-

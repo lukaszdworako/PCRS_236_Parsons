@@ -1,4 +1,7 @@
 <div class="video item well" id="video-{{ item.pk }}">
     <i class="glyphicon glyphicon-facetime-video"></i>
     {{ item.name }}
+    {% with object=item %}
+        {% include "pcrs/tags.html" %}
+    {% endwith %}
 </div>
