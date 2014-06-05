@@ -21,7 +21,7 @@ $(document).ready(function () {
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
-            $('#save').attr('disabled', false);
+            $('#save').prop('disabled', false);
         }
     });
 
@@ -106,7 +106,7 @@ function saveText(event) {
                     id: "textblock-" + data['pk']
             });
             $page.append($new_item);
-            $('#save').attr('disabled', 'false');
+            $('#save').prop('disabled', false);
         });
 }
 
@@ -128,6 +128,7 @@ function deleteItem($item) {
     }
     $item.toggleClass('uiselected');
     $uiselected = null;
+    $('#save').prop('disabled', false);
 }
 
 function savePages() {
@@ -145,6 +146,6 @@ function savePages() {
         page_object_list: JSON.stringify(page_object_list),
         csrftoken: csrftoken
     }).success(function () {
-        $('#save').attr('disabled', 'disabled')
+        $('#save').attr('disabled', 'disabled');
     });
 }
