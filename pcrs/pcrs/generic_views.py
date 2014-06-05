@@ -1,4 +1,4 @@
-from django.views.generic import DeleteView, ListView, CreateView
+from django.views.generic import DeleteView, ListView, CreateView, UpdateView
 from users.views_mixins import CourseStaffViewMixin
 
 
@@ -13,9 +13,17 @@ class GenericItemListView(ListView):
         return context
 
 
-class GenericItemCreateView(CreateView):
+class GenericItemDetailView:
     """
-    A generic List View.
+    A generic detail entry view. Redirect to the item list on success.
+    """
+    def get_success_url(self):
+        return '{}/list'.format(self.model.get_base_url())
+
+
+class GenericItemCreateView(GenericItemDetailView, CreateView):
+    """
+    A generic creation view.
     """
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -24,7 +32,14 @@ class GenericItemCreateView(CreateView):
         return context
 
 
-class GenericCourseStaffDeleteView(CourseStaffViewMixin, DeleteView):
+class GenericItemUpdateView(GenericItemDetailView, UpdateView):
+    """
+    A generic update view.
+    """
+
+
+class GenericCourseStaffDeleteView(CourseStaffViewMixin, GenericItemDetailView,
+                                   DeleteView):
     """
     A generic Delete view accessible to only the course staff.
     """

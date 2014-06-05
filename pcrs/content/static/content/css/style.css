@@ -1,0 +1,26 @@
+.ui-selected {
+    background-color: lightblue;
+}
+
+.page {
+    min-height: 7em;
+}
+
+i[class^="delete"] {
+    color: gray;
+    margin: -10px;
+    font-size: smaller;
+}
+
+.textblock, .problem , .video {
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.problem, .video {
+    margin-top: 10px;
+}
+
+.uiselected {
+    background-color: #CECFCB;
+}

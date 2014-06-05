@@ -4,7 +4,7 @@ from django.db.models import Max, Q, Count
 from django.utils import timezone
 from django.conf import settings
 
-from content.models import AbstractTaggedObject
+from content.tags import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject

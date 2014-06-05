@@ -1,0 +1,8 @@
+<div class="problem item well"
+     id="{{ problem.get_app_label }}-{{ problem.pk }}">
+    <i class="glyphicon glyphicon-edit"></i>
+    <b>{{ problem }}</b>
+
+    {% include "problems/problem_tags.html" %}
+
+</div>

@@ -1,0 +1,8 @@
+<div class="tags">
+    {% if problem.language %}
+        <span class="badge tag language-tag">{{ problem.language }}</span>
+    {% endif %}
+    {% for tag in problem.tags.all %}
+        <span class="badge tag">{{ tag }}</span>
+    {% endfor %}
+</div>

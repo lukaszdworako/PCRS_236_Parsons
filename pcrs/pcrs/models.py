@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -58,6 +59,20 @@ class AbstractSelfAwareModel(models.Model):
                 .replace('_', ' ').replace('problems ', ''))
         return name
 
+    @classmethod
+    def get_base_url(cls):
+        app_label = cls.get_app_label()
+        model = cls.__name__.lower()
+        url = '/{app}/{model}s'.format(app=app_label, model=model)
+
+        if settings.SITE_PREFIX:
+            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
+        else:
+            return url
+
+    def get_absolute_url(self):
+        return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+
 
 class AbstractNamedObject(models.Model):
     """
@@ -77,7 +92,7 @@ class AbstractGenericObjectForeignKey(models.Model):
     objects = None
 
     object_id = models.PositiveIntegerField()
-    content_type = models.ForeignKey(ContentType, limit_choices_to=objects)
+    content_type = models.ForeignKey(ContentType, limit_choices_to=objects, on_delete=models.CASCADE)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     class Meta:
