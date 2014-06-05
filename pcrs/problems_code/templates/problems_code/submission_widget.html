@@ -1,16 +1,25 @@
-<h3> {{ problem.name }} </h3>
+<h3>
+    {{ problem.name }}
+    <span style='float:right; font-size:0.85em'>
+        Mark so far :
+        <sup style='font-size:0.9em'> x </sup>
+        /
+        <sub style='font-size:0.9em'> y </sub>
+    </span>
+</h3>
 
 {% block problem_description %}
+{#    <br>#}
     <div class="problem-description">
-        <h5>{{ problem.description }}</h5>
+        <h5 style="margin-left:3%">{{ problem.description }}</h5>
     </div>
+    <br>
 {% endblock %}
 
 {% load crispy_forms_tags %}
 {% crispy form %}
 
-{# html code for showing submission history #}
-{% include "problems_code/sub_history.html" %}
+{#remove#}
 {# html code for showing testcases for a submission #}
     <br>
         <div class="alert" id="alert">
@@ -19,6 +28,13 @@
         </div>
 {% include "problems_code/grade_table.html" %}
 
+{# html code for showing submission history #}
+{% include "problems_code/sub_history.html" %}
+
 {# SASHA! #}
 {% include "problems_code/code_trace.html" %}
 
+{#remove#}
+<audio id = 'tada' src="/static/tada.mp3">
+<p>Your browser does not support the audio element.</p>
+</audio>

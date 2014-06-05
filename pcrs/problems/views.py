@@ -244,6 +244,9 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
         results = self.record_submission(request)
         return HttpResponse(json.dumps({'results': results,
                                         'score': self.object.score,
+                                        'sub_pk': self.object.pk,
+                                        'best': self.object.has_best_score,
+                                        'past_dead_line': False,
             'max_score': self.object.problem.max_score}),
                             mimetype='application/json')
 
@@ -274,3 +277,27 @@ class MonitoringAsyncView(MonitoringView):
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
         results = problem.get_monitoring_data(section, time)
         return HttpResponse(json.dumps(results), mimetype='application/json')
+
+
+class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
+    """
+    Create a submission for a problem asynchronously.
+    """
+    def post(self, request, *args, **kwargs):
+        data = self.model.get_submission_class().objects\
+            .filter(user=self.request.user, problem=self.get_problem()).all()
+        returnable = []
+        for sub in data:
+            returnable.append({
+                'sub_time': sub.timestamp.isoformat(),
+                'submission': sub.submission,
+                'score': sub.score,
+                'out_of': sub.testrun_set.count(),
+                'best': sub.has_best_score,
+                'past_dead_line': False,
+                'problem_pk': self.get_problem().pk,
+                'sub_pk': sub.pk,
+                'tests': [testrun.get_history() for testrun in sub.testrun_set.all()]
+            })
+
+        return HttpResponse(json.dumps(returnable), mimetype='application/json')

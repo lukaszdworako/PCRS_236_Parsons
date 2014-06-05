@@ -142,6 +142,36 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         results = self.record_submission(request)
         return HttpResponse(json.dumps({
             'score': self.submission.score,
-            'max_score': self.get_problem().option_set.all().count()
+            'max_score': self.get_problem().option_set.all().count(),
+            'best': self.submission.has_best_score,
+            'sub_pk': self.submission.pk
         }
         ), mimetype='application/json')
+
+
+class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        returnable = []
+        data = self.model.get_submission_class().objects\
+            .filter(user=self.request.user, problem=self.get_problem()).all()
+        for sub in data:
+            mc_options = OptionSelection.objects.filter(submission=sub)
+            options_list = []
+            for mc_option in mc_options:
+                options_list.append({
+                    'selected': mc_option.was_selected,
+                    'option': mc_option.option.answer_text
+                })
+            returnable.append({
+                'sub_time': sub.timestamp.isoformat(),
+                'score': sub.score,
+                'out_of': len(options_list),
+                'best': sub.has_best_score,
+                'past_dead_line': False,
+                'problem_pk': self.get_problem().pk,
+                'sub_pk': sub.pk,
+                'options': options_list
+            })
+
+        return HttpResponse(json.dumps(returnable), mimetype='application/json')

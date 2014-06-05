@@ -1,7 +1,18 @@
-{{ problem.description }}
+<div>
+    {{ problem.description }}
+    <span id='star' style='float:right; font-size:1.4em'>
+            Mark so far :
+            <sup style='font-size:1.0em'> x </sup>
+            /
+            <sub style='font-size:1.0em'> y </sub>
+    </span>
+</div>
 
 {% load crispy_forms_tags %}
 {% crispy form %}
+
+{# html code for showing submission history #}
+{% include "problems_code/sub_history.html" %}
 
 {% load filters %}
     <br>
@@ -9,3 +20,8 @@
             <icon class="glyphicon"></icon>
             <span></span>
         </div>
+
+{#remove#}
+<audio id = 'tada' src="/static/tada.mp3">
+<p>Your browser does not support the audio element.</p>
+</audio>

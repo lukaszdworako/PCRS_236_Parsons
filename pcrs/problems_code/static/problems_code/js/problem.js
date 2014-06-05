@@ -48,10 +48,6 @@ function getVisualizerComponents(newCode) {
     var postParams = { language : 'python', user_script : newCode};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
 
-    /* Hack to find the site prefix */
-//    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
-//    if (prefix == null) { prefix = ''; }
-
     $.post(root + '/problems/code/visualizer-details',
             postParams,
             function(data) {
@@ -61,12 +57,132 @@ function getVisualizerComponents(newCode) {
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
+function getHistory(div_id){
+    var postParams = { csrftoken: csrftoken };
+    $.post(root+'/problems/code/'+div_id.split("-")[1]+'/history',
+        postParams,
+        function(data){
+            show_history(data, div_id);
+        },
+        'json')
+        .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+}
+
+function add_history_entry(data, div_id, flag){
+
+    var sub_time = new Date(data['sub_time']);
+    sub_time = create_timestamp(sub_time);
+
+    data['past_dead_line'] = false;
+
+    var panel_class = "panel panel-default";
+
+    if (data['past_dead_line']){
+        panel_class = "panel panel-warning";
+        sub_time = "Past dead line";
+    }
+
+    star_text = "";
+    if (data['best']){
+        panel_class = "panel panel-primary";
+        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
+        $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
+        $('#'+div_id).find('#history_accordion').find(".panel-primary")
+            .addClass("panel-default").removeClass("panel-primary");
+
+
+    }
+
+    var entry = $('<div/>',{class:panel_class});
+    var header1 = $('<div/>',{class:"panel-heading"});
+    var header2 = $('<h4/>', {class:"panel-title"});
+    var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
+                                      + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
+                                      + " / "
+                                      + "<sub style='font-size:0.9em'>" + data['out_of'] + "</sub>"
+                                      + "</span>"});
+
+    var header3 = $('<a/>', {'data-toggle':"collapse",
+                             'data-parent':"#history_accordion",
+                              href:"#collapse_"+data['sub_pk'],
+                              onclick:"delay_refresh_cm('history_mirror_"
+                                + data['problem_pk']
+                                + "_"
+                                + data['sub_pk']
+                                + "')",
+                              html:sub_time + header4.html()});
+
+    var cont1 = $('<div/>', {class:"panel-collapse collapse",
+                                  id:"collapse_" + data['sub_pk']});
+
+    var cont2 = $('<div/>', {id:"history_mirror_"
+                                      + data['problem_pk']
+                                      + "_"
+                                      + data['sub_pk'],
+                                  html:data['submission']});
+
+    var cont3 = $('<ul/>', {class:"list-group"});
+
+    for (var num = 0; num < data['tests'].length; num++){
+
+        var lc = "";
+        var ic = "";
+        var test_msg = "";
+        if (data['tests'][num]['passed']){
+            lc = "list-group-item list-group-item-success";
+            ic = "<icon class='glyphicon glyphicon-ok'> </icon>";
+        }
+        else{
+            lc = "list-group-item list-group-item-danger";
+            ic = "<icon class='glyphicon glyphicon-remove'> </icon>";
+        }
+
+        if (data['tests'][num]['visible']){
+            test_msg = " " + data['tests'][num]['input'] + " -> " + data['tests'][num]['output'];
+        }
+        else{
+            if (data['tests'][num]['description'] == ""){
+                test_msg = " Hidden Test";
+            }
+            else{
+                test_msg = " " + data['tests'][num]['description'];
+            }
+        }
+
+        var cont4 = $('<li/>', {class:lc,
+                                   html:ic + test_msg});
+        cont3.append(cont4);
+    }
+
+    header2.append(header3);
+    header1.append(header2);
+
+    entry.append(header1);
+    cont1.append(cont2);
+    cont1.append(cont3);
+    entry.append(cont1);
+
+    if (flag == 0){
+        $('#'+div_id).find('#history_accordion').append(entry);
+    }
+    else{
+        $('#'+div_id).find('#history_accordion').prepend(entry);
+    }
+    create_history_code_mirror("python", 3, "history_mirror_"
+                                                + data['problem_pk']
+                                                + "_"
+                                                + data['sub_pk']);
+}
+
+function show_history(data, div_id){
+
+    for (var x = 0; x < data.length; x++){
+        add_history_entry(data[x], div_id, 0);
+    }
+}
+
 function getTestcases(div_id) {
     var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
-
-    /* Hack to find the site prefix */
-//    var prefix = window.location.href.match(/\/[a-z0-9\/]*(?=\/problems\/)/);
-//    if (prefix == null) { prefix = ''; }
 
     $.post(root + '/problems/code/'+div_id.split("-")[1]+'/run',
             postParams,
@@ -99,17 +215,17 @@ function getTestcases(div_id) {
                         .text("Your solution passed " + score + " out of " + max_score + " cases!");
                 }
 
-                prepareGradingTable(div_id);
+                prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
-function prepareGradingTable(div_id) {
+function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
-
+    var tests = [];
     for (var i = 0; i < testcases.length; i++) {
         var current_testcase = testcases[i];
 
@@ -163,8 +279,32 @@ function prepareGradingTable(div_id) {
                 newRow.append('<td></td>')
             }
         }
+        var test = {'visible':testcaseInput != null,
+                    'input': testcaseInput,
+                    'output': testcaseOutput,
+                    'passed': passed,
+                    'description': description};
+        tests.push(test);
     }
-    add_to_history(score, div_id);
+    var data = {'sub_time':new Date(),
+            'submission':myCodeMirrors[div_id].getValue(),
+            'score':score,
+            'best':best,
+            'past_dead_line':past_dead_line,
+            'problem_pk':div_id.split("-")[1],
+            'sub_pk':sub_pk,
+            'out_of':max_score,
+            'tests': tests};
+    if (best){
+
+        var v = $('#'+div_id).find('#tada')[0];
+        $('#'+div_id).find('h3').find('span').empty();
+        $('#'+div_id).find('h3').find('span').append($('<img/>', {src:"/static/star.gif", width:40, heigh:40}));
+        v.play();
+    }
+    if ($('#'+div_id).find('#history_accordion').children().length != 0){
+        add_history_entry(data, div_id, 1);
+    }
 }
 
 function create_timestamp(datetime){
@@ -186,50 +326,6 @@ function create_timestamp(datetime){
     return formated_datetime;
 }
 
-function add_to_history(score, div_id){
-    var sub_history_window = $("#"+div_id).find('#accordion');
-    var datetime = new Date();
-    datetime = create_timestamp(datetime);
-
-    var new_entry = '<div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title">';
-    var local_name = "'history_mirror_999_"+code_problem_id+"'";
-
-    new_entry += '<a data-toggle="collapse" data-parent="#accordion" href="#collapse_' + code_problem_id + '" onclick="delay_refresh_cm('+local_name+')">';
-    new_entry += datetime + '<td> Score : ' + score +' / '+ testcases.length + '</td></a></h4></div>';
-    new_entry += '<div id="collapse_'+ code_problem_id + '" class="panel-collapse collapse">';
-    new_entry += '<div id="history_mirror_999_'+code_problem_id+'">' + myCodeMirrors[div_id].getValue() + '</div>';
-    new_entry += '<ul class="list-group">';
-
-    for (var i = 0; i < testcases.length; i++) {
-        var test_case = testcases[i];
-        var test_case_info = $("#"+div_id).find('#tcase_'+div_id+'_'+ i).children();
-
-        var visible = ("Hidden Test" != test_case_info[0].innerHTML);
-
-        var passed = test_case.passed_test;
-
-        if (passed){
-            new_entry += '<li class="list-group-item list-group-item-success">';
-            new_entry += '<icon class="glyphicon glyphicon-ok"></icon>';
-        }
-        else{
-            new_entry += '<li class="list-group-item list-group-item-danger">';
-            new_entry += '<icon class="glyphicon glyphicon-remove"></icon>';
-        }
-
-        if (visible){
-            new_entry += '&nbsp;&nbsp;' + test_case_info[0].innerHTML + ' -> ' + test_case_info[1].innerHTML +'</li>';
-        }
-        else{
-            new_entry += '&nbsp;&nbsp;' + 'Hidden Test </li>'
-        }
-    }
-    new_entry += '</ul></div></div>';
-
-    sub_history_window.prepend(new_entry);
-    create_history_code_mirror ('python', 3, 'history_mirror_999_'+code_problem_id);
-    code_problem_id -= 1;
-}
 
 var code_problem_id = -1;
 var myCodeMirrors = {};
@@ -259,6 +355,10 @@ $( document).ready(function() {
                 getTestcases(div_id);
             }
         });
+        $(all_wrappers[x]).find("[name='history']").one("click", (function(){
+            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
+            getHistory(div_id);
+        }));
     }
 });
 
