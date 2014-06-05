@@ -1,5 +1,4 @@
 function create_history_code_mirror (language, version, location){
-    console.log(location);
     hcm = history_code_mirror(language, version, $('#'+location), $('#'+location).text()), true;
     if (!(location in cmh_list)){
         cmh_list[location] = hcm;

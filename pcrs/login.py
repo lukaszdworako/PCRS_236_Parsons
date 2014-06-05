@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
-from pcrs.settings import PRODUCTION, SITE_PREFIX
 from django.core.context_processors import csrf
 
 import subprocess
@@ -21,7 +21,7 @@ def is_course_staff(user):
 
 def check_authorization(username, password):
     ''' Return True if user is authized on the university level, False othervise. '''
-    if not PRODUCTION:
+    if not settings.PRODUCTION:
         return True
 
     pwauth = subprocess.Popen("/usr/sbin/pwauth", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -68,7 +68,7 @@ def login_view(request):
                 else: 
                     request.session['section'] = user.section
                     post_link = request.POST['next']
-                    redirect_link = post_link or SITE_PREFIX + '/content/challenge/list'
+                    redirect_link = post_link or settings.SITE_PREFIX + '/content/challenge/list'
 
                     login(request, user)
                     return HttpResponseRedirect(redirect_link)

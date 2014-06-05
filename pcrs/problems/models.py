@@ -46,11 +46,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         """
         Return the url prefix for the problem type.
         """
-        url = '/problems/{}'.format(cls.get_problem_type_name())
-        if settings.SITE_PREFIX:
-            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
-        else:
-            return url
+        return '{site}/problems/{typename}'.format(site=settings.SITE_PREFIX, typename=cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)

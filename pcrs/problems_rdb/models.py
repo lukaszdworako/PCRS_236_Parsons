@@ -42,12 +42,7 @@ class Schema(AbstractSelfAwareModel):
         """
         Return the url for a schema.
         """
-        url = '/problems/rdb/'.format(settings.SITE_PREFIX)
-        if settings.SITE_PREFIX:
-            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX,
-                                            url=url)
-        else:
-            return url
+        return '{prefix}/problems/rdb/schema'.format(prefix=settings.SITE_PREFIX)
 
     def __str__(self):
         return self.name
