@@ -1,9 +1,11 @@
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Max, Q, Count
 from django.utils import timezone
 from django.conf import settings
 
+import content.models
 from content.tags import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
@@ -24,6 +26,14 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     All problems have visibility level, and optionally tags, and are self-aware.
     """
+
+    # bug in 1.5 does not allow this generic relatio
+    # TODO: this should work when we upgrade to >1.6
+    # content_problem = generic.GenericRelation(
+    #     content.models.ContentSequenceItem, content_type_field='content_type',
+    #     object_id_field='object_id',
+    #     related_name='%(app_label)s_%(class)s_content_problem')
+
     class Meta:
         abstract = True
 
@@ -46,7 +56,9 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         """
         Return the url prefix for the problem type.
         """
-        return '{site}/problems/{typename}'.format(site=settings.SITE_PREFIX, typename=cls.get_problem_type_name())
+        return '{site}/problems/{typename}'\
+            .format(site=settings.SITE_PREFIX,
+                    typename=cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
@@ -148,17 +160,6 @@ class AbstractNamedProblem(AbstractNamedObject, AbstractProgrammingProblem):
     """
     class Meta:
         abstract = True
-
-
-class CompletedProblem(AbstractGenericObjectForeignKey):
-    #TODO: add docstring
-    objects = models.Q(model='problem')
-    user = models.ForeignKey(PCRSUser)
-
-    @classmethod
-    def get_completed(cls, user):
-        return {problem.content_object
-                for problem in cls.objects.filter(user=user)}
 
 
 class AbstractSubmission(AbstractSelfAwareModel):

@@ -18,6 +18,9 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     A Video object has a name, a description, and a link to a video.
     """
     link = models.TextField()
+    content_videos = generic.GenericRelation('ContentSequenceItem',
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
 
     class Meta:
         ordering = ['name']
@@ -28,6 +31,10 @@ class TextBlock(models.Model):
     A text object has a single attribute - the text to be displayed.
     """
     text = models.TextField()
+
+    content_text = generic.GenericRelation('ContentSequenceItem',
+                                        content_type_field='content_type',
+                                             object_id_field='object_id')
 
 
 class ContainerAttempt(AbstractGenericObjectForeignKey, models.Model):
