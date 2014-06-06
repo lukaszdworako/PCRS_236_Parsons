@@ -1,39 +1,21 @@
 from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML
 from django import forms
 
-from content.models import Challenge, Video
+from content.models import Challenge, Video, Quest
 from content.tags import Tag
-from pcrs.form_mixins import CrispyFormMixin
+from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
 
 
-class TagForm(CrispyFormMixin, forms.ModelForm):
+class TagForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Tag
         fields = ('name', )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        self.helper.layout = Layout(
-            Fieldset('', *self.Meta.fields),
-            ButtonHolder(self.delete_button if self.instance.pk else None,
-                         self.save_button)
-        )
-
-
-class VideoForm(CrispyFormMixin, forms.ModelForm):
+class VideoForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Video
         fields = ('name', 'description', 'link', 'tags')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.helper.layout = Layout(
-            Fieldset('', *self.Meta.fields),
-            ButtonHolder(self.delete_button if self.instance.pk else None,
-                         self.save_button)
-        )
 
 
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
@@ -59,6 +41,12 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
             )
         else:
             self.helper.layout.append(ButtonHolder(self.save_button))
+
+
+class QuestForm(BaseCrispyForm, forms.ModelForm):
+    class Meta:
+        model = Quest
+        fields = ('name', 'description')
 
             # class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
             #     """

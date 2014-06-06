@@ -1,7 +1,3 @@
-$(document).ajaxError(function () {
-    alert('Something went wrong.');
-});
-
 var $uiselected = null;
 
 

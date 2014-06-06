@@ -2,7 +2,9 @@ from django.conf.urls import patterns, url
 
 from content.challenge_content_views import TextCreateView, PageCreateView, \
     ChallengeObjectsView, ItemDeleteView, ChallengePagesObjectsView
-from content.views import *
+from content.challenge_views import *
+from content.quest_views import QuestCreateView, QuestUpdateView, QuestListView, \
+    QuestSaveChallengesView
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -19,9 +21,6 @@ urlpatterns = patterns('',
     url(r'^tags/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=Tag),
         name='tag_delete'),
-
-    url(r'^quests$', ContainerListView.as_view(),
-        name='quests'),
     
     url(r'^videos/create$', VideoCreateView.as_view(),
         name='video_create'),
@@ -32,7 +31,6 @@ urlpatterns = patterns('',
         name='video_delete'),
     url(r'^videos/list$', VideoListView.as_view(),
         name='video_list'),
-
 
     url(r'^challenges/create$', ChallengeCreateView.as_view(),
         name='challenge_create'),
@@ -61,5 +59,20 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<page>[0-9]+)/text/create$',
         TextCreateView.as_view()),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',
-        ItemDeleteView.as_view(model=TextBlock))
+        ItemDeleteView.as_view(model=TextBlock)),
+
+    url(r'^quests$', ContainerListView.as_view(),
+        name='quests'),
+
+    url(r'^quests/list$', QuestListView.as_view(),
+        name='quest_list'),
+    url(r'^quests/list/save_challenges$', QuestSaveChallengesView.as_view(),
+        name='quest_list_save_challenges'),
+    url(r'^quests/create$', QuestCreateView.as_view(),
+        name='quest_create'),
+    url(r'^quests/(?P<pk>[0-9]+)$', QuestUpdateView.as_view(),
+        name='quest_update'),
+    url(r'^quests/(?P<pk>[0-9]+)/delete$',
+        GenericCourseStaffDeleteView.as_view(model=Quest),
+        name='quest_delete'),
 )

@@ -22,9 +22,6 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
-    class Meta:
-        ordering = ['name']
-
 
 class TextBlock(models.Model):
     """
@@ -153,14 +150,16 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     A Challenge is a sequence of ContentPages, which are defined in markup.
     """
     quest = models.ForeignKey('Quest', blank=True, null=True)
+    order = models.SmallIntegerField(default=0, blank=True)
     is_graded = models.BooleanField(default=False, blank=True)
 
     problems = generic.GenericRelation(ChallengeProblem,
         content_type_field='container_content_type',
         object_id_field='container_object_id')
 
-    pages = None
-
+    class Meta:
+        ordering = ['quest', 'order']
+        # order_with_respect_to = 'quest'
 
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())
@@ -169,8 +168,11 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         return '{}/go'.format(self.get_absolute_url())
 
 
-class Quest(AbstractNamedObject):
-    pass
+class Quest(AbstractNamedObject, AbstractSelfAwareModel):
+    order = models.SmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
 
 
 class SectionQuest(AbstractLimitedVisibilityObject):
@@ -178,18 +180,15 @@ class SectionQuest(AbstractLimitedVisibilityObject):
 
     """
     section = models.ForeignKey(Section)
-    container = models.ForeignKey('Quest')
+    quest = models.ForeignKey('Quest')
     open_on = models.DateTimeField(blank=True, null=True)
     due_on = models.DateTimeField(blank=True, null=True)
-    order = models.SmallIntegerField(default=0)
-    is_graded = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ['section', 'container']
+        unique_together = ['section', 'quest']
 
     def __str__(self):
-        return '{section} {container}'.format(section=self.section,
-            container=self.container)
+        return '{section} {quest}'.format(section=self.section, quest=self.quest)
 
 
 def page_delete(sender, instance, **kwargs):

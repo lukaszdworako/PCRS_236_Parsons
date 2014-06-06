@@ -10,9 +10,15 @@ i[class^="delete"] {
     color: gray;
     margin: -10px;
     font-size: smaller;
+    cursor: hand;
 }
 
-.textblock, .problem , .video {
+.close {
+    font-size: small;
+    cursor: hand;
+}
+
+.textblock, .problem, .video {
     margin-right: 10px;
     padding: 5px;
 }
@@ -23,4 +29,14 @@ i[class^="delete"] {
 
 .uiselected {
     background-color: #CECFCB;
+}
+
+.quest-controls {
+    margin-right: 10px;
+}
+
+.challenge {
+    padding: 5px;
+    background-color: #008BB0;
+    color: white
 }
