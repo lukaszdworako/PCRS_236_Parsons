@@ -1,18 +1,25 @@
 <h3> {{ item }}</h3>
 <div> {{ item.description }} </div>
 <br>
-<object  width='603' height='363'>
-    <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>
-    <param name='allowfullscreen' value='true'>
-    <param name='allowscriptaccess' value='always'>
-    <embed
-            src='https://media.library.utoronto.ca/flashinc/player.swf'
-            width='603'
-            height='363'
-            allowscriptaccess='always'
-            allowfullscreen='true'
-            flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}" />
-</object>
+{% if 'AppleWebKit' in request.META.HTTP_USER_AGENT %}
+    <h3 style="border:solid; border-width:1px; text-align: center;"> Sorry no Mobile Video support currently </h3>
+
+{% else %}
+    {% if 'Chrome' not in request.META.HTTP_USER_AGENT %}
+    <object  width='603' height='363'>
+        <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>
+        <param name='allowfullscreen' value='true'>
+        <param name='allowscriptaccess' value='always'>
+    {% endif %}
+        <embed
+                src='https://media.library.utoronto.ca/flashinc/player.swf'
+                width='603'
+                height='363'
+                allowscriptaccess='always'
+                allowfullscreen='true'
+                flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}" />
+    </object>
+{% endif %}
 <br>
 
 
