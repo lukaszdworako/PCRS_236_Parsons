@@ -204,23 +204,25 @@ class TestBestSubmission:
         self.assertTrue(s3.has_best_score)
 
 
-class TestNumberSolvedBeforeDeadline:
+class TestSingleChallengeQuest:
     """
-    Test getting the number of problems a student has solved in a Challenge.
+    Base test with one problem in a Challenge, a single Challenge, and a
+    single Quest with a single deadline.
     """
 
     def setUp(self):
         self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
-        self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
-        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
 
         self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
         self.student2 = PCRSUser.objects.create(username='student2', section=self.s1)
-        self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
 
         self.quest = Quest.objects.create(name='c1', description='c2')
-        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
-        self.challenge = Challenge.objects.create(pk=1, name='c1', description='c2', quest=self.quest)
+        SectionQuest.objects.create(quest=self.quest, section=self.s1,
+                                    due_on=localtime(now()) + timedelta(days=7))
+
+        self.challenge = Challenge.objects.create(pk=1, name='c1',
+                                                  description='c2',
+                                                  quest=self.quest)
 
 
 class TestNumberSolvedBeforeDeadlineChallenges:
@@ -265,7 +267,7 @@ class TestNumberSolvedBeforeDeadlines:
         self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
 
 
-class TestNumberSolvedQuests:
+class TestManyQuestsDeadlines:
     """
     Test getting the number of problems a student has solved in a Challenge,
     with multiple Challenges in multiple Quests.
@@ -274,7 +276,6 @@ class TestNumberSolvedQuests:
     def setUp(self):
         self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
         self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
-        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
 
         self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
         self.student2 = PCRSUser.objects.create(username='student2', section=self.s2)

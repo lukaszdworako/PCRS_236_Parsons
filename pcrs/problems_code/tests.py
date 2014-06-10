@@ -3,9 +3,9 @@ from django.core.urlresolvers import reverse
 from django.utils.timezone import localtime, now, timedelta
 
 from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
-    TestBestSubmission, TestNumberSolvedBeforeDeadline, \
+    TestBestSubmission, TestSingleChallengeQuest, \
     TestNumberSolvedBeforeDeadlineChallenges, \
-    TestNumberSolvedBeforeDeadlines, TestNumberSolvedQuests
+    TestNumberSolvedBeforeDeadlines, TestManyQuestsDeadlines
 from problems_code.models import Problem, TestCase, Submission, TestRun
 from tests.ViewTestMixins import (CourseStaffViewTestMixin,
                                   ProtectedViewTestMixin, UsersMixin)
@@ -819,7 +819,7 @@ class TestBestSubmissionCode(TestBestSubmission, UsersMixin, test.TestCase):
                                               visibility='open')
 
 
-class TestSolvedBeforeDeadline(TestNumberSolvedBeforeDeadline, test.TestCase):
+class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
     """
     Test calculating the number of problems solved in Challenge.
     """
@@ -1114,7 +1114,7 @@ class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
                              Submission.get_best_before_deadline(self.student2))
 
 
-class TestNumberSolvedQuestsCode(TestNumberSolvedQuests, test.TestCase):
+class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
     """
     Test the number of problems solved in each Challenge with varying deadlines
     for sections and multiple Quests.
@@ -1201,3 +1201,135 @@ class TestNumberSolvedQuestsCode(TestNumberSolvedQuests, test.TestCase):
             Submission.objects.create(submission='subm', user=self.student2, problem=p3, score=3)
             self.assertEqual({1: 1, 4: 1, },
                              Submission.get_best_before_deadline(self.student2))
+
+
+class TestBestCodeAttemptSingleProblem(TestSingleChallengeQuest, test.TestCase):
+    """
+    Test getting the best attempts for a single problem.
+    """
+
+    def setUp(self):
+        TestSingleChallengeQuest.setUp(self)
+        self.problem = Problem.objects.create(pk=1, name='p1', description='p1',
+                                              challenge=self.challenge)
+        for i in range(4):
+            TestCase.objects.create(problem=self.problem, test_input='1',
+                                    expected_output='2')
+
+    def test_single_submission(self):
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=self.problem, score=3)
+        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        self.assertEqual({1: 3}, actual)
+
+    def test_many_submission(self):
+        for score in [2, 3, 0, 1]:
+            Submission.objects.create(submission='subm', user=self.student1,
+                                      problem=self.problem, score=score)
+        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        self.assertEqual({1: 3}, actual)
+
+    def test_best_after_deadline(self):
+        for score in [2, 3, 0, 1]:
+            Submission.objects.create(submission='subm', user=self.student1,
+                                      problem=self.problem, score=score)
+        s = Submission.objects.create(submission='subm', user=self.student1,
+                                      problem=self.problem, score=4)
+        s.timestamp = localtime(now()) + timedelta(days=10)
+        s.save()
+        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        self.assertEqual({1: 3}, actual)
+
+
+class TestBestCodeAttemptManyProblem(TestManyQuestsDeadlines, test.TestCase):
+    """
+    Test getting the best attempts for multiple problems
+    across many Challenges.
+    """
+
+    def setUp(self):
+        TestManyQuestsDeadlines.setUp(self)
+
+        # there are 2 students, 2 quests, each with two challenges.
+        # students are enrolled in 2 different sections - deadline for student1
+        # is a week from now, and the deadline for student 2 is a week ago
+
+        # add two problems to each challenge
+        challenges = [self.challenge, self.challenge2,
+                      self.challenge3, self.challenge4]
+        for i in range(4):
+            problem = Problem.objects.create(pk=i, name=str(i), description='p',
+                                             challenge=challenges[i])
+            for j in range(4):
+                TestCase.objects.create(problem=problem, test_input='1',
+                                        expected_output='2')
+            problem = Problem.objects.create(pk=i+4, name=str(i+4), description='p',
+                                             challenge=challenges[i])
+            for j in range(2):
+                TestCase.objects.create(problem=problem, test_input='1',
+                                        expected_output='2')
+
+    def test_not_all_attempted(self):
+        for problem_pk in [0, 6]:
+            # one problem attempted in two challenges
+            for student in [self.student1, self.student2]:
+                Submission.objects.create(submission='subm', user=student,
+                                          problem_id=problem_pk, score=1)
+        with self.assertNumQueries(2):
+            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            self.assertEqual({0: 1, 6: 1}, actual)
+
+            # second student submission deadline has passed
+            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            self.assertEqual({}, actual)
+
+    def test_best_for_student(self):
+        for student in [self.student1, self.student2]:
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=0)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=2)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=1)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=2, score=0)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=6, score=1)
+
+        with self.assertNumQueries(2):
+            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
+
+            # second student submission deadline has passed
+            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            self.assertEqual({}, actual)
+
+    def test_best_for_student_with_best_after_deadline(self):
+        for student in [self.student1, self.student2]:
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=0)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=2)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=1, score=1)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=2, score=0)
+            Submission.objects.create(submission='subm', user=student,
+                                      problem_id=6, score=1)
+        # all submissions made before the deadlines for both sections
+        Submission.objects.update(timestamp=localtime(now()) - timedelta(days=10))
+
+        with self.assertNumQueries(2):
+            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
+            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
+
+        # adding a submission by student 2 that came after their deadline
+        Submission.objects.create(submission='subm', user=self.student2,
+                                  problem_id=6, score=4)
+        with self.assertNumQueries(2):
+            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
+            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
