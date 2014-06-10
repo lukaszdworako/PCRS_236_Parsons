@@ -1,8 +1,11 @@
 from django import test
 from django.core.urlresolvers import reverse
+from django.utils.timezone import localtime, now, timedelta
 
 from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
-    TestBestSubmission
+    TestBestSubmission, TestNumberSolvedBeforeDeadline, \
+    TestNumberSolvedBeforeDeadlineChallenges, \
+    TestNumberSolvedBeforeDeadlines, TestNumberSolvedQuests
 from problems_code.models import Problem, TestCase, Submission, TestRun
 from tests.ViewTestMixins import (CourseStaffViewTestMixin,
                                   ProtectedViewTestMixin, UsersMixin)
@@ -814,3 +817,387 @@ class TestBestSubmissionCode(TestBestSubmission, UsersMixin, test.TestCase):
         self.Submission = Submission
         self.problem = Problem.objects.create(pk=1, name='Problem1',
                                               visibility='open')
+
+
+class TestSolvedBeforeDeadline(TestNumberSolvedBeforeDeadline, test.TestCase):
+    """
+    Test calculating the number of problems solved in Challenge.
+    """
+    problem_class = Problem
+    submission_class = Submission
+
+    def test_no_problems_in_challenge(self):
+        """
+        The problem is not in the Challenge.
+        """
+        p1 = self.problem_class.objects.create(name='p1', description='p1')
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=4)
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=1)
+        Submission.objects.create(submission='subm', user=self.student2,
+                                  problem=p1, score=1)
+
+        with self.assertNumQueries(2):
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student1))
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student2))
+
+    def test_one_problem_in_challenge(self):
+        """
+        The problem is in the Challenge.
+        One student solved it, and the other did not.
+        """
+        p1 = self.problem_class.objects.create(name='p1', description='p1',
+                                               challenge=self.challenge)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=4)
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=1)
+        Submission.objects.create(submission='subm', user=self.student2,
+                                  problem=p1, score=1)
+
+        with self.assertNumQueries(2):
+            self.assertEqual({1: 1},
+                             Submission.get_best_before_deadline(self.student1))
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student2))
+
+    def test_one_problem_outside_Challenge_solved(self):
+        """
+        One problem is in the Challenge, multiple submissions,
+        including submissions to a problem not in Challenge.
+        """
+        p1 = self.problem_class.objects.create(name='p1', description='p1',
+                                               challenge=self.challenge)
+        p2 = self.problem_class.objects.create(name='p2', description='p2')
+        p3 = self.problem_class.objects.create(name='p3', description='p3')
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=3)
+        Submission.objects.create(submission='subm', user=self.student1,
+                                  problem=p1, score=1)
+        Submission.objects.create(submission='subm', user=self.student2,
+                                  problem=p2, score=4)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student1))
+
+    def test_two_problem_in_challenge_solved(self):
+        p1 = self.problem_class.objects.create(name='p1', description='p1',
+                                               challenge=self.challenge)
+        p2 = self.problem_class.objects.create(name='p2', description='p2',
+                                               challenge=self.challenge)
+        p3 = self.problem_class.objects.create(name='p3', description='p3')
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        for i in range(2):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+
+        for i in range(3):
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3]:
+                for score in [2, 0, 1, 4, 0]:
+                    self.submission_class.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({1: 2},
+                             Submission.get_best_before_deadline(self.student1))
+
+
+class TestSolvedBeforeDeadlineChallenges(
+    TestNumberSolvedBeforeDeadlineChallenges, test.TestCase):
+    def test_one_problem_in_one_challenge(self):
+        """
+        Test one problem solved in one Challenge and 0 in another.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3]:
+                for score in [2, 0, 1, 3, 0]:
+                    Submission.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({2: 1},
+                             Submission.get_best_before_deadline(self.student1))
+
+    def test_all_problem_in_one_challenge(self):
+        """
+        Test both problems solved in one Challenge and 0 in another.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3]:
+                for score in [2, 0, 1, 3, 0]:
+                    Submission.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({2: 2},
+                             Submission.get_best_before_deadline(self.student1))
+
+    def test_one_problem_in_all_challenges(self):
+        """
+        Test one problem solved in each Challenge.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            Submission.objects.create(submission='subm',
+                user=user, problem=p1, score=1)
+            Submission.objects.create(submission='subm',
+                user=user, problem=p1, score=4)
+            Submission.objects.create(submission='subm',
+                user=user, problem=p2, score=3)
+            Submission.objects.create(submission='subm',
+                user=user, problem=p3, score=1)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({1: 1, 2: 1},
+                             Submission.get_best_before_deadline(self.student1))
+
+    def test_all_problem_in_all_challenges(self):
+        """
+        Test all problems solved in all Challenges.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3]:
+                for score in [2, 0, 4, 3, 0]:
+                    Submission.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(1):
+            self.assertEqual({1: 1, 2: 2},
+                Submission.get_best_before_deadline(self.student1))
+
+
+class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
+    """
+    Test the number of problems solved in each Challenge with varying deadlines
+    for sections.
+    """
+    def test_all_problems_in_all_challenges(self):
+        """
+        Submissions by all students were made at the same time,
+        but the deadline for some students has passed
+        """
+        p1 = Problem.objects.create(name='p1', description='p1',
+                                    challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2',
+                                    challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3',
+                                    challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3]:
+                for score in [2, 0, 4, 3, 0]:
+                    Submission.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(3):
+            self.assertEqual({1: 1, 2: 2},
+                             Submission.get_best_before_deadline(self.student1))
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student2))
+            self.assertEqual({},
+                            Submission.get_best_before_deadline(self.student3))
+
+    def test_some_after_deadline(self):
+        """
+        Some submissions were made after the deadline for the students section.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1',
+                                    challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2',
+                                    challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3',
+                                    challenge=self.challenge2)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for student in [self.student1, self.student2]:
+            for problem in [p1, p2]:
+                for score in [2, 0, 4, 4, 0]:
+                    s = Submission.objects.create(submission='subm',
+                            user=student, problem=problem, score=score)
+                    s.timestamp = now() - timedelta(days=8)
+                    s.save()
+
+        with self.assertNumQueries(5):
+            self.assertEqual({1: 1, 2: 1},
+                             Submission.get_best_before_deadline(self.student1))
+            Submission.objects.create(submission='subm', user=self.student1, problem=p3, score=3)
+            self.assertEqual({1: 1, 2: 2},
+                             Submission.get_best_before_deadline(self.student1))
+
+            Submission.objects.create(submission='subm', user=self.student2, problem=p3, score=3)
+            self.assertEqual({1: 1, 2: 1},
+                             Submission.get_best_before_deadline(self.student2))
+
+
+class TestNumberSolvedQuestsCode(TestNumberSolvedQuests, test.TestCase):
+    """
+    Test the number of problems solved in each Challenge with varying deadlines
+    for sections and multiple Quests.
+    """
+    def test_all_problems_in_all_challenges(self):
+        """
+        Submissions by all students were made at the same time,
+        but the deadline for some students has passed
+        """
+        p1 = Problem.objects.create(name='p1', description='p1',
+                                    challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2',
+                                    challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3',
+                                    challenge=self.challenge3)
+        p4 = Problem.objects.create(name='p4', description='p4',
+                                    challenge=self.challenge4)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p4, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for user in [self.student1, self.student2, self.student3]:
+            for problem in [p1, p2, p3, p4]:
+                for score in [2, 0, 4, 3, 0]:
+                    Submission.objects.create(submission='subm',
+                        user=user, problem=problem, score=score)
+
+        with self.assertNumQueries(3):
+            self.assertEqual({1: 1, 2: 1, 3: 1, 4: 1},
+                             Submission.get_best_before_deadline(self.student1))
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student2))
+            self.assertEqual({},
+                             Submission.get_best_before_deadline(self.student3))
+
+    def test_some_after_deadline(self):
+        """
+        Some submissions were made after the deadline for the students section.
+        """
+        p1 = Problem.objects.create(name='p1', description='p1',
+                                    challenge=self.challenge)
+        p2 = Problem.objects.create(name='p2', description='p2',
+                                    challenge=self.challenge2)
+        p3 = Problem.objects.create(name='p3', description='p3',
+                                    challenge=self.challenge3)
+        p4 = Problem.objects.create(name='p4', description='p4',
+                                    challenge=self.challenge4)
+        for i in range(4):
+            TestCase.objects.create(problem=p1, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p4, test_input='1',
+                                    expected_output='2')
+        for i in range(3):
+            TestCase.objects.create(problem=p2, test_input='1',
+                                    expected_output='2')
+            TestCase.objects.create(problem=p3, test_input='1',
+                                    expected_output='2')
+
+        for student in [self.student1, self.student2]:
+            for problem in [p1, p2, p3, p4]:
+                for score in [2, 0, 4, 4, 2]:
+                    s = Submission.objects.create(submission='subm',
+                            user=student, problem=problem, score=score)
+                    s.timestamp = now() - timedelta(days=8)
+                    s.save()
+
+        with self.assertNumQueries(6):
+            self.assertEqual({1: 1, 4: 1},
+                             Submission.get_best_before_deadline(self.student1))
+            self.assertEqual({1: 1, 4: 1},
+                             Submission.get_best_before_deadline(self.student2))
+
+            Submission.objects.create(submission='subm', user=self.student1, problem=p3, score=3)
+            self.assertEqual({1: 1, 3: 1, 4: 1},
+                             Submission.get_best_before_deadline(self.student1))
+
+            Submission.objects.create(submission='subm', user=self.student2, problem=p3, score=3)
+            self.assertEqual({1: 1, 4: 1, },
+                             Submission.get_best_before_deadline(self.student2))

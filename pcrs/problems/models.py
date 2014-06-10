@@ -1,7 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Max, Q, Count
+from django.db.models import Max, Q, Count, F
 from django.utils import timezone
 from django.conf import settings
 
@@ -26,8 +26,12 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     All problems have visibility level, and optionally tags, and are self-aware.
     """
+    challenge = models.ForeignKey(content.models.Challenge, null=True, blank=True,
+        related_name='%(app_label)s_%(class)s_related')
 
-    # bug in 1.5 does not allow this generic relatio
+    max_score = models.SmallIntegerField(default=0, blank=True)
+
+    # bug in 1.5 does not allow this generic relation
     # TODO: this should work when we upgrade to >1.6
     # content_problem = generic.GenericRelation(
     #     content.models.ContentSequenceItem, content_type_field='content_type',
@@ -125,9 +129,9 @@ class AbstractProgrammingProblem(AbstractProblem):
     class Meta:
         abstract = True
 
-    @property
-    def max_score(self):
-        return self.testcase_set.count()
+    # @property
+    # def max_score(self):
+    #     return self.testcase_set.count()
 
     def get_testitem_data_for_submissions(self, s_ids):
         """
@@ -218,6 +222,34 @@ class AbstractSubmission(AbstractSelfAwareModel):
         self.save()
         self.set_best_submission()
 
+    @classmethod
+    def get_best_before_deadline(cls, user):
+        """
+        Return a dictionary mapping challenge_pk to the number of problems
+        the user has completed in each Challenge.
+        """
+        subs = cls.objects\
+            .filter(user=user, score=F('problem__max_score'),
+                    problem__challenge__quest__sectionquest__section=user.section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('problem__challenge')\
+            .annotate(solved=Count('problem', distinct=True))\
+            .order_by()
+        return {d['problem__challenge']: d['solved']for d in subs}
+
+    @classmethod
+    def get_best_attempts_before_deadlines(cls, user):
+        """
+        Return a dictionary mapping problem pk to the user's best score on the
+        problem with that pk, before the challenge deadline.
+        """
+        subs = cls.objects\
+            .filter(user=user,
+                    problem__challenge__quest__sectionquest__section=user.section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('problem_id').annotate(best=Max('score')).order_by()
+        return {d['problem_id']: d['best']for d in subs}
+
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """
@@ -239,6 +271,12 @@ class AbstractTestCase(AbstractSelfAwareModel):
     def get_absolute_url(self):
         return '{problem}/testcase/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+        self.problem.max_score += 1
+        self.problem.save()
 
 
 class AbstractTestRun(models.Model):

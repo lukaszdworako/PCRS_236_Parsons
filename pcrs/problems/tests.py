@@ -1,6 +1,7 @@
 from django.utils.timezone import localtime, now, timedelta
+from content.models import Challenge, Quest, SectionQuest
 
-from users.models import PCRSUser
+from users.models import PCRSUser, Section
 
 
 class TestProblemSubmissionGradesBeforeDeadline:
@@ -201,3 +202,97 @@ class TestBestSubmission:
         self.assertTrue(s1.has_best_score)
         self.assertFalse(s2.has_best_score)
         self.assertTrue(s3.has_best_score)
+
+
+class TestNumberSolvedBeforeDeadline:
+    """
+    Test getting the number of problems a student has solved in a Challenge.
+    """
+
+    def setUp(self):
+        self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
+        self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
+        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
+
+        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
+        self.student2 = PCRSUser.objects.create(username='student2', section=self.s1)
+        self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
+
+        self.quest = Quest.objects.create(name='c1', description='c2')
+        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
+        self.challenge = Challenge.objects.create(pk=1, name='c1', description='c2', quest=self.quest)
+
+
+class TestNumberSolvedBeforeDeadlineChallenges:
+    """
+    Test getting the number of problems a student has solved in a Challenge,
+    with multiple Challenges.
+    """
+
+    def setUp(self):
+        self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
+        self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
+        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
+
+        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
+        self.student2 = PCRSUser.objects.create(username='student2', section=self.s1)
+        self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
+
+        self.quest = Quest.objects.create(name='c1', description='c2')
+        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
+        self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
+        self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
+
+
+class TestNumberSolvedBeforeDeadlines:
+    """
+    Test getting the number of problems a student has solved in a Challenge.
+    """
+
+    def setUp(self):
+        self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
+        self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
+        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
+
+        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
+        self.student2 = PCRSUser.objects.create(username='student2', section=self.s2)
+        self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
+
+        self.quest = Quest.objects.create(name='c1', description='c2')
+        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
+        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) - timedelta(days=7), section=self.s2)
+        self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
+        self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
+
+
+class TestNumberSolvedQuests:
+    """
+    Test getting the number of problems a student has solved in a Challenge,
+    with multiple Challenges in multiple Quests.
+    """
+
+    def setUp(self):
+        self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
+        self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
+        self.s3 = Section.objects.create(section_id='003', location='BA', lecture_time='12-13')
+
+        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
+        self.student2 = PCRSUser.objects.create(username='student2', section=self.s2)
+        self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
+
+        self.quest = Quest.objects.create(name='q1', description='q1')
+        SectionQuest.objects.create(quest=self.quest, section=self.s1,
+                                    due_on=localtime(now()) + timedelta(days=7))
+        SectionQuest.objects.create(quest=self.quest, section=self.s2,
+                                    due_on=localtime(now()) - timedelta(days=7))
+
+        self.quest2 = Quest.objects.create(name='q2', description='q2')
+        SectionQuest.objects.create(quest=self.quest2, section=self.s1,
+                                    due_on=localtime(now()) + timedelta(days=7))
+        SectionQuest.objects.create(quest=self.quest2, section=self.s2,
+                                    due_on=localtime(now()) - timedelta(days=7))
+
+        self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
+        self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
+        self.challenge3 = Challenge.objects.create(pk=3, name='c3', description='c3', quest=self.quest2)
+        self.challenge4 = Challenge.objects.create(pk=4, name='c4', description='c4', quest=self.quest2)
