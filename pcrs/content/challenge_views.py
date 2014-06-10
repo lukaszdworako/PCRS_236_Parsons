@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
-from django.utils.timezone import now
 
 from content.forms import ChallengeForm
 from content.models import *
@@ -83,54 +82,3 @@ class ContentPageView(ProtectedViewMixin, ListView):
         context['content_page'] = self.get_page()
         context['forms'] = self._get_forms()
         return context
-
-
-class ContainerListView(ProtectedViewMixin, ListView):
-    template_name = "content/container_list.html"
-    model = SectionQuest
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context['challenge_to_completed'] = \
-            ContainerAttempt.get_cont_to_num_completed(
-                self.request.user, Challenge.get_content_type())
-
-
-        context['visible_challenges'] = {
-            challenge.pk for challenge in
-            Challenge.get_visible_for_user(self.request.user)
-        }
-
-        return context
-
-    def get_queryset(self):
-        section = (self.request.session.get('section', None) or
-                   self.request.user.section)
-        visible_containers = self.model.get_visible_for_user(self.request.user)
-        return visible_containers\
-            .filter(section=section)\
-            .filter(open_on__lt=now())\
-            .prefetch_related('container', 'container__challenge_set',
-                              'container__problemset_set')
-
-# class ChallengeSaveContentOrder(SingleObjectMixin, View):
-#     model = Challenge
-#
-#     def post(self, request, *args, **kwargs):
-#         order = 1
-#
-#         for item_pk in request.POST.getlist('order'):
-#             item = ContentObject.objects.get(pk=item_pk)
-#             try:
-#                 item_link = ContentSequence.objects.get(
-#                     challenge=self.get_object(), content_module=item)
-#             except ContentSequence.DoesNotExist:
-#                 item_link = ContentSequence(
-#                     challenge=self.get_object(), content_module=item)
-#             item_link.order = order
-#             item_link.save()
-#             order += 1
-#
-#         return HttpResponse(json.dumps({'success': True}),
-#                             mimetype='application/json')

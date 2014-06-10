@@ -1,0 +1,35 @@
+{% extends "pcrs/base.html" %}
+
+{% load filters %}
+{% load feedback %}
+
+{% block content %}
+
+    {% for quest in object_list %}
+        <h3>{{ quest.quest.name }}
+            <span class="pull-right">{{ quest.due_on }}</span>
+        </h3>
+        <div class="well">
+
+            {% for challenge in quest.quest.challenge_set.all %}
+                {% if challenge.pk in visible_challenges %}
+
+                    <a href="{{ challenge.get_main_page }}">{{ challenge.name }}</a>
+                    {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
+                        <span class="pull-right">
+                        {% if completed == total %}
+                            <i class="glyphicon glyphicon-ok icon-ok-green"></i>
+                        {% else %}
+                            {{ completed }}/{{ total }}
+                        {% endif %}
+                    </span>
+                    {% endwith %}
+                {% else %}
+                    <i class="glyphicon glyphicon-lock"></i>
+                    {{ challenge.name }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+{% endblock %}

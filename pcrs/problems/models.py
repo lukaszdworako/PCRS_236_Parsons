@@ -56,6 +56,17 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         return cls.__module__.split('.')[0]
 
     @classmethod
+    def get_challenge_to_problem_number(cls):
+        """
+        Return a dictionary mapping Challenge pk to the the total number of
+        problems of this type in that Challenge.
+        """
+        problems = cls.objects.values('challenge_id')\
+                              .annotate(number=Count('id'))\
+                              .order_by()
+        return {d['challenge_id']: d['number']for d in problems}
+
+    @classmethod
     def get_base_url(cls):
         """
         Return the url prefix for the problem type.
@@ -128,10 +139,6 @@ class AbstractProgrammingProblem(AbstractProblem):
 
     class Meta:
         abstract = True
-
-    # @property
-    # def max_score(self):
-    #     return self.testcase_set.count()
 
     def get_testitem_data_for_submissions(self, s_ids):
         """

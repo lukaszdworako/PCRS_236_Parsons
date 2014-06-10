@@ -17,4 +17,4 @@ admin.site.register(Quest)
 admin.site.register(SectionQuest)
 
 admin.site.register(ChallengeProblem)
-admin.site.register(ContainerAttempt)
+# admin.site.register(ContainerAttempt)

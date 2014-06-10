@@ -1,14 +1,18 @@
 import json
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
-from django.shortcuts import redirect
-from django.views.generic import CreateView
+from django.shortcuts import redirect, get_object_or_404
+from django.utils.timezone import now
+from django.views.generic import CreateView, FormView, ListView
 
-from content.forms import QuestForm
+from content.forms import QuestForm, QuestSectionForm, QuestSectionFormHelper
 from content.models import Quest, SectionQuest, Challenge
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from users.models import Section
-from users.views_mixins import CourseStaffViewMixin
+from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
 
 class QuestView:
@@ -68,3 +72,62 @@ class QuestSaveChallengesView(CourseStaffViewMixin, CreateView):
                 challenge.order = i
                 challenge.save()
         return HttpResponse(json.dumps({'status': 'ok'}))
+
+
+class QuestSectionListView(CourseStaffViewMixin, FormView):
+    model = Section
+    form_class = inlineformset_factory(Section, SectionQuest,
+                                       form=QuestSectionForm,
+                                       extra=0, can_delete=False)
+    template_name = 'pcrs/crispy_formset.html'
+
+    def get_section(self):
+        return get_object_or_404(Section, pk=self.kwargs.get('section'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form_class()(instance=self.get_section())
+        context['helper'] = QuestSectionFormHelper()
+        return context
+
+
+class QuestsView(ProtectedViewMixin, ListView):
+    template_name = "content/quests.html"
+    model = SectionQuest
+
+    @classmethod
+    def sum_dict_values(cls, *args):
+        total = {}
+        for arg in args:
+            for key, value in arg.items():
+                existing = total.get(key, 0)
+                new = existing + value
+                total[key] = new
+        return total
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['challenge_to_completed'] = self.sum_dict_values(
+            *[content_type.model_class().get_best_before_deadline(self.request.user)
+            for content_type in ContentType.objects.filter(Q(model='submission'))]
+        )
+
+        context['challenge_to_total'] = self.sum_dict_values(
+            *[content_type.model_class().get_challenge_to_problem_number()
+            for content_type in ContentType.objects.filter(Q(model='problem'))]
+        )
+
+        context['visible_challenges'] = {
+            challenge.pk for challenge in
+            Challenge.get_visible_for_user(self.request.user)
+        }
+        return context
+
+    def get_queryset(self):
+        section = (self.request.session.get('section', None) or
+                   self.request.user.section)
+        visible_containers = self.model.get_visible_for_user(self.request.user)
+        return visible_containers\
+            .filter(section=section)\
+            .filter(open_on__lt=now())\
+            .prefetch_related('quest', 'quest__challenge_set')

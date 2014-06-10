@@ -16,7 +16,7 @@
 #     """
 #     db_hits = 9
 #     url = reverse('quests')
-#     template = 'content/container_list.html'
+#     template = 'content/quests.html'
 #
 #     def test_no_quests(self):
 #         with self.assertNumQueries(self.db_hits):

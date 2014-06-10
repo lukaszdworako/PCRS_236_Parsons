@@ -1,7 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.db.models.signals import pre_delete
 from content.tags import AbstractTaggedObject
 
@@ -32,41 +32,6 @@ class TextBlock(models.Model):
     content_text = generic.GenericRelation('ContentSequenceItem',
                                         content_type_field='content_type',
                                              object_id_field='object_id')
-
-
-class ContainerAttempt(AbstractGenericObjectForeignKey, models.Model):
-    """
-
-    """
-    objects = (models.Q(model='challenge') | models.Q(model='problemset'))
-
-    user = models.ForeignKey(PCRSUser)
-
-    attempted_ontime = models.SmallIntegerField(default=0)
-    completed_ontime = models.SmallIntegerField(default=0)
-    attempted = models.SmallIntegerField(default=0)
-    completed = models.SmallIntegerField(default=0)
-
-    class Meta:
-        unique_together = ['content_type', 'object_id', 'user']
-
-    def __str__(self):
-        return '{0} {1} a:{2} c:{3}'\
-            .format(self.content_type, self.object_id, self.attempted,
-            self.completed)
-
-    @classmethod
-    def get_cont_to_num_completed(cls, user, content_type):
-        """
-        Return a dictionary mapping the pks of containers of type content_type
-        to the number of problems the user completed on time in that container.
-        """
-        return {
-            problem_container.object_id:
-                problem_container.completed_ontime
-            for problem_container in cls.objects.filter(
-                user=user, content_type=content_type).select_related()
-        }
 
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
