@@ -16,3 +16,11 @@ def get_item(dictionary, key):
 @register.filter
 def problem_type_from_label(obj):
     return obj.replace('problems_', '').replace('_', ' ')
+
+@register.filter
+def module_name(obj):
+    return obj.__class__.__module__.split('.')[0]
+
+@register.filter
+def get_div_class(obj):
+    return obj.replace('problems_', '')

@@ -71,7 +71,7 @@ class ContentPageView(ProtectedViewMixin, ListView):
                     else ProgrammingSubmissionForm(problem=problem)
                 for_type = forms.get(problem.get_problem_type_name(), {})
                 for_type[problem.pk] = f
-                forms[problem.get_problem_type_name()] = for_type
+                forms[module] = for_type
         return forms
 
     def _get_submissions(self):
@@ -81,4 +81,9 @@ class ContentPageView(ProtectedViewMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['content_page'] = self.get_page()
         context['forms'] = self._get_forms()
+        context['best'] = {
+            content_type.app_label: content_type.model_class()
+                    .get_best_attempts_before_deadlines(self.request.user)
+            for content_type in ContentType.objects.filter(Q(model='submission'))
+        }
         return context

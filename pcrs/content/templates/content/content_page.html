@@ -34,14 +34,14 @@
                     {% include 'content/video_widget.html'  %}
                 </div>
             {% elif item|classname|lower == "problem" %}
-                {% with problem_type=item.get_problem_type_name form=forms|get_item:item.get_problem_type_name %}
-                    {% if problem_type != 'multiple_choice' %}
-                        <div id="{{ problem_type }}-{{ item.pk }}"
+                {% with problem_type=item|module_name %}
+                    {% if problem_type != 'problems_multiple_choice' %}
+                        <div id="{{ problem_type|get_div_class }}-{{ item.pk }}"
                              class="code-mirror-wrapper">
                     {% else %}
-                        <div id="{{ problem_type }}-{{ item.pk }}">
+                        <div id="{{ problem_type|get_div_class }}-{{ item.pk }}">
                     {% endif %}
-                    {% with problem=item form=form|get_item:item.pk %}
+                    {% with problem=item mark=best|get_item:problem_type|get_item:item.pk|default:0 form=forms|get_item:problem_type|get_item:item.pk %}
                         {% include item.get_module_name|add:"/submission_widget.html" %}
                     {% endwith %}
                 {% endwith %}
