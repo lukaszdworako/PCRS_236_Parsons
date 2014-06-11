@@ -9,3 +9,16 @@
 .icon-ok-green {
     color: #3C9A45;
 }
+
+@media screen{
+    .video-js {
+        width:480px !important;
+        height:269px !important;
+    }
+}
+
+@media handhelp{
+    .video-js{
+        width:100% !important;
+    }
+}
