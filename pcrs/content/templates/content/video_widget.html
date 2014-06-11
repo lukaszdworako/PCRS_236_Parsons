@@ -4,27 +4,27 @@
 {% endautoescape  %}
 <br>
 
-{#{% if 'Chrome' not in request.META.HTTP_USER_AGENT %}#}
-{#    <object  width='603' height='363'>#}
-{#        <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>#}
-{#        <param name='allowfullscreen' value='true'>#}
-{#        <param name='allowscriptaccess' value='always'>#}
-{#{% endif %}#}
-{#    <embed#}
-{#            src='https://media.library.utoronto.ca/flashinc/player.swf'#}
-{#            width='603'#}
-{#            height='363'#}
-{#            allowscriptaccess='always'#}
-{#            allowfullscreen='true'#}
-{#            flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}">#}
-{#    </embed>#}
-{#</object>#}
-
-<video id="my_video_{{ item.link }}" class="video-js vjs-default-skin" controls
-  preload="auto" width=480 height="269"  techOrder = ['flash','html5'] data-setup='{"customControlsOnMobile": true }'>
+<video id="my_video_{{ item.pk }}"
+       class="video-js vjs-default-skin"
+       controls
+       preload="auto"
+       width="480"
+       height="269"
+       techOrder = ['flash','html5']
+       data-setup='{"customControlsOnMobile": true }'
+       poster="{{ item.thumbnail }}">
       <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
 </video>
 
+<br>
+<div>
+    <strong>
+        Download Link:
+    </strong>
+    <a href="{{ item.download }}">
+        {{ item.download }}
+    </a>
+</div>
 <br>
 
 

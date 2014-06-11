@@ -18,9 +18,15 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     A Video object has a name, a description, and a link to a video.
     """
     link = models.TextField()
+    thumbnail = models.URLField()
+    download = models.URLField()
     content_videos = generic.GenericRelation('ContentSequenceItem',
                                              content_type_field='content_type',
                                              object_id_field='object_id')
+
+    class Meta:
+        ordering = ['name']
+
 
 
 class TextBlock(models.Model):

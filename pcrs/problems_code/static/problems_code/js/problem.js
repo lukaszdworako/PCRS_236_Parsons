@@ -358,6 +358,9 @@ $( document).ready(function() {
             getHistory(div_id);
         }));
     }
+    for (var key in myCodeMirrors){
+        myCodeMirrors[key].refresh();
+    }
 });
 
 

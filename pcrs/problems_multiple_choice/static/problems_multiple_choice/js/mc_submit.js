@@ -30,7 +30,6 @@ $( document ).ready(function() {
             getMCHistory(mc_id);
         }));
     }
-
 });
 
     function getMCHistory(mc_id){
