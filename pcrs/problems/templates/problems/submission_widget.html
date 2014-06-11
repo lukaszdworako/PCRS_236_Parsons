@@ -4,12 +4,11 @@
     {% endblock %}
 
     {% block problem_score %}
-        <span class="pull-right">
-        {% if mark == problem.max_score %}
+        <span class="pull-right" title="Progress so far">
+        {% if mark|default:0 == problem.max_score %}
             {% include "pcrs/checkmark_complete.html" %}
         {% else %}
-            Mark so far :
-            <sup> {{ mark }} </sup>
+            <sup> {{ mark|default:0 }} </sup>
             /
             <sub> {{ problem.max_score }} </sub>
         {% endif %}

@@ -70,8 +70,13 @@ class ContentPageView(ProtectedViewMixin, ListView):
                     if module.endswith('multiple_choice') \
                     else ProgrammingSubmissionForm(problem=problem)
                 for_type = forms.get(problem.get_problem_type_name(), {})
-                for_type[problem.pk] = f
-                forms[module] = for_type
+                # for_type[problem.pk] = f
+                try:
+                    forms[module][problem.pk] = f
+                except:
+                    forms[module] = {}
+                    forms[module][problem.pk] = f
+                print(forms)
         return forms
 
     def _get_submissions(self):
