@@ -16,10 +16,6 @@ class Problem(AbstractProblem):
 
     description = models.TextField(unique=True)
 
-    @property
-    def max_score(self):
-        return self.option_set.count()
-
     def get_testitem_data_for_submissions(self, s_ids):
         """
         Return a list of tuples summarizing for each option how many times it
@@ -86,6 +82,12 @@ class Option(AbstractSelfAwareModel):
         return '{problem}/option/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+        self.problem.max_score += 1
+        self.problem.save()
+
 
 class OptionSelection(models.Model):
     """
@@ -106,6 +108,9 @@ def option_delete(sender, instance, **kwargs):
     """
     try:
         problem = instance.problem
+        problem.max_score -= 1
+        problem.save()
+
         submissions_affected = problem.submission_set.all()
         for submission in submissions_affected:
             submission.score = submission.optionselection_set.\

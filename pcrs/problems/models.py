@@ -319,6 +319,9 @@ def testcase_delete(sender, instance, **kwargs):
     """
     try:
         problem = instance.problem
+        problem.max_score -= 1
+        problem.save()
+
         submissions_affected = problem.submission_set.all()
         for submission in submissions_affected:
             submission.set_score()
