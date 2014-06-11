@@ -57,6 +57,9 @@ $( document ).ready(function() {
         year = datetime.getFullYear();
         hour = datetime.getHours();
         minute = datetime.getMinutes();
+        if (String(minute).length == 1){
+            minute = "0" + minute
+        }
         if (hour > 12){
             hour -= 12;
             cycle = "p.m.";
@@ -210,10 +213,8 @@ $( document ).ready(function() {
                     }
 
                     if (data['best']){
-                        var v = $('#'+div_id).find('#tada')[0];
                         $('#'+div_id).find('#star').empty();
                         $('#'+div_id).find('#star').append($('<img/>', {src:"/static/star.gif", width:40, heigh:40}));
-                        v.play();
                     }
 
                     if ($('#'+div_id).find('#history_accordion').children().length != 0){

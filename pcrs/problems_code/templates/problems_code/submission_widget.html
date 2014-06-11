@@ -1,21 +1,25 @@
 {#<h3 style='font-size:1.5em; text-align:right;' title="Progress so far">#}
 {#    <span style='float:right; font-size:0.85em' title="Progress so far">#}
-<h3>
-    {{ problem.name }}
-    <span style='float:right; font-size:0.85em; text-align:right;' title="Progress so far">
-        <sup style='font-size:0.9em'> x </sup>
-        /
-        <sub style='font-size:0.9em'> y </sub>
-    </span>
-</h3>
+{% autoescape off %}
 
-{% block problem_description %}
-{#    <br>#}
-    <div class="problem-description">
-        <h5 style="margin-left:3%">{{ problem.description }}</h5>
-    </div>
-    <br>
-{% endblock %}
+    <h3>
+        {{ problem.name|linebreaks }}
+        <span style='float:right; font-size:0.85em; text-align:right;' title="Progress so far">
+            <sup style='font-size:0.9em'>  </sup>
+
+            <sub style='font-size:0.9em'>  </sub>
+        </span>
+    </h3>
+
+    {% block problem_description %}
+    {#    <br>#}
+        <div class="problem-description">
+            <h5 style="margin-left:3%">{{ problem.description|linebreaks }}</h5>
+        </div>
+        <br>
+    {% endblock %}
+
+{% endautoescape  %}
 
 {% load crispy_forms_tags %}
 {% crispy form %}
@@ -35,7 +39,3 @@
 {# SASHA! #}
 {% include "problems_code/code_trace.html" %}
 
-{#remove#}
-<audio id = 'tada' src="/static/tada.mp3" type="audio/ogg">
-<p>Your browser does not support the audio element.</p>
-</audio>

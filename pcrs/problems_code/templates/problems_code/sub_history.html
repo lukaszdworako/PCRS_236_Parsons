@@ -1,8 +1,9 @@
+{% autoescape off %}
 <div class="modal fade" id="history_window_{{ problem.get_problem_type_name }}-{{ problem.pk }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-content" style="width:90%; top: 5%; left: 5%;">
         <div class="modal-header">
-            <h4 class="modal-title" id="myModalLabel"> {{ problem }}
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel"> {{ problem|linebreaks }}
+                <button style='text-align:right; float:right; margin-top:-10px;' type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             </h4>
         </div>
         <div class="modal-body">
@@ -15,3 +16,4 @@
         </div>
     </div>
 </div>
+{% endautoescape %}

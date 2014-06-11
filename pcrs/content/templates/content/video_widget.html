@@ -1,25 +1,30 @@
-<h3> {{ item }}</h3>
-<div> {{ item.description }} </div>
+{% autoescape off %}
+<h3> {{ item|linebreaks }}</h3>
+<div> {{ item.description|linebreaks }} </div>
+{% endautoescape  %}
 <br>
-{% if 'AppleWebKit' in request.META.HTTP_USER_AGENT %}
-    <h3 style="border:solid; border-width:1px; text-align: center;"> Sorry no Mobile Video support currently </h3>
 
-{% else %}
-    {% if 'Chrome' not in request.META.HTTP_USER_AGENT %}
-    <object  width='603' height='363'>
-        <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>
-        <param name='allowfullscreen' value='true'>
-        <param name='allowscriptaccess' value='always'>
-    {% endif %}
-        <embed
-                src='https://media.library.utoronto.ca/flashinc/player.swf'
-                width='603'
-                height='363'
-                allowscriptaccess='always'
-                allowfullscreen='true'
-                flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}" />
-    </object>
-{% endif %}
+{#{% if 'Chrome' not in request.META.HTTP_USER_AGENT %}#}
+{#    <object  width='603' height='363'>#}
+{#        <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>#}
+{#        <param name='allowfullscreen' value='true'>#}
+{#        <param name='allowscriptaccess' value='always'>#}
+{#{% endif %}#}
+{#    <embed#}
+{#            src='https://media.library.utoronto.ca/flashinc/player.swf'#}
+{#            width='603'#}
+{#            height='363'#}
+{#            allowscriptaccess='always'#}
+{#            allowfullscreen='true'#}
+{#            flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}">#}
+{#    </embed>#}
+{#</object>#}
+
+<video id="my_video_{{ item.link }}" class="video-js vjs-default-skin" controls
+  preload="auto" width=480 height="269"  techOrder = ['flash','html5'] data-setup='{"customControlsOnMobile": true }'>
+      <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
+</video>
+
 <br>
 
 
