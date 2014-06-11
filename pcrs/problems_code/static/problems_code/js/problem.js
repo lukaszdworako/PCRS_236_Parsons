@@ -85,12 +85,10 @@ function add_history_entry(data, div_id, flag){
     star_text = "";
     if (data['best']){
         panel_class = "panel panel-primary";
-        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
+        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star" title="Latest Best Submission"> </icon>';
         $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
         $('#'+div_id).find('#history_accordion').find(".panel-primary")
             .addClass("panel-default").removeClass("panel-primary");
-
-
     }
 
     var entry = $('<div/>',{class:panel_class});
@@ -296,11 +294,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'out_of':max_score,
             'tests': tests};
     if (best){
-
-        var v = $('#'+div_id).find('#tada')[0];
         $('#'+div_id).find('h3').find('span').empty();
         $('#'+div_id).find('h3').find('span').append($('<img/>', {src:"/static/star.gif", width:40, heigh:40}));
-        v.play();
     }
     if ($('#'+div_id).find('#history_accordion').children().length != 0){
         add_history_entry(data, div_id, 1);
@@ -314,6 +309,9 @@ function create_timestamp(datetime){
     year = datetime.getFullYear();
     hour = datetime.getHours();
     minute = datetime.getMinutes();
+    if (String(minute).length == 1){
+        minute = "0" + minute
+    }
     if (hour > 12){
         hour -= 12;
         cycle = "p.m.";

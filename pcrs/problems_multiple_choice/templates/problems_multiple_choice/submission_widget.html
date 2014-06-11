@@ -1,13 +1,13 @@
-<div>
-    {{ problem.description }}
-    <span id='star' style='float:right; font-size:1.4em'>
-            Mark so far :
-            <sup style='font-size:1.0em'> x </sup>
-            /
-            <sub style='font-size:1.0em'> y </sub>
-    </span>
-</div>
+{% autoescape off %}
+    <div>
+        {{ problem.description|linebreaks }}
+        <span id='star' style='text-align:right; float:right; font-size:1.4em'>
+                <sup style='font-size:1.0em'>  </sup>
 
+                <sub style='font-size:1.0em'>  </sub>
+        </span>
+    </div>
+{% endautoescape %}
 {% load crispy_forms_tags %}
 {% crispy form %}
 
@@ -20,8 +20,3 @@
             <icon class="glyphicon"></icon>
             <span></span>
         </div>
-
-{#remove#}
-<audio id = 'tada' src="/static/tada.mp3">
-<p>Your browser does not support the audio element.</p>
-</audio>
