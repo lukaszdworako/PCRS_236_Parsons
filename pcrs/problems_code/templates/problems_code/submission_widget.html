@@ -1,41 +1,10 @@
-{#<h3 style='font-size:1.5em; text-align:right;' title="Progress so far">#}
-{#    <span style='float:right; font-size:0.85em' title="Progress so far">#}
-{% autoescape off %}
+{% extends "problems/submission_widget.html" %}
 
-    <h3>
-        {{ problem.name|linebreaks }}
-        <span style='float:right; font-size:0.85em; text-align:right;' title="Progress so far">
-            <sup style='font-size:0.9em'>  </sup>
+{% block problem_title %}
+   {{ problem.name }}
+{% endblock %}
 
-            <sub style='font-size:0.9em'>  </sub>
-        </span>
-    </h3>
-
-    {% block problem_description %}
-    {#    <br>#}
-        <div class="problem-description">
-            <h5 style="margin-left:3%">{{ problem.description|linebreaks }}</h5>
-        </div>
-        <br>
-    {% endblock %}
-
-{% endautoescape  %}
-
-{% load crispy_forms_tags %}
-{% crispy form %}
-
-{#remove#}
-{# html code for showing testcases for a submission #}
-    <br>
-        <div class="alert" id="alert">
-            <icon class="glyphicon"></icon>
-            <span></span>
-        </div>
-{% include "problems_code/grade_table.html" %}
-
-{# html code for showing submission history #}
-{% include "problems_code/sub_history.html" %}
-
-{# SASHA! #}
-{% include "problems_code/code_trace.html" %}
-
+{% block problem_specific %}
+    {% include "problems_code/grade_table.html" %}
+    {% include "problems_code/code_trace.html" %}
+{% endblock %}

@@ -1,22 +1,5 @@
-{% autoescape off %}
-    <div>
-        {{ problem.description|linebreaks }}
-        <span id='star' style='text-align:right; float:right; font-size:1.4em'>
-                <sup style='font-size:1.0em'>  </sup>
+{% extends "problems/submission_widget.html" %}
 
-                <sub style='font-size:1.0em'>  </sub>
-        </span>
-    </div>
-{% endautoescape %}
-{% load crispy_forms_tags %}
-{% crispy form %}
-
-{# html code for showing submission history #}
-{% include "problems_code/sub_history.html" %}
-
-{% load filters %}
-    <br>
-        <div class="alert" id="alert">
-            <icon class="glyphicon"></icon>
-            <span></span>
-        </div>
+{% block problem_title %}
+    Multiple Choice Question
+{% endblock %}
