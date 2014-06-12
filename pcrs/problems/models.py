@@ -19,6 +19,10 @@ def get_problem_labels():
     return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
 
 
+def get_problem_content_types():
+    return ContentType.objects.filter(Q(model='problem'))
+
+
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                       AbstractTaggedObject):
     """

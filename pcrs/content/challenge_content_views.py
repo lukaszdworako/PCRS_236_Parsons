@@ -8,7 +8,7 @@ from django.views.generic import CreateView, DetailView, DeleteView
 
 from content.models import (Challenge, ContentPage, ContentSequenceItem,
                             TextBlock)
-from problems.models import get_problem_labels
+from problems.models import get_problem_labels, get_problem_content_types
 from users.views_mixins import CourseStaffViewMixin
 
 
@@ -51,6 +51,12 @@ class ChallengePagesObjectsView(CourseStaffViewMixin, CreateView):
     model = Challenge
 
     def post(self, *args, **kwargs):
+        # remove all problems from this challenge
+        challenge = self.get_object()
+        for ct in get_problem_content_types():
+            ct.model_class().objects.filter(challenge=challenge)\
+                                    .update(challenge=None)
+
         # a list of lists with the outer list corresponding to a page,
         # and the inner one to ids of objects
         page_object_list = json.loads(self.request.POST.get('page_object_list'))
@@ -66,10 +72,14 @@ class ChallengePagesObjectsView(CourseStaffViewMixin, CreateView):
                 try:
                     model = ContentType.objects\
                         .get(model=object_type).model_class()
+                    content_object = get_object_or_404(model, pk=pk)
                 except ContentType.DoesNotExist:
                     model = ContentType.objects\
                         .get(model='problem', app_label=object_type).model_class()
-                content_object = get_object_or_404(model, pk=pk)
+                    problem = get_object_or_404(model, pk=pk)
+                    problem.challenge = challenge
+                    problem.save()
+                    content_object = problem
                 ContentSequenceItem.objects.create(
                     content_object=content_object, content_page=page,
                     order=object_index)
