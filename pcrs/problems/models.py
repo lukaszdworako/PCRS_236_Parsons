@@ -281,9 +281,10 @@ class AbstractTestCase(AbstractSelfAwareModel):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        if not self.pk:
+            self.problem.max_score += 1
+            self.problem.save()
         super().save(force_insert, force_update, using, update_fields)
-        self.problem.max_score += 1
-        self.problem.save()
 
 
 class AbstractTestRun(models.Model):
