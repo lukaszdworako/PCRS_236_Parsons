@@ -63,7 +63,12 @@ function addPage() {
             });
             $new_item.prepend($delete);
             $('#challenge').append($new_item);
-            $new_item.sortable();
+            $new_item.sortable({
+                connectWith: ".page",
+                update: function (event, ui) {
+                    $('#save').prop('disabled', false);
+                }
+            });
         });
 }
 
@@ -97,9 +102,9 @@ function saveText(event) {
     })
         .success(function (data) {
             var $new_item = $("<div/>", {
-                    html: $('#text-entry').val(),
-                    class: "text well",
-                    id: "textblock-" + data['pk']
+                html: $('#text-entry').val(),
+                class: "text well",
+                id: "textblock-" + data['pk']
             });
             $page.append($new_item);
             $('#save').prop('disabled', false);
@@ -111,7 +116,9 @@ function deleteItem($item) {
     // if text
     if (id.match('^textblock')) {
         $.post(document.URL + '/' + id + '/delete', {csrftoken: csrftoken})
-            .success(function() { $item.remove() });
+            .success(function () {
+                $item.remove()
+            });
     }
     // video or problem: put the item back into the appropriate list
     if (id.match('^video')) {
@@ -120,7 +127,7 @@ function deleteItem($item) {
     // problem
     if (id.match('^problem')) {
         var list_id = id.match('[^-]*'); // match up to the dash
-        $('#'+list_id).append($item.remove());
+        $('#' + list_id).append($item.remove());
     }
     $item.toggleClass('uiselected');
     $uiselected = null;
