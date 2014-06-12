@@ -76,7 +76,6 @@ class ContentPageView(ProtectedViewMixin, ListView):
                 except:
                     forms[module] = {}
                     forms[module][problem.pk] = f
-                print(forms)
         return forms
 
     def _get_submissions(self):
