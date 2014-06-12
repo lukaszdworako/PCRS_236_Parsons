@@ -4,7 +4,7 @@ from content.challenge_content_views import TextCreateView, PageCreateView, \
     ChallengeObjectsView, ItemDeleteView, ChallengePagesObjectsView
 from content.challenge_views import *
 from content.quest_views import QuestCreateView, QuestUpdateView, QuestListView, \
-    QuestSaveChallengesView
+    QuestSaveChallengesView, QuestSectionListView, QuestsView
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -31,6 +31,8 @@ urlpatterns = patterns('',
         name='video_delete'),
     url(r'^videos/list$', VideoListView.as_view(),
         name='video_list'),
+    url(r'^videos/(?P<pk>[0-9]+)/watched$', VideoRecordWatchView.as_view(),
+        name='video_record_watch'),
 
     url(r'^challenges/create$', ChallengeCreateView.as_view(),
         name='challenge_create'),
@@ -61,7 +63,7 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',
         ItemDeleteView.as_view(model=TextBlock)),
 
-    url(r'^quests$', ContainerListView.as_view(),
+    url(r'^quests$', QuestsView.as_view(),
         name='quests'),
 
     url(r'^quests/list$', QuestListView.as_view(),
@@ -75,4 +77,8 @@ urlpatterns = patterns('',
     url(r'^quests/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=Quest),
         name='quest_delete'),
+
+    url(r'^quests/section/(?P<section>.+)$',
+        QuestSectionListView.as_view(model=Quest),
+        name='section_quests'),
 )

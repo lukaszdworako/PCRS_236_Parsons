@@ -1,5 +1,9 @@
 {% autoescape off %}
-<h3> {{ item|linebreaks }}</h3>
+<h3> {{ item.name }}
+{% if item.pk in watched %}
+    {% include "pcrs/checkmark_complete.html" %}
+{% endif %}
+</h3>
 <div> {{ item.description|linebreaks }} </div>
 {% endautoescape  %}
 <br>

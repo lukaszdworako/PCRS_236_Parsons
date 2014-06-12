@@ -28,6 +28,17 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         ordering = ['name']
 
 
+class WatchedVideo(models.Model):
+    """
+    A record of a user starting a Video.
+    """
+    video = models.ForeignKey(Video)
+    user = models.ForeignKey(PCRSUser, to_field='username')
+
+    @classmethod
+    def get_watched_pk_list(cls, user):
+        return cls.objects.filter(user=user).values_list('video_id', flat=True)
+
 
 class TextBlock(models.Model):
     """
@@ -38,6 +49,9 @@ class TextBlock(models.Model):
     content_text = generic.GenericRelation('ContentSequenceItem',
                                         content_type_field='content_type',
                                              object_id_field='object_id')
+
+    def __str__(self):
+        return self.text[:150]
 
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
@@ -56,7 +70,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     @classmethod
     def get_unassigned_problems(cls, app_label):
         c_type = ContentType.objects.get(app_label=app_label, model='problem')
-        return c_type.model_class().objects.exclude(challenge__isnull=True)
+        return c_type.model_class().objects.filter(challenge__isnull=True)
 
     @classmethod
     def get_unassigned_video(cls):

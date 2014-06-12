@@ -90,4 +90,5 @@ class ContentPageView(ProtectedViewMixin, ListView):
                     .get_best_attempts_before_deadlines(self.request.user)
             for content_type in ContentType.objects.filter(Q(model='submission'))
         }
+        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
         return context
