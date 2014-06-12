@@ -1,0 +1,13 @@
+{% extends "pcrs/base.html" %}
+
+{% block content %}
+
+    {{ block.super }}
+
+    {% load crispy_forms_tags %}
+    {% crispy form helper %}
+
+    {% block related_items %}
+    {% endblock %}
+
+{% endblock %}

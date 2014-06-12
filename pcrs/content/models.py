@@ -56,9 +56,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     @classmethod
     def get_unassigned_problems(cls, app_label):
         c_type = ContentType.objects.get(app_label=app_label, model='problem')
-        assigned_pks = cls.objects.filter(content_type=c_type)\
-                                  .values_list('object_id', flat=True)
-        return c_type.model_class().objects.exclude(pk__in=assigned_pks)
+        return c_type.model_class().objects.exclude(challenge__isnull=True)
 
     @classmethod
     def get_unassigned_video(cls):
