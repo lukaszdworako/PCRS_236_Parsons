@@ -6,9 +6,8 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
-from django.views.generic.detail import SingleObjectMixin
 
-from content.forms import QuestForm, QuestSectionForm
+from content.forms import QuestForm, QuestSectionForm, QuestSectionFormHelper
 from content.models import Quest, SectionQuest, Challenge
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
