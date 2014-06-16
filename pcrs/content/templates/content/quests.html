@@ -3,27 +3,32 @@
 {% load filters %}
 {% load feedback %}
 
+{% block page_title %}
+    Quests
+{% endblock %}
+
 {% block content %}
 
     {% for quest in object_list %}
         <h3>{{ quest.quest.name }}
-            <span class="pull-right">{{ quest.due_on }}</span>
+            <span class="pull-right">{{ quest.due_on|default:'' }}</span>
         </h3>
         <div class="well">
 
             {% for challenge in quest.quest.challenge_set.all %}
                 {% if challenge.pk in visible_challenges %}
-
                     <a href="{{ challenge.get_main_page }}">{{ challenge.name }}</a>
-                    {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
-                        <span class="pull-right">
+                    {% if request.user.is_student %}
+                        {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
+                            <span class="pull-right">
                         {% if completed == total %}
                             {% include "pcrs/checkmark_complete.html" %}
                         {% else %}
                             {{ completed }}/{{ total }}
                         {% endif %}
                     </span>
-                    {% endwith %}
+                        {% endwith %}
+                    {% endif %}
                 {% else %}
                     <i class="glyphicon glyphicon-lock"></i>
                     {{ challenge.name }}
