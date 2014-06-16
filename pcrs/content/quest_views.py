@@ -3,10 +3,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
-from django.views.generic.detail import SingleObjectMixin
 
 from content.forms import QuestForm, QuestSectionForm
 from content.models import Quest, SectionQuest, Challenge

@@ -233,8 +233,12 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         }
         var passed = current_testcase.passed_test;
         var testcaseInput = current_testcase.test_input;
+        console.log(current_testcase);
         var testcaseOutput = current_testcase.expected_output;
-        var result = current_testcase.test_val[2];
+
+        console.log(current_testcase.test_val);
+
+        var result = create_output(current_testcase.test_val);
 
         var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
         if (cleaner){
@@ -295,7 +299,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'tests': tests};
     if (best){
         $('#'+div_id).find('h3').find('span').empty();
-        $('#'+div_id).find('h3').find('span').append($('<img/>', {src:"/static/star.gif", width:40, heigh:40}));
+        $('#'+div_id).find('h3').find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+        $('.nav.bs-docs-sidenav').find('#sb_'+div_id).css("color","green");
     }
     if ($('#'+div_id).find('#history_accordion').children().length != 0){
         add_history_entry(data, div_id, 1);
@@ -324,6 +329,30 @@ function create_timestamp(datetime){
     return formated_datetime;
 }
 
+function create_output(input){
+    brakets_o = {"list":"[","tuple":"(","dict":"{"};
+    brakets_c = {"list":"]","tuple":")","dict":"}"};
+    if (input.length == 2){
+        return create_output(input[0])+":"+create_output(input[1]);
+    }
+    else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict"){
+        var output = brakets_o[input[0]];
+        for (var o_index = 2; o_index < input.length; o_index++){
+            output += create_output(input[o_index]);
+            if (o_index != input.length - 1){
+                output += ", "
+            }
+        }
+        output += brakets_c[input[0]];
+        return output
+    }
+    else if(input[0] == "string"){
+        return "'"+input[2]+"'";
+    }
+    else{
+        return input[2]
+    }
+}
 
 var code_problem_id = -1;
 var myCodeMirrors = {};

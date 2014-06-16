@@ -17,8 +17,14 @@
     }
 }
 
-@media handhelp{
+@media (max-width:600px){
     .video-js{
-        width:100% !important;
+        width:90% !important;
     }
+}
+
+.active{
+    border-left:groove indigo;
+    padding-left:2px;
+    font-size:1.2em;
 }
