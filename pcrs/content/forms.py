@@ -1,7 +1,9 @@
-from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML, \
+    Submit
 from django import forms
 
-from content.models import Challenge, Video, Quest
+from content.models import Challenge, Video, Quest, SectionQuest
 from content.tags import Tag
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
 
@@ -48,34 +50,13 @@ class QuestForm(BaseCrispyForm, forms.ModelForm):
         model = Quest
         fields = ('name', 'description')
 
-            # class ProblemSetForm(CrispyFormMixin, forms.ModelForm):
-            #     """
-            #     A form for creating a ProblemSet.
-            #     """
-            #
-            #     class Meta:
-            #         # model = ProblemSet
-            #         fields = ('visibility', 'name', 'description')
-            #
-            #     def __init__(self, *args, **kwargs):
-            #         super().__init__(*args, **kwargs)
-            #
-            #         problem_ctypes = ContentType.objects.filter(Q(model='problem'))
-            #         for problem_ctype in problem_ctypes:
-            #             field = forms.ModelMultipleChoiceField(
-            #                 queryset=problem_ctype.model_class().objects.all(),
-            #                 widget=forms.CheckboxSelectMultiple(),
-            #                 required=False, label='')
-            #             self.fields[problem_ctype.app_label] = field
-            #
-            #         self.helper.layout = Layout(
-            #             Fieldset('', *self.Meta.fields),
-            #             TabHolder(
-            #                 *[Tab(
-            #                     ctype.model_class().get_problem_type_name().replace('_',
-            #                         ' '),
-            #                     ctype.app_label)
-            #                   for ctype in problem_ctypes]
-            #             ),
-            #             ButtonHolder(self.save_button)
-            #         )
+
+class QuestSectionForm(CrispyFormMixin, forms.ModelForm):
+    class Meta:
+        model = SectionQuest
+        fields = ('visibility', 'open_on', 'due_on', 'quest')
+        widgets = {'quest': forms.HiddenInput()}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.form_tag = False

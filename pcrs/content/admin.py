@@ -16,5 +16,3 @@ admin.site.register(ContentSequenceItem)
 
 admin.site.register(Quest)
 admin.site.register(SectionQuest)
-
-admin.site.register(ChallengeProblem)

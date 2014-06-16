@@ -109,40 +109,18 @@ class ContentPage(models.Model):
                                            order=self.order-1)
 
 
-class ChallengeProblem(models.Model):
-    challenge_content_type = models.ForeignKey(
-        ContentType, related_name='challenge_content_type')
-    challenge_id = models.PositiveIntegerField()
-    challenge_object = generic.GenericForeignKey(
-        'challenge_content_type', 'challenge_id')
-    
-    problem_content_type = models.ForeignKey(
-        ContentType, related_name='problem_content_type')
-    problem_id = models.PositiveIntegerField()
-    problem_object = generic.GenericForeignKey(
-        'problem_content_type', 'problem_id')
-
-    class Meta:
-        # a problem can be in a single problem container
-        unique_together = ['problem_content_type', 'problem_id']
-
-
 class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 AbstractLimitedVisibilityObject):
     """
-    A Challenge is a sequence of ContentPages, which are defined in markup.
+    A Challenge is a sequence of ContentPages and can be graded or ungraded.
     """
-    quest = models.ForeignKey('Quest', blank=True, null=True)
+    quest = models.ForeignKey('Quest', blank=True, null=True,
+                              on_delete=models.SET_NULL)
     order = models.SmallIntegerField(default=0, blank=True)
     is_graded = models.BooleanField(default=False, blank=True)
 
-    problems = generic.GenericRelation(ChallengeProblem,
-        content_type_field='container_content_type',
-        object_id_field='container_object_id')
-
     class Meta:
         ordering = ['quest', 'order']
-        # order_with_respect_to = 'quest'
 
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())
@@ -152,15 +130,28 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
+    """
+    Am ordered sequence of Challenges.
+    """
     order = models.SmallIntegerField(default=0)
 
     class Meta:
         ordering = ['order']
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.__class__.objects.filter(pk=self.pk).exists():
+            # new Quest, create SectionQuests for it
+            super().save(force_insert, force_update, using, update_fields)
+            for section in Section.objects.all():
+                SectionQuest.objects.get_or_create(section=section, quest=self)
+        else:
+            super().save(force_insert, force_update, using, update_fields)
+
 
 class SectionQuest(AbstractLimitedVisibilityObject):
     """
-
+    Quest setup for a specific Section.
     """
     section = models.ForeignKey(Section)
     quest = models.ForeignKey('Quest')

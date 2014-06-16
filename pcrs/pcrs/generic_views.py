@@ -6,6 +6,8 @@ class GenericItemListView(ListView):
     """
     A generic List View.
     """
+    template_name = 'pcrs/item_list.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = '{thing}s'\
@@ -25,6 +27,8 @@ class GenericItemCreateView(GenericItemDetailView, CreateView):
     """
     A generic creation view.
     """
+    template_name = 'pcrs/item_form.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'New {thing}'\
@@ -36,6 +40,7 @@ class GenericItemUpdateView(GenericItemDetailView, UpdateView):
     """
     A generic update view.
     """
+    template_name = 'pcrs/item_form.html'
 
 
 class GenericCourseStaffDeleteView(CourseStaffViewMixin, GenericItemDetailView,

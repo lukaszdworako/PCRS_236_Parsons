@@ -43,17 +43,16 @@
                         <li><a href="{{ site_prefix }}/content/videos/list">Videos</a></li>
                         <li><a href="{{ site_prefix }}/content/challenges/list">Challenges</a></li>
                         <li><a href="{{ site_prefix }}/content/quests/list">Quests</a></li>
+                        <li><a href="{{ site_prefix }}/sections/list">Sections</a></li>
                     </ul>
                 </li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
                 <li><p class="navbar-text navbar-right">
-                    section: {{ request.session.section|default:None }}
-                    <a href="{{ site_prefix }}/section" class="navbar-link">(change)</a>
-                </p>
+                    Logged in as {{ request.user }}
                 </li>
-                <li><a href="{{ site_prefix }}/logout">Log out</a></li>
+                <li><a href="{{ site_prefix }}/logout">(log out)</a></li>
 
             </ul>
         </div>

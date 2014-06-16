@@ -6,8 +6,9 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
+from django.views.generic.detail import SingleObjectMixin
 
-from content.forms import QuestForm, QuestSectionForm, QuestSectionFormHelper
+from content.forms import QuestForm, QuestSectionForm
 from content.models import Quest, SectionQuest, Challenge
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
@@ -25,6 +26,9 @@ class QuestView:
 
 
 class QuestListView(CourseStaffViewMixin, GenericItemListView):
+    """
+    Manage Challenges within Quests.
+    """
     model = Quest
     template_name = 'content/quest_list.html'
 
@@ -36,14 +40,8 @@ class QuestListView(CourseStaffViewMixin, GenericItemListView):
 
 class QuestCreateView(CourseStaffViewMixin, QuestView, GenericItemCreateView):
     """
-    Create a new Quest, its and add it to all Sections.
+    Create a new Quest.
     """
-
-    def form_valid(self, form):
-        self.object = form.save()
-        for section in Section.objects.all():
-            SectionQuest.objects.create(quest=self.object, section=section)
-        return redirect(self.get_success_url())
 
 
 class QuestUpdateView(CourseStaffViewMixin, QuestView, GenericItemUpdateView):
@@ -75,23 +73,45 @@ class QuestSaveChallengesView(CourseStaffViewMixin, CreateView):
 
 
 class QuestSectionListView(CourseStaffViewMixin, FormView):
+    """
+    Update the attributes of Quest for a Section.
+    """
     model = Section
     form_class = inlineformset_factory(Section, SectionQuest,
                                        form=QuestSectionForm,
                                        extra=0, can_delete=False)
-    template_name = 'pcrs/crispy_formset.html'
+    template_name = 'content/section_quest_list.html'
 
     def get_section(self):
         return get_object_or_404(Section, pk=self.kwargs.get('section'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = self.get_form_class()(instance=self.get_section())
-        context['helper'] = QuestSectionFormHelper()
+        context['quests'] = {q.pk: q for q in Quest.objects.all()}
+        context['section'] = self.get_section()
         return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'instance': self.get_section()})
+        return kwargs
+
+    def get_success_url(self):
+        return '{section}/list'.format(section=Section.get_base_url())
+
+    def post(self, request, *args, **kwargs):
+        formset = self.form_class(request.POST, instance=self.get_section())
+        if formset.is_valid():
+            formset.save()
+            return self.form_valid(formset)
+        else:
+            return self.form_invalid(formset)
 
 
 class QuestsView(ProtectedViewMixin, ListView):
+    """
+    List all available Quests and their Challenges for the user.
+    """
     template_name = "content/quests.html"
     model = SectionQuest
 

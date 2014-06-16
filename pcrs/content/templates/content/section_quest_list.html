@@ -1,0 +1,27 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    Manage quests for {{ section.pk }}
+{% endblock %}
+
+{% block links %}
+    <a href="{{ section.get_absolute_url  }}">< Back to section</a>
+{% endblock %}
+
+{% block content %}
+
+    {{ block.super }}
+
+    {% load crispy_forms_tags %}
+    {% load filters %}
+
+    <form method="post">
+        {{ form.management_form|crispy }}
+        {% for f in form %}
+            <h3>{{ quests|get_item:f.quest.value }}</h3>
+            {% crispy f %}
+        {% endfor %}
+    {% include "pcrs/buttons/save.html" %}
+    </form>
+
+{% endblock %}

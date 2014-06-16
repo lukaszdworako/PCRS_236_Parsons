@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -5,6 +6,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import (BaseUserManager)
+import content.models
+from pcrs.models import AbstractSelfAwareModel
 
 
 VISIBILITY_LEVELS = (
@@ -185,13 +188,13 @@ class PCRSUser(CustomAbstractBaseUser):
         super(PCRSUser, self).save(*args, **kwargs)
 
 
-class Section(models.Model):
+class Section(AbstractSelfAwareModel):
     """
     Section has an id, location, lecture time, and optional description.
     A user is enrolled in one section.
     Instructors teach one or more sections.
     """
-    section_id = models.CharField("section id", primary_key=True, max_length=10)
+    section_id = models.SlugField("section id", primary_key=True, max_length=10)
     description = models.CharField("section description", max_length=100, blank=True, null=True)
     location = models.CharField("location", max_length=10)
     lecture_time = models.CharField("lecture time", max_length=20)
@@ -201,6 +204,25 @@ class Section(models.Model):
 
     def __str__(self):
         return '%s @ %s' % (self.lecture_time, self.location)
+
+    @classmethod
+    def get_base_url(cls):
+        return '{site}/sections'.format(site=settings.SITE_PREFIX)
+
+    def get_manage_section_quests_url(self):
+        return '{site}/content/quests/section/{pk}'\
+            .format(site=settings.SITE_PREFIX, pk=self.pk)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.__class__.objects.filter(pk=self.pk).exists():
+            # new section: create SectionQuests for it
+            super().save(force_insert, force_update, using, update_fields)
+            for quest in content.models.Quest.objects.all():
+                content.models.SectionQuest.objects.create(section=self,
+                    quest=quest)
+        else:
+            super().save(force_insert, force_update, using, update_fields)
 
 
 class AbstractLimitedVisibilityObject(models.Model):
