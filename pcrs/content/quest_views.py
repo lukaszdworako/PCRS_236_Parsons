@@ -7,7 +7,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
 
-from content.forms import QuestForm, QuestSectionForm, QuestSectionFormHelper
+from content.forms import QuestForm#, QuestSectionForm, QuestSectionFormHelper
 from content.models import Quest, SectionQuest, Challenge
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
@@ -74,21 +74,21 @@ class QuestSaveChallengesView(CourseStaffViewMixin, CreateView):
         return HttpResponse(json.dumps({'status': 'ok'}))
 
 
-class QuestSectionListView(CourseStaffViewMixin, FormView):
-    model = Section
-    form_class = inlineformset_factory(Section, SectionQuest,
-                                       form=QuestSectionForm,
-                                       extra=0, can_delete=False)
-    template_name = 'pcrs/crispy_formset.html'
-
-    def get_section(self):
-        return get_object_or_404(Section, pk=self.kwargs.get('section'))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = self.get_form_class()(instance=self.get_section())
-        context['helper'] = QuestSectionFormHelper()
-        return context
+# class QuestSectionListView(CourseStaffViewMixin, FormView):
+#     model = Section
+#     form_class = inlineformset_factory(Section, SectionQuest,
+#                                        form=QuestSectionForm,
+#                                        extra=0, can_delete=False)
+#     template_name = 'pcrs/crispy_formset.html'
+#
+#     def get_section(self):
+#         return get_object_or_404(Section, pk=self.kwargs.get('section'))
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['form'] = self.get_form_class()(instance=self.get_section())
+#         context['helper'] = QuestSectionFormHelper()
+#         return context
 
 
 class QuestsView(ProtectedViewMixin, ListView):

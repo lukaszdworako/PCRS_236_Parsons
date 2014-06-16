@@ -94,17 +94,13 @@ $( document ).ready(function() {
                 .addClass("panel-default").removeClass("panel-primary");
         }
 
-        var score = 0;
-        if (data['score']==data['out_of']){
-            score = 1;
-        }
         var entry = $('<div/>',{class:panel_class});
         var header1 = $('<div/>',{class:"panel-heading"});
         var header2 = $('<h4/>', {class:"panel-title"});
         var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
-                                          + "<sup style='font-size:0.9em'>" + score + "</sup>"
+                                          + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
                                           + " / "
-                                          + "<sub style='font-size:0.9em'> 1 </sub>"
+                                          + "<sub style='font-size:0.9em'>"+ data['out_of']+" </sub>"
                                           + "</span>"});
 
         var header3 = $('<a/>', {'data-toggle':"collapse",
@@ -212,8 +208,9 @@ $( document ).ready(function() {
                     }
 
                     if (data['best']){
-                        $('#'+div_id).find('#star').empty();
-                        $('#'+div_id).find('#star').append($('<img/>', {src:"/static/star.gif", width:40, heigh:40}));
+                        $('#'+div_id).find('h3').find('span').empty();
+                        $('#'+div_id).find('h3').find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                        $('.nav.bs-docs-sidenav').find('#sb_'+div_id).css("color","green");
                     }
 
                     if ($('#'+div_id).find('#history_accordion').children().length != 0){
