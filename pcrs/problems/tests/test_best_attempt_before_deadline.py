@@ -216,10 +216,9 @@ class TestSingleChallengeQuest:
         self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
         self.student2 = PCRSUser.objects.create(username='student2', section=self.s1)
 
-        self.quest = Quest.objects.create(name='c1', description='c2')
-        SectionQuest.objects.create(quest=self.quest, section=self.s1,
-                                    due_on=localtime(now()) + timedelta(days=7))
-
+        self.quest = Quest.objects.create(name='q1', description='q1')
+        SectionQuest.objects.filter(section=self.s1, quest=self.quest)\
+            .update(due_on=localtime(now()) + timedelta(days=7))
         self.challenge = Challenge.objects.create(pk=1, name='c1',
                                                   description='c2',
                                                   quest=self.quest)
@@ -241,7 +240,7 @@ class TestNumberSolvedBeforeDeadlineChallenges:
         self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
 
         self.quest = Quest.objects.create(name='c1', description='c2')
-        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
+        SectionQuest.objects.filter(quest=self.quest, section=self.s1).update(due_on=localtime(now()) + timedelta(days=7))
         self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
         self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
 
@@ -261,8 +260,10 @@ class TestNumberSolvedBeforeDeadlines:
         self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
 
         self.quest = Quest.objects.create(name='c1', description='c2')
-        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) + timedelta(days=7), section=self.s1)
-        SectionQuest.objects.create(quest=self.quest, due_on=localtime(now()) - timedelta(days=7), section=self.s2)
+        SectionQuest.objects.filter(quest=self.quest, section=self.s1)\
+            .update(due_on=localtime(now()) + timedelta(days=7))
+        SectionQuest.objects.filter(quest=self.quest, section=self.s2)\
+            .update(due_on=localtime(now()) - timedelta(days=7))
         self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
         self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)
 
@@ -282,16 +283,16 @@ class TestManyQuestsDeadlines:
         self.student3 = PCRSUser.objects.create(username='student3', section=self.s2)
 
         self.quest = Quest.objects.create(name='q1', description='q1')
-        SectionQuest.objects.create(quest=self.quest, section=self.s1,
-                                    due_on=localtime(now()) + timedelta(days=7))
-        SectionQuest.objects.create(quest=self.quest, section=self.s2,
-                                    due_on=localtime(now()) - timedelta(days=7))
+        SectionQuest.objects.filter(quest=self.quest, section=self.s1)\
+                            .update(due_on=localtime(now()) + timedelta(days=7))
+        SectionQuest.objects.filter(quest=self.quest, section=self.s2)\
+                            .update(due_on=localtime(now()) - timedelta(days=7))
 
         self.quest2 = Quest.objects.create(name='q2', description='q2')
-        SectionQuest.objects.create(quest=self.quest2, section=self.s1,
-                                    due_on=localtime(now()) + timedelta(days=7))
-        SectionQuest.objects.create(quest=self.quest2, section=self.s2,
-                                    due_on=localtime(now()) - timedelta(days=7))
+        SectionQuest.objects.filter(quest=self.quest2, section=self.s1)\
+                            .update(due_on=localtime(now()) + timedelta(days=7))
+        SectionQuest.objects.filter(quest=self.quest2, section=self.s2)\
+                            .update(due_on=localtime(now()) - timedelta(days=7))
 
         self.challenge = Challenge.objects.create(pk=1, name='c1', description='c1', quest=self.quest)
         self.challenge2 = Challenge.objects.create(pk=2, name='c2', description='c2', quest=self.quest)

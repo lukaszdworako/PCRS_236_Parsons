@@ -1,11 +1,7 @@
 from django import test
 from django.core.urlresolvers import reverse
-from django.utils.timezone import localtime, now, timedelta
 
-from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
-    TestBestSubmission, TestSingleChallengeQuest, \
-    TestNumberSolvedBeforeDeadlineChallenges, \
-    TestNumberSolvedBeforeDeadlines, TestManyQuestsDeadlines
+from problems.tests.test_best_attempt_before_deadline import *
 from problems_code.models import Problem, TestCase, Submission, TestRun
 from tests.ViewTestMixins import (CourseStaffViewTestMixin,
                                   ProtectedViewTestMixin, UsersMixin)
@@ -914,7 +910,7 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
             TestCase.objects.create(problem=p3, test_input='1',
                                     expected_output='2')
 
-        for user in [self.student1, self.student2, self.student3]:
+        for user in [self.student1, self.student2]:
             for problem in [p1, p2, p3]:
                 for score in [2, 0, 1, 4, 0]:
                     self.submission_class.objects.create(submission='subm',

@@ -261,6 +261,14 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .values('problem_id').annotate(best=Max('score')).order_by()
         return {d['problem_id']: d['best']for d in subs}
 
+    @classmethod
+    def grade(cls, quest, section):
+        return cls.objects\
+            .filter(problem__challenge__quest=quest, user__section=section,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
+
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """
