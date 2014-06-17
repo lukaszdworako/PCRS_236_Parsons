@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
 
 from content.forms import QuestForm, QuestSectionForm
-from content.models import Quest, SectionQuest, Challenge
+from content.models import Quest, SectionQuest, Challenge, WatchedVideo
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from users.models import Section
@@ -163,6 +163,14 @@ class QuestsView(ProtectedViewMixin, ListView):
             challenge.pk for challenge in
             Challenge.get_visible_for_user(self.request.user)
         }
+
+        context['best'] = {
+            content_type.app_label: content_type.model_class()
+                    .get_best_attempts_before_deadlines(self.request.user)
+            for content_type in ContentType.objects.filter(Q(model='submission'))
+        }
+        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+
         return context
 
     def get_queryset(self):

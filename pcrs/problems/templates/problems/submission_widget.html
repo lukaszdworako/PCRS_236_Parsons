@@ -5,10 +5,10 @@
 
     {% block problem_score %}
         <span class="pull-right" title="Progress so far">
-        {% if mark|default:0 == problem.max_score %}
+        {% if mark|default:'-' == problem.max_score %}
             {% include "pcrs/checkmark_complete.html" %}
         {% else %}
-            <sup> {{ mark|default:0 }} </sup>
+            <sup> {{ mark|default:'-' }} </sup>
             /
             <sub> {{ problem.max_score }} </sub>
         {% endif %}

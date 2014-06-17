@@ -94,6 +94,10 @@ class ContentPage(models.Model):
         return '{name}: page {order}'.format(name=self.challenge.name,
                                              order=self.order)
 
+    def get_absolute_url(self):
+        return '{challenge}/{num}'.format(
+            challenge=self.challenge.get_absolute_url(), num=self.order)
+
     def next(self):
         try:
             return ContentPage.objects.get(challenge=self.challenge,
