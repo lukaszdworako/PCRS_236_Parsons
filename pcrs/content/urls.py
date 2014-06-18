@@ -5,6 +5,7 @@ from content.challenge_content_views import TextCreateView, PageCreateView, \
 from content.challenge_views import *
 from content.quest_views import QuestCreateView, QuestUpdateView, QuestListView, \
     QuestSaveChallengesView, QuestSectionListView, QuestsView, QuestSectionView
+
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView

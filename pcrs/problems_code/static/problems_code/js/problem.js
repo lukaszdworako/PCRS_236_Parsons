@@ -300,7 +300,18 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     if (best){
         $('#'+div_id).find('h3').find('span').empty();
         $('#'+div_id).find('h3').find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
-        $('.nav.bs-docs-sidenav').find('#sb_'+div_id).css("color","green");
+        var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
+        side_bar.css("color","green");
+        side_bar.removeClass();
+        side_bar.addClass("glyphicon glyphicon-check");
+        var new_title = $('#'+div_id).find("h3")[0].firstChild.data.trim();
+        if (score == max_score){
+            new_title += " : Complete"
+        }
+        else{
+            new_title += " : " + score + " / " + max_score;
+        }
+        side_bar.prop('title', new_title);
     }
     if ($('#'+div_id).find('#history_accordion').children().length != 0){
         add_history_entry(data, div_id, 1);
