@@ -33,7 +33,8 @@ $(document).ready(function () {
         }
 
         var entry3 = $('<span/>',{
-                            id:"sb_"+widgets[w_ind].id,class:w_icon,
+                            id:"sb_"+widgets[w_ind].id,
+                            class:w_icon,
                             style:"color:"+w_color+";",
                             title:title_text
         });

@@ -58,6 +58,10 @@
                              class="panel-collapse collapse">
                             <div class="panel-body">
                                 {% for page in challenge.contentpage_set.all %}
+                                    {% if page.order|add:"1"|divisibleby:"3" %}
+                                        <div class = "row">
+                                    {% endif %}
+                                    <div id="holder_{{ challenge.pk }}_{{page.order}}" class="col-xs-6 col-md-4">
                                     <h5><a href="{{ page.get_absolute_url }}">Part {{ page.order }}</a>
                                     </h5>
                                     {% for content_object in page.contentsequenceitem_set.all %}
@@ -91,6 +95,11 @@
                                             </div>
                                         {% endwith %}
                                     {% endfor %}
+                                    </div>
+                                    {% if page.order|add:"1"|divisibleby:"3" %}
+                                        </div>
+                                        <br>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
