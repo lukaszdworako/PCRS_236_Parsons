@@ -3,19 +3,23 @@ $(document).ready(function () {
     var widgets = $(".bs-docs-sidebar").siblings('div');
     var side_bar = $(".nav.bs-docs-sidenav");
 
+    // fill up the side bar with information
     for (var w_ind = widgets.length - 1; w_ind > -1; w_ind--){
 
         var entry = $('<div/>',{style:"margin-left:25%;"});
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
-        var w_icon = "glyphicon glyphicon-edit";
 
+        var w_icon = "glyphicon glyphicon-edit";
         var title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
         var w_color = "DarkOrange";
+
+        // if there is a checkmark on the page the question is complete
         if ($(widgets[w_ind]).find(".glyphicon.glyphicon-ok.icon-ok-green").length != 0){
             w_icon = "glyphicon glyphicon-check";
             w_color = "green";
             title_text += " : Complete";
         }
+        //grab the score from the question on the page
         else{
             var current_mark = $(widgets[w_ind]).find("sup").text();
             var max_mark =  $(widgets[w_ind]).find("sub").text();
@@ -27,17 +31,20 @@ $(document).ready(function () {
                 w_color = "red";
             }
         }
+
         if ((widgets[w_ind].id).split("-")[0] == "video"){
             w_icon = "glyphicon glyphicon-film";
             w_color = "black";
+            title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
         }
 
         var entry3 = $('<span/>',{
-                            id:"sb_"+widgets[w_ind].id,
-                            class:w_icon,
-                            style:"color:"+w_color+";",
-                            title:title_text
+            id:"sb_"+widgets[w_ind].id,
+            class:w_icon,
+            style:"color:"+w_color+";",
+            title:title_text
         });
+
         entry2.append(entry3);
         entry.append(entry2);
         side_bar.prepend(entry);
@@ -45,8 +52,8 @@ $(document).ready(function () {
 
     $(document).on("scroll", onScroll);
 
-    //Smoth scrolling for the screen
-    $('a[href^="#"]').on('click', function (e) {
+    //Smooth scrolling for the screen
+    $('.nav.bs-docs-sidenav a[href^="#"]').on('click', function (e) {
         e.preventDefault();
         $(document).off("scroll");
 
@@ -66,6 +73,7 @@ $(document).ready(function () {
     });
 });
 
+//scroll event to keep track of current problem
 function onScroll(){
     var scrollPos = $(document).scrollTop();
     $('.nav.bs-docs-sidenav a').each(function () {
