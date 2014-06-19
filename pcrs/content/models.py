@@ -164,6 +164,7 @@ class SectionQuest(AbstractLimitedVisibilityObject):
 
     class Meta:
         unique_together = ['section', 'quest']
+        ordering = ['quest__order']
 
     def __str__(self):
         return '{section} {quest}'.format(section=self.section, quest=self.quest)

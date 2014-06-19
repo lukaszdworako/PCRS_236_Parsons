@@ -31,7 +31,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     All problems have visibility level, and optionally tags, and are self-aware.
     """
     challenge = models.ForeignKey(content.models.Challenge, null=True, blank=True,
-        related_name='%(app_label)s_%(class)s_related')
+        related_name='%(app_label)s_%(class)s_related', on_delete=models.SET_NULL)
 
     max_score = models.SmallIntegerField(default=0, blank=True)
 
