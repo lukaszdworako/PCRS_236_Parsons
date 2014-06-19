@@ -15,10 +15,9 @@
         </h3>
         <div class="well">
 
-
             <div class="panel-group" id="accordion">
                 {% for challenge in quest.quest.challenge_set.all %}
-                    {% if challenge.pk in visible_challenges %}
+                    {% if challenge.is_visible_to_students %}
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
@@ -26,11 +25,10 @@
                                     <a data-toggle="collapse"
                                        href="#{{ challenge.pk }}">
                                         {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
-
-                                            {% if completed == total %}
+                                            {% if completed == total and total != 0 %}
                                                 <span class="complete">
 
-                                            {% else %}
+                                            {% elif total != 0 %}
                                                 <span class="incomplete">
 
                                                 <span class="pull-right">
@@ -77,19 +75,20 @@
                                                         <a href="{{ page.get_absolute_url }}#video-{{ item.pk }}">{{ item.name }}</a>
                                                         </span>
                                                         {% elif item_type == "problem" %}
-                                                            {% with mark=best|get_item:problem_type|get_item:item.pk %}
-                                                                {% if mark == item.max_score %}
-                                                                    <span class="complete">
-                                                                {% else %}
-                                                                    <span class="incomplete">
-                                                                {% endif %}
-                                                            {% endwith %}
-                                                        <i class="glyphicon glyphicon-edit problem"></i>
-                                                        <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}"> {{ item.name }}
-                                                        </a>
-                                                        </span>
+                                                            {% if item.is_visible_to_students %}
+                                                                {% with mark=best|get_item:problem_type|get_item:item.pk %}
+                                                                    {% if mark == item.max_score %}
+                                                                        <span class="complete">
+                                                                    {% else %}
+                                                                        <span class="incomplete">
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            <i class="glyphicon glyphicon-edit problem"></i>
+                                                            <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}"> {{ item.name }}
+                                                            </a>
+                                                            </span>
+                                                            {% endif %}
                                                         {% endif %}
-
                                                     {% endwith %}
                                                 </div>
                                             {% endwith %}

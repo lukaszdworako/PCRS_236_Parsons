@@ -126,27 +126,24 @@ class QuestsView(ProtectedViewMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['challenge_to_completed'] = self.sum_dict_values(
-            *[content_type.model_class().get_best_before_deadline(self.request.user)
-            for content_type in ContentType.objects.filter(Q(model='submission'))]
-        )
 
-        context['challenge_to_total'] = self.sum_dict_values(
-            *[content_type.model_class().get_challenge_to_problem_number()
-            for content_type in ContentType.objects.filter(Q(model='problem'))]
-        )
+        challenge_to_total, challenge_to_completed = [], []
+        best = {}
 
-        context['visible_challenges'] = {
-            challenge.pk for challenge in
-            Challenge.objects.filter(visibility='open')
-        }
+        for content_type in ContentType.objects.filter(Q(model='problem')):
+            problem_class = content_type.model_class()
+            submission_class = problem_class.get_submission_class()
+            challenge_to_total = problem_class.get_challenge_to_problem_number()
+            challenge_to_completed.append(
+                submission_class.get_completed_for_challenge_before_deadline(self.request.user))
 
-        context['best'] = {
-            content_type.app_label: content_type.model_class()
-                    .get_best_attempts_before_deadlines(self.request.user)
-            for content_type in ContentType.objects.filter(Q(model='submission'))
-        }
+            best[content_type.app_label] = submission_class\
+                .get_best_attempts_before_deadlines(self.request.user)
+
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+        context['best'] = best
+        context['challenge_to_completed'] = self.sum_dict_values(*challenge_to_completed)
+        context['challenge_to_total'] = self.sum_dict_values(*challenge_to_total)
 
         return context
 

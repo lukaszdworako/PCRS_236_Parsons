@@ -234,13 +234,14 @@ class AbstractSubmission(AbstractSelfAwareModel):
         self.set_best_submission()
 
     @classmethod
-    def get_best_before_deadline(cls, user):
+    def get_completed_for_challenge_before_deadline(cls, user):
         """
-        Return a dictionary mapping challenge_pk to the number of problems
+        Return a dictionary mapping challenge_pk to the number of open problems
         the user has completed in each Challenge.
         """
         subs = cls.objects\
-            .filter(user=user, score=F('problem__max_score'),
+            .filter(problem__visibility='open',
+                    user=user, score=F('problem__max_score'),
                     problem__challenge__quest__sectionquest__section=user.section,
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
             .values('problem__challenge')\

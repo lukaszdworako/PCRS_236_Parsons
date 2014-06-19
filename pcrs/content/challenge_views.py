@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
+from django.views.generic.detail import SingleObjectMixin
 
 from content.forms import ChallengeForm
 from content.models import *
@@ -43,18 +44,14 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
     template_name = 'content/challenge.html'
 
 
-class ContentPageView(ProtectedViewMixin, ListView):
+class ContentPageView(ProtectedViewMixin, ListView, SingleObjectMixin):
     template_name = "content/content_page.html"
     model = ContentSequenceItem
-
-    def get_page(self):
-        return get_object_or_404(ContentPage,
-                                 order=self.kwargs.get('page', None),
-                                 challenge_id=self.kwargs.get('challenge', None))
+    object = None
 
     def get_queryset(self):
         return self.model.objects\
-            .filter(content_page=self.get_page())\
+            .filter(content_page=self.object)\
             .prefetch_related('content_object').all()
 
     def _get_forms(self):
@@ -69,8 +66,6 @@ class ContentPageView(ProtectedViewMixin, ListView):
                 f = SubmissionForm(problem=problem) \
                     if module.endswith('multiple_choice') \
                     else ProgrammingSubmissionForm(problem=problem)
-                for_type = forms.get(problem.get_problem_type_name(), {})
-                # for_type[problem.pk] = f
                 try:
                     forms[module][problem.pk] = f
                 except:
@@ -78,12 +73,9 @@ class ContentPageView(ProtectedViewMixin, ListView):
                     forms[module][problem.pk] = f
         return forms
 
-    def _get_submissions(self):
-        pass
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['content_page'] = self.get_page()
+        context['content_page'] = self.object
         context['forms'] = self._get_forms()
         context['best'] = {
             content_type.app_label: content_type.model_class()

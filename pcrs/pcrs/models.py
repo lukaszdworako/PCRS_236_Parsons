@@ -1,3 +1,5 @@
+from sys import modules
+
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -34,21 +36,20 @@ class AbstractSelfAwareModel(models.Model):
 
     @classmethod
     def get_class_by_name(cls, name):
-        app_label = cls.get_app_label()
-        c_type = ContentType.objects.get(model=name, app_label=app_label)
-        return c_type.model_class()
+        app = modules[cls.__module__]
+        return getattr(app, name)
 
     @classmethod
     def get_problem_class(cls):
-        return cls.get_class_by_name('problem')
+        return cls.get_class_by_name('Problem')
 
     @classmethod
     def get_submission_class(cls):
-        return cls.get_class_by_name('submission')
+        return cls.get_class_by_name('Submission')
 
     @classmethod
     def get_testrun_class(cls):
-        return cls.get_class_by_name('testrun')
+        return cls.get_class_by_name('Testrun')
 
     @classmethod
     def get_pretty_name(cls):

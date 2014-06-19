@@ -839,9 +839,9 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
 
         with self.assertNumQueries(2):
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
 
     def test_one_problem_in_challenge(self):
         """
@@ -863,9 +863,9 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
 
         with self.assertNumQueries(2):
             self.assertEqual({1: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
 
     def test_one_problem_outside_Challenge_solved(self):
         """
@@ -891,7 +891,7 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
 
         with self.assertNumQueries(1):
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
     def test_two_problem_in_challenge_solved(self):
         p1 = self.problem_class.objects.create(name='p1', description='p1',
@@ -918,7 +918,7 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
 
         with self.assertNumQueries(1):
             self.assertEqual({1: 2},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
 
 class TestSolvedBeforeDeadlineChallenges(
@@ -947,7 +947,7 @@ class TestSolvedBeforeDeadlineChallenges(
 
         with self.assertNumQueries(1):
             self.assertEqual({2: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
     def test_all_problem_in_one_challenge(self):
         """
@@ -973,7 +973,7 @@ class TestSolvedBeforeDeadlineChallenges(
 
         with self.assertNumQueries(1):
             self.assertEqual({2: 2},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
     def test_one_problem_in_all_challenges(self):
         """
@@ -1003,7 +1003,7 @@ class TestSolvedBeforeDeadlineChallenges(
 
         with self.assertNumQueries(1):
             self.assertEqual({1: 1, 2: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
     def test_all_problem_in_all_challenges(self):
         """
@@ -1029,7 +1029,7 @@ class TestSolvedBeforeDeadlineChallenges(
 
         with self.assertNumQueries(1):
             self.assertEqual({1: 1, 2: 2},
-                Submission.get_best_before_deadline(self.student1))
+                Submission.get_completed_for_challenge_before_deadline(self.student1))
 
 
 class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
@@ -1065,11 +1065,11 @@ class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
 
         with self.assertNumQueries(3):
             self.assertEqual({1: 1, 2: 2},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
             self.assertEqual({},
-                            Submission.get_best_before_deadline(self.student3))
+                            Submission.get_completed_for_challenge_before_deadline(self.student3))
 
     def test_some_after_deadline(self):
         """
@@ -1100,14 +1100,14 @@ class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
 
         with self.assertNumQueries(5):
             self.assertEqual({1: 1, 2: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             Submission.objects.create(submission='subm', user=self.student1, problem=p3, score=3)
             self.assertEqual({1: 1, 2: 2},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
             Submission.objects.create(submission='subm', user=self.student2, problem=p3, score=3)
             self.assertEqual({1: 1, 2: 1},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
 
 
 class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
@@ -1147,11 +1147,11 @@ class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
 
         with self.assertNumQueries(3):
             self.assertEqual({1: 1, 2: 1, 3: 1, 4: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
             self.assertEqual({},
-                             Submission.get_best_before_deadline(self.student3))
+                             Submission.get_completed_for_challenge_before_deadline(self.student3))
 
     def test_some_after_deadline(self):
         """
@@ -1186,17 +1186,17 @@ class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
 
         with self.assertNumQueries(6):
             self.assertEqual({1: 1, 4: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
             self.assertEqual({1: 1, 4: 1},
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
 
             Submission.objects.create(submission='subm', user=self.student1, problem=p3, score=3)
             self.assertEqual({1: 1, 3: 1, 4: 1},
-                             Submission.get_best_before_deadline(self.student1))
+                             Submission.get_completed_for_challenge_before_deadline(self.student1))
 
             Submission.objects.create(submission='subm', user=self.student2, problem=p3, score=3)
             self.assertEqual({1: 1, 4: 1, },
-                             Submission.get_best_before_deadline(self.student2))
+                             Submission.get_completed_for_challenge_before_deadline(self.student2))
 
 
 class TestBestCodeAttemptSingleProblem(TestSingleChallengeQuest, test.TestCase):

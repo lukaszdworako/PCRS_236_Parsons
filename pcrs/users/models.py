@@ -246,3 +246,6 @@ class AbstractLimitedVisibilityObject(models.Model):
             return cls.objects.exclude(visibility='closed')
         else:
             return cls.objects.all()
+
+    def is_visible_to_students(self):
+        return self.visibility == 'open'
