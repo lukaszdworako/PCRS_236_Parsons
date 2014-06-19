@@ -44,13 +44,17 @@
                         <li><a href="{{ site_prefix }}/content/challenges/list">Challenges</a></li>
                         <li><a href="{{ site_prefix }}/content/quests/list">Quests</a></li>
                         <li><a href="{{ site_prefix }}/sections/list">Sections</a></li>
+                        <li class="divider"></li>
+                        <li><a href="{{ site_prefix }}/content/quests">Student Quest List View</a></li>
                     </ul>
                 </li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
                 <li><p class="navbar-text navbar-right">
-                    Logged in as {{ request.user }}
+                    section: {{ request.session.section|default:None }}
+                    <a href="{{ site_prefix }}/sections/change" class="navbar-link">(change)</a>
+                </p>
                 </li>
                 <li><a href="{{ site_prefix }}/logout">(log out)</a></li>
 

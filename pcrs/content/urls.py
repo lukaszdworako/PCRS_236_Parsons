@@ -1,11 +1,13 @@
 from django.conf.urls import patterns, url
 
-from content.challenge_content_views import TextCreateView, PageCreateView, \
-    ChallengeObjectsView, ItemDeleteView, ChallengePagesObjectsView
+from content.challenge_content_views import (TextCreateView, PageCreateView,
+                                             ChallengeObjectsView,
+                                             ItemDeleteView,
+                                             ChallengePagesObjectsView)
 from content.challenge_views import *
-from content.quest_views import QuestCreateView, QuestUpdateView, QuestListView, \
-    QuestSaveChallengesView, QuestSectionListView, QuestsView, QuestSectionView
-
+from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
+                                 QuestSaveChallengesView, QuestSectionListView,
+                                 QuestsView)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -80,7 +82,4 @@ urlpatterns = patterns('',
 
     url(r'^quests/section/(?P<section>[\w-]+)$', QuestSectionListView.as_view(),
         name='section_quests_setup'),
-    url(r'^quests/section/(?P<section>[\w-]+)/list$',
-        QuestSectionView.as_view(), name='quest_section_list'),
-
 )

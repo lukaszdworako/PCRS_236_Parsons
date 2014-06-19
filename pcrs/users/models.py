@@ -213,6 +213,9 @@ class Section(AbstractSelfAwareModel):
         return '{site}/content/quests/section/{pk}'\
             .format(site=settings.SITE_PREFIX, pk=self.pk)
 
+    def get_stats_url(self):
+        return '{}/reports'.format(self.get_absolute_url())
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if not self.__class__.objects.filter(pk=self.pk).exists():

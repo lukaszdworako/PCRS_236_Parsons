@@ -107,32 +107,9 @@ class QuestSectionListView(CourseStaffViewMixin, FormView):
             return self.form_invalid(formset)
 
 
-class QuestSectionView(CourseStaffViewMixin, ListView):
-    """
-    List the Quests and the Challenges for a Section, as a student in the section
-    would see them.
-    """
-    model = SectionQuest
-    template_name = 'content/quests.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['visible_challenges'] = {
-            challenge.pk for challenge in
-            Challenge.objects.filter(visibility='open')
-        }
-        return context
-
-    def get_queryset(self):
-        section = get_object_or_404(Section, pk=self.kwargs.get('section'))
-        return self.model.objects\
-            .filter(visibility='open', section=section, open_on__lt=now())\
-            .prefetch_related('quest', 'quest__challenge_set')
-
-
 class QuestsView(ProtectedViewMixin, ListView):
     """
-    List all available Quests and their Challenges for the user.
+    List all available Quests and their Challenges for the user in the section.
     """
     template_name = "content/quests.html"
     model = SectionQuest
@@ -161,7 +138,7 @@ class QuestsView(ProtectedViewMixin, ListView):
 
         context['visible_challenges'] = {
             challenge.pk for challenge in
-            Challenge.get_visible_for_user(self.request.user)
+            Challenge.objects.filter(visibility='open')
         }
 
         context['best'] = {
@@ -176,8 +153,6 @@ class QuestsView(ProtectedViewMixin, ListView):
     def get_queryset(self):
         section = (self.request.session.get('section', None) or
                    self.request.user.section)
-        visible_containers = self.model.get_visible_for_user(self.request.user)
-        return visible_containers\
-            .filter(section=section)\
-            .filter(open_on__lt=now())\
+        return SectionQuest.objects\
+            .filter(visibility='open', section=section, open_on__lt=now())\
             .prefetch_related('quest', 'quest__challenge_set')

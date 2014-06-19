@@ -18,92 +18,93 @@
 
             <div class="panel-group" id="accordion">
                 {% for challenge in quest.quest.challenge_set.all %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h4 class="panel-title">
-                                {% if challenge.pk in visible_challenges %}
+                    {% if challenge.pk in visible_challenges %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+
                                     <a data-toggle="collapse"
                                        href="#{{ challenge.pk }}">
-                                    {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
+                                        {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
 
-                                        {% if completed == total %}
-                                            <span class="complete">
+                                            {% if completed == total %}
+                                                <span class="complete">
 
-                                        {% else %}
-                                            <span class="incomplete">
+                                            {% else %}
+                                                <span class="incomplete">
 
-                                            <span class="pull-right">
+                                                <span class="pull-right">
                                                 {{ completed }}/{{ total }}
                                             </span>
+                                            {% endif %}
+
+                                        {% if challenge.is_graded %}
+                                            <i class="glyphicon glyphicon-bookmark graded"></i>
+                                        {% else %}
+                                            <i class="glyphicon glyphicon-book not-graded"></i>
                                         {% endif %}
+                                        </span>
 
-                                    {% if challenge.is_graded %}
-                                        <i class="glyphicon glyphicon-bookmark graded"></i>
-                                    {% else %}
-                                        <i class="glyphicon glyphicon-book not-graded"></i>
-                                    {% endif %}
-                                    </span>
-
-                                        {{ challenge.name }}
-                                    {% endwith %}
-
-                                {% else %}
-                                    <i class="glyphicon glyphicon-lock"></i>
-                                    {{ challenge.name }}
-                                {% endif %}
-                                </a>
-                            </h4>
-                        </div>
-                        <div id="{{ challenge.pk }}"
-                             class="panel-collapse collapse">
-                            <div class="panel-body">
-                                {% for page in challenge.contentpage_set.all %}
-                                    {% if page.order|add:"1"|divisibleby:"3" %}
-                                        <div class = "row">
-                                    {% endif %}
-                                    <div id="holder_{{ challenge.pk }}_{{page.order}}" class="col-xs-6 col-md-4">
-                                    <h5><a href="{{ page.get_absolute_url }}">Part {{ page.order }}</a>
-                                    </h5>
-                                    {% for content_object in page.contentsequenceitem_set.all %}
-                                        {% with item=content_object.content_object %}
-                                            <div>
-                                                {% with item_type=item|classname|lower problem_type=item|module_name %}
-                                                    {% if item_type == "video" %}
-                                                        {% if object.pk in watched %}
-                                                            <span class="complete">
-                                                        {% else %}
-                                                            <span class="incomplete">
-                                                        {% endif %}
-                                                    <i class="glyphicon glyphicon-film"></i>
-                                                    <a href="{{ page.get_absolute_url }}#video-{{ item.pk }}">{{ item.name }}</a>
-                                                    </span>
-                                                    {% elif item_type == "problem" %}
-                                                        {% with mark=best|get_item:problem_type|get_item:item.pk %}
-                                                        {% if mark == item.max_score %}
-                                                            <span class="complete">
-                                                        {% else %}
-                                                            <span class="incomplete">
-                                                        {% endif %}
-                                                        {% endwith %}
-                                                    <i class="glyphicon glyphicon-edit problem"></i>
-                                                    <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}"> {{ item.name }}
-                                                    </a>
-                                                    </span>
-                                                    {% endif %}
-
-                                                {% endwith %}
-                                            </div>
+                                            {{ challenge.name }}
                                         {% endwith %}
-                                    {% endfor %}
+
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="{{ challenge.pk }}"
+                                 class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    {% for page in challenge.contentpage_set.all %}
+                                        {% if page.order|add:"1"|divisibleby:"3" %}
+                                            <div class="row">
+                                        {% endif %}
+                                    <div id="holder_{{ challenge.pk }}_{{ page.order }}"
+                                         class="col-xs-6 col-md-4">
+                                        <h5>
+                                            <a href="{{ page.get_absolute_url }}">Part {{ page.order }}</a>
+                                        </h5>
+                                        {% for content_object in page.contentsequenceitem_set.all %}
+                                            {% with item=content_object.content_object %}
+                                                <div>
+                                                    {% with item_type=item|classname|lower problem_type=item|module_name %}
+                                                        {% if item_type == "video" %}
+                                                            {% if object.pk in watched %}
+                                                                <span class="complete">
+                                                            {% else %}
+                                                                <span class="incomplete">
+                                                            {% endif %}
+                                                        <i class="glyphicon glyphicon-film"></i>
+                                                        <a href="{{ page.get_absolute_url }}#video-{{ item.pk }}">{{ item.name }}</a>
+                                                        </span>
+                                                        {% elif item_type == "problem" %}
+                                                            {% with mark=best|get_item:problem_type|get_item:item.pk %}
+                                                                {% if mark == item.max_score %}
+                                                                    <span class="complete">
+                                                                {% else %}
+                                                                    <span class="incomplete">
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        <i class="glyphicon glyphicon-edit problem"></i>
+                                                        <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}"> {{ item.name }}
+                                                        </a>
+                                                        </span>
+                                                        {% endif %}
+
+                                                    {% endwith %}
+                                                </div>
+                                            {% endwith %}
+                                        {% endfor %}
                                     </div>
                                     {% if page.order|add:"1"|divisibleby:"3" %}
                                         </div>
                                         <br>
                                     {% endif %}
-                                {% endfor %}
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
+
                 {% endfor %}
             </div>
         </div>

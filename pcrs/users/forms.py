@@ -1,6 +1,7 @@
 from crispy_forms.layout import Submit, Fieldset, Layout, HTML, Div, \
     ButtonHolder
 from django import forms
+from content.models import Quest
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
 from users.models import Section
 
@@ -38,3 +39,19 @@ class SectionForm(CrispyFormMixin, forms.ModelForm):
             )
         else:
             self.helper.layout.append(ButtonHolder(self.save_button))
+
+
+class QuestGradeForm(CrispyFormMixin, forms.Form):
+    section = forms.ModelChoiceField(Section.objects.all(),
+                                     widget=forms.HiddenInput())
+    quest = forms.ModelChoiceField(Quest.objects.all())
+
+    class Meta:
+        fields = ('section', 'quest')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.layout = Layout(
+            Fieldset('Get grade report for this section', 'quest', 'section'),
+            ButtonHolder(self.save_button)
+        )
