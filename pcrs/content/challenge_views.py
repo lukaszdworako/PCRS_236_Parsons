@@ -44,14 +44,18 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
     template_name = 'content/challenge.html'
 
 
-class ContentPageView(ProtectedViewMixin, ListView, SingleObjectMixin):
+class ContentPageView(ProtectedViewMixin, ListView):
     template_name = "content/content_page.html"
     model = ContentSequenceItem
-    object = None
+
+    def get_page(self):
+        self.page = ContentPage.objects.prefetch_related('challenge', 'challenge__contentpage_set', 'contentsequenceitem_set').get(order=self.kwargs.get('page', None),
+                                 challenge_id=self.kwargs.get('challenge', None))
+        return self.page
 
     def get_queryset(self):
         return self.model.objects\
-            .filter(content_page=self.object)\
+            .filter(content_page=self.get_page())\
             .prefetch_related('content_object').all()
 
     def _get_forms(self):
@@ -75,7 +79,7 @@ class ContentPageView(ProtectedViewMixin, ListView, SingleObjectMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['content_page'] = self.object
+        context['content_page'] = self.page
         context['forms'] = self._get_forms()
         context['best'] = {
             content_type.app_label: content_type.model_class()
