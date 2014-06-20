@@ -1,7 +1,9 @@
 from django import test
 from django.core.urlresolvers import reverse
+from django.test import TransactionTestCase
 
 from problems.tests.test_best_attempt_before_deadline import *
+from problems.tests.test_performance import TestSubmissionHistoryDatabaseHits
 from problems_code.models import Problem, TestCase, Submission, TestRun
 from tests.ViewTestMixins import (CourseStaffViewTestMixin,
                                   ProtectedViewTestMixin, UsersMixin)
@@ -1329,3 +1331,34 @@ class TestBestCodeAttemptManyProblem(TestManyQuestsDeadlines, test.TestCase):
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
             actual = Submission.get_best_attempts_before_deadlines(self.student2)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
+
+
+class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
+                            TransactionTestCase):
+
+    url = reverse('coding_problem_async_history', kwargs={'problem': 1})
+
+    def setUp(self):
+        UsersMixin.setUp(self)
+
+        quest = Quest.objects.create(name='1', description='1')
+        SectionQuest.objects.filter(section=self.student.section).update(due_on=localtime(now()))
+
+        challenge = Challenge.objects.create(name='1', description='1', quest=quest, visibility='open')
+
+        self.problem = Problem.objects.create(pk=1, name='1', description='1',
+                                              visibility='open', challenge=challenge)
+        TestCase.objects.bulk_create(
+            [TestCase(problem=self.problem, test_input=1, expected_output=2)
+             for i in range(6)])
+
+        scores = [1, 2, 0, 5, 1, 0, 3]
+        for score in scores:
+            sub = Submission.objects.create(problem=self.problem,
+                                            user=self.student, score=score)
+            sub.set_best_submission()
+            for case in TestCase.objects.all():
+                TestRun.objects.create(submission=sub, testcase=case, test_passed=False)
+
+        self.assertEqual(len(scores), Submission.objects.count())
+        self.assertEqual(len(scores)*6, TestRun.objects.count())

@@ -316,14 +316,6 @@ class AbstractTestRun(models.Model):
         return '{submission}: testcase {pk}'.format(
             submission=self.submission, pk=self.testcase.pk)
 
-    def get_history(self):
-        return {
-            'visible': self.testcase.is_visible,
-            'input': self.testcase.test_input,
-            'output': self.testcase.expected_output,
-            'passed': self.test_passed,
-            'description': self.testcase.description
-        }
 
 # Signal handlers
 
