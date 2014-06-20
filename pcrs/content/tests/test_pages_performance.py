@@ -1,9 +1,10 @@
 from django.core.urlresolvers import reverse
+from django.db import connection
 from django.test import TransactionTestCase
-from django.utils.timezone import now
+from django.utils.timezone import localtime, now, timedelta
 
 from content.models import *
-from problems_code.models import Problem, Submission
+from problems_code.models import Problem, TestCase, Submission
 from tests.ViewTestMixins import ProtectedViewTestMixin
 
 
@@ -145,7 +146,7 @@ class TestContentPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
 
     Should be kept constant.
     """
-    db_hits = 9
+    db_hits = 16
     url = reverse('challenge_page', kwargs={'challenge': 1, 'page': 0})
     template = 'content/content_page.html'
 
@@ -153,7 +154,7 @@ class TestContentPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         num_quests = 5
         num_c = 5
         num_pages = 5
-        num_objects = 10
+        num_objects = 15
         for i in range(num_quests):
             q = Quest.objects.create(name=str(i), description='c')
             for j in range(num_c):
@@ -194,12 +195,13 @@ class TestContentPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(self.url)
+            print(connection.queries)
 
     def test_quests_problem_sets_problems_submissions(self):
-        num_quests = 5
+        num_quests = 10
         num_c = 5
         num_pages = 5
-        num_objects = 10
+        num_objects = 15
         num_sub = 5
 
         for i in range(num_quests):
@@ -238,3 +240,4 @@ class TestContentPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(self.url)
+            print(connection.queries)

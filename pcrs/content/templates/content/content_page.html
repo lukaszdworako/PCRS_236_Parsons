@@ -23,8 +23,8 @@
 {% endblock %}
 
 {% block page_title %}
-    {{ content_page.challenge.name }} - Part {{ content_page.order }} Out of
-    {{ content_page.challenge.contentpage_set.all|length|add:-1 }}
+    {{ content_page.challenge.name }} - Part {{ content_page.order|add:1 }} of
+    {{ num_pages }}
 {% endblock %}
 
 
@@ -68,9 +68,9 @@
     </a>
 {% endif %}
 
-{% if content_page.next %}
+{% if next %}
     <a class="btn btn-success pull-right" role="button"
-       href="{{ content_page.order|add:1 }}">
+       href="{{ next.get_absolute_url }}">
         <i class="glyphicon glyphicon-chevron-right"></i>
     </a>
 {% endif %}

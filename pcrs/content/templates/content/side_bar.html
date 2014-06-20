@@ -5,7 +5,7 @@ margin-top:-115px;">
         <div>
             {% if content_page.order %}
                 <a href="{{ content_page.order|add:-1 }}">
-                <span class="glyphicon glyphicon-chevron-left" title="Go to page {{ content_page.order|add:-1 }} of {{ content_page.challenge.contentpage_set.all|length|add:-1 }}" style="color:green;">
+                <span class="glyphicon glyphicon-chevron-left" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}" style="color:green;">
                 </span>
             {% else %}
                 <a>
@@ -14,9 +14,9 @@ margin-top:-115px;">
             {% endif %}
                 </a>
 
-            {% if content_page.next %}
-                <a href="{{ content_page.order|add:1 }}">
-                <span class="glyphicon glyphicon-chevron-right" title="Go to page {{ content_page.order|add:1 }} of {{ content_page.challenge.contentpage_set.all|length|add:-1 }}" style="color:green; display:inline-block;">
+            {% if next %}
+                <a href="{{ next.get_absolute_url }}">
+                <span class="glyphicon glyphicon-chevron-right" title="Go to page {{ content_page.order|add:1 }} of {{ num_pages }}" style="color:green; display:inline-block;">
                 </span>
             {% else %}
                 <a>

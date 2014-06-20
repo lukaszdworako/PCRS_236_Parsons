@@ -1,3 +1,4 @@
+from django.db import connection
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.views.generic.detail import SingleObjectMixin
@@ -47,16 +48,22 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
 class ContentPageView(ProtectedViewMixin, ListView):
     template_name = "content/content_page.html"
     model = ContentSequenceItem
+    page = None
+    queryset = None
 
     def get_page(self):
-        self.page = ContentPage.objects.prefetch_related('challenge', 'challenge__contentpage_set', 'contentsequenceitem_set').get(order=self.kwargs.get('page', None),
-                                 challenge_id=self.kwargs.get('challenge', None))
+        if self.page is None:
+            self.page = ContentPage.objects.select_related('challenge')\
+                .get(order=self.kwargs.get('page', None),
+                    challenge_id=self.kwargs.get('challenge', None))
         return self.page
 
     def get_queryset(self):
-        return self.model.objects\
-            .filter(content_page=self.get_page())\
-            .prefetch_related('content_object').all()
+        if self.queryset is None:
+            self.queryset = self.model.objects\
+                .filter(content_page=self.get_page())\
+                .prefetch_related('content_object').all()
+        return self.queryset
 
     def _get_forms(self):
         forms = {}
@@ -80,6 +87,8 @@ class ContentPageView(ProtectedViewMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['content_page'] = self.page
+        context['next'] = self.page.next()
+        context['num_pages'] = self.page.challenge.contentpage_set.count()
         context['forms'] = self._get_forms()
         context['best'] = {
             content_type.app_label: content_type.model_class()
@@ -87,4 +96,5 @@ class ContentPageView(ProtectedViewMixin, ListView):
             for content_type in ContentType.objects.filter(Q(model='submission'))
         }
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+        print(connection.queries)
         return context
