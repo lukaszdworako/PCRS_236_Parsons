@@ -146,7 +146,7 @@ class TestContentPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
 
     Should be kept constant.
     """
-    db_hits = 16
+    db_hits = 17
     url = reverse('challenge_page', kwargs={'challenge': 1, 'page': 0})
     template = 'content/content_page.html'
 

@@ -124,6 +124,11 @@ class QuestsView(ProtectedViewMixin, ListView):
                 total[key] = new
         return total
 
+    @classmethod
+    def get_completed_challenges(cls, completed, total):
+        return {challenge.pk for challenge in Challenge.objects.all()
+                if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -144,6 +149,8 @@ class QuestsView(ProtectedViewMixin, ListView):
         context['best'] = best
         context['challenge_to_completed'] = self.sum_dict_values(*challenge_to_completed)
         context['challenge_to_total'] = self.sum_dict_values(*challenge_to_total)
+        context['challenges_completed'] = self.get_completed_challenges(
+            context['challenge_to_completed'], context['challenge_to_total'])
 
         return context
 

@@ -1,7 +1,9 @@
 from django.db import connection
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.views.generic.detail import SingleObjectMixin
+from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
 from content.models import *
@@ -41,8 +43,18 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
 
 
 class ChallengeStartView(ProtectedViewMixin, DetailView):
+    """
+    The landing page for the Challenge.
+    """
     model = Challenge
     template_name = 'content/challenge.html'
+
+    def get_queryset(self):
+        return Challenge.objects.filter(
+            challenge__visibility='open',
+            challenge__quest__sectionquest__section=self.request.user.section,
+            challenge__quest__sectionquest__open_on__lt=localtime(now()),
+            challenge__quest__sectionquest__visibility='open')
 
 
 class ContentPageView(ProtectedViewMixin, ListView):
@@ -54,6 +66,10 @@ class ContentPageView(ProtectedViewMixin, ListView):
     def get_page(self):
         if self.page is None:
             self.page = ContentPage.objects.select_related('challenge')\
+                .filter(challenge__visibility='open',
+                        challenge__quest__sectionquest__section=self.request.user.section,
+                        challenge__quest__sectionquest__open_on__lt=localtime(now()),
+                        challenge__quest__sectionquest__visibility='open')\
                 .get(order=self.kwargs.get('page', None),
                     challenge_id=self.kwargs.get('challenge', None))
         return self.page
