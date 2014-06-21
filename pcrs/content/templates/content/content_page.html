@@ -50,7 +50,7 @@
                     {% else %}
                         <div id="{{ problem_type|get_div_class }}-{{ item.pk }}">
                     {% endif %}
-                    {% with problem=item mark=best|get_item:problem_type|get_item:item.pk|default:0 form=forms|get_item:problem_type|get_item:item.pk %}
+                    {% with problem=item mark=best|get_item:problem_type|get_item:item.pk form=forms|get_item:problem_type|get_item:item.pk %}
                         {% if problem.is_visible_to_students %}
                             {% include item.get_module_name|add:"/submission_widget.html" %}
                         {% endif %}
