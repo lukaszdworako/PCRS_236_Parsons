@@ -37,7 +37,7 @@ class WatchedVideo(models.Model):
 
     @classmethod
     def get_watched_pk_list(cls, user):
-        return cls.objects.filter(user=user).values_list('video_id', flat=True)
+        return set(cls.objects.filter(user=user).values_list('video_id', flat=True))
 
 
 class TextBlock(models.Model):
@@ -122,6 +122,8 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                               on_delete=models.SET_NULL)
     order = models.SmallIntegerField(default=0, blank=True)
     is_graded = models.BooleanField(default=False, blank=True)
+    prerequisites = models.ManyToManyField('self', symmetrical=False,
+                                           blank=True, null=True)
 
     class Meta:
         ordering = ['quest', 'order']
@@ -131,6 +133,9 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
 
     def get_main_page(self):
         return '{}/go'.format(self.get_absolute_url())
+
+    def get_prerequisite_pks_set(self):
+        return set(self.prerequisites.values_list('id', flat=True))
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
