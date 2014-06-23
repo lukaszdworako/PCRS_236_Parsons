@@ -47,11 +47,13 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
     template_name = 'content/challenge.html'
 
     def get_queryset(self):
+        section = self.request.session.get('section', None) or self.request.user.section
         return Challenge.objects.filter(
             visibility='open',
             quest__sectionquest__section=self.request.user.section,
             quest__sectionquest__open_on__lt=localtime(now()),
             quest__sectionquest__visibility='open')
+
 
 
 class ContentPageView(ProtectedViewMixin, ListView):
