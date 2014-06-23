@@ -47,9 +47,11 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
     template_name = 'content/challenge.html'
 
     def get_queryset(self):
+        section = (self.request.session.get('section', None) or
+                   self.request.user.section)
         return Challenge.objects.filter(
             visibility='open',
-            quest__sectionquest__section=self.request.user.section,
+            quest__sectionquest__section=section,
             quest__sectionquest__open_on__lt=localtime(now()),
             quest__sectionquest__visibility='open')
 
@@ -62,9 +64,11 @@ class ContentPageView(ProtectedViewMixin, ListView):
 
     def get_page(self):
         if self.page is None:
+            section = (self.request.session.get('section', None) or
+                       self.request.user.section)
             self.page = ContentPage.objects.select_related('challenge')\
                 .filter(challenge__visibility='open',
-                        challenge__quest__sectionquest__section=self.request.user.section,
+                        challenge__quest__sectionquest__section=section,
                         challenge__quest__sectionquest__open_on__lt=localtime(now()),
                         challenge__quest__sectionquest__visibility='open')\
                 .get(order=self.kwargs.get('page', None),
@@ -109,5 +113,4 @@ class ContentPageView(ProtectedViewMixin, ListView):
             for content_type in ContentType.objects.filter(Q(model='submission'))
         }
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
-        print(connection.queries)
         return context
