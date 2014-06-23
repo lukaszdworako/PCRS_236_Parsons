@@ -23,12 +23,6 @@
     }
 }
 
-.active{
-    border-left:groove indigo;
-    padding-left:2px;
-    font-size:1.2em;
-}
-
 .complete > i {
     color: #3C9A45;
 }
@@ -54,4 +48,53 @@
 
     border-right:groove indigo;
     padding-right: 5px;
+}
+
+.quest_internal{
+    padding-left:5%;
+}
+
+.panel-challenge-completed{
+    background-color:#E8FFE6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #C4FFBF !important;
+}
+
+.panel-challenge-not-attempted{
+    background-color:#FFE6E6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #FFBFBF !important;
+}
+
+.panel-challenge-attempted{
+    background-color:#FEFFE6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #FCFFBF !important;
+}
+
+.panel-quest-past-due{
+    background-color:#E6E6E6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color:#BFBFBF !important;
+}
+
+.panel-quest-not-past-due{
+    background-color:#E6ECFF !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #BFCEFF !important;
+}
+
+
+/*remove 'not' not efficiant*/
+a:not(.collapsed) > .quest-icon{
+    transform: rotate(90deg);
+}
+
+.quest-icon {
+    font-size:80%;
 }

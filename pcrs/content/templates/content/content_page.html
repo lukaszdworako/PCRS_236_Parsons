@@ -33,7 +33,6 @@
     {{ block.super }}
 
     {% include 'content/side_bar.html' %}
-
     {% for object in object_list %}
         {% with item=object.content_object %}
             {% if item|classname|lower == "textblock" %}

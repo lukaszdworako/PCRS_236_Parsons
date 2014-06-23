@@ -88,3 +88,7 @@ function onScroll(){
         }
     });
 }
+
+function video_watched(video_id){
+    $(document).find("#sb_video-"+video_id).css("color","green");
+}

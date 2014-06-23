@@ -27,10 +27,10 @@
 {% block content %}
 
     <div id="controls" class="btn-group">
-        <button class="btn btn-default" id="add-text">
+        <button class="btn btn-default" id="add-text" aria-label="add text">&nbsp;
             <i class="glyphicon glyphicon-font"></i>dd text
         </button>
-        <button class="btn btn-default" id="add-page">
+        <button class="btn btn-default" id="add-page" aria-label="add page">&nbsp;
             <i class="glyphicon glyphicon-plus">Page</i></button>
     </div>
 
@@ -40,7 +40,8 @@
         <div class="col-lg-4">
             <ul class="nav nav-tabs">
                 <li><a href="#video-tab"
-                       data-toggle="tab">videos</a>
+                       data-toggle="tab"
+                       aria_label="videos">videos</a>
                 </li>
             </ul>
 
@@ -58,6 +59,7 @@
                 <ul class="nav nav-tabs">
                     {% for label in problem_app_labels %}
                         <li><a href="#{{ label }}-tab"
+                               aria_label = '{{ label|problem_type_from_label }} problems'
                                data-toggle="tab">{{ label|problem_type_from_label }}</a>
                         </li>
                     {% endfor %}

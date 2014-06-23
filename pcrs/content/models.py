@@ -10,8 +10,12 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
+# import for checking if due date is past due
+import datetime
+from django.utils.timezone import utc
 
 # CONTENT OBJECTS
+
 
 class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     """
@@ -170,6 +174,9 @@ class SectionQuest(AbstractLimitedVisibilityObject):
     class Meta:
         unique_together = ['section', 'quest']
         ordering = ['quest__order']
+
+    def is_past_due(self):
+        return datetime.datetime.utcnow().replace(tzinfo=utc) > self.due_on
 
     def __str__(self):
         return '{section} {quest}'.format(section=self.section, quest=self.quest)
