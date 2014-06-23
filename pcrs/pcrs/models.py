@@ -64,12 +64,8 @@ class AbstractSelfAwareModel(models.Model):
     def get_base_url(cls):
         app_label = cls.get_app_label()
         model = cls.__name__.lower()
-        url = '/{app}/{model}s'.format(app=app_label, model=model)
-
-        if settings.SITE_PREFIX:
-            return '/{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
-        else:
-            return url
+        url = '{app}/{model}s'.format(app=app_label, model=model)
+        return '{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
