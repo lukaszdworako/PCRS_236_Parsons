@@ -53,6 +53,8 @@
     {% if challenge.is_visible_to_students %}
         <div id="challenge_collapse_{{ challenge.pk }}"
             class="table_table panel-body panel-collapse collapse">
+                <h4> {{ challenge.description }} </h4>
+                <br>
                 {% for page in challenge.contentpage_set.all %}
                     <div id="holder_{{ challenge.pk }}_{{page.order}}"
                          class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
