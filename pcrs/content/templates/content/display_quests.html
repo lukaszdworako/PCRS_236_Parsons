@@ -49,23 +49,30 @@
                                 {% if completed == total and total != 0 %}
                                     <span class="complete">
                                     <span class="pull-right">
+                                        {% if challenge.is_graded %}
+                                            Graded &nbsp;&nbsp;
+                                        {% else %}
+                                            Practice &nbsp;&nbsp;
+                                        {% endif %}
                                         <i class="glyphicon glyphicon-ok"></i>
-                                        {{ completed }}/{{ total }}
 
 
                                 {% elif total != 0 %}
                                     <span class="incomplete">
                                     <span class="pull-right">
+                                        {% if challenge.is_graded %}
+                                            Graded &nbsp;
+                                        {% else %}
+                                            Practice &nbsp;
+                                        {% endif %}
                                         {{ completed }}/{{ total }}
 
                                 {% endif %}
                                 {% if challenge.is_graded %}
-                                    Graded
                                     </span>
                                     <i class="glyphicon glyphicon-bookmark graded"></i>
 
                                 {% else %}
-                                    Practice
                                     </span>
                                     <i class="glyphicon glyphicon-book not-graded"></i>
                                 {% endif %}
