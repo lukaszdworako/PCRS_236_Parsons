@@ -1,8 +1,5 @@
 from django.db import connection
-from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
-from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
@@ -51,10 +48,10 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
 
     def get_queryset(self):
         return Challenge.objects.filter(
-            challenge__visibility='open',
-            challenge__quest__sectionquest__section=self.request.user.section,
-            challenge__quest__sectionquest__open_on__lt=localtime(now()),
-            challenge__quest__sectionquest__visibility='open')
+            visibility='open',
+            quest__sectionquest__section=self.request.user.section,
+            quest__sectionquest__open_on__lt=localtime(now()),
+            quest__sectionquest__visibility='open')
 
 
 class ContentPageView(ProtectedViewMixin, ListView):
