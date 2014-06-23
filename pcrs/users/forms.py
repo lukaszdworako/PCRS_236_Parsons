@@ -1,6 +1,8 @@
 from crispy_forms.layout import Submit, Fieldset, Layout, HTML, Div, \
     ButtonHolder
 from django import forms
+from django.conf import settings
+
 from content.models import Quest
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
 from users.models import Section
@@ -26,7 +28,7 @@ class SectionForm(CrispyFormMixin, forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset('', *self.Meta.fields),
         )
-        manage_quests_href = '/content/quests/section/{{object.pk}}'
+        manage_quests_href = settings.SITE_PREFIX + '/content/quests/section/{{object.pk}}'
         if self.instance.pk:
             manage_quests = HTML('<a class="btn btn-success" role="button" '
                                'href="{}">Manage quests</a>'.format(
