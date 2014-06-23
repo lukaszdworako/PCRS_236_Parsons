@@ -1,5 +1,7 @@
 # Django settings for pcrs project.
 
+# The following changes the UI. You should also install/uninstall apps
+# to keep tables from being created.
 LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'),)
 
 PRODUCTION = False
