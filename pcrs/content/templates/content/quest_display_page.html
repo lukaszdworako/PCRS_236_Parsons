@@ -1,0 +1,29 @@
+<div id="holder_{{ challenge.pk }}_{{page.order}}"
+     class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a href="{{ page.get_absolute_url }}">
+                Go to Part {{ page.order|add:"1" }}
+            </a>
+        </div>
+        <div class="panel-body">
+                {% for content_object in page.contentsequenceitem_set.all %}
+                    {% include "content/quest_display_content.html" %}
+                {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="clearfix visible-xs"></div>
+<div class="visible-xs"> <br> </div>
+{% if page.order|add:"1"|divisibleby:"2"%}
+    <div class="clearfix visible-sm"></div>
+    <div class="visible-sm"> <br> </div>
+{% endif %}
+{% if page.order|add:"1"|divisibleby:"3"%}
+    <div class="clearfix visible-md"></div>
+    <div class="visible-md"> <br> </div>
+{% endif %}
+{% if page.order|add:"1"|divisibleby:"4"%}
+    <div class="clearfix visible-lg"></div>
+    <div class="visible-lg"> <br> </div>
+{% endif %}

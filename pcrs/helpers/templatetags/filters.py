@@ -16,3 +16,16 @@ def get_item(dictionary, key):
 @register.filter
 def problem_type_from_label(obj):
     return obj.replace('problems_', '').replace('_', ' ')
+
+@register.filter
+def module_name(obj):
+    return obj.__class__.__module__.split('.')[0]
+
+@register.filter
+def get_div_class(obj):
+    return obj.replace('problems_', '')
+
+@register.filter
+def issubset(s1, s2):
+    print(s1, s2)
+    return s1.issubset(s2)

@@ -1,7 +1,7 @@
 <div class="item-list">
     {% include "pcrs/related_items_list.html" %}
     <br>
-    <a type="button" class="btn btn-sm btn-default"
+    <a type="button" class="btn btn-sm btn-default" aria-label="add"
        href="{{ object.get_absolute_url }}/{{ related_item_name }}">
         <i class="glyphicon glyphicon-plus"></i>
     </a>

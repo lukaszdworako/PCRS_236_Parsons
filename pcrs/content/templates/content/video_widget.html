@@ -1,19 +1,32 @@
-<h3> {{ item }}</h3>
-<div> {{ item.description }} </div>
+{% autoescape off %}
+<h3> {{ item.name }}
+{% if item.pk in watched %}
+    {% include "pcrs/checkmark_complete.html" %}
+{% endif %}
+</h3>
+<div> {{ item.description|linebreaks }} </div>
+{% endautoescape  %}
 <br>
-<object  width='603' height='363'>
-    <param name='movie' value='https://media.library.utoronto.ca/flashinc/player.swf'>
-    <param name='allowfullscreen' value='true'>
-    <param name='allowscriptaccess' value='always'>
-    <embed
-            src='https://media.library.utoronto.ca/flashinc/player.swf'
-            width='603'
-            height='363'
-            allowscriptaccess='always'
-            allowfullscreen='true'
-            flashvars="streamer=rtmp://media.library.utoronto.ca/vod/&file={{ item.link }}" />
-</object>
-<br>
+
+<video id="my_video_{{ item.pk }}"
+       class="video-js vjs-default-skin"
+       controls
+       preload="auto"
+       techOrder = ['flash','html5']
+       data-setup='{"customControlsOnMobile": true }'
+       poster="{{ item.thumbnail }}">
+      <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
+</video>
+
+{% if item.download %}
+    <br>
+    <div>
+        <a href="{{ item.download }}">
+            Download Video
+        </a>
+    </div>
+    <br>
+{% endif %}
 
 
 

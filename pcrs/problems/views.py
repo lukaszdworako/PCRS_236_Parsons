@@ -1,4 +1,5 @@
 import json
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
@@ -244,6 +245,9 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
         results = self.record_submission(request)
         return HttpResponse(json.dumps({'results': results,
                                         'score': self.object.score,
+                                        'sub_pk': self.object.pk,
+                                        'best': self.object.has_best_score,
+                                        'past_dead_line': False,
             'max_score': self.object.problem.max_score}),
                             mimetype='application/json')
 
@@ -274,3 +278,36 @@ class MonitoringAsyncView(MonitoringView):
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
         results = problem.get_monitoring_data(section, time)
         return HttpResponse(json.dumps(results), mimetype='application/json')
+
+
+class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
+    """
+    Create a submission for a problem asynchronously.
+    """
+    def post(self, request, *args, **kwargs):
+        problem = self.get_problem()
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section_id=self.request.user.section_id).due_on
+        best_score = self.model.objects\
+            .get(user=self.request.user, problem=problem, has_best_score=True).score
+
+        data = self.model.objects\
+            .prefetch_related('testrun_set', 'testrun_set__testcase')\
+            .filter(user=self.request.user, problem=problem)\
+
+        returnable = []
+        for sub in data:
+            returnable.append({
+                'sub_time': sub.timestamp.isoformat(),
+                'submission': sub.submission,
+                'score': sub.score,
+                'out_of': problem.max_score,
+                'best': sub.score == best_score and sub.timestamp < deadline,
+                'past_dead_line': sub.timestamp < deadline,
+                'problem_pk': problem.pk,
+                'sub_pk': sub.pk,
+                'tests': [testrun.get_history()
+                          for testrun in sub.testrun_set.all()]
+            })
+
+        return HttpResponse(json.dumps(returnable), mimetype='application/json')

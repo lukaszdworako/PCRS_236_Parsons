@@ -11,7 +11,7 @@ class UsersMixin:
                                           is_ta=True)
         self.student = PCRSUser.objects.create(username='student',
                                                is_instructor=False,
-                                               is_student=True)
+                                               is_student=True, section=self.section)
 
 
 class InstructorViewTestMixin(UsersMixin):

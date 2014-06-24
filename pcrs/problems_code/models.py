@@ -98,6 +98,15 @@ class TestRun(AbstractTestRun):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
 
+    def get_history(self):
+        return {
+            'visible': self.testcase.is_visible,
+            'input': self.testcase.test_input,
+            'output': self.testcase.expected_output,
+            'passed': self.test_passed,
+            'description': self.testcase.description
+        }
+
 
 # Signal handlers
 

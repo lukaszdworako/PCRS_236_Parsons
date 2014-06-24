@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
     <script type="text/javascript">
-        var root = '{{ settings.SITE_PREFIX }}';
+        var root = '{{ site_prefix }}';
     </script>
 <head>
-
+    <meta content='width=device-width, initial-scale=1' name='viewport'/>
     {% load staticfiles %}
 
     {% block scripts %}
@@ -17,6 +17,9 @@
     {% block stylesheets %}
         <link rel="stylesheet"
               href="{% static "bootstrap-3.1.1/css/bootstrap.min.css" %}"
+              type="text/css">
+        <link rel="stylesheet"
+              href="{% static "style.css" %}"
               type="text/css">
     {% endblock %}
 

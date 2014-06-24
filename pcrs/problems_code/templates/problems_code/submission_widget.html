@@ -1,24 +1,10 @@
-<h3> {{ problem.name }} </h3>
+{% extends "problems/submission_widget.html" %}
 
-{% block problem_description %}
-    <div class="problem-description">
-        <h5>{{ problem.description }}</h5>
-    </div>
+{% block problem_title %}
+   {{ problem.name }}
 {% endblock %}
 
-{% load crispy_forms_tags %}
-{% crispy form %}
-
-{# html code for showing submission history #}
-{% include "problems_code/sub_history.html" %}
-{# html code for showing testcases for a submission #}
-    <br>
-        <div class="alert" id="alert">
-            <icon class="glyphicon"></icon>
-            <span></span>
-        </div>
-{% include "problems_code/grade_table.html" %}
-
-{# SASHA! #}
-{% include "problems_code/code_trace.html" %}
-
+{% block problem_specific %}
+    {% include "problems_code/grade_table.html" %}
+    {% include "problems_code/code_trace.html" %}
+{% endblock %}

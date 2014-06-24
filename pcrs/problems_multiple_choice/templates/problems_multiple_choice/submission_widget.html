@@ -1,11 +1,9 @@
-{{ problem.description }}
+{% extends "problems/submission_widget.html" %}
 
-{% load crispy_forms_tags %}
-{% crispy form %}
+{% block problem_title %}
+    Multiple Choice Question
+{% endblock %}
 
-{% load filters %}
-    <br>
-        <div class="alert" id="alert">
-            <icon class="glyphicon"></icon>
-            <span></span>
-        </div>
+{% block history %}
+    {% include "problems_multiple_choice/submission_history.html" %}
+{% endblock %}

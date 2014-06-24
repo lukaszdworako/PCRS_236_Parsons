@@ -4,9 +4,13 @@
     {{ object.name }}
 {% endblock %}
 
+
+
 {% block content %}
     <div>
-        {{ object.description }}
+    {% autoescape off %}
+        {{ object.description|linebreaks }}
+    {% endautoescape  %}
     </div>
     <div class="btn-block">
         <a role="button" class="btn btn-success pull-right"

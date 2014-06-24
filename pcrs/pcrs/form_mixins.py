@@ -19,6 +19,16 @@ class CrispyFormMixin:
         self.helper.render_hidden_fields = True
 
 
+class BaseCrispyForm(CrispyFormMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.layout = Layout(
+            Fieldset('', *self.Meta.fields),
+            ButtonHolder(self.delete_button if self.instance.pk else None,
+                         self.save_button)
+        )
+
+
 class BaseRelatedObjectForm(CrispyFormMixin, forms.ModelForm):
     save_and_back = Submit('submit', 'Save and go back',
                                css_class='btn-success')

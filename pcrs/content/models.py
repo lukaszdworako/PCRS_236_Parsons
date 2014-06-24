@@ -1,52 +1,47 @@
-from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
-
-from pyparsing import (CaselessKeyword, OneOrMore, Suppress, Word, ZeroOrMore,
-                       alphanums, nums, originalTextFor,
-                       Group, Literal, ParseException)
+from django.db.models import F, Q
+from django.db.models.signals import pre_delete
+from content.tags import AbstractTaggedObject
 
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractOrderedGenericObjectSequence,
                          AbstractSelfAwareModel)
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
-
-# TAGS
-class Tag(models.Model):
-    """
-    An object tag.
-    """
-    name = models.CharField(max_length=100, unique=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
-class AbstractTaggedObject(models.Model):
-    """
-    An object that may have any number of tags.
-    """
-    tags = models.ManyToManyField(Tag, null=True, blank=True,
-                                  related_name='%(app_label)s_%(class)s_related')
-
-    class Meta:
-        abstract = True
-
+# import for checking if due date is past due
+import datetime
+from django.utils.timezone import utc
 
 # CONTENT OBJECTS
 
-class Video(AbstractNamedObject):
+
+class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     """
     A Video object has a name, a description, and a link to a video.
     """
     link = models.TextField()
+    thumbnail = models.URLField()
+    download = models.URLField()
+    content_videos = generic.GenericRelation('ContentSequenceItem',
+                                             content_type_field='content_type',
+                                             object_id_field='object_id')
+
+    class Meta:
+        ordering = ['name']
+
+
+class WatchedVideo(models.Model):
+    """
+    A record of a user starting a Video.
+    """
+    video = models.ForeignKey(Video)
+    user = models.ForeignKey(PCRSUser, to_field='username')
+
+    @classmethod
+    def get_watched_pk_list(cls, user):
+        return set(cls.objects.filter(user=user).values_list('video_id', flat=True))
 
 
 class TextBlock(models.Model):
@@ -55,49 +50,12 @@ class TextBlock(models.Model):
     """
     text = models.TextField()
 
-
-# PROBLEM CONTAINERS
-class GradableObjectContainer(AbstractSelfAwareModel, AbstractNamedObject,
-                              AbstractLimitedVisibilityObject):
-    total_problems = models.SmallIntegerField(default=0)
-
-    class Meta:
-        abstract = True
-
-
-class ContainerAttempt(AbstractGenericObjectForeignKey, models.Model):
-    """
-
-    """
-    objects = (models.Q(model='challenge') | models.Q(model='problemset'))
-
-    user = models.ForeignKey(PCRSUser)
-
-    attempted_ontime = models.SmallIntegerField(default=0)
-    completed_ontime = models.SmallIntegerField(default=0)
-    attempted = models.SmallIntegerField(default=0)
-    completed = models.SmallIntegerField(default=0)
-
-    class Meta:
-        unique_together = ['content_type', 'object_id', 'user']
+    content_text = generic.GenericRelation('ContentSequenceItem',
+                                        content_type_field='content_type',
+                                             object_id_field='object_id')
 
     def __str__(self):
-        return '{0} {1} a:{2} c:{3}'\
-            .format(self.content_type, self.object_id, self.attempted,
-            self.completed)
-
-    @classmethod
-    def get_cont_to_num_completed(cls, user, content_type):
-        """
-        Return a dictionary mapping the pks of containers of type content_type
-        to the number of problems the user completed on time in that container.
-        """
-        return {
-            problem_container.object_id:
-                problem_container.completed_ontime
-            for problem_container in cls.objects.filter(
-                user=user, content_type=content_type).select_related()
-        }
+        return self.text[:150]
 
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
@@ -112,6 +70,17 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     class Meta:
         # a problem can be in a single content page
         unique_together = ['content_type', 'object_id', 'content_page']
+
+    @classmethod
+    def get_unassigned_problems(cls, app_label):
+        c_type = ContentType.objects.get(app_label=app_label, model='problem')
+        return c_type.model_class().objects.filter(challenge__isnull=True)
+
+    @classmethod
+    def get_unassigned_video(cls):
+        assigned_pks = cls.objects.filter(content_type=Video.get_content_type())\
+                                  .values_list('object_id', flat=True)
+        return Video.objects.exclude(pk__in=assigned_pks)
 
     def __str__(self):
         return 'challenge: {0}; content_type: {1}, id:{2}'\
@@ -129,6 +98,10 @@ class ContentPage(models.Model):
         return '{name}: page {order}'.format(name=self.challenge.name,
                                              order=self.order)
 
+    def get_absolute_url(self):
+        return '{challenge}/{num}'.format(
+            challenge=self.challenge.get_absolute_url(), num=self.order)
+
     def next(self):
         try:
             return ContentPage.objects.get(challenge=self.challenge,
@@ -144,61 +117,20 @@ class ContentPage(models.Model):
                                            order=self.order-1)
 
 
-# problem sets
-class ContainerProblem(models.Model):
-    container_content_type = models.ForeignKey(ContentType, related_name='container_content_type')
-    container_id = models.PositiveIntegerField()
-    container_object = generic.GenericForeignKey(
-        'container_content_type', 'container_id')
-    
-    problem_content_type = models.ForeignKey(ContentType, related_name='problem_content_type')
-    problem_id = models.PositiveIntegerField()
-    problem_object = generic.GenericForeignKey(
-        'problem_content_type', 'problem_id')
+class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
+                AbstractLimitedVisibilityObject):
+    """
+    A Challenge is a sequence of ContentPages and can be graded or ungraded.
+    """
+    quest = models.ForeignKey('Quest', blank=True, null=True,
+                              on_delete=models.SET_NULL)
+    order = models.SmallIntegerField(default=0, blank=True)
+    is_graded = models.BooleanField(default=False, blank=True)
+    prerequisites = models.ManyToManyField('self', symmetrical=False,
+                                           blank=True, null=True)
 
     class Meta:
-        # a problem can be in a single problem container
-        unique_together = ['problem_content_type', 'problem_id']
-
-
-class ProblemSet(GradableObjectContainer):
-    container = models.ForeignKey('Container', null=True)
-
-    problems = generic.GenericRelation(ContainerProblem,
-        content_type_field='container_content_type',
-        object_id_field='container_object_id',
-        related_name='problemset_problems')
-
-    def get_absolute_url(self):
-        return '{prefix}/content/problem_set/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
-
-    def get_main_page(self):
-        return '{}/list'.format(self.get_absolute_url())
-
-    def get_problems_for_type(self, app_label):
-        content_type = ContentType.objects.get(app_label=app_label,
-                                               model='problem')
-        return ContainerProblem.objects.filter(problem_set=self,
-                                                content_type=content_type)
-
-
-# challenges
-class Challenge(GradableObjectContainer):
-    """
-    A Challenge is a sequence of ContentPages, which are defined in markup.
-    """
-    markup = models.TextField(blank=True)
-    container = models.ForeignKey('Container', blank=True, null=True)
-
-    problems = generic.GenericRelation(ContainerProblem,
-        content_type_field='container_content_type',
-        object_id_field='container_object_id',
-        related_name='challenge_problems')
-
-    pages = None
-
-    def get_absolute_url(self):
-        return '{prefix}/content/challenge/{pk}'.format(prefix=settings.SITE_PREFIX, pk=self.pk)
+        ordering = ['quest', 'order']
 
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())
@@ -206,106 +138,55 @@ class Challenge(GradableObjectContainer):
     def get_main_page(self):
         return '{}/go'.format(self.get_absolute_url())
 
-    def get_problem_set(self):
-        problems = ContentType.objects.filter(model='problem')
-        x= {
-            (item.app_label, item.object_id)
-            for page in self.contentpage_set.all()
-            for item in page.gradable_item_set.filter(content_type__in=problems)
-        }
-        print(x)
-        return x
+    def get_prerequisite_pks_set(self):
+        return set(self.prerequisites.values_list('id', flat=True))
 
 
-    # def parse(self):
-    #     def parameter(parser):
-    #         """
-    #         Return a parser the parses parameters.
-    #         """
-    #         return Suppress('_{').leaveWhitespace() + parser + Suppress('}')
-    #
-    #     # def create_content_problem(start, location, tokens):
-    #     #     app_label = 'problems_{}'.format(tokens.type)
-    #     #     problem_content_type = ContentType.objects.get(app_label=app_label,
-    #     #                                                    model='problem')
-    #     #     problem_object = problem_content_type.\
-    #     #         get_object_for_this_type(pk=tokens.pk)
-    #     #     is_graded = (tokens[0] == '\summative')
-    #     #     return ContentProblem.objects.create(content_object=problem_object,
-    #     #                                          is_graded=is_graded)
-    #
-    #     def create_text_block(tokens):
-    #         return TextBlock.objects.create(text=tokens[0])
-    #
-    #     pk = Word(nums)('pk')
-    #
-    #     problem_type = (Literal('code') | Literal('multiple_choice'))('type')
-    #     p_kw = (CaselessKeyword('\\summative', identChars=alphanums) |
-    #             CaselessKeyword('\\formative', identChars=alphanums))
-    #     # problem = (p_kw +
-    #     #            parameter(problem_type + pk)).setParseAction(create_content_problem)
-    #
-    #     video = (CaselessKeyword('\\video', identChars=alphanums) +
-    #              parameter(pk)).setParseAction(lambda s, l, t: (t.pk))
-    #
-    #     text = originalTextFor(OneOrMore(Word(alphanums))).addParseAction(
-    #         create_text_block)
-    #
-    #     content = Group(ZeroOrMore(text))('content')
-    #
-    #     page = Suppress(CaselessKeyword('\\page'))
-    #     page_end = Suppress(CaselessKeyword('\\end'))
-    #
-    #     content = ZeroOrMore(Group(page + content + page_end))
-    #
-    #     return content.parseString(self.markup, parseAll=True)
-    #
-    # def clean_fields(self, exclude=None):
-    #     super().clean_fields(exclude)
-    #     try:
-    #         self.pages = self.parse()
-    #     except ParseException as e:
-    #         print(e)
-    #         error = 'Could not parse {line} at line {lineno} column {col}.'\
-    #             .format(line=e.line, lineno=e.lineno, col=e.col)
-    #         raise ValidationError({'markup': [error]})
-
-    # def save(self, force_insert=False, force_update=False, using=None,
-    #          update_fields=None):
-    #     # clear existing pages before creating content
-    #     self.contentpage_set.all().delete()
-    #     # need to save to reference this object in ContentPage
-    #     super().save(force_insert, force_update, using, update_fields)
-    #
-    #     for page_num in range(len(self.pages)):
-    #         page = ContentPage.objects.create(challenge=self,
-    #                                           order=page_num)
-    #         for object_order in range(len(self.pages[page_num].content)):
-    #             content_obj = self.pages[page_num].content[object_order]
-    #             ContentSequenceItem.objects.create(content_object=content_obj,
-    #                                                content_page=page,
-    #                                                order=object_order)
-
-
-# CONTAINERS
-
-class Container(AbstractNamedObject):
-    pass
-
-
-class SectionContainer(AbstractLimitedVisibilityObject):
+class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
-
+    Am ordered sequence of Challenges.
     """
-    section = models.ForeignKey(Section)
-    container = models.ForeignKey('Container')
-    open_on = models.DateTimeField(blank=True, null=True)
-    due_on = models.DateTimeField(blank=True, null=True)
     order = models.SmallIntegerField(default=0)
-    is_graded = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ['section', 'container']
+        ordering = ['order']
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.__class__.objects.filter(pk=self.pk).exists():
+            # new Quest, create SectionQuests for it
+            super().save(force_insert, force_update, using, update_fields)
+            for section in Section.objects.all():
+                SectionQuest.objects.get_or_create(section=section, quest=self)
+        else:
+            super().save(force_insert, force_update, using, update_fields)
+
+
+class SectionQuest(AbstractLimitedVisibilityObject):
+    """
+    Quest setup for a specific Section.
+    """
+    section = models.ForeignKey(Section)
+    quest = models.ForeignKey('Quest')
+    open_on = models.DateTimeField(blank=True, null=True)
+    due_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ['section', 'quest']
+        ordering = ['quest__order']
+
+    def is_past_due(self):
+        return datetime.datetime.utcnow().replace(tzinfo=utc) > self.due_on
 
     def __str__(self):
-        return '{section} {container}'.format(section=self.section, container=self.container)
+        return '{section} {quest}'.format(section=self.section, quest=self.quest)
+
+
+def page_delete(sender, instance, **kwargs):
+    """
+    Renumber the remaining page order, when a page is deleted.
+    """
+    ContentPage.objects\
+        .filter(challenge=instance.challenge, order__gt=instance.order)\
+        .update(order=F('order')-1)
+pre_delete.connect(page_delete, sender=ContentPage)

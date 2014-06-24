@@ -1,7 +1,11 @@
 from django import test
 from django.core.urlresolvers import reverse
-from problems.tests import TestProblemSubmissionGradesBeforeDeadline, \
-    TestBestSubmission
+from django.test import TransactionTestCase
+from django.utils.timezone import localtime, now
+from content.models import Quest, SectionQuest, Challenge
+from problems.tests.test_best_attempt_before_deadline import TestBestSubmission, \
+    TestProblemSubmissionGradesBeforeDeadline
+from problems.tests.test_performance import TestSubmissionHistoryDatabaseHits
 
 from problems_multiple_choice.models import (Problem, Submission, Option,
                                              OptionSelection)
@@ -773,3 +777,35 @@ class TestBestSubmissionCode(TestBestSubmission, UsersMixin, test.TestCase):
         self.Submission = Submission
         self.problem = Problem.objects.create(pk=1, description='Q1',
                                               visibility='open')
+
+
+class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
+                            TransactionTestCase):
+
+    url = reverse('mc_problem_async_history', kwargs={'problem': 1})
+
+    def setUp(self):
+        UsersMixin.setUp(self)
+
+        quest = Quest.objects.create(name='1', description='1')
+        SectionQuest.objects.filter(section=self.student.section).update(due_on=localtime(now()))
+
+        challenge = Challenge.objects.create(name='1', description='1', quest=quest, visibility='open')
+
+        self.problem = Problem.objects.create(pk=1, description='1',
+                                              visibility='open', challenge=challenge)
+        Option.objects.bulk_create(
+            [Option(problem=self.problem, answer_text='1')
+             for i in range(6)])
+
+        scores = [1, 2, 0, 5, 1, 0, 3]
+        for score in scores:
+            sub = Submission.objects.create(problem=self.problem,
+                                            user=self.student, score=score)
+            sub.set_best_submission()
+            for case in Option.objects.all():
+                OptionSelection.objects.create(submission=sub, option=case,
+                    was_selected=False, is_correct=False)
+
+        self.assertEqual(len(scores), Submission.objects.count())
+        self.assertEqual(len(scores)*6, OptionSelection.objects.count())

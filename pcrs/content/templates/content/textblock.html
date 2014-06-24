@@ -1,3 +1,5 @@
 <p>
-    {{ object.content_object.text|linebreaks }}
+    {% autoescape off %}
+        {{ object.content_object.text|linebreaks }}
+    {% endautoescape %}
 </p>

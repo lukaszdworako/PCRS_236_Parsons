@@ -3,7 +3,7 @@
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse"
-                    data-target="#bs-example-navbar-collapse-1">
+                    data-target="#instructor-navbar">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -39,8 +39,13 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Content
                         <b class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ site_prefix }}/content/challenge/list">Challenges</a></li>
-                        <li><a href="{{ site_prefix }}/content/problem_set/list">Problem Sets</a></li>
+                        <li><a href="{{ site_prefix }}/content/tags/list">Tags</a></li>
+                        <li><a href="{{ site_prefix }}/content/videos/list">Videos</a></li>
+                        <li><a href="{{ site_prefix }}/content/challenges/list">Challenges</a></li>
+                        <li><a href="{{ site_prefix }}/content/quests/list">Quests</a></li>
+                        <li><a href="{{ site_prefix }}/sections/list">Sections</a></li>
+                        <li class="divider"></li>
+                        <li><a href="{{ site_prefix }}/content/quests">Student Quest List View</a></li>
                     </ul>
                 </li>
             </ul>
@@ -48,10 +53,10 @@
             <ul class="nav navbar-nav navbar-right">
                 <li><p class="navbar-text navbar-right">
                     section: {{ request.session.section|default:None }}
-                    <a href="{{ site_prefix }}/section" class="navbar-link">(change)</a>
+                    <a href="{{ site_prefix }}/sections/change" class="navbar-link">(change)</a>
                 </p>
                 </li>
-                <li><a href="{{ site_prefix }}/logout">Log out</a></li>
+                <li><a href="{{ site_prefix }}/logout">(log out)</a></li>
 
             </ul>
         </div>

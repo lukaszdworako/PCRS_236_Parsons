@@ -1,0 +1,40 @@
+<div class="panel-group" id="quest_accordion_{{ quest.quest.pk }}">
+    <div class="panel panel-default">
+        {% with past_due=quest.is_past_due %}
+            {% if past_due %}
+                <div class="panel-heading panel-quest-past-due">
+            {% else %}
+                <div class="panel-heading panel-quest-not-past-due">
+            {% endif %}
+            <h4 class="panel-title">
+                <a href="#quest_collapse_{{ quest.quest.pk }}"
+                   data-parent="quest_accordion_{{ quest.quest.pk }}"
+                   class="collapsed"
+                   data-toggle="collapse">
+                    <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                    {{ quest.quest.name }}
+                    <span class="pull-right">
+                        {% if past_due %}
+                            Submission closed :
+                        {% else %}
+                            Due date :
+                        {% endif %}
+                        {{ quest.due_on|default:''}}
+                    </span>
+                </a>
+            </h4>
+        </div>
+        {% endwith %}
+        <div id="quest_collapse_{{ quest.quest.pk }}"
+             class="panel-collapse collapse">
+            <div class="panel-group panel-body quest_internal"
+                 id="challenge_accordion_{{ challenge.pk }}">
+                <h4> {{ quest.quest.description }} </h4>
+                <h3> Challenges </h3>
+                {% for challenge in quest.quest.challenge_set.all %}
+                    {% include "content/quest_display_challenge.html" %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

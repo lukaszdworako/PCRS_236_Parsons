@@ -1,0 +1,47 @@
+{% block problem_header %}
+    <h3>
+    {% block problem_title %}
+    {% endblock %}
+
+    {% block problem_score %}
+        <span class="pull-right" title="Progress so far">
+        {% if mark|default_if_none:'-' == problem.max_score %}
+            {% include "pcrs/checkmark_complete.html" %}
+        {% else %}
+            <sup> {{ mark|default_if_none:'-' }} </sup>
+            /
+            <sub> {{ problem.max_score }} </sub>
+        {% endif %}
+    </span>
+    {% endblock %}
+    </h3>
+{% endblock %}
+
+{% block problem_description %}
+    <div class="problem-description">
+        {% autoescape off %}
+        <h5>{{ problem.description }}</h5>
+        {% endautoescape %}
+    </div>
+    <br>
+{% endblock %}
+
+{% block submission_form %}
+    {% load crispy_forms_tags %}
+    {% crispy form %}
+{% endblock %}
+
+{% block alert %}
+    <br>
+    <div class="alert" id="alert">
+        <icon class="glyphicon"></icon>
+        <span></span>
+    </div>
+{% endblock %}
+
+{% block history %}
+    {% include "problems/submission_history.html" %}
+{% endblock %}
+
+{% block problem_specific %}
+{% endblock %}

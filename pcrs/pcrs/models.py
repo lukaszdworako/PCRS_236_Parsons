@@ -1,3 +1,6 @@
+from sys import modules
+
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -33,21 +36,20 @@ class AbstractSelfAwareModel(models.Model):
 
     @classmethod
     def get_class_by_name(cls, name):
-        app_label = cls.get_app_label()
-        c_type = ContentType.objects.get(model=name, app_label=app_label)
-        return c_type.model_class()
+        app = modules[cls.__module__]
+        return getattr(app, name)
 
     @classmethod
     def get_problem_class(cls):
-        return cls.get_class_by_name('problem')
+        return cls.get_class_by_name('Problem')
 
     @classmethod
     def get_submission_class(cls):
-        return cls.get_class_by_name('submission')
+        return cls.get_class_by_name('Submission')
 
     @classmethod
     def get_testrun_class(cls):
-        return cls.get_class_by_name('testrun')
+        return cls.get_class_by_name('Testrun')
 
     @classmethod
     def get_pretty_name(cls):
@@ -57,6 +59,16 @@ class AbstractSelfAwareModel(models.Model):
                 .format(kind=cls.get_app_label()
                 .replace('_', ' ').replace('problems ', ''))
         return name
+
+    @classmethod
+    def get_base_url(cls):
+        app_label = cls.get_app_label()
+        model = cls.__name__.lower()
+        url = '{app}/{model}s'.format(app=app_label, model=model)
+        return '{prefix}/{url}'.format(prefix=settings.SITE_PREFIX, url=url)
+
+    def get_absolute_url(self):
+        return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
 
 class AbstractNamedObject(models.Model):
@@ -68,6 +80,7 @@ class AbstractNamedObject(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -77,7 +90,7 @@ class AbstractGenericObjectForeignKey(models.Model):
     objects = None
 
     object_id = models.PositiveIntegerField()
-    content_type = models.ForeignKey(ContentType, limit_choices_to=objects)
+    content_type = models.ForeignKey(ContentType, limit_choices_to=objects, on_delete=models.CASCADE)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     class Meta:
