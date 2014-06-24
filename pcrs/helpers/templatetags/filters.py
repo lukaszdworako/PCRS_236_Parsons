@@ -27,5 +27,5 @@ def get_div_class(obj):
 
 @register.filter
 def issubset(s1, s2):
-    print(s1, s2)
+    # print(s1, s2)
     return s1.issubset(s2)

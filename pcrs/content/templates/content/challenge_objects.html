@@ -38,7 +38,7 @@
                 <i class="glyphicon glyphicon-plus">Page</i></button>
         </div>
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-            <button class="btn btn-success pull-right" id="save" disabled>
+            <button class="btn btn-success pull-right" id="save_top" disabled>
                 Save
             </button>
         </div>
@@ -48,23 +48,23 @@
     <hr>
 
     <div class="row">
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-            <ul class="nav nav-tabs">
-                <li><a href="#video-tab"
-                       data-toggle="tab"
-                       aria_label="videos">videos</a>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane" id="video-tab">
-                    <div class="items" id="videos">
-                        {% for item in videos %}
-                            {% include "content/video_list_item.html" %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 available_problems">
+{#            <ul class="nav nav-tabs">#}
+{#                <li><a href="#video-tab"#}
+{#                       data-toggle="tab"#}
+{#                       aria_label="videos">videos</a>#}
+{#                </li>#}
+{#            </ul>#}
+{##}
+{#            <div class="tab-content">#}
+{#                <div class="tab-pane" id="video-tab">#}
+{#                    <div class="items" id="videos">#}
+{#                        {% for item in videos %}#}
+{#                            {% include "content/video_list_item.html" %}#}
+{#                        {% endfor %}#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
 
             {% with problem_app_labels=problems.keys %}
                 <ul class="nav nav-tabs">
@@ -74,6 +74,11 @@
                                data-toggle="tab">{{ label|problem_type_from_label }}</a>
                         </li>
                     {% endfor %}
+{#                if you want to remove video delete the next 4 lines and uncoment the top lines#}
+                    <li><a href="#video-tab"
+                               aria_label = 'videos'
+                               data-toggle="tab">videos</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -86,6 +91,14 @@
                             </div>
                         </div>
                     {% endfor %}
+{#                if you want to remove video from problems delete the next 7 lines and uncomment the top#}
+                    <div class="tab-pane" id="video-tab">
+                        <div class="items" id="videos">
+                            {% for item in videos %}
+                                {% include "content/video_list_item.html" %}
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             {% endwith %}
         </div>
@@ -119,6 +132,8 @@
     </div>
     </div>
 
+
+
     <div class="modal fade" id="text-entry-modal" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -143,7 +158,7 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-success pull-right" id="save" disabled>
+    <button class="btn btn-success pull-right" id="save_bot" disabled>
         Save
     </button>
 {% endblock %}

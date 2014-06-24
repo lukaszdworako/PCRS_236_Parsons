@@ -11,13 +11,16 @@ $(document).ready(function () {
     $(document).on('click', '#add-text', addText);
     $(document).on('click', '#save-text', saveText);
 
-    $(document).on('click', '#save', savePages);
+    $(document).on('click', '#save_top', savePages);
+    $(document).on('click', '#save_bot', savePages);
+
 
 
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
-            $('#save').prop('disabled', false);
+            $('#save_top').prop('disabled', false);
+            $('#save_bot').prop('disabled', false);
         }
     });
 
@@ -43,6 +46,7 @@ $(document).ready(function () {
         });
 
     $('#searcher').keyup(find_problems);
+    $('.available_problems').height($('.ui-selectable').height()-80);
 });
 
 function select(event) {
@@ -65,10 +69,12 @@ function addPage() {
             });
             $new_item.prepend($delete);
             $('#challenge').append($new_item);
+            $('.available_problems').height($('.ui-selectable').height()-80);
             $new_item.sortable({
                 connectWith: ".page",
                 update: function (event, ui) {
-                    $('#save').prop('disabled', false);
+                    $('#save_top').prop('disabled', false);
+                    $('#save_bot').prop('disabled', false);
                 }
             });
         });
@@ -80,6 +86,7 @@ function deletePage() {
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
             .success(function (data) {
                 $item.remove();
+                $('.available_problems').height($('.ui-selectable').height()-80);
             });
     }
 }
@@ -93,6 +100,7 @@ function addText() {
     else {
         $('#text-entry-modal').modal();
     }
+    $('.available_problems').height($('.ui-selectable').height()-80);
 }
 
 function saveText(event) {
@@ -109,7 +117,8 @@ function saveText(event) {
                 id: "textblock-" + data['pk']
             });
             $page.append($new_item);
-            $('#save').prop('disabled', false);
+            $('#save_top').prop('disabled', false);
+            $('#save_bot').prop('disabled', false);
         });
 }
 
@@ -133,7 +142,9 @@ function deleteItem($item) {
     }
     $item.toggleClass('uiselected');
     $uiselected = null;
-    $('#save').prop('disabled', false);
+    $('#save_top').prop('disabled', false);
+    $('#save_bot').prop('disabled', false);
+    $('.available_problems').height($('.ui-selectable').height()-80);
 }
 
 function savePages() {
@@ -151,7 +162,8 @@ function savePages() {
         page_object_list: JSON.stringify(page_object_list),
         csrftoken: csrftoken
     }).success(function () {
-        $('#save').attr('disabled', 'disabled');
+        $('#save_bot').attr('disabled', 'disabled');
+        $('#save_top').attr('disabled', 'disabled');
     });
 }
 
@@ -160,16 +172,14 @@ function find_problems(){
     var searching_for = $('#searcher').val().toLowerCase()
     var problem_list = $('.tab-pane.active').children().first().children();
     for (var index = 0; index < problem_list.length; index ++){
-        if (searching_for == ""){
+                if (searching_for == ""){
+            $(problem_list[index]).show();
+        }
+        if ($(problem_list[index]).find('b').text().toLowerCase().indexOf(searching_for) != -1){
             $(problem_list[index]).show();
         }
         else{
-            if ($(problem_list[index]).find('b').text().toLowerCase().indexOf(searching_for) != -1){
-                $(problem_list[index]).show();
-            }
-            else{
-                $(problem_list[index]).hide();
-            }
+            $(problem_list[index]).hide();
         }
     }
 }
