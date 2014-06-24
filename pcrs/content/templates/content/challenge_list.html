@@ -1,5 +1,12 @@
 {% extends "pcrs/item_list.html" %}
 
 {% block item_title %}
-    <a href="{{ object.get_main_page }}">{{ object.name }}</a>
+    {% if object.visibility == "closed" or object.visibility == "draft" %}
+        {{ object.name }}
+    {% elif object.visibility == "open" %}
+        <a href="{{ object.get_main_page }}">
+            {{ object.name }}
+        </a>
+    {% endif %}
+{#    <a href="{{ object.get_main_page }}">{{ object.name }}</a>#}
 {% endblock %}

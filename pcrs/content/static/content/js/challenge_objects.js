@@ -41,6 +41,8 @@ $(document).ready(function () {
                 deleteItem($($uiselected));
             }
         });
+
+    $('#searcher').keyup(find_problems);
 });
 
 function select(event) {
@@ -151,4 +153,23 @@ function savePages() {
     }).success(function () {
         $('#save').attr('disabled', 'disabled');
     });
+}
+
+function find_problems(){
+
+    var searching_for = $('#searcher').val().toLowerCase()
+    var problem_list = $('.tab-pane.active').children().first().children();
+    for (var index = 0; index < problem_list.length; index ++){
+        if (searching_for == ""){
+            $(problem_list[index]).show();
+        }
+        else{
+            if ($(problem_list[index]).find('b').text().toLowerCase().indexOf(searching_for) != -1){
+                $(problem_list[index]).show();
+            }
+            else{
+                $(problem_list[index]).hide();
+            }
+        }
+    }
 }
