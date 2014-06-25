@@ -53,8 +53,11 @@ class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         section = self.get_section()
+        current_date = now()
         context['visible_challenges'] = set(
-            Challenge.objects.filter(quest__sectionquest__section=section)\
+            Challenge.objects.filter(quest__sectionquest__section=section,
+                                     quest__sectionquest__visibility='open',
+                                     quest__sectionquest__open_on__lte=current_date)
                              .filter(visibility='open')
                              .values_list('id', flat=True)
         )
