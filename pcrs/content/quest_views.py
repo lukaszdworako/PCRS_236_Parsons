@@ -142,7 +142,7 @@ class QuestsView(ProtectedViewMixin, ListView):
             challenge_to_completed.append(
                 submission_class.get_completed_for_challenge_before_deadline(self.request.user))
 
-            best[content_type.app_label] = submission_class\
+            best[content_type.app_label], _ = submission_class\
                 .get_best_attempts_before_deadlines(self.request.user)
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
         context['best'] = best

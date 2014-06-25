@@ -7,7 +7,7 @@ from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractNamedProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 
 
 class Problem(AbstractNamedProblem):
@@ -112,3 +112,5 @@ class TestRun(AbstractTestRun):
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

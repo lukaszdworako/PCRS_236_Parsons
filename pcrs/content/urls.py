@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from content.challenge_content_views import (TextCreateView, PageCreateView,
                                              ChallengeObjectsView,
                                              ItemDeleteView,
-                                             ChallengePagesObjectsView)
+                                             ChallengePagesObjectsView,)
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
@@ -51,7 +51,11 @@ urlpatterns = patterns('',
         name='challenge_delete'),
 
     url(r'^challenges/(?P<pk>[0-9]+)/go$', ChallengeStartView.as_view(),
-        name=''),
+        name='challenge_start'),
+
+    url(r'^challenges/(?P<pk>[0-9]+)/no_go$',
+        IncompletePrerequisitesView.as_view(),
+        name='challenge_missing_prerequisites'),
 
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),

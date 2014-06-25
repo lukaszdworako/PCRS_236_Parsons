@@ -1,6 +1,6 @@
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import Max, Q, Count, F
 from django.utils import timezone
 from django.conf import settings
@@ -23,6 +23,10 @@ def get_problem_content_types():
     return ContentType.objects.filter(Q(model='problem'))
 
 
+def get_submission_content_types():
+    return ContentType.objects.filter(Q(model='submission'))
+
+
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                       AbstractTaggedObject):
     """
@@ -34,13 +38,6 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         related_name='%(app_label)s_%(class)s_related', on_delete=models.SET_NULL)
 
     max_score = models.SmallIntegerField(default=0, blank=True)
-
-    # bug in 1.5 does not allow this generic relation
-    # TODO: this should work when we upgrade to >1.6
-    # content_problem = generic.GenericRelation(
-    #     content.models.ContentSequenceItem, content_type_field='content_type',
-    #     object_id_field='object_id',
-    #     related_name='%(app_label)s_%(class)s_content_problem')
 
     class Meta:
         abstract = True
@@ -259,8 +256,11 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .filter(user=user,
                     problem__challenge__quest__sectionquest__section=user.section,
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
-            .values('problem_id').annotate(best=Max('score')).order_by()
-        return {d['problem_id']: d['best']for d in subs}
+            .values('problem_id')\
+            .annotate(best=Max('score'), max_score=Max('problem__max_score'))\
+            .order_by()
+        return ({d['problem_id']: d['best'] for d in subs},
+                {d['problem_id']: d['best'] == d['max_score'] for d in subs})
 
     @classmethod
     def grade(cls, quest, section):
@@ -335,3 +335,13 @@ def testcase_delete(sender, instance, **kwargs):
         # problem no longer exists, submissions will be deleted automatically
         # so no need to update scores
         pass
+
+
+def problem_delete(sender, instance, **kwargs):
+    """
+    Deletes the ContentSeequenceItem mapping to the Problem when the Problem
+    is deleted.
+    """
+    content.models.ContentSequenceItem.objects.filter(
+        content_type=instance.get_content_type(), object_id=instance.pk)\
+        .delete()

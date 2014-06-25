@@ -5,8 +5,8 @@ from django.test import TransactionTestCase
 from problems.tests.test_best_attempt_before_deadline import *
 from problems.tests.test_performance import TestSubmissionHistoryDatabaseHits
 from problems_code.models import Problem, TestCase, Submission, TestRun
-from tests.ViewTestMixins import (CourseStaffViewTestMixin,
-                                  ProtectedViewTestMixin, UsersMixin)
+from ViewTestMixins import ProtectedViewTestMixin, \
+    CourseStaffViewTestMixin, UsersMixin
 
 
 class TestCodingProblemListView(ProtectedViewTestMixin, test.TestCase):
@@ -1217,14 +1217,14 @@ class TestBestCodeAttemptSingleProblem(TestSingleChallengeQuest, test.TestCase):
     def test_single_submission(self):
         Submission.objects.create(submission='subm', user=self.student1,
                                   problem=self.problem, score=3)
-        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
         self.assertEqual({1: 3}, actual)
 
     def test_many_submission(self):
         for score in [2, 3, 0, 1]:
             Submission.objects.create(submission='subm', user=self.student1,
                                       problem=self.problem, score=score)
-        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
         self.assertEqual({1: 3}, actual)
 
     def test_best_after_deadline(self):
@@ -1235,7 +1235,7 @@ class TestBestCodeAttemptSingleProblem(TestSingleChallengeQuest, test.TestCase):
                                       problem=self.problem, score=4)
         s.timestamp = localtime(now()) + timedelta(days=10)
         s.save()
-        actual = Submission.get_best_attempts_before_deadlines(self.student1)
+        actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
         self.assertEqual({1: 3}, actual)
 
 
@@ -1274,11 +1274,11 @@ class TestBestCodeAttemptManyProblem(TestManyQuestsDeadlines, test.TestCase):
                 Submission.objects.create(submission='subm', user=student,
                                           problem_id=problem_pk, score=1)
         with self.assertNumQueries(2):
-            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
             self.assertEqual({0: 1, 6: 1}, actual)
 
             # second student submission deadline has passed
-            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student2)
             self.assertEqual({}, actual)
 
     def test_best_for_student(self):
@@ -1295,11 +1295,11 @@ class TestBestCodeAttemptManyProblem(TestManyQuestsDeadlines, test.TestCase):
                                       problem_id=6, score=1)
 
         with self.assertNumQueries(2):
-            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
 
             # second student submission deadline has passed
-            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student2)
             self.assertEqual({}, actual)
 
     def test_best_for_student_with_best_after_deadline(self):
@@ -1318,18 +1318,18 @@ class TestBestCodeAttemptManyProblem(TestManyQuestsDeadlines, test.TestCase):
         Submission.objects.update(timestamp=localtime(now()) - timedelta(days=10))
 
         with self.assertNumQueries(2):
-            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
-            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student2)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
 
         # adding a submission by student 2 that came after their deadline
         Submission.objects.create(submission='subm', user=self.student2,
                                   problem_id=6, score=4)
         with self.assertNumQueries(2):
-            actual = Submission.get_best_attempts_before_deadlines(self.student1)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student1)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
-            actual = Submission.get_best_attempts_before_deadlines(self.student2)
+            actual, _ = Submission.get_best_attempts_before_deadlines(self.student2)
             self.assertEqual({1: 2, 2: 0, 6: 1}, actual)
 
 
