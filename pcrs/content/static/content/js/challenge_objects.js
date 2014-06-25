@@ -14,8 +14,6 @@ $(document).ready(function () {
     $(document).on('click', '#save_top', savePages);
     $(document).on('click', '#save_bot', savePages);
 
-
-
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
@@ -46,8 +44,12 @@ $(document).ready(function () {
         });
 
     $('#searcher').keyup(find_problems);
-    $('.available_problems').height($('.ui-selectable').height()-80);
+    resize_problems();
 });
+
+function resize_problems(){
+    $('.available_problems').height($('.ui-selectable').height()-80);
+}
 
 function select(event) {
     if ($uiselected != null) {
@@ -69,12 +71,12 @@ function addPage() {
             });
             $new_item.prepend($delete);
             $('#challenge').append($new_item);
-            $('.available_problems').height($('.ui-selectable').height()-80);
             $new_item.sortable({
                 connectWith: ".page",
                 update: function (event, ui) {
                     $('#save_top').prop('disabled', false);
                     $('#save_bot').prop('disabled', false);
+                    resize_problems();
                 }
             });
         });
@@ -86,7 +88,7 @@ function deletePage() {
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
             .success(function (data) {
                 $item.remove();
-                $('.available_problems').height($('.ui-selectable').height()-80);
+                resize_problems();
             });
     }
 }
@@ -99,8 +101,8 @@ function addText() {
     }
     else {
         $('#text-entry-modal').modal();
+        resize_problems();
     }
-    $('.available_problems').height($('.ui-selectable').height()-80);
 }
 
 function saveText(event) {
@@ -144,7 +146,7 @@ function deleteItem($item) {
     $uiselected = null;
     $('#save_top').prop('disabled', false);
     $('#save_bot').prop('disabled', false);
-    $('.available_problems').height($('.ui-selectable').height()-80);
+    resize_problems();
 }
 
 function savePages() {

@@ -2,6 +2,11 @@
      id="{{ problem.get_app_label }}-{{ problem.pk }}">
     <i class="glyphicon glyphicon-edit"></i>
     <b>{{ problem }}</b>
+    {% if problem.visibility == "open" %}
+        <i class="glyphicon glyphicon-eye-open pull-right"></i>
+    {% else %}
+        <i class="glyphicon glyphicon-eye-close pull-right"></i>
+    {% endif %}
     {% with object=item %}
         {% include "pcrs/tags.html" %}
     {% endwith %}
