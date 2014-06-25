@@ -1,12 +1,11 @@
-from django.db.models import Q
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, TemplateView
 from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
 from content.models import *
-from pcrs.generic_views import GenericItemListView, GenericItemCreateView, \
-    GenericItemUpdateView
+from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
+                                GenericItemUpdateView)
 from problems.models import get_submission_content_types
 from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -19,13 +18,13 @@ class IncompletePrerequisites(Exception):
 
 
 class PrerequisitesRequiredViewMixin:
-
     def check_prerequisites(self, challenge, problem_to_completed):
         required = {
             (p.content_type.app_label, p.object_id)
             for p in ContentSequenceItem.objects
             .filter(content_type__name='problem',
-            content_page__challenge__in=challenge.prerequisites.all()).select_related('content_type')
+            content_page__challenge__in=challenge.prerequisites.all())
+            .select_related('content_type')
         }
         actual = {
             (p_type, pk)
@@ -92,7 +91,7 @@ class ChallengeStartView(ProtectedViewMixin, DetailView):
             quest__sectionquest__visibility='open')
 
 
-class ContentPageView(ProtectedViewMixin, ListView,
+class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
                       PrerequisitesRequiredViewMixin):
     template_name = "content/content_page.html"
     model = ContentSequenceItem
@@ -101,8 +100,7 @@ class ContentPageView(ProtectedViewMixin, ListView,
 
     def get_page(self):
         if self.page is None:
-            section = (self.request.session.get('section', None) or
-                       self.request.user.section)
+            section = self.get_section()
             self.page = ContentPage.objects.select_related('challenge')\
                 .filter(challenge__visibility='open',
                         challenge__quest__sectionquest__section=section,
