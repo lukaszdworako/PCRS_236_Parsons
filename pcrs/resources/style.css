@@ -98,3 +98,8 @@ a:not(.collapsed) > .quest-icon{
 .quest-icon {
     font-size:80%;
 }
+
+.tab-content{
+    overflow-y:scroll;
+    height:100%;
+}
