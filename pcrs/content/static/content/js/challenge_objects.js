@@ -19,6 +19,7 @@ $(document).ready(function () {
         update: function (event, ui) {
             $('#save_top').prop('disabled', false);
             $('#save_bot').prop('disabled', false);
+            resize_problems();
         }
     });
 
@@ -48,7 +49,7 @@ $(document).ready(function () {
 });
 
 function resize_problems(){
-    $('.available_problems').height($('.ui-selectable').height()-80);
+    $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
 }
 
 function select(event) {

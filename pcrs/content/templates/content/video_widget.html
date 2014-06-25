@@ -1,5 +1,5 @@
 {% autoescape off %}
-<h3> {{ item.name }}
+<h3 class="widget_title"> {{ item.name }}
 {% if item.pk in watched %}
     {% include "pcrs/checkmark_complete.html" %}
 {% endif %}
