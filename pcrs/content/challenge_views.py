@@ -8,6 +8,7 @@ from content.models import *
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView, \
     GenericItemUpdateView
 from problems.models import get_submission_content_types
+from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm
@@ -44,9 +45,20 @@ class ChallengeView:
         return self.object.get_absolute_url()
 
 
-class ChallengeListView(CourseStaffViewMixin, GenericItemListView):
+class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
+                        GenericItemListView):
     model = Challenge
     template_name = 'content/challenge_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        section = self.get_section()
+        context['visible_challenges'] = set(
+            Challenge.objects.filter(quest__sectionquest__section=section)\
+                             .filter(visibility='open')
+                             .values_list('id', flat=True)
+        )
+        return context
 
 
 class ChallengeCreateView(CourseStaffViewMixin, ChallengeView,
