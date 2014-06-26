@@ -106,8 +106,8 @@ a:not(.collapsed) > .quest-icon{
 
 .page>.item>.remove_item{
     display:in-line !important;
-    width:16px;
-    height:16px;
+    width:20px;
+    height:20px;
     margin-left:5px;
     margin-top:-1px;
 }
@@ -117,8 +117,8 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .delete-page{
-    width:16px;
-    height:16px;
+    width:20px;
+    height:20px;
     margin-top:-15px;
     margin-right:-13px;
 }
@@ -136,8 +136,8 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .btn-object-visibility{
-    width:16px;
-    height:16px;
+    width:20px;
+    height:20px;
     margin-top:-5px;
     background:None;
 }
