@@ -21,8 +21,11 @@ class Problem(AbstractProblem):
         unique_together = ['name', 'description']
 
     def __str__(self):
-        return '{name}: {description}'.format(
-            name=self.name, description=self.description)
+        if self.name:
+            return '{name}: {description}'.format(
+                name=self.name, description=self.description)
+        else:
+            return self.description
 
     def get_testitem_data_for_submissions(self, s_ids):
         """
