@@ -102,6 +102,7 @@ a:not(.collapsed) > .quest-icon{
 .tab-content{
     overflow-y:scroll;
     height:100%;
+    min-height:300px;
 }
 
 .page>.item>.remove_item{
@@ -143,5 +144,5 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .btn-object-close{
-    background:#E0E0E0 !important;
+    background:none !important;
 }
