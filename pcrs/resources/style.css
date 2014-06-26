@@ -145,3 +145,7 @@ a:not(.collapsed) > .quest-icon{
 .btn-object-close{
     background:#E0E0E0 !important;
 }
+
+.problem-description {
+    white-space: pre-wrap;
+}

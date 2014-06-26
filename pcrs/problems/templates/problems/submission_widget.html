@@ -1,7 +1,10 @@
 {% block problem_header %}
     <h3 class="widget_title">
-    {% block problem_title %}
-    {% endblock %}
+
+    {% autoescape off %}
+        {% block problem_title %}
+        {% endblock %}
+    {% endautoescape %}
 
     {% block problem_score %}
         {% if mark|default_if_none:'-' == problem.max_score %}
@@ -23,17 +26,19 @@
 {% endblock %}
 
 {% block problem_description %}
-    <div class="problem-description">
+    <div>
         {% autoescape off %}
-        <h5>{{ problem.description }}</h5>
+        <h5  class="problem-description">{{ problem.description|linebreaksbr }}</h5>
         {% endautoescape %}
     </div>
     <br>
 {% endblock %}
 
 {% block submission_form %}
+    {% autoescape off %}
     {% load crispy_forms_tags %}
     {% crispy form %}
+    {% endautoescape %}
 {% endblock %}
 
 {% block alert %}
