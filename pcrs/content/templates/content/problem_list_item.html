@@ -1,12 +1,14 @@
 <div class="problem item well"
      id="{{ problem.get_app_label }}-{{ problem.pk }}">
+    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right" title="Delete Item"></button>
+
     <i class="glyphicon glyphicon-edit"></i>
-    <b>{{ problem }}</b>
     {% if problem.visibility == "open" %}
-        <i class="glyphicon glyphicon-eye-open pull-right"></i>
+        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-open"></button>
     {% else %}
-        <i class="glyphicon glyphicon-eye-close pull-right"></i>
+        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-close"></button>
     {% endif %}
+    <b>{{ problem }}</b>
     {% with object=problem %}
         {% include "pcrs/tags.html" %}
     {% endwith %}

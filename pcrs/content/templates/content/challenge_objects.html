@@ -26,7 +26,7 @@
 
 {% block content %}
 
-    <div class="table_table">
+    <div class="row">
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
             <input id="searcher" type="text" name="search" placeholder="Search">
         </div>
@@ -43,12 +43,10 @@
             </button>
         </div>
     </div>
-    <br>
-    <br>
     <hr>
 
     <div class="row">
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 available_problems">
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 available_problems">
 {#            <ul class="nav nav-tabs">#}
 {#                <li><a href="#video-tab"#}
 {#                       data-toggle="tab"#}
@@ -103,17 +101,22 @@
             {% endwith %}
         </div>
 
-        <div id="challenge" class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+        <div id="challenge" class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
             {% for page in object.contentpage_set.all %}
                 <div class="well page" id="page-{{ page.pk }}">
-                    <i class="delete-page glyphicon glyphicon-remove pull-right"></i>
+                    <button class="btn btn-object-close btn-xs delete-page glyphicon glyphicon-remove pull-right" title="Delete Page"></button>
                     {% for item in page.contentsequenceitem_set.all %}
                         {% with item=item.content_object %}
                             {% if item|classname == 'TextBlock' %}
                                 <div class="textblock item well"
                                      id="textblock-{{ item.pk }}">
+                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right"
+                                            title="Delete Item">
+                                    </button>
+                                    &nbsp;
                                     {% autoescape off %}
-                                        {{ item.text|linebreaks }}{% endautoescape %}
+                                    {{ item.text|linebreaks }}
+                                    {% endautoescape %}
                                 </div>
                             {% endif %}
                             {% if item|classname == 'Video' %}

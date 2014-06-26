@@ -103,3 +103,45 @@ a:not(.collapsed) > .quest-icon{
     overflow-y:scroll;
     height:100%;
 }
+
+.page>.item>.remove_item{
+    display:in-line !important;
+    width:16px;
+    height:16px;
+    margin-left:5px;
+    margin-top:-1px;
+}
+
+.items>.item>.remove_item{
+    display:none !important;
+}
+
+.delete-page{
+    width:16px;
+    height:16px;
+    margin-top:-15px;
+    margin-right:-13px;
+}
+
+.visibility-open{
+    color:green;
+}
+
+.visibility-closed{
+    color:red;
+}
+
+.visibility-draft{
+    color:orange;
+}
+
+.btn-object-visibility{
+    width:16px;
+    height:16px;
+    margin-top:-5px;
+    background:None;
+}
+
+.btn-object-close{
+    background:#E0E0E0 !important;
+}

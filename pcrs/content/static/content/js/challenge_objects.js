@@ -7,6 +7,7 @@ $(document).ready(function () {
 
     $(document).on('click', '#add-page', addPage);
     $(document).on('click', '.delete-page', deletePage);
+    $(document).on('click', '.remove_item', deleteItemHelper);
 
     $(document).on('click', '#add-text', addText);
     $(document).on('click', '#save-text', saveText);
@@ -85,7 +86,7 @@ function addPage() {
 
 function deletePage() {
     if (confirm('Are you sure you would like to delete this page?')) {
-        $item = $(event.target).parent('.page');
+        $item = $(this).parent('.page');
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
             .success(function (data) {
                 $item.remove();
@@ -102,6 +103,7 @@ function addText() {
     }
     else {
         $('#text-entry-modal').modal();
+        console.log($('#text-entry-modal'));
         resize_problems();
     }
 }
@@ -115,14 +117,22 @@ function saveText(event) {
     })
         .success(function (data) {
             var $new_item = $("<div/>", {
-                html: $('#text-entry').val(),
-                class: "text well",
+                html: "<p class='ui-selectee'>" + $('#text-entry').val() + "</p>",
+                class: "textblock item well ui-selectee",
                 id: "textblock-" + data['pk']
             });
+            $new_item.prepend($("<button/>",{
+                class: "btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item ui-selectee pull-right",
+                title: "Delete Item"
+            }))
             $page.append($new_item);
             $('#save_top').prop('disabled', false);
             $('#save_bot').prop('disabled', false);
         });
+}
+
+function deleteItemHelper(){
+    deleteItem($(this).parent());
 }
 
 function deleteItem($item) {
@@ -194,4 +204,8 @@ function find_problems(){
         }
 
     }
+}
+
+function change_problem_visibility(problem_pk){
+
 }
