@@ -138,7 +138,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         return '{}/go'.format(self.get_absolute_url())
 
     def get_prerequisite_pks_set(self):
-        return set(self.prerequisites.values_list('id', flat=True))
+        return set(c.pk for c in self.prerequisites.all())
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):

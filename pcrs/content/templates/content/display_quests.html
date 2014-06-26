@@ -1,3 +1,5 @@
+{% load filters %}
+
 <div class="panel-group" id="quest_accordion_{{ quest.quest.pk }}">
     <div class="panel panel-default">
         {% if quest.is_past_due %}
@@ -29,7 +31,7 @@
                  id="challenge_accordion_{{ challenge.pk }}">
                 <h4> {{ quest.quest.description }} </h4>
                 <h3> Challenges </h3>
-                {% for challenge in quest.quest.challenge_set.all %}
+                {% for challenge in challenges|get_item:quest.quest.pk %}
                     {% include "content/quest_display_challenge.html" %}
                 {% endfor %}
             </div>

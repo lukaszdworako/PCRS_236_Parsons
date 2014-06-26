@@ -8,19 +8,21 @@ from problems_code.models import Problem, Submission
 from tests.ViewTestMixins import ProtectedViewTestMixin, UsersMixin
 
 
-class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
+class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):
     """
     Test the number of database hits when loading the quests page.
 
     Should be kept constant.
     """
-    db_hits = 16
+    db_hits = 30
     url = reverse('quests')
     template = 'content/quests.html'
 
     def test_no_quests(self):
+        self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(self.url)
+            # print(connection.queries)
 
     def test_quests_only(self):
         num_quests = 20
@@ -32,12 +34,14 @@ class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.assertEqual(num_quests, Quest.objects.count())
         self.assertEqual(num_quests, SectionQuest.objects.count())
 
+        self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
+            # print(connection.queries)
 
     def test_quests_and_challenges(self):
-        num_quests = 10
-        num_challenges = 10
+        num_quests = 5
+        num_challenges = 5
 
         for i in range(num_quests):
             q = Quest.objects.create(name=str(i))
@@ -49,14 +53,16 @@ class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.assertEqual(num_quests, Quest.objects.count())
         self.assertEqual(num_quests, SectionQuest.objects.count())
         self.assertEqual(num_quests*num_challenges, Challenge.objects.count())
+
+        self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
 
     def test_quests_challenges_objects(self):
-        num_quests = 10
+        num_quests = 5
         num_c = 5
-        num_pages = 5
-        num_objects = 5
+        num_pages = 10
+        num_objects = 10
         for i in range(num_quests):
             q = Quest.objects.create(name=str(i), description='c')
             for j in range(num_c):
@@ -93,6 +99,13 @@ class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.assertEqual(num_quests*num_c*2, Challenge.objects.count())
         self.assertEqual(num_quests*(num_c*2)*(num_pages)*(num_objects*3),
                          ContentSequenceItem.objects.count())
+
+        c = Challenge.objects.all()[0]
+        c.prerequisites.add(*Challenge.objects.exclude(pk=1)
+            .values_list('id', flat=True))
+        c.save()
+
+        self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
 
@@ -101,7 +114,7 @@ class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         num_c = 5
         num_pages = 5
         num_objects = 5
-        num_sub = 5
+        num_sub = 10
 
         for i in range(num_quests):
             q = Quest.objects.create(name=str(i), description='c')
@@ -139,6 +152,7 @@ class TestQuestsPageDatabaseHits(ProtectedViewTestMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
+            print(connection.queries)
 
 
 class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
@@ -242,7 +256,6 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(url)
-            print(connection.queries)
 
     def test_quests_problem_sets_problems_submissions_prerequisites(self):
         num_quests = 2
