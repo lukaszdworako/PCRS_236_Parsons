@@ -1,13 +1,18 @@
 {% block problem_header %}
-    <h3>
+    <h3 class="widget_title">
     {% block problem_title %}
     {% endblock %}
 
     {% block problem_score %}
-        <span class="pull-right" title="Progress so far">
         {% if mark|default_if_none:'-' == problem.max_score %}
+            <span class="pull-right widget_complete" title="Progress so far">
             {% include "pcrs/checkmark_complete.html" %}
         {% else %}
+            {% if mark|length > 0 %}
+                <span class="pull-right widget_incomplete" title="Progress so far">
+            {% else %}
+                <span class="pull-right widget_not_attempted" title="Progress so far">
+            {% endif %}
             <sup> {{ mark|default_if_none:'-' }} </sup>
             /
             <sub> {{ problem.max_score }} </sub>

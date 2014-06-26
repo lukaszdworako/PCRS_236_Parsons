@@ -10,16 +10,21 @@ $(document).ready(function () {
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
 
         var w_icon = "glyphicon glyphicon-edit";
-        var title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
+        var title_text = $(widgets[w_ind]).find(".widget_title")[0].firstChild.data.trim();
         var w_color = "DarkOrange";
 
         // if there is a checkmark on the page the question is complete
-        if ($(widgets[w_ind]).find(".glyphicon.glyphicon-ok.icon-ok-green").length != 0){
+        if ($(widgets[w_ind]).find(".widget_complete").length != 0){
             w_icon = "glyphicon glyphicon-check";
             w_color = "green";
             title_text += " : Complete";
         }
         //grab the score from the question on the page
+        else if ($(widgets[w_ind]).find(".widget_down").length != 0){
+            w_icon = "glyphicon glyphicon-unchecked";
+            title_text += " : Down for maintenance";
+            w_color = "grey";
+        }
         else{
             var current_mark = $(widgets[w_ind]).find("sup").text();
             var max_mark =  $(widgets[w_ind]).find("sub").text();
