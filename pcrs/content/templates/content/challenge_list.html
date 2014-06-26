@@ -3,9 +3,9 @@
 {% block item_title %}
     {% if object.pk in visible_challenges %}
         <a href="{{ object.get_main_page }}">
-            {{ object.name }}
+            {{ object.name }} | {{ object.quest }}
         </a>
     {% else %}
-        {{ object.name }}
+        {{ object.name }} | {{ object.quest }}
     {% endif %}
 {% endblock %}
