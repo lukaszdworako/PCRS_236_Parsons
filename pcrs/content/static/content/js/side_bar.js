@@ -6,7 +6,8 @@ $(document).ready(function () {
     // fill up the side bar with information
     for (var w_ind = widgets.length - 1; w_ind > -1; w_ind--){
 
-        var entry = $('<div/>',{style:"margin-left:25%;"});
+        var entry = $('<div/>',{style:"margin-left:25%;",
+                                class:"side-bar-el"});
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
 
         var w_icon = "glyphicon glyphicon-edit";
@@ -81,7 +82,7 @@ $(document).ready(function () {
 //scroll event to keep track of current problem
 function onScroll(){
     var scrollPos = $(document).scrollTop();
-    $('.nav.bs-docs-sidenav a').each(function () {
+    $('.nav.bs-docs-sidenav .side-bar-el a').each(function () {
         var currLink = $(this);
         var refElement = $(currLink.attr("href"));
         if (refElement.position().top <= scrollPos && refElement.position().top + refElement.height() > scrollPos) {
