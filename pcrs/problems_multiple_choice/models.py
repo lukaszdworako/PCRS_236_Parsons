@@ -14,8 +14,15 @@ class Problem(AbstractProblem):
     """
     A multiple choice problem.
     """
+    name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField()
 
-    description = models.TextField(unique=True)
+    class Meta:
+        unique_together = ['name', 'description']
+
+    def __str__(self):
+        return '{name}: {description}'.format(
+            name=self.name, description=self.description)
 
     def get_testitem_data_for_submissions(self, s_ids):
         """
