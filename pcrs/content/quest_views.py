@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
@@ -8,10 +9,13 @@ from django.utils.timezone import now
 from django.views.generic import CreateView, FormView, ListView
 
 from content.forms import QuestForm, QuestSectionForm
-from content.models import Quest, SectionQuest, Challenge, WatchedVideo
+from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
+    ContentPage, ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
+from problems.models import get_problem_content_types
 from users.models import Section
+from users.section_views import SectionViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
 
@@ -107,12 +111,12 @@ class QuestSectionListView(CourseStaffViewMixin, FormView):
             return self.form_invalid(formset)
 
 
-class QuestsView(ProtectedViewMixin, ListView):
+class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
     """
     List all available Quests and their Challenges for the user in the section.
     """
     template_name = "content/quests.html"
-    model = SectionQuest
+    model = Quest
 
     @classmethod
     def sum_dict_values(cls, *args):
@@ -135,14 +139,14 @@ class QuestsView(ProtectedViewMixin, ListView):
         challenge_to_total, challenge_to_completed = [], []
         best = {}
 
-        for content_type in ContentType.objects.filter(Q(model='problem')):
+        for content_type in get_problem_content_types():  # 1 query
             problem_class = content_type.model_class()
             submission_class = problem_class.get_submission_class()
             challenge_to_total.append(problem_class.get_challenge_to_problem_number())
             challenge_to_completed.append(
                 submission_class.get_completed_for_challenge_before_deadline(self.request.user))
 
-            best[content_type.app_label] = submission_class\
+            best[content_type.app_label], _ = submission_class\
                 .get_best_attempts_before_deadlines(self.request.user)
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
         context['best'] = best
@@ -151,11 +155,38 @@ class QuestsView(ProtectedViewMixin, ListView):
         context['challenges_completed'] = self.get_completed_challenges(
             context['challenge_to_completed'], context['challenge_to_total'])
 
+        # 1 query
+        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+
+        # 2 queries
+        context['challenges'] = {
+            q.pk: q.challenge_set.all() #.order_by('order')
+            for q in Quest.objects.prefetch_related('challenge_set').all()
+        }
+
+        # 3 queries
+        context['pages'], context['prerequisites'], context['prerequisites_set'] = {}, {}, {}
+        for c in Challenge.objects.all().prefetch_related('contentpage_set', 'prerequisites'):
+            context['pages'][c.pk] = c.contentpage_set.all()
+            context['prerequisites_set'][c.pk] = c.get_prerequisite_pks_set()
+            context['prerequisites'][c.pk] = c.prerequisites.all()
+
+        # 2 queries
+        context['items'] = {
+            page.pk: page.contentsequenceitem_set.all()
+            for page in ContentPage.objects.prefetch_related('contentsequenceitem_set').all()
+        }
+
+        # 2 queries
+        context['content_objects'] = {
+            item.pk: item.content_object
+            for item in ContentSequenceItem.objects.prefetch_related('content_object').all()
+        }
+
         return context
 
     def get_queryset(self):
-        section = (self.request.session.get('section', None) or
-                   self.request.user.section)
         return SectionQuest.objects\
-            .filter(visibility='open', section=section, open_on__lt=now())\
-            .prefetch_related('quest', 'quest__challenge_set')
+            .filter(section=self.get_section())\
+            .filter(visibility='open', open_on__lt=now())\
+            .select_related('quest')

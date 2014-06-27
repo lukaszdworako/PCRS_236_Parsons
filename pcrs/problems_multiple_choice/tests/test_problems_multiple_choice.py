@@ -9,8 +9,8 @@ from problems.tests.test_performance import TestSubmissionHistoryDatabaseHits
 
 from problems_multiple_choice.models import (Problem, Submission, Option,
                                              OptionSelection)
-from tests.ViewTestMixins import (CourseStaffViewTestMixin,
-                                  ProtectedViewTestMixin, UsersMixin)
+from ViewTestMixins import (CourseStaffViewTestMixin,
+                            ProtectedViewTestMixin, UsersMixin)
 
 
 class TestProblemListView(ProtectedViewTestMixin, test.TestCase):

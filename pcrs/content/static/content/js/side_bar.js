@@ -6,20 +6,26 @@ $(document).ready(function () {
     // fill up the side bar with information
     for (var w_ind = widgets.length - 1; w_ind > -1; w_ind--){
 
-        var entry = $('<div/>',{style:"margin-left:25%;"});
+        var entry = $('<div/>',{style:"margin-left:25%;",
+                                class:"side-bar-el"});
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
 
         var w_icon = "glyphicon glyphicon-edit";
-        var title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
+        var title_text = $(widgets[w_ind]).find(".widget_title")[0].firstChild.data.trim();
         var w_color = "DarkOrange";
 
         // if there is a checkmark on the page the question is complete
-        if ($(widgets[w_ind]).find(".glyphicon.glyphicon-ok.icon-ok-green").length != 0){
+        if ($(widgets[w_ind]).find(".widget_complete").length != 0){
             w_icon = "glyphicon glyphicon-check";
             w_color = "green";
             title_text += " : Complete";
         }
         //grab the score from the question on the page
+        else if ($(widgets[w_ind]).find(".widget_down").length != 0){
+            w_icon = "glyphicon glyphicon-unchecked";
+            title_text += " : Down for maintenance";
+            w_color = "grey";
+        }
         else{
             var current_mark = $(widgets[w_ind]).find("sup").text();
             var max_mark =  $(widgets[w_ind]).find("sub").text();
@@ -76,7 +82,7 @@ $(document).ready(function () {
 //scroll event to keep track of current problem
 function onScroll(){
     var scrollPos = $(document).scrollTop();
-    $('.nav.bs-docs-sidenav a').each(function () {
+    $('.nav.bs-docs-sidenav .side-bar-el a').each(function () {
         var currLink = $(this);
         var refElement = $(currLink.attr("href"));
         if (refElement.position().top <= scrollPos && refElement.position().top + refElement.height() > scrollPos) {

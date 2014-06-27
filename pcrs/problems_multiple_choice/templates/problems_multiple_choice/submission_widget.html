@@ -1,7 +1,7 @@
 {% extends "problems/submission_widget.html" %}
 
 {% block problem_title %}
-    Multiple Choice Question
+    {{ problem.name|default:"Multiple Choice Question" }}
 {% endblock %}
 
 {% block history %}

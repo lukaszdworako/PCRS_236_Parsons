@@ -1,20 +1,17 @@
+import datetime
+
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F
 from django.db.models.signals import pre_delete
-from content.tags import AbstractTaggedObject
-
-from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
-                         AbstractOrderedGenericObjectSequence,
-                         AbstractSelfAwareModel)
-from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
-
-# import for checking if due date is past due
-import datetime
 from django.utils.timezone import utc
 
-# CONTENT OBJECTS
+from content.tags import AbstractTaggedObject
+
+from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
+                         AbstractOrderedGenericObjectSequence)
+from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
 
 class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
@@ -41,7 +38,8 @@ class WatchedVideo(models.Model):
 
     @classmethod
     def get_watched_pk_list(cls, user):
-        return set(cls.objects.filter(user=user).values_list('video_id', flat=True))
+        return set(cls.objects.filter(user=user)
+                              .values_list('video_id', flat=True))
 
 
 class TextBlock(models.Model):
@@ -51,8 +49,8 @@ class TextBlock(models.Model):
     text = models.TextField()
 
     content_text = generic.GenericRelation('ContentSequenceItem',
-                                        content_type_field='content_type',
-                                             object_id_field='object_id')
+                                            content_type_field='content_type',
+                                            object_id_field='object_id')
 
     def __str__(self):
         return self.text[:150]
@@ -84,7 +82,8 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
 
     def __str__(self):
         return 'challenge: {0}; content_type: {1}, id:{2}'\
-            .format(self.content_page.challenge.pk, self.content_type, self.object_id)
+            .format(self.content_page.challenge.pk,
+                    self.content_type, self.object_id)
 
 
 class ContentPage(models.Model):
@@ -139,7 +138,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         return '{}/go'.format(self.get_absolute_url())
 
     def get_prerequisite_pks_set(self):
-        return set(self.prerequisites.values_list('id', flat=True))
+        return set(c.pk for c in self.prerequisites.all())
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
@@ -189,4 +188,17 @@ def page_delete(sender, instance, **kwargs):
     ContentPage.objects\
         .filter(challenge=instance.challenge, order__gt=instance.order)\
         .update(order=F('order')-1)
+
+
+def contentsequenceitem_delete(sender, instance, **kwargs):
+    """
+    Reset the problem's Challenge to None when deleting a
+    ContentSequence Problem.
+    """
+    if (instance.content_type.model == 'problem' and
+        instance.content_object is not None):
+        instance.content_object.challenge = None
+        instance.content_object.save()
+
 pre_delete.connect(page_delete, sender=ContentPage)
+pre_delete.connect(contentsequenceitem_delete, sender=ContentSequenceItem)

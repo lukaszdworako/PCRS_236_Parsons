@@ -208,18 +208,18 @@ $( document ).ready(function() {
                     }
                     if (data['best']){
                         var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-                        var new_title = $('#'+div_id).find("h3")[0].firstChild.data.trim();
+                        var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
                         if (score == max_score){
-                            $('#'+div_id).find('h3').find('span').empty();
-                            $('#'+div_id).find('h3').find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                            $('#'+div_id).find(".widget_title").find('span').empty();
+                            $('#'+div_id).find(".widget_title").find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
                             side_bar.css("color","green");
                             side_bar.removeClass();
                             side_bar.addClass("glyphicon glyphicon-check");
                             new_title += " : Complete"
                         }
                         else{
-                            $('#'+div_id).find('h3').find('sup').text(score);
-                            $('#'+div_id).find('h3').find('sub').text(max_score);
+                            $('#'+div_id).find(".widget_title").find('sup').text(score);
+                            $('#'+div_id).find(".widget_title").find('sub').text(max_score);
                             new_title += " : " + score + " / " + max_score;
                             side_bar.css("color","DarkOrange");
                         }

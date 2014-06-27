@@ -7,17 +7,20 @@ $(document).ready(function () {
 
     $(document).on('click', '#add-page', addPage);
     $(document).on('click', '.delete-page', deletePage);
+    $(document).on('click', '.remove_item', deleteItemHelper);
 
     $(document).on('click', '#add-text', addText);
     $(document).on('click', '#save-text', saveText);
 
-    $(document).on('click', '#save', savePages);
-
+    $(document).on('click', '#save_top', savePages);
+    $(document).on('click', '#save_bot', savePages);
 
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
-            $('#save').prop('disabled', false);
+            $('#save_top').prop('disabled', false);
+            $('#save_bot').prop('disabled', false);
+            resize_problems();
         }
     });
 
@@ -41,7 +44,14 @@ $(document).ready(function () {
                 deleteItem($($uiselected));
             }
         });
+
+    $('#searcher').keyup(find_problems);
+    resize_problems();
 });
+
+function resize_problems(){
+    $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
+}
 
 function select(event) {
     if ($uiselected != null) {
@@ -66,7 +76,9 @@ function addPage() {
             $new_item.sortable({
                 connectWith: ".page",
                 update: function (event, ui) {
-                    $('#save').prop('disabled', false);
+                    $('#save_top').prop('disabled', false);
+                    $('#save_bot').prop('disabled', false);
+                    resize_problems();
                 }
             });
         });
@@ -74,10 +86,11 @@ function addPage() {
 
 function deletePage() {
     if (confirm('Are you sure you would like to delete this page?')) {
-        $item = $(event.target).parent('.page');
+        $item = $(this).parent('.page');
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
             .success(function (data) {
                 $item.remove();
+                resize_problems();
             });
     }
 }
@@ -90,6 +103,8 @@ function addText() {
     }
     else {
         $('#text-entry-modal').modal();
+        console.log($('#text-entry-modal'));
+        resize_problems();
     }
 }
 
@@ -102,13 +117,22 @@ function saveText(event) {
     })
         .success(function (data) {
             var $new_item = $("<div/>", {
-                html: $('#text-entry').val(),
-                class: "text well",
+                html: "<p class='ui-selectee'>" + $('#text-entry').val() + "</p>",
+                class: "textblock item well ui-selectee",
                 id: "textblock-" + data['pk']
             });
+            $new_item.prepend($("<button/>",{
+                class: "btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item ui-selectee pull-right",
+                title: "Delete Item"
+            }))
             $page.append($new_item);
-            $('#save').prop('disabled', false);
+            $('#save_top').prop('disabled', false);
+            $('#save_bot').prop('disabled', false);
         });
+}
+
+function deleteItemHelper(){
+    deleteItem($(this).parent());
 }
 
 function deleteItem($item) {
@@ -131,7 +155,9 @@ function deleteItem($item) {
     }
     $item.toggleClass('uiselected');
     $uiselected = null;
-    $('#save').prop('disabled', false);
+    $('#save_top').prop('disabled', false);
+    $('#save_bot').prop('disabled', false);
+    resize_problems();
 }
 
 function savePages() {
@@ -149,6 +175,37 @@ function savePages() {
         page_object_list: JSON.stringify(page_object_list),
         csrftoken: csrftoken
     }).success(function () {
-        $('#save').attr('disabled', 'disabled');
+        $('#save_bot').attr('disabled', 'disabled');
+        $('#save_top').attr('disabled', 'disabled');
     });
+}
+
+function find_problems(){
+
+    var searching_for = $('#searcher').val().toLowerCase()
+    var problem_list = $('.tab-pane.active').children().first().children();
+    for (var index = 0; index < problem_list.length; index ++){
+        if (searching_for == ""){
+            $(problem_list[index]).show();
+        }
+        else if ($(problem_list[index]).find('b').text().toLowerCase().indexOf(searching_for) != -1){
+            $(problem_list[index]).show();
+        }
+        else{
+            $(problem_list[index]).hide();
+        }
+        var current_tags = $(problem_list[index]).find('.badge.tag');
+        if (searching_for != ""){
+            for (var tag_index = 0; tag_index < current_tags.length; tag_index++){
+                if ($(current_tags[tag_index]).text().toLowerCase().indexOf(searching_for) != -1){
+                    $(problem_list[index]).show();
+                }
+            }
+        }
+
+    }
+}
+
+function change_problem_visibility(problem_pk){
+
 }

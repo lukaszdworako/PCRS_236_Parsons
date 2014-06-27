@@ -1,20 +1,31 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 from django.dispatch import receiver
+from content.models import contentsequenceitem_delete
 
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
-from problems.models import AbstractProblem, AbstractSubmission
+from problems.models import AbstractProblem, AbstractSubmission, problem_delete
 
 
 class Problem(AbstractProblem):
     """
     A multiple choice problem.
     """
+    name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField()
 
-    description = models.TextField(unique=True)
+    class Meta:
+        unique_together = ['name', 'description']
+
+    def __str__(self):
+        if self.name:
+            return '{name}: {description}'.format(
+                name=self.name, description=self.description)
+        else:
+            return self.description
 
     def get_testitem_data_for_submissions(self, s_ids):
         """
@@ -120,3 +131,6 @@ def option_delete(sender, instance, **kwargs):
     except Problem.DoesNotExist:
         # problem no longer exists, submissions will be deleted automatically
         pass
+
+
+post_delete.connect(problem_delete, sender=Problem)

@@ -15,7 +15,7 @@ from rapt.constants import SET_SEMANTICS, BAG_SEMANTICS
 
 
 from problems.models import (AbstractTestRun, AbstractSubmission,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 from problems_rdb.models import RDBProblem, RDBTestCase, Schema
 
 
@@ -119,3 +119,5 @@ class TestRun(AbstractTestRun):
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

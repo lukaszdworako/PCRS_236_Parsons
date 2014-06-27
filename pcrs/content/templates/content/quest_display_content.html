@@ -1,4 +1,7 @@
-{% with item=content_object.content_object %}
+{% load filters %}
+
+{% with item=content_objects|get_item:content_object.pk %}
+
     <div>
         {% with item_type=item|classname|lower problem_type=item|module_name %}
             {% if item_type == "video" %}

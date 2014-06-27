@@ -12,7 +12,13 @@ from users.models import Section
 from users.views_mixins import CourseStaffViewMixin
 
 
-class ChangeSectionView(CourseStaffViewMixin, FormView):
+class SectionViewMixin:
+    def get_section(self):
+        return (self.request.session.get('section', None) or
+                self.request.user.section)
+
+
+class ChangeSectionView(CourseStaffViewMixin, SectionViewMixin, FormView):
     template_name = 'pcrs/crispy_form.html'
     form_class = SectionSelectionForm
 
@@ -22,8 +28,7 @@ class ChangeSectionView(CourseStaffViewMixin, FormView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['section'] = (self.request.session.get('section', None) or
-                              self.request.user.section)
+        initial['section'] = self.get_section()
         return initial
 
 

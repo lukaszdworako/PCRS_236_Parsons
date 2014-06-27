@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_delete
 
 from problems.models import (AbstractSubmission, AbstractTestRun,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 from problems_rdb.db_wrapper import StudentWrapper
 from problems_rdb.models import RDBProblem, RDBTestCase
 
@@ -68,3 +68,5 @@ class TestRun(AbstractTestRun):
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

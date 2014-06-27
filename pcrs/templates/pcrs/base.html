@@ -42,7 +42,7 @@
                 <h1>
                     {% block page_title %}
                         {{ page_title|title }}
-                        <i>{{ object }}</i>
+                        <i>{{ object|striptags|truncatechars:150 }}</i>
                     {% endblock %}
                 </h1>
                 {% block links %} {% endblock %}

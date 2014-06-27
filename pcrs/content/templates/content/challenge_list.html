@@ -1,5 +1,11 @@
 {% extends "pcrs/item_list.html" %}
 
 {% block item_title %}
-    <a href="{{ object.get_main_page }}">{{ object.name }}</a>
+    {% if object.pk in visible_challenges %}
+        <a href="{{ object.get_main_page }}">
+            {{ object.name }} | {{ object.quest }}
+        </a>
+    {% else %}
+        {{ object.name }} | {{ object.quest }}
+    {% endif %}
 {% endblock %}
