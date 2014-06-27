@@ -101,7 +101,8 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
                     .filter(challenge__visibility='open',
                             challenge__quest__sectionquest__section=section,
                             challenge__quest__sectionquest__open_on__lt=localtime(now()),
-                            challenge__quest__sectionquest__visibility='open')
+                            challenge__quest__sectionquest__visibility='open',
+                            challenge__quest__mode='live')
             self.page = page_set.get(
                 order=self.kwargs.get('page', None),
                 challenge_id=self.kwargs.get('challenge', None))

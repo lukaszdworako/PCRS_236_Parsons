@@ -49,7 +49,7 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
 class QuestForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Quest
-        fields = ('name', 'description')
+        fields = ('name', 'description', 'mode')
 
 
 class QuestSectionForm(CrispyFormMixin, forms.ModelForm):

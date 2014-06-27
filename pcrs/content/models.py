@@ -146,10 +146,16 @@ class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
     Am ordered sequence of Challenges.
     """
+    MODES = (('maintenance', 'maintenance'), ('live', 'live'))
+
     order = models.SmallIntegerField(default=0)
+    mode = models.CharField(choices=MODES, default='maintenance', max_length=16)
 
     class Meta:
         ordering = ['order']
+
+    def is_live(self):
+        return self.mode == 'live'
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
