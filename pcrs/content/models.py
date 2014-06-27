@@ -132,7 +132,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         ordering = ['quest', 'order']
 
     def get_first_page(self):
-        return '{}/0'.format(self.get_absolute_url())
+        return '{}/1'.format(self.get_absolute_url())
 
     def get_prerequisite_pks_set(self):
         return set(c.pk for c in self.prerequisites.all())

@@ -111,7 +111,7 @@ class PageCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
     def post(self, request, *args, **kwargs):
         challenge = self.get_challenge()
         last_page = challenge.contentpage_set.aggregate(last=Max('order'))
-        order = last_page['last'] + 1 if last_page['last'] is not None else 0
+        order = last_page['last'] + 1 if last_page['last'] is not None else 1
 
         new_page = self.model.objects.create(challenge=challenge,
                                              order=order)
