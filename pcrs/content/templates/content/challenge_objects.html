@@ -28,7 +28,7 @@
 
     <div class="row">
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-            <input id="searcher" type="text" name="search" placeholder="Search">
+            {% include "content/search.html" %}
         </div>
         <div id="controls" class="btn-group col-xs-4 col-sm-4 col-md-4 col-lg-4">
             <button class="btn btn-default" id="add-text" aria-label="add text">&nbsp;
@@ -82,7 +82,7 @@
                 <div class="tab-content">
                     {% for label in problem_app_labels %}
                         <div class="tab-pane" id="{{ label }}-tab">
-                            <div class="items" id="{{ label }}">
+                            <div class="items item-list" id="{{ label }}">
                                 {% for problem in problems|get_item:label %}
                                     {% include "content/problem_list_item.html" %}
                                 {% endfor %}
@@ -91,7 +91,7 @@
                     {% endfor %}
 {#                if you want to remove video from problems delete the next 7 lines and uncomment the top#}
                     <div class="tab-pane" id="video-tab">
-                        <div class="items" id="videos">
+                        <div class="items item-list" id="videos">
                             {% for item in videos %}
                                 {% include "content/video_list_item.html" %}
                             {% endfor %}
