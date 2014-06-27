@@ -148,6 +148,12 @@ WSGI_APPLICATION = 'pcrs.wsgi.application'
 import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
+INSTALLED_PROBLEM_APPS = (
+    'problems_code',
+    'problems_multiple_choice',
+    'problems_rdb', 'problems_sql', 'problems_ra'
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -164,9 +170,7 @@ INSTALLED_APPS = (
     'users',
     'content',
     'problems',
-    'problems_code', 'problems_multiple_choice',
-    'problems_rdb', 'problems_sql', 'problems_ra'
-)
+) + INSTALLED_PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 

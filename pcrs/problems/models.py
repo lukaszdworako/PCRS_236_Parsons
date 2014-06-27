@@ -16,11 +16,12 @@ def get_problem_labels():
     """
     Return the list app_labels of apps that contain a Problem class.
     """
-    return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
+    return [c.app_label for c in get_problem_content_types()]
 
 
 def get_problem_content_types():
-    return ContentType.objects.filter(Q(model='problem'))
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
 
 
 def get_submission_content_types():
