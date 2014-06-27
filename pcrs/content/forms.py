@@ -23,7 +23,8 @@ class VideoForm(BaseCrispyForm, forms.ModelForm):
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ('visibility', 'name', 'description', 'is_graded', 'quest')
+        fields = ('visibility', 'name', 'description', 'is_graded',
+                  'prerequisites')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

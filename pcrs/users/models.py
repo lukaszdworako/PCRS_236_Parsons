@@ -16,6 +16,7 @@ VISIBILITY_LEVELS = (
     ('open', 'open')
 )
 
+MASTER_SECTION_ID = 'master'
 
 @python_2_unicode_compatible
 class CustomAbstractBaseUser(models.Model):
@@ -208,6 +209,9 @@ class Section(AbstractSelfAwareModel):
     @classmethod
     def get_base_url(cls):
         return '{site}/sections'.format(site=settings.SITE_PREFIX)
+
+    def is_master(self):
+        return self.section_id == MASTER_SECTION_ID
 
     def get_manage_section_quests_url(self):
         return '{site}/content/quests/section/{pk}'\

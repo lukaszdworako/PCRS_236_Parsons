@@ -131,11 +131,12 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     class Meta:
         ordering = ['quest', 'order']
 
-    def get_first_page(self):
-        return '{}/0'.format(self.get_absolute_url())
-
-    def get_main_page(self):
-        return '{}/go'.format(self.get_absolute_url())
+    def get_first_page_url(self):
+        try:
+            page = self.contentpage_set.get(order=1)
+            return page.get_absolute_url()
+        except ContentPage.DoesNotExist:
+            return None
 
     def get_prerequisite_pks_set(self):
         return set(c.pk for c in self.prerequisites.all())
