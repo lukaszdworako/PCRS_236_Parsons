@@ -3,7 +3,7 @@ margin-top:-55px;">
     <ul class="nav bs-docs-sidenav" style="margin-left:-2%;">
         <br>
         <div>
-            {% if content_page.order %}
+            {% if content_page.order > 1 %}
                 <a href="{{ content_page.order|add:-1 }}">
                 <span class="glyphicon glyphicon-chevron-left" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}" style="color:green;">
                 </span>
