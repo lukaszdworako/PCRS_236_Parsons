@@ -252,4 +252,26 @@ class AbstractLimitedVisibilityObject(models.Model):
             return cls.objects.all()
 
     def is_visible_to_students(self):
+        return self.is_open()
+
+    def is_open(self):
         return self.visibility == 'open'
+
+    def is_closed(self):
+        return self.visibility == 'closed'
+
+    def is_draft(self):
+        return self.visibility == 'draft'
+
+    def open(self):
+        self.visibility = "open"
+        self.save()
+
+    def closed(self):
+        self.visibility = "closed"
+        self.save()
+
+    def draft(self):
+        self.visibility = "draft"
+        self.save()
+
