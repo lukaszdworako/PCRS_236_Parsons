@@ -50,9 +50,6 @@ urlpatterns = patterns('',
         GenericCourseStaffDeleteView.as_view(model=Challenge),
         name='challenge_delete'),
 
-    url(r'^challenges/(?P<pk>[0-9]+)/go$', ChallengeStartView.as_view(),
-        name='challenge_start'),
-
     url(r'^challenges/(?P<pk>[0-9]+)/no_go$',
         IncompletePrerequisitesView.as_view(),
         name='challenge_missing_prerequisites'),

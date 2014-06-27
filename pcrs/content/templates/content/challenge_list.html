@@ -2,7 +2,7 @@
 
 {% block item_title %}
     {% if object.pk in visible_challenges %}
-        <a href="{{ object.get_main_page }}">
+        <a href="{{ object.get_first_page }}">
             {{ object.name }} | {{ object.quest }}
         </a>
     {% else %}

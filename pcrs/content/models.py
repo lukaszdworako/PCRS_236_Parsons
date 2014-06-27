@@ -134,9 +134,6 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def get_first_page(self):
         return '{}/0'.format(self.get_absolute_url())
 
-    def get_main_page(self):
-        return '{}/go'.format(self.get_absolute_url())
-
     def get_prerequisite_pks_set(self):
         return set(c.pk for c in self.prerequisites.all())
 
