@@ -226,7 +226,12 @@ function change_problem_visibility(){
             }
             else{
                 $(this_button).removeClass('visibility-'+old_visibility+' glyphicon-eye-close');
-                $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-open');
+                if (new_visibility == "open"){
+                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-open');
+                }
+                else{
+                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
+                }
             }
 
             $(this_button).prop('title', "Visibility "+new_visibility);
