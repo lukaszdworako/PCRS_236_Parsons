@@ -25,7 +25,8 @@ def get_problem_content_types():
 
 
 def get_submission_content_types():
-    return ContentType.objects.filter(Q(model='submission'))
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
