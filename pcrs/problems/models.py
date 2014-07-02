@@ -81,6 +81,9 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
+    def get_monitoring_url(self):
+        return '{}/monitor'.format(self.get_absolute_url())
+
     def best_per_user_before_time(self, deadline=timezone.now()):
         """
         Return a list of dictionaries of the form {user_id: , score:)

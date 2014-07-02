@@ -9,6 +9,7 @@ from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
 from problems.forms import ProgrammingSubmissionForm, MonitoringForm
 from users.models import Section
+from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -252,13 +253,19 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
                             mimetype='application/json')
 
 
-class MonitoringView(CourseStaffViewMixin, SingleObjectMixin, FormView):
+class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,
+                     FormView):
     """
-    Create a submission for a problem.
+    Start monitoring submissions for a problem.
     """
     form_class = MonitoringForm
     template_name = 'problems/monitor.html'
     object = None
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['section'] = self.get_section()
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -17,13 +17,16 @@
     <script src="{% static "RGraph/RGraph.hbar.js" %}"></script>
 {% endblock %}
 
-{% block page_title %}
-    {{ object.name }}
-{% endblock %}
 
 {% block content %}
-    <h4>{{ object.description }}</h4>
     {{ block.super }}
+
+        {% autoescape off %}
+        <h3>{{ object.name }}</h3>
+        <h4>
+        {{ object.description }}
+        </h4>
+    {% endautoescape %}
 
     <canvas id="submissions-graph" width="200" height="500">Submissions Graph
     </canvas>

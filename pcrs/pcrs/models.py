@@ -49,7 +49,7 @@ class AbstractSelfAwareModel(models.Model):
 
     @classmethod
     def get_testrun_class(cls):
-        return cls.get_class_by_name('Testrun')
+        return cls.get_class_by_name('TestRun')
 
     @classmethod
     def get_pretty_name(cls):
