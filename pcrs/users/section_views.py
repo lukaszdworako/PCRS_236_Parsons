@@ -11,7 +11,7 @@ from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
 from problems.models import (get_problem_content_types,
                              get_submission_content_types)
 from users.forms import SectionForm, QuestGradeForm, SectionSelectionForm
-from users.models import Section, PCRSUser
+from users.models import Section, PCRSUser, MASTER_SECTION_ID
 from users.views_mixins import CourseStaffViewMixin
 
 
@@ -38,6 +38,9 @@ class ChangeSectionView(CourseStaffViewMixin, SectionViewMixin, FormView):
 class SectionListView(CourseStaffViewMixin, GenericItemListView):
     model = Section
     template_name = 'pcrs/section_list.html'
+
+    def get_queryset(self):
+        return Section.objects.exclude(section_id=MASTER_SECTION_ID)
 
 
 class SectionCreateView(CourseStaffViewMixin, GenericItemCreateView):
