@@ -130,7 +130,7 @@ class PCRSUserManager(BaseUserManager):
 
 class PCRSUser(CustomAbstractBaseUser):
     username = models.CharField('username', max_length=30, unique=True, db_index=True)
-    section = models.ForeignKey("Section", blank=True, null=True)
+    section = models.ForeignKey("Section")
     is_student = models.BooleanField(default=False)
     is_ta = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)
