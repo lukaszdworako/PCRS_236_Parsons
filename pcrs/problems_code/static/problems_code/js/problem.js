@@ -247,7 +247,10 @@ function getTestcases(div_id) {
                 if (language == 'python'){
                     prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
                 }
-                else if (language=='sql' || language=='ra'){
+                else if (language=='sql'){
+                    prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                }
+                else if (language=='ra'){
                     prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
                 }
             },
@@ -259,7 +262,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
 
     var score = 0;
     var tests = [];
-    var table_location = $('#table_location');
+    var table_location = $('#'+div_id).find('#table_location');
     table_location.empty();
 
     for (var i = 0; i < testcases.length; i++) {
