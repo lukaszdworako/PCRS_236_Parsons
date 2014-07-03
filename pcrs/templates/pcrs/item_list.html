@@ -2,6 +2,9 @@
 {% block links %}
     {% if user.is_instructor or user.is_ta %}
         {% include "pcrs/buttons/add.html" %}
+        <br>
+        <br>
+        {% include "content/search.html" %}
     {% endif %}
 {% endblock %}
 

@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from content.challenge_content_views import (TextCreateView, PageCreateView,
                                              ChallengeObjectsView,
                                              ItemDeleteView,
-                                             ChallengePagesObjectsView,)
+                                             ChallengePagesObjectsView,
+                                             ChangeProblemVisibilityView,)
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
@@ -50,9 +51,6 @@ urlpatterns = patterns('',
         GenericCourseStaffDeleteView.as_view(model=Challenge),
         name='challenge_delete'),
 
-    url(r'^challenges/(?P<pk>[0-9]+)/go$', ChallengeStartView.as_view(),
-        name='challenge_start'),
-
     url(r'^challenges/(?P<pk>[0-9]+)/no_go$',
         IncompletePrerequisitesView.as_view(),
         name='challenge_missing_prerequisites'),
@@ -69,6 +67,8 @@ urlpatterns = patterns('',
         TextCreateView.as_view()),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',
         ItemDeleteView.as_view(model=TextBlock)),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/change_status',
+        ChangeProblemVisibilityView.as_view(model=TextBlock)),
 
     url(r'^quests$', QuestsView.as_view(), name='quests'),
 

@@ -16,15 +16,17 @@ def get_problem_labels():
     """
     Return the list app_labels of apps that contain a Problem class.
     """
-    return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
+    return [c.app_label for c in get_problem_content_types()]
 
 
 def get_problem_content_types():
-    return ContentType.objects.filter(Q(model='problem'))
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
 
 
 def get_submission_content_types():
-    return ContentType.objects.filter(Q(model='submission'))
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
@@ -78,6 +80,9 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+
+    def get_monitoring_url(self):
+        return '{}/monitor'.format(self.get_absolute_url())
 
     def best_per_user_before_time(self, deadline=timezone.now()):
         """

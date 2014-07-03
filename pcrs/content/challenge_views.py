@@ -19,6 +19,8 @@ class IncompletePrerequisites(Exception):
 
 class PrerequisitesRequiredViewMixin:
     def check_prerequisites(self, challenge, problem_to_completed):
+        if self.get_section().is_master:
+            return
         required = {
             (p.content_type.app_label, p.object_id)
             for p in ContentSequenceItem.objects
@@ -35,7 +37,7 @@ class PrerequisitesRequiredViewMixin:
             raise IncompletePrerequisites()
 
 
-class ChallengeView:
+class ChallengeView():
     model = Challenge
     form_class = ChallengeForm
     template_name = 'pcrs/item_form.html'
@@ -49,17 +51,21 @@ class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
     model = Challenge
     template_name = 'content/challenge_list.html'
 
+    def get_visible_challenges(self):
+        section = self.get_section()
+        if section.is_master():
+            return Challenge.objects.all()
+        else:
+            return Challenge.objects.filter(
+                visibility='open',
+                quest__sectionquest__section=section,
+                quest__sectionquest__open_on__lt=localtime(now()),
+                quest__sectionquest__visibility='open')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        section = self.get_section()
-        current_date = now()
-        context['visible_challenges'] = set(
-            Challenge.objects.filter(quest__sectionquest__section=section,
-                                     quest__sectionquest__visibility='open',
-                                     quest__sectionquest__open_on__lte=current_date)
-                             .filter(visibility='open')
-                             .values_list('id', flat=True)
-        )
+        context['visible_challenges'] = set(self.get_visible_challenges()
+                                            .values_list('id', flat=True))
         return context
 
 
@@ -77,23 +83,6 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
     """
 
 
-class ChallengeStartView(ProtectedViewMixin, DetailView):
-    """
-    The landing page for the Challenge.
-    """
-    model = Challenge
-    template_name = 'content/challenge.html'
-
-    def get_queryset(self):
-        section = (self.request.session.get('section', None) or
-                   self.request.user.section)
-        return Challenge.objects.filter(
-            visibility='open',
-            quest__sectionquest__section=section,
-            quest__sectionquest__open_on__lt=localtime(now()),
-            quest__sectionquest__visibility='open')
-
-
 class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
                       PrerequisitesRequiredViewMixin):
     template_name = "content/content_page.html"
@@ -104,13 +93,19 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
     def get_page(self):
         if self.page is None:
             section = self.get_section()
-            self.page = ContentPage.objects.select_related('challenge')\
-                .filter(challenge__visibility='open',
-                        challenge__quest__sectionquest__section=section,
-                        challenge__quest__sectionquest__open_on__lt=localtime(now()),
-                        challenge__quest__sectionquest__visibility='open')\
-                .get(order=self.kwargs.get('page', None),
-                     challenge_id=self.kwargs.get('challenge', None))
+            if section.is_master():
+                page_set = ContentPage.objects.select_related('challenge')\
+
+            else:
+                page_set = ContentPage.objects.select_related('challenge')\
+                    .filter(challenge__visibility='open',
+                            challenge__quest__sectionquest__section=section,
+                            challenge__quest__sectionquest__open_on__lt=localtime(now()),
+                            challenge__quest__sectionquest__visibility='open',
+                            challenge__quest__mode='live')
+            self.page = page_set.get(
+                order=self.kwargs.get('page', None),
+                challenge_id=self.kwargs.get('challenge', None))
         return self.page
 
     def get_queryset(self):

@@ -17,13 +17,14 @@ class TagForm(BaseCrispyForm, forms.ModelForm):
 class VideoForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Video
-        fields = ('name', 'description', 'link', 'tags')
+        fields = ('name', 'description', 'link', 'thumbnail', 'download', 'tags')
 
 
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ('visibility', 'name', 'description', 'is_graded', 'quest')
+        fields = ('visibility', 'name', 'description', 'is_graded',
+                  'prerequisites')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,7 +49,7 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
 class QuestForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Quest
-        fields = ('name', 'description')
+        fields = ('name', 'description', 'mode')
 
 
 class QuestSectionForm(CrispyFormMixin, forms.ModelForm):

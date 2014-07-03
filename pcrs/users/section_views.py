@@ -1,14 +1,17 @@
 from collections import defaultdict
 import csv
+
 from django.http import HttpResponse
 from django.views.generic import FormView
 from django.views.generic.detail import SingleObjectMixin
+from django.utils.html import strip_tags
 
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
-from problems.models import get_problem_content_types
+from problems.models import (get_problem_content_types,
+                             get_submission_content_types)
 from users.forms import SectionForm, QuestGradeForm, SectionSelectionForm
-from users.models import Section
+from users.models import Section, PCRSUser, MASTER_SECTION_ID
 from users.views_mixins import CourseStaffViewMixin
 
 
@@ -36,6 +39,9 @@ class SectionListView(CourseStaffViewMixin, GenericItemListView):
     model = Section
     template_name = 'pcrs/section_list.html'
 
+    def get_queryset(self):
+        return Section.objects.exclude(section_id=MASTER_SECTION_ID)
+
 
 class SectionCreateView(CourseStaffViewMixin, GenericItemCreateView):
     model = Section
@@ -62,28 +68,41 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         return initial
 
     def form_valid(self, form):
+        section = form.cleaned_data['section']
+        quest = form.cleaned_data['quest']
+
         # return a csv file
-        section, quest = form.cleaned_data['section'], form.cleaned_data['quest']
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename=report.csv'
         writer = csv.writer(response)
 
-        problems, names, max_scores = [], []
-        for ctype in get_problem_content_types():
-            for problem in ctype.model_class().object.filter(challenge__quest=quest):
-                problems.append((problem.get_problem_type(), problem.pk))
-
-                names.append((problem.get_problem_type(),
-                              problem.name if hasattr(problem, 'name')
-                              else problem.description))
+        # collect the problem ids, names, and max_scores
+        problems, names, max_scores = [], [], []
+        problem_types = get_problem_content_types()
+        for ctype in problem_types:
+            for problem in ctype.model_class().objects.filter(challenge__quest=quest).order_by('id'):
+                problems.append((ctype.app_label, problem.pk))
+                names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
                 max_scores.append(problem.max_score)
 
+        writer.writerow(names)
+        writer.writerow(max_scores)
+
+        # collect grades for each student
         results = defaultdict(dict)
-        for ctype in get_problem_content_types():
+        for ctype in get_submission_content_types():
             grades = ctype.model_class().grade(quest=quest, section=section)
             for record in grades:
-                results[record['user']][ctype.model_class().get_problem_type(), record['problem']] = record['best']
+                problem = (ctype.app_label,
+                           record['problem'])
+                results[record['user']][problem] = record['best']
 
-        for student_id, score_dict in results:
-            writer.writerow(student_id, [score_dict.get(problem) for problem in problems])
-        # return response
+        for student_id, score_dict in results.items():
+            writer.writerow(([student_id] +
+                            [score_dict.get(problem, '') for problem in problems]))
+
+        # collect students in the section who has not submitted anything
+        for student in PCRSUser.objects.filter(section=section)\
+                                          .exclude(username__in=results.keys()):
+            writer.writerow([student.username] + ['' for problem in problems])
+        return response

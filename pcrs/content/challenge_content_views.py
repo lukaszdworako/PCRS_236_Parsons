@@ -111,7 +111,7 @@ class PageCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
     def post(self, request, *args, **kwargs):
         challenge = self.get_challenge()
         last_page = challenge.contentpage_set.aggregate(last=Max('order'))
-        order = last_page['last'] + 1 if last_page['last'] is not None else 0
+        order = last_page['last'] + 1 if last_page['last'] is not None else 1
 
         new_page = self.model.objects.create(challenge=challenge,
                                              order=order)
@@ -127,3 +127,27 @@ class ItemDeleteView(CourseStaffViewMixin, DeleteView):
         get_object_or_404(self.model, pk=self.kwargs.get('pk', None)).delete()
         return HttpResponse(json.dumps({'status': 'ok'}),
                             mimetype='application/json')
+
+
+class ChangeProblemVisibilityView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
+    """
+    Change a problems visibility.
+    """
+
+    def post(self, request, *args, **kwargs):
+        app_label = request.POST.get('problem_type', None)
+        pk = request.POST.get('problem_pk', None)
+        problem_class = ContentType.objects.get(app_label=app_label, model='problem').model_class()
+        problem = problem_class.objects.get(pk=pk)
+        if problem.is_open():
+            old_visibility = 'open'
+            problem.closed()
+        elif problem.is_closed():
+            old_visibility = 'closed'
+            problem.draft()
+        elif problem.is_draft():
+            old_visibility = 'draft'
+            problem.open()
+
+        return HttpResponse(json.dumps({'status': 'ok','old_visibility':old_visibility, 'new_visibility':problem.visibility}),
+                                mimetype='application/json')

@@ -23,7 +23,7 @@
 {% endblock %}
 
 {% block page_title %}
-    {{ content_page.challenge.name }} - Part {{ content_page.order|add:1 }} of
+    {{ content_page.challenge.name }} - Part {{ content_page.order }} of
     {{ num_pages }}
 {% endblock %}
 
@@ -65,7 +65,7 @@
         {% endwith %}
     {% endfor %}
 
-{% if content_page.order %}
+{% if content_page.order > 1 %}
     <a class="btn btn-success" role="button"
        href="{{ content_page.order|add:-1 }}">
         <i class="glyphicon glyphicon-chevron-left"></i>

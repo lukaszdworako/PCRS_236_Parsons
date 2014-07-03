@@ -3,6 +3,9 @@
 
     {% autoescape off %}
         {% block problem_title %}
+            {% if user.is_instructor %}
+                <a href="{{ problem.get_monitoring_url }}"><i class="glyphicon glyphicon-stats"></i></a>
+            {% endif %}
         {% endblock %}
     {% endautoescape %}
 

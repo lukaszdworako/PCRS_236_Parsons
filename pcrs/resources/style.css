@@ -125,15 +125,15 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .visibility-open{
-    color:green;
+    color:green !important;
 }
 
 .visibility-closed{
-    color:red;
+    color:red !important;
 }
 
 .visibility-draft{
-    color:orange;
+    color:#CC3300 !important;
 }
 
 .btn-object-visibility{

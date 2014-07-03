@@ -25,6 +25,7 @@
             </a>
         </h4>
     </div>
+        {% if quest.quest.is_live %}
         <div id="quest_collapse_{{ quest.quest.pk }}"
              class="panel-collapse collapse">
             <div class="panel-group panel-body quest_internal"
@@ -36,5 +37,10 @@
                 {% endfor %}
             </div>
         </div>
+        {% else %}
+            <div class="label label-danger">
+                The questmasters are still working on a few minor details.
+            </div>
+        {% endif %}
     </div>
 </div>

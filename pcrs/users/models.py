@@ -16,6 +16,7 @@ VISIBILITY_LEVELS = (
     ('open', 'open')
 )
 
+MASTER_SECTION_ID = 'master'
 
 @python_2_unicode_compatible
 class CustomAbstractBaseUser(models.Model):
@@ -129,7 +130,7 @@ class PCRSUserManager(BaseUserManager):
 
 class PCRSUser(CustomAbstractBaseUser):
     username = models.CharField('username', max_length=30, unique=True, db_index=True)
-    section = models.ForeignKey("Section", blank=True, null=True)
+    section = models.ForeignKey("Section")
     is_student = models.BooleanField(default=False)
     is_ta = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)
@@ -209,6 +210,9 @@ class Section(AbstractSelfAwareModel):
     def get_base_url(cls):
         return '{site}/sections'.format(site=settings.SITE_PREFIX)
 
+    def is_master(self):
+        return self.section_id == MASTER_SECTION_ID
+
     def get_manage_section_quests_url(self):
         return '{site}/content/quests/section/{pk}'\
             .format(site=settings.SITE_PREFIX, pk=self.pk)
@@ -248,4 +252,26 @@ class AbstractLimitedVisibilityObject(models.Model):
             return cls.objects.all()
 
     def is_visible_to_students(self):
+        return self.is_open()
+
+    def is_open(self):
         return self.visibility == 'open'
+
+    def is_closed(self):
+        return self.visibility == 'closed'
+
+    def is_draft(self):
+        return self.visibility == 'draft'
+
+    def open(self):
+        self.visibility = "open"
+        self.save()
+
+    def closed(self):
+        self.visibility = "closed"
+        self.save()
+
+    def draft(self):
+        self.visibility = "draft"
+        self.save()
+

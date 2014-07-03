@@ -4,11 +4,11 @@
 
     <i class="glyphicon glyphicon-edit"></i>
     {% if problem.visibility == "open" %}
-        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-open"></button>
+        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-open" title="Visibility {{problem.visibility}}"></button>
     {% else %}
-        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-close"></button>
+        <button class="btn btn-object-visibility visibility-{{problem.visibility}} btn-xs glyphicon glyphicon-eye-close" title="Visibility {{problem.visibility}}"></button>
     {% endif %}
-    <b>{{ problem }}</b>
+    <b class="searchable_content">{{ problem }}</b>
     {% with object=problem %}
         {% include "pcrs/tags.html" %}
     {% endwith %}

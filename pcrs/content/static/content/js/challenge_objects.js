@@ -15,6 +15,8 @@ $(document).ready(function () {
     $(document).on('click', '#save_top', savePages);
     $(document).on('click', '#save_bot', savePages);
 
+    $('.btn-object-visibility').on('click', change_problem_visibility);
+
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
@@ -45,7 +47,6 @@ $(document).ready(function () {
             }
         });
 
-    $('#searcher').keyup(find_problems);
     resize_problems();
 });
 
@@ -180,32 +181,32 @@ function savePages() {
     });
 }
 
-function find_problems(){
-
-    var searching_for = $('#searcher').val().toLowerCase()
-    var problem_list = $('.tab-pane.active').children().first().children();
-    for (var index = 0; index < problem_list.length; index ++){
-        if (searching_for == ""){
-            $(problem_list[index]).show();
-        }
-        else if ($(problem_list[index]).find('b').text().toLowerCase().indexOf(searching_for) != -1){
-            $(problem_list[index]).show();
-        }
-        else{
-            $(problem_list[index]).hide();
-        }
-        var current_tags = $(problem_list[index]).find('.badge.tag');
-        if (searching_for != ""){
-            for (var tag_index = 0; tag_index < current_tags.length; tag_index++){
-                if ($(current_tags[tag_index]).text().toLowerCase().indexOf(searching_for) != -1){
-                    $(problem_list[index]).show();
+function change_problem_visibility(){
+    var parent_id = $(this).parent('div').attr('id');
+    var current_problem_type = parent_id.split("-")[0];
+    var current_problem_pk = parent_id.split("-")[1];
+    var this_button = this;
+    var send_data = {problem_type:current_problem_type,
+                     problem_pk:current_problem_pk,
+                     csrftoken: csrftoken};
+    $.post(document.URL + '/change_status', send_data)
+        .success(function (data) {
+            var new_visibility = data['new_visibility'];
+            var old_visibility = data['old_visibility'];
+            if (old_visibility == 'open'){
+                $(this_button).removeClass('visibility-open glyphicon-eye-open');
+                $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
+            }
+            else{
+                $(this_button).removeClass('visibility-'+old_visibility+' glyphicon-eye-close');
+                if (new_visibility == "open"){
+                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-open');
+                }
+                else{
+                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
                 }
             }
-        }
 
-    }
-}
-
-function change_problem_visibility(problem_pk){
-
+            $(this_button).prop('title', "Visibility "+new_visibility);
+        });
 }
