@@ -519,6 +519,14 @@ function create_output(input){
     else if(input[0] == "string"){
         return "'"+input[2]+"'";
     }
+    else if(input[0] == "float"){
+        if (String(input[2]).indexOf(".")>-1){
+            return input[2]
+        }
+        else{
+            return input[2]+".0"
+        }
+    }
     else{
         return input[2]
     }
