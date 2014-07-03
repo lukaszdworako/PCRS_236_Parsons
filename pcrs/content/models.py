@@ -1,3 +1,4 @@
+from collections import defaultdict
 import datetime
 
 from django.contrib.contenttypes import generic
@@ -11,6 +12,7 @@ from content.tags import AbstractTaggedObject
 
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence)
+# import problems.models
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
 
@@ -28,6 +30,12 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     class Meta:
         ordering = ['name']
 
+    def get_number_watched(self, section=None):
+        watched = WatchedVideo(video=self)
+        if section:
+            watched = watched.filter(user__section=section)
+        return watched.count()
+
 
 class WatchedVideo(models.Model):
     """
@@ -35,6 +43,9 @@ class WatchedVideo(models.Model):
     """
     video = models.ForeignKey(Video)
     user = models.ForeignKey(PCRSUser, to_field='username')
+
+    class Meta:
+        unique_together = ['video', 'user']
 
     @classmethod
     def get_watched_pk_list(cls, user):
@@ -137,6 +148,9 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
             return page.get_absolute_url()
         except ContentPage.DoesNotExist:
             return None
+
+    def get_stats_page_url(self):
+        return '{}/stats'.format(self.get_absolute_url())
 
     def get_prerequisite_pks_set(self):
         return set(c.pk for c in self.prerequisites.all())

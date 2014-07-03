@@ -1,3 +1,5 @@
+import json
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, TemplateView
 from django.utils.timezone import localtime, now
@@ -6,7 +8,8 @@ from content.forms import ChallengeForm
 from content.models import *
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
-from problems.models import get_submission_content_types
+from problems.models import get_submission_content_types, \
+    get_problem_content_types
 from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
@@ -165,3 +168,43 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
 
 class IncompletePrerequisitesView(ProtectedViewMixin, TemplateView):
     template_name = 'content/missing_prerequisited.html'
+
+
+class ChallengeStatsView(CourseStaffViewMixin, DetailView):
+    model = Challenge
+    template_name = 'content/challenge_stats.html'
+
+
+class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
+    model = Challenge
+
+    def get_attempt_stats(self, challenge, section):
+        results, max_scores = defaultdict(dict), defaultdict(dict)
+        completed = 0
+        for ctype in get_problem_content_types():
+            for problem in ctype.model_class().objects.filter(challenge=challenge).order_by('id'):
+                max_scores[(ctype.app_label, problem.pk)] = problem.max_score
+
+        for ctype in get_submission_content_types():
+            grades = ctype.model_class().get_scores_for_challenge(
+                challenge=challenge, section=section)
+            for record in grades:
+                problem = (ctype.app_label,
+                           record['problem'])
+                results[record['user']][problem] = record['best']
+
+        for student_id, score_dict in results.items():
+            if score_dict == max_scores:
+                completed += 1
+
+        attempted = len(results) - completed
+        did_not_attempt = PCRSUser.objects.get_students()\
+                              .filter(section=section).count() - attempted
+
+        return did_not_attempt, attempted, completed
+
+    def get(self, request, *args, **kwargs):
+        results = self.get_attempt_stats(
+            challenge=self.get_object(), section=self.get_section())
+        return HttpResponse(json.dumps({'status': 'ok', 'results': results}),
+                                mimetype='application/json')

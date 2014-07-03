@@ -275,6 +275,14 @@ class AbstractSubmission(AbstractSelfAwareModel):
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
 
+    @classmethod
+    def get_scores_for_challenge(cls, challenge, section):
+        return cls.objects\
+            .filter(problem__challenge=challenge, user__section=section,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
+
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """
