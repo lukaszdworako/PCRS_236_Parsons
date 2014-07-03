@@ -249,8 +249,8 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
                                         'sub_pk': self.object.pk,
                                         'best': self.object.has_best_score,
                                         'past_dead_line': False,
-            'max_score': self.object.problem.max_score}),
-                            mimetype='application/json')
+             'max_score': self.object.problem.max_score}),
+                             mimetype='application/json')
 
 
 class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,
@@ -300,7 +300,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
 
         data = self.model.objects\
             .prefetch_related('testrun_set', 'testrun_set__testcase')\
-            .filter(user=self.request.user, problem=problem)\
+            .filter(user=self.request.user, problem=problem)
 
         returnable = []
         for sub in data:

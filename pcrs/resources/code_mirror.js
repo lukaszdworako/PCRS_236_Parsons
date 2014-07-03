@@ -7,11 +7,20 @@ function create_history_code_mirror (language, version, location){
 
 function history_code_mirror (language, version, location, value, lock){
 
+    if (language == 'python'){
+        var mode = {name: language,
+                   version: version,
+                   singleLineStringErrors: false}
+    }
+    else if (language == 'sql'){
+        var mode = 'text/x-plsql';
+    }
+    else if (language == 'ra'){
+        var mode = 'text/ra';
+    }
     historyCodeMirror = CodeMirror(function(elt) {
         $(location).replaceWith(elt);
-        }, {mode: {name: language,
-                   version: version,
-                   singleLineStringErrors: false},
+        }, {mode: mode,
           //themes can be found in codemirror4.1/theme; must be loaded in submission.html
             theme: "monokai",
             value: value,

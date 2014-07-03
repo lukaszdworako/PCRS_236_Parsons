@@ -1,0 +1,20 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_title %}
+   {{ problem.name }}
+{% endblock %}
+
+{% block problem_header %}
+    {{ block.super }}
+    {% if problem.schema.representation %}
+        <div id="schema" class="well">
+            {% autoescape off %}
+                {{ problem.schema.representation }}
+            {% endautoescape %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block problem_specific %}
+    {% include "problems_rdb/grade_table.html" %}
+{% endblock %}

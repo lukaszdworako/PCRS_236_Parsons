@@ -72,6 +72,7 @@ CodeMirror.modeInfo = [
   {name: 'Puppet', mime: 'text/x-puppet', mode: 'puppet'},
   {name: 'Cython', mime: 'text/x-cython', mode: 'python'},
   {name: 'R', mime: 'text/x-rsrc', mode: 'r'},
+  {name: 'ra', mime: 'text/ra', mode: 'text/ra'},
   {name: 'reStructuredText', mime: 'text/x-rst', mode: 'rst'},
   {name: 'Ruby', mime: 'text/x-ruby', mode: 'ruby'},
   {name: 'Rust', mime: 'text/x-rustsrc', mode: 'rust'},

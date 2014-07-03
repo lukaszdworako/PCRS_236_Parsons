@@ -45,7 +45,7 @@ function prepareVisualizer(option, data, buttonId) {
 
 function getVisualizerComponents(newCode) {
 
-    var postParams = { language : 'python', user_script : newCode};
+    var postParams = { language : language, user_script : newCode};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
 
     $.post(root + '/problems/code/visualizer-details',
@@ -59,7 +59,18 @@ function getVisualizerComponents(newCode) {
 
 function getHistory(div_id){
     var postParams = { csrftoken: csrftoken };
-    $.post(root+'/problems/code/'+div_id.split("-")[1]+'/history',
+    var problem_path = "";
+    check_language(div_id);
+    if (language == 'python'){
+        problem_path = root+'/problems/code/'+div_id.split("-")[1]+'/history';
+    }
+    else if (language == 'sql'){
+        problem_path = root+'/problems/sql/'+div_id.split("-")[1]+'/history';
+    }
+    else if (language == 'ra'){
+        problem_path = root+'/problems/ra/'+div_id.split("-")[1]+'/history';
+    }
+    $.post(problem_path,
         postParams,
         function(data){
             show_history(data, div_id);
@@ -121,6 +132,7 @@ function add_history_entry(data, div_id, flag){
 
     var cont3 = $('<ul/>', {class:"list-group"});
 
+
     for (var num = 0; num < data['tests'].length; num++){
 
         var lc = "";
@@ -152,6 +164,7 @@ function add_history_entry(data, div_id, flag){
         cont3.append(cont4);
     }
 
+
     header2.append(header3);
     header1.append(header2);
 
@@ -166,10 +179,19 @@ function add_history_entry(data, div_id, flag){
     else{
         $('#'+div_id).find('#history_accordion').prepend(entry);
     }
-    create_history_code_mirror("python", 3, "history_mirror_"
+    check_language(div_id);
+    if (language == "python"){
+        create_history_code_mirror("python", 3, "history_mirror_"
                                                 + data['problem_pk']
                                                 + "_"
                                                 + data['sub_pk']);
+    }
+    else{
+        create_history_code_mirror(language, false, "history_mirror_"
+                                                + data['problem_pk']
+                                                + "_"
+                                                + data['sub_pk']);
+    }
 }
 
 function show_history(data, div_id){
@@ -181,8 +203,18 @@ function show_history(data, div_id){
 
 function getTestcases(div_id) {
     var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
-
-    $.post(root + '/problems/code/'+div_id.split("-")[1]+'/run',
+    var call_path = "";
+    check_language(div_id);
+    if (language == 'python'){
+        call_path = root + '/problems/code/'+div_id.split("-")[1]+'/run'
+    }
+    else if (language == 'sql'){
+        call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
+    }
+    else if (language == 'ra'){
+        call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
+    }
+    $.post(call_path,
             postParams,
             function(data) {
                 testcases = data['results'][0];
@@ -212,12 +244,139 @@ function getTestcases(div_id) {
                         .children('span')
                         .text("Your solution passed " + score + " out of " + max_score + " cases!");
                 }
-
-                prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                if (language == 'python'){
+                    prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                }
+                else if (language=='sql'){
+                    prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                }
+                else if (language=='ra'){
+                    prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                }
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
+
+function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
+
+    var score = 0;
+    var tests = [];
+    var table_location = $('#'+div_id).find('#table_location');
+    table_location.empty();
+
+    for (var i = 0; i < testcases.length; i++) {
+        var current_testcase = testcases[i];
+        var main_table = $('<table/>', {id:"gradeMatrix"+current_testcase['testcase'],
+                                        class:"table span12"});
+
+        var expected_td = $('<td/>', {class:"gradeMatrixRow table-left"}).append("Expected");
+        var actual_td = $('<td/>', {class:"gradeMatrixRow table-right "}).append("Actual");
+
+        var expected_table = $('<table/>', {class:"table span6"});
+        var actual_table = $('<table/>', {class:"table span6"});
+
+        var expected_entry = $('<tr/>', {class:"gradeMatrixRow"});
+        var actual_entry = $('<tr/>', {class:"gradeMatrixRow"});
+
+        if (current_testcase['passed']){
+            table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'></icon><span> Test Case Passed</span></div>");
+            score++;
+        }
+        else{
+            table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'></icon><span> Test Case Failed</span></div>");
+        }
+
+        for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+            expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +"'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+        }
+
+        for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+            actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +"'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
+        }
+
+        expected_table.append(expected_entry);
+        actual_table.append(actual_entry);
+
+        for (var entry = 0; entry < current_testcase['expected'].length; entry++){
+            var entry_class = 'gradeMatrixRow';
+            var test_entry = current_testcase['expected'][entry];
+            if (test_entry['missing']){
+                entry_class = "gradeMatrixRow sql-missing";
+            }
+            var expected_entry = $('<tr/>', {class:entry_class});
+            for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                expected_entry.append("<td colspan='" +
+                                     6/current_testcase['expected_attrs'].length +
+                                     "'>" +
+                                     test_entry[current_testcase['expected_attrs'][header]] +
+                                     "</td>");
+            }
+            expected_table.append(expected_entry);
+        }
+
+        for (var entry = 0; entry < current_testcase['actual'].length; entry++){
+            var entry_class = 'gradeMatrixRow';
+            var test_entry = current_testcase['actual'][entry];
+            if (test_entry['extra']){
+                entry_class = 'gradeMatrixRow sql-extra';
+            }
+            else if (test_entry['out_of_order']){
+                entry_class = 'gradeMatrixRow sql-order';
+            }
+            var actual_entry = $('<tr/>', {class:entry_class});
+            for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+
+               actual_entry.append("<td colspan='" +
+                                   6/current_testcase['actual_attrs'].length +
+                                   "'>" +
+                                   test_entry[current_testcase['actual_attrs'][header]] +
+                                   "</td>");
+            }
+            actual_table.append(actual_entry);
+        }
+
+        expected_td.append(expected_table);
+        actual_td.append(actual_table);
+
+        main_table.append(expected_td);
+        main_table.append(actual_td);
+        table_location.append(main_table);
+    }
+    console.log(table_location);
+    var data = {'sub_time':new Date(),
+            'submission':myCodeMirrors[div_id].getValue(),
+            'score':score,
+            'best':best,
+            'past_dead_line':past_dead_line,
+            'problem_pk':div_id.split("-")[1],
+            'sub_pk':sub_pk,
+            'out_of':max_score,
+            'tests': table_location};
+    if (best){
+        var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
+        var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
+        if (score == max_score){
+            $('#'+div_id).find(".widget_title").find('span').empty();
+            $('#'+div_id).find(".widget_title").find('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+            new_title += " : Complete"
+            side_bar.css("color","green");
+            side_bar.removeClass();
+            side_bar.addClass("glyphicon glyphicon-check");
+        }
+        else{
+            $('#'+div_id).find(".widget_title").find('sup').text(score);
+            $('#'+div_id).find(".widget_title").find('sub').text(max_score);
+            new_title += " : " + score + " / " + max_score;
+            side_bar.css("color","DarkOrange");
+        }
+        side_bar.prop('title', new_title);
+    }
+    if ($('#'+div_id).find('#history_accordion').children().length != 0){
+        add_history_entry(data, div_id, 1);
+    }
+}
+
 
 function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 
@@ -233,10 +392,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         }
         var passed = current_testcase.passed_test;
         var testcaseInput = current_testcase.test_input;
-        console.log(current_testcase);
         var testcaseOutput = current_testcase.expected_output;
-
-        console.log(current_testcase.test_val);
 
         var result = create_output(current_testcase.test_val);
 
@@ -297,7 +453,6 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'sub_pk':sub_pk,
             'out_of':max_score,
             'tests': tests};
-    console.log(data);
     if (best){
         var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
         var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
@@ -364,8 +519,31 @@ function create_output(input){
     else if(input[0] == "string"){
         return "'"+input[2]+"'";
     }
+    else if(input[0] == "float"){
+        if (String(input[2]).indexOf(".")>-1){
+            return input[2]
+        }
+        else{
+            return input[2]+".0"
+        }
+    }
     else{
         return input[2]
+    }
+}
+
+function check_language(container){
+    if (container.indexOf("code") > -1){
+        language = 'python';
+    }
+    else if (container.indexOf("sql") > -1){
+        language = 'sql';
+    }
+    else if (container.indexOf("ra") > -1){
+        language = 'ra';
+    }
+    else{
+        language = '';
     }
 }
 
@@ -379,11 +557,22 @@ $( document).ready(function() {
 
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
-
-//      SASHA! only for python; variable language is gone
-        myCodeMirrors[all_wrappers[x].id] =
-                history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
-                        $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        check_language(all_wrappers[x].id);
+        if (language == "python"){
+            myCodeMirrors[all_wrappers[x].id] =
+                    history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
+                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        }
+        else if (language == "sql"){
+            myCodeMirrors[all_wrappers[x].id] =
+                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        }
+        else if (language == "ra"){
+            myCodeMirrors[all_wrappers[x].id] =
+                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        }
 
         $(all_wrappers[x]).find('#submit-id-submit').click(function(event){
             event.preventDefault();

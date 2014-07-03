@@ -45,7 +45,7 @@ class Submission(AbstractSubmission):
                                          self.problem.order_matters)
                 TestRun(submission=self, testcase=testcase,
                         test_passed=result['passed']).save()
-                result['testcase'] = testcase
+                result['testcase'] = testcase.id
                 results.append(result)
         return results, None
 
@@ -65,6 +65,14 @@ class TestRun(AbstractTestRun):
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
 
+    def get_history(self):
+        return {
+            'visible': False,
+            'input': '',
+            'output': '',
+            'passed': self.test_passed,
+            'description': str(self.testcase)
+        }
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)

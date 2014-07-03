@@ -47,6 +47,12 @@ urlpatterns = patterns('',
         SubmissionView.as_view(model=Submission,
                                template_name='problems_ra/submission.html'),
         name='ra_problem_submit'),
+    url(r'^(?P<problem>[0-9]+)/history$',
+        SubmissionHistoryAsyncView.as_view(model=Submission),
+        name='ra_problem_async_history'),
+    url(r'^(?P<problem>[0-9]+)/run$',
+        SubmissionAsyncView.as_view(model=Submission),
+        name='ra_problem_async_submit'),
 
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',

@@ -48,7 +48,7 @@ class Schema(AbstractSelfAwareModel):
         return self.name
 
     def get_absolute_url(self):
-        return '{base}/schema/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+        return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
 
     def clean_fields(self, exclude=None):
         """
