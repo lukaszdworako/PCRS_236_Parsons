@@ -151,3 +151,23 @@ a:not(.collapsed) > .quest-icon{
     white-space: pre-wrap;
     background:none !important;
 }
+
+.table-left{
+    padding-right:2% !important;
+}
+
+.table-right{
+    padding-left:2% !important;
+}
+
+.sql-extra{
+    background-color:#FFE6E6 !important;
+}
+
+.sql-order{
+    background-color:#E6ECFF !important;
+}
+
+.sql-missing{
+    background-color:#FFE6E6 !important;
+}
