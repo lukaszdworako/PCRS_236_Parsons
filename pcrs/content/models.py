@@ -138,6 +138,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     is_graded = models.BooleanField(default=False, blank=True)
     prerequisites = models.ManyToManyField('self', symmetrical=False,
                                            blank=True, null=True)
+    enforce_prerequisites = models.BooleanField(default=False, blank=True)
 
     class Meta:
         ordering = ['quest', 'order']
