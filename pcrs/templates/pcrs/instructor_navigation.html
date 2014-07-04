@@ -51,6 +51,12 @@
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{{ site_prefix }}/settings"
+                       title="settings">
+                        Settings <span class="glyphicon glyphicon-wrench"></span>
+                    </a>
+                </li>
                 <li><p class="navbar-text navbar-right">
                     section: {{ request.session.section|default:None }}
                     <a href="{{ site_prefix }}/sections/change" class="navbar-link">(change)</a>
