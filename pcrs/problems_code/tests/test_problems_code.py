@@ -851,7 +851,8 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
         One student solved it, and the other did not.
         """
         p1 = self.problem_class.objects.create(name='p1', description='p1',
-                                               challenge=self.challenge)
+                                               challenge=self.challenge,
+                                               visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -875,9 +876,12 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
         including submissions to a problem not in Challenge.
         """
         p1 = self.problem_class.objects.create(name='p1', description='p1',
-                                               challenge=self.challenge)
-        p2 = self.problem_class.objects.create(name='p2', description='p2')
-        p3 = self.problem_class.objects.create(name='p3', description='p3')
+                                               challenge=self.challenge,
+                                               visibility='open')
+        p2 = self.problem_class.objects.create(name='p2', description='p2',
+                                               visibility='open')
+        p3 = self.problem_class.objects.create(name='p3', description='p3',
+                                               visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -897,10 +901,13 @@ class TestSolvedBeforeDeadline(TestSingleChallengeQuest, test.TestCase):
 
     def test_two_problem_in_challenge_solved(self):
         p1 = self.problem_class.objects.create(name='p1', description='p1',
-                                               challenge=self.challenge)
+                                               challenge=self.challenge,
+                                               visibility='open')
         p2 = self.problem_class.objects.create(name='p2', description='p2',
-                                               challenge=self.challenge)
-        p3 = self.problem_class.objects.create(name='p3', description='p3')
+                                               challenge=self.challenge,
+                                               visibility='open')
+        p3 = self.problem_class.objects.create(name='p3', description='p3',
+                                               visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -929,9 +936,12 @@ class TestSolvedBeforeDeadlineChallenges(
         """
         Test one problem solved in one Challenge and 0 in another.
         """
-        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
-        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
-        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        p1 = Problem.objects.create(name='p1', description='p1',
+            challenge=self.challenge, visibility='open')
+        p2 = Problem.objects.create(name='p2', description='p2',
+            challenge=self.challenge2, visibility='open')
+        p3 = Problem.objects.create(name='p3', description='p3',
+            challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -955,9 +965,12 @@ class TestSolvedBeforeDeadlineChallenges(
         """
         Test both problems solved in one Challenge and 0 in another.
         """
-        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
-        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
-        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        p1 = Problem.objects.create(name='p1', description='p1',
+            challenge=self.challenge, visibility='open')
+        p2 = Problem.objects.create(name='p2', description='p2',
+            challenge=self.challenge2, visibility='open')
+        p3 = Problem.objects.create(name='p3', description='p3',
+            challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -981,9 +994,12 @@ class TestSolvedBeforeDeadlineChallenges(
         """
         Test one problem solved in each Challenge.
         """
-        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
-        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
-        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        p1 = Problem.objects.create(name='p1', description='p1',
+            challenge=self.challenge, visibility='open')
+        p2 = Problem.objects.create(name='p2', description='p2',
+            challenge=self.challenge2, visibility='open')
+        p3 = Problem.objects.create(name='p3', description='p3',
+            challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1011,9 +1027,12 @@ class TestSolvedBeforeDeadlineChallenges(
         """
         Test all problems solved in all Challenges.
         """
-        p1 = Problem.objects.create(name='p1', description='p1', challenge=self.challenge)
-        p2 = Problem.objects.create(name='p2', description='p2', challenge=self.challenge2)
-        p3 = Problem.objects.create(name='p3', description='p3', challenge=self.challenge2)
+        p1 = Problem.objects.create(name='p1', description='p1',
+            challenge=self.challenge, visibility='open')
+        p2 = Problem.objects.create(name='p2', description='p2',
+            challenge=self.challenge2, visibility='open')
+        p3 = Problem.objects.create(name='p3', description='p3',
+            challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1045,11 +1064,11 @@ class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
         but the deadline for some students has passed
         """
         p1 = Problem.objects.create(name='p1', description='p1',
-                                    challenge=self.challenge)
+                                    challenge=self.challenge, visibility='open')
         p2 = Problem.objects.create(name='p2', description='p2',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         p3 = Problem.objects.create(name='p3', description='p3',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1078,11 +1097,11 @@ class TestSolvedBeforeDeadlines(TestNumberSolvedBeforeDeadlines, test.TestCase):
         Some submissions were made after the deadline for the students section.
         """
         p1 = Problem.objects.create(name='p1', description='p1',
-                                    challenge=self.challenge)
+                                    challenge=self.challenge, visibility='open')
         p2 = Problem.objects.create(name='p2', description='p2',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         p3 = Problem.objects.create(name='p3', description='p3',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1123,13 +1142,13 @@ class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
         but the deadline for some students has passed
         """
         p1 = Problem.objects.create(name='p1', description='p1',
-                                    challenge=self.challenge)
+                                    challenge=self.challenge, visibility='open')
         p2 = Problem.objects.create(name='p2', description='p2',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         p3 = Problem.objects.create(name='p3', description='p3',
-                                    challenge=self.challenge3)
+                                    challenge=self.challenge3, visibility='open')
         p4 = Problem.objects.create(name='p4', description='p4',
-                                    challenge=self.challenge4)
+                                    challenge=self.challenge4, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1160,13 +1179,13 @@ class TestNumberSolvedQuestsCode(TestManyQuestsDeadlines, test.TestCase):
         Some submissions were made after the deadline for the students section.
         """
         p1 = Problem.objects.create(name='p1', description='p1',
-                                    challenge=self.challenge)
+                                    challenge=self.challenge, visibility='open')
         p2 = Problem.objects.create(name='p2', description='p2',
-                                    challenge=self.challenge2)
+                                    challenge=self.challenge2, visibility='open')
         p3 = Problem.objects.create(name='p3', description='p3',
-                                    challenge=self.challenge3)
+                                    challenge=self.challenge3, visibility='open')
         p4 = Problem.objects.create(name='p4', description='p4',
-                                    challenge=self.challenge4)
+                                    challenge=self.challenge4, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=p1, test_input='1',
                                     expected_output='2')
@@ -1209,7 +1228,7 @@ class TestBestCodeAttemptSingleProblem(TestSingleChallengeQuest, test.TestCase):
     def setUp(self):
         TestSingleChallengeQuest.setUp(self)
         self.problem = Problem.objects.create(pk=1, name='p1', description='p1',
-                                              challenge=self.challenge)
+                                              challenge=self.challenge, visibility='open')
         for i in range(4):
             TestCase.objects.create(problem=self.problem, test_input='1',
                                     expected_output='2')
