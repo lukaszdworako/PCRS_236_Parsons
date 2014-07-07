@@ -151,7 +151,7 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView):
         context['best'], type_to_completed_status = {}, {}
         for content_type in get_submission_content_types():
             best, completed = content_type.model_class()\
-                .get_best_attempts_before_deadlines(self.request.user)
+                .get_best_attempts_before_deadlines(self.request.user, self.get_section())
             context['best'][content_type.app_label] = best
             type_to_completed_status[content_type.app_label] = completed
 

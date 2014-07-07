@@ -139,15 +139,17 @@ class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
         challenge_to_total, challenge_to_completed = [], []
         best = {}
 
+        section = self.get_section()
+
         for content_type in get_problem_content_types():  # 1 query
             problem_class = content_type.model_class()
             submission_class = problem_class.get_submission_class()
             challenge_to_total.append(problem_class.get_challenge_to_problem_number())
             challenge_to_completed.append(
-                submission_class.get_completed_for_challenge_before_deadline(self.request.user))
+                submission_class.get_completed_for_challenge_before_deadline(self.request.user, section))
 
             best[content_type.app_label], _ = submission_class\
-                .get_best_attempts_before_deadlines(self.request.user)
+                .get_best_attempts_before_deadlines(self.request.user, section)
         context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
         context['best'] = best
         context['challenge_to_completed'] = self.sum_dict_values(*challenge_to_completed)

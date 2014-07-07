@@ -152,7 +152,7 @@ class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
-            print(connection.queries)
+            # print(connection.queries)
 
 
 class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
