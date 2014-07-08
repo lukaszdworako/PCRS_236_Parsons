@@ -1,8 +1,11 @@
 {% extends "pcrs/item_list.html" %}
 
 {% block item_title %}
+    <a href="{{ object.get_stats_page_url }}">
+        <i class="glyphicon glyphicon-stats"></i>
+    </a>
     {% if object.get_first_page_url %}
-        {% if object.pk in visible_challenges%}
+        {% if object.pk in visible_challenges %}
             <a href="{{ object.get_first_page_url }}">
                 {{ object.name }} | {{ object.quest }}
             </a>

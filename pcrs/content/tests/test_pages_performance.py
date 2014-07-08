@@ -152,7 +152,7 @@ class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get('/content/quests')
-            print(connection.queries)
+            # print(connection.queries)
 
 
 class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
@@ -161,7 +161,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
 
     Should be kept constant.
     """
-    db_hits = 18
+    db_hits = 17
     template = 'content/content_page.html'
 
     def test_quests_challenges_objects(self):
@@ -170,7 +170,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
         num_pages = 5
         num_objects = 10
         for i in range(num_quests):
-            q = Quest.objects.create(name=str(i), description='c')
+            q = Quest.objects.create(name=str(i), description='c', mode='live')
             for j in range(num_c):
                 c = Challenge.objects.create(name=str(i)+'_'+str(j),
                                              visibility='open', quest=q)
@@ -207,7 +207,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
                          ContentSequenceItem.objects.count())
 
         c = Challenge.objects.all()[0]
-        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 0})
+        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 1})
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(url)
@@ -220,7 +220,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
         num_sub = 5
 
         for i in range(num_quests):
-            q = Quest.objects.create(name=str(i), description='c')
+            q = Quest.objects.create(name=str(i), description='c', mode='live')
 
             for j in range(num_c):
                 c = Challenge.objects.create(name=str(i)+'_'+str(j),
@@ -252,7 +252,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
                          ContentSequenceItem.objects.count())
 
         c = Challenge.objects.all()[0]
-        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 0})
+        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 1})
         self.client.login(username=self.student.username)
         with self.assertNumQueries(self.db_hits):
             response = self.client.get(url)
@@ -265,7 +265,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
         num_sub = 5
 
         for i in range(num_quests):
-            q = Quest.objects.create(name=str(i), description='c')
+            q = Quest.objects.create(name=str(i), description='c', mode='live')
 
             for j in range(num_c):
                 c = Challenge.objects.create(name=str(i)+'_'+str(j),
@@ -297,9 +297,10 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
                          ContentSequenceItem.objects.count())
 
         c = Challenge.objects.all()[0]
-        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 0})
+        url = reverse('challenge_page', kwargs={'challenge': c.pk, 'page': 1})
         c.prerequisites.add(*Challenge.objects.exclude(pk=1)
             .values_list('id', flat=True))
+        c.enforce_prerequisites = True
         c.save()
 
         self.client.login(username=self.student.username)

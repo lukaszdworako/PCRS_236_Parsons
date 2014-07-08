@@ -236,15 +236,16 @@ class AbstractSubmission(AbstractSelfAwareModel):
         self.set_best_submission()
 
     @classmethod
-    def get_completed_for_challenge_before_deadline(cls, user):
+    def get_completed_for_challenge_before_deadline(cls, user, section=None):
         """
         Return a dictionary mapping challenge_pk to the number of open problems
         the user has completed in each Challenge.
         """
+        section = section or user.section
         subs = cls.objects\
             .filter(problem__visibility='open',
                     user=user, score=F('problem__max_score'),
-                    problem__challenge__quest__sectionquest__section=user.section,
+                    problem__challenge__quest__sectionquest__section=section,
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
             .values('problem__challenge')\
             .annotate(solved=Count('problem', distinct=True))\
@@ -252,14 +253,15 @@ class AbstractSubmission(AbstractSelfAwareModel):
         return {d['problem__challenge']: d['solved']for d in subs}
 
     @classmethod
-    def get_best_attempts_before_deadlines(cls, user):
+    def get_best_attempts_before_deadlines(cls, user, section=None):
         """
         Return a dictionary mapping problem pk to the user's best score on the
         problem with that pk, before the challenge deadline.
         """
+        section = section or user.section
         subs = cls.objects\
             .filter(user=user,
-                    problem__challenge__quest__sectionquest__section=user.section,
+                    problem__challenge__quest__sectionquest__section=section,
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
             .values('problem_id')\
             .annotate(best=Max('score'), max_score=Max('problem__max_score'))\
@@ -271,6 +273,14 @@ class AbstractSubmission(AbstractSelfAwareModel):
     def grade(cls, quest, section):
         return cls.objects\
             .filter(problem__challenge__quest=quest, user__section=section,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
+
+    @classmethod
+    def get_scores_for_challenge(cls, challenge, section):
+        return cls.objects\
+            .filter(problem__challenge=challenge, user__section=section,
                     problem__challenge__quest__sectionquest__section=section,
                     timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
             .values('user', 'problem').annotate(best=Max('score')).order_by()

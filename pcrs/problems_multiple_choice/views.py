@@ -156,8 +156,12 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin, View
         problem = self.get_problem()
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section_id=self.request.user.section_id).due_on
-        best_score = self.model.objects\
-            .get(user=self.request.user, problem=problem, has_best_score=True).score
+        try:
+            best_score = self.model.objects\
+                .get(user=self.request.user, problem=problem, has_best_score=True).score
+        except self.model.DoesNotExist:
+            best_score = -1
+
         data = self.model.get_submission_class().objects\
             .filter(user=self.request.user, problem=problem)\
             .prefetch_related('optionselection_set__option')

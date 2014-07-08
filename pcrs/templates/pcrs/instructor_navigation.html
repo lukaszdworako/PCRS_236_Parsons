@@ -51,13 +51,12 @@
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
+            {% include "pcrs/shared_navigation.html" %}
                 <li><p class="navbar-text navbar-right">
                     section: {{ request.session.section|default:None }}
                     <a href="{{ site_prefix }}/sections/change" class="navbar-link">(change)</a>
                 </p>
                 </li>
-                <li><a href="{{ site_prefix }}/logout">(log out)</a></li>
-
             </ul>
         </div>
     </div>

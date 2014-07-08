@@ -22,7 +22,7 @@ function history_code_mirror (language, version, location, value, lock){
         $(location).replaceWith(elt);
         }, {mode: mode,
           //themes can be found in codemirror4.1/theme; must be loaded in submission.html
-            theme: "monokai",
+            theme: user_theme,
             value: value,
             lineNumbers: 'True',
             readOnly: lock,

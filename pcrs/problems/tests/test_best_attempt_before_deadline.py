@@ -12,9 +12,10 @@ class TestProblemSubmissionGradesBeforeDeadline:
     submission_class = None
 
     def setUp(self):
-        self.student1 = PCRSUser.objects.create(username='student1')
-        self.student2 = PCRSUser.objects.create(username='student2')
-        self.student3 = PCRSUser.objects.create(username='student3')
+        section = Section(location='here', lecture_time='now', section_id='this')
+        self.student1 = PCRSUser.objects.create(username='student1', section=section)
+        self.student2 = PCRSUser.objects.create(username='student2', section=section)
+        self.student3 = PCRSUser.objects.create(username='student3', section=section)
 
         # these are used to force update a submission with a time,
         # since we cannot pass in a value to field that has auto_now True

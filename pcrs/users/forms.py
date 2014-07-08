@@ -5,7 +5,7 @@ from django.conf import settings
 
 from content.models import Quest
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
-from users.models import Section
+from users.models import Section, PCRSUser
 
 
 class SectionSelectionForm(CrispyFormMixin, forms.Form):
@@ -57,3 +57,12 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
             Fieldset('Get grade report for this section', 'quest', 'section'),
             ButtonHolder(self.save_button)
         )
+
+
+class SettingsForm(CrispyFormMixin, forms.Form):
+    colour_scheme = forms.ChoiceField(choices=PCRSUser.code_style_choices)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.layout = Layout(
+            Fieldset('', 'colour_scheme'), self.save_button)

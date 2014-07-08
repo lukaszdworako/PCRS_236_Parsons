@@ -131,6 +131,16 @@ class PCRSUserManager(BaseUserManager):
 class PCRSUser(CustomAbstractBaseUser):
     username = models.CharField('username', max_length=30, unique=True, db_index=True)
     section = models.ForeignKey("Section")
+
+    code_style_choices = (
+        ('monokai', 'Dark Background'),
+        ('eclipse', 'Light Background'),
+        ('shaped', 'Black and White')
+    )
+    code_style = models.CharField(max_length=7,
+                                  choices=code_style_choices,
+                                  default='monokai')
+
     is_student = models.BooleanField(default=False)
     is_ta = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)

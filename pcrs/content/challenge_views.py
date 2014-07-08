@@ -1,3 +1,5 @@
+import json
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, TemplateView
 from django.utils.timezone import localtime, now
@@ -6,7 +8,8 @@ from content.forms import ChallengeForm
 from content.models import *
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
-from problems.models import get_submission_content_types
+from problems.models import get_submission_content_types, \
+    get_problem_content_types
 from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
@@ -15,26 +18,6 @@ from problems_multiple_choice.forms import SubmissionForm
 
 class IncompletePrerequisites(Exception):
     pass
-
-
-class PrerequisitesRequiredViewMixin:
-    def check_prerequisites(self, challenge, problem_to_completed):
-        if self.get_section().is_master:
-            return
-        required = {
-            (p.content_type.app_label, p.object_id)
-            for p in ContentSequenceItem.objects
-            .filter(content_type__name='problem',
-            content_page__challenge__in=challenge.prerequisites.all())
-            .select_related('content_type')
-        }
-        actual = {
-            (p_type, pk)
-            for p_type, problems in problem_to_completed.items()
-            for pk, user_completed in problems.items() if user_completed
-        }
-        if not required.issubset(actual):
-            raise IncompletePrerequisites()
 
 
 class ChallengeView():
@@ -48,6 +31,9 @@ class ChallengeView():
 
 class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
                         GenericItemListView):
+    """
+    List all Challenges.
+    """
     model = Challenge
     template_name = 'content/challenge_list.html'
 
@@ -83,8 +69,10 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
     """
 
 
-class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
-                      PrerequisitesRequiredViewMixin):
+class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView):
+    """
+    View a ContentPage.
+    """
     template_name = "content/content_page.html"
     model = ContentSequenceItem
     page = None
@@ -134,6 +122,27 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
                     forms[module][problem.pk] = f
         return forms
 
+    def _check_prerequisites(self, challenge, problem_to_completed):
+        """
+        Check that every problem in challenge has been completed.
+        """
+        if self.get_section().is_master():
+            return
+        required = {
+            (p.content_type.app_label, p.object_id)
+            for p in ContentSequenceItem.objects
+            .filter(content_type__name='problem',
+            content_page__challenge__in=challenge.prerequisites.all())
+            .select_related('content_type')
+        }
+        actual = {
+            (p_type, pk)
+            for p_type, problems in problem_to_completed.items()
+            for pk, user_completed in problems.items() if user_completed
+        }
+        if not required.issubset(actual):
+            raise IncompletePrerequisites()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -142,11 +151,14 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
         context['best'], type_to_completed_status = {}, {}
         for content_type in get_submission_content_types():
             best, completed = content_type.model_class()\
-                .get_best_attempts_before_deadlines(self.request.user)
+                .get_best_attempts_before_deadlines(self.request.user, self.get_section())
             context['best'][content_type.app_label] = best
             type_to_completed_status[content_type.app_label] = completed
 
-        self.check_prerequisites(self.page.challenge, type_to_completed_status)
+        if self.page.challenge.enforce_prerequisites:
+            self._check_prerequisites(
+                self.page.challenge, type_to_completed_status)
+
         context['next'] = self.page.next()
         context['num_pages'] = self.page.challenge.contentpage_set.count()
         context['forms'] = self._get_forms()
@@ -164,4 +176,56 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView,
 
 
 class IncompletePrerequisitesView(ProtectedViewMixin, TemplateView):
+    """
+    A view to notify the user that they have not completed some prerequisite
+    for a Challenge that enforces prerequisites.
+    """
     template_name = 'content/missing_prerequisited.html'
+
+
+class ChallengeStatsView(CourseStaffViewMixin, DetailView):
+    """
+    View the graph displaying the numbers of students who did not attemt,
+    attempted, or completed the Challenge.
+    """
+    model = Challenge
+    template_name = 'content/challenge_stats.html'
+
+
+class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
+    """
+    Asynchronous data request for getting the data for ChallengeStatsView.
+    """
+    model = Challenge
+
+    def get_attempt_stats(self, challenge, section):
+        results, max_scores = defaultdict(dict), defaultdict(dict)
+        completed = 0
+        for ctype in get_problem_content_types():
+            for problem in ctype.model_class().objects\
+                    .filter(challenge=challenge).order_by('id'):
+                max_scores[(ctype.app_label, problem.pk)] = problem.max_score
+
+        for ctype in get_submission_content_types():
+            grades = ctype.model_class().get_scores_for_challenge(
+                challenge=challenge, section=section)
+            for record in grades:
+                problem = (ctype.app_label,
+                           record['problem'])
+                results[record['user']][problem] = record['best']
+
+        for student_id, score_dict in results.items():
+            if score_dict == max_scores:
+                completed += 1
+
+        attempted = len(results) - completed
+        did_not_attempt = PCRSUser.objects.get_students()\
+                              .filter(section=section).count() - attempted
+
+        return did_not_attempt, attempted, completed
+
+    def get(self, request, *args, **kwargs):
+        results = self.get_attempt_stats(
+            challenge=self.get_object(), section=self.get_section())
+        return HttpResponse(json.dumps({'status': 'ok', 'results': results}),
+                                mimetype='application/json')

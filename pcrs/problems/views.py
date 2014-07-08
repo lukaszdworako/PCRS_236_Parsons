@@ -287,16 +287,21 @@ class MonitoringAsyncView(MonitoringView):
         return HttpResponse(json.dumps(results), mimetype='application/json')
 
 
-class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
+class SubmissionHistoryAsyncView(SubmissionViewMixin, SectionViewMixin,
+                                 SingleObjectMixin, View):
     """
-    Create a submission for a problem asynchronously.
+    Return a json object with user's submission history for a problem.
     """
     def post(self, request, *args, **kwargs):
         problem = self.get_problem()
         deadline = problem.challenge.quest.sectionquest_set\
-            .get(section_id=self.request.user.section_id).due_on
-        best_score = self.model.objects\
-            .get(user=self.request.user, problem=problem, has_best_score=True).score
+            .get(section=self.get_section()).due_on
+        try:
+            best_score = self.model.objects\
+                .get(user=self.request.user, problem=problem,
+                     has_best_score=True).score
+        except self.model.DoesNotExist:
+            best_score = -1
 
         data = self.model.objects\
             .prefetch_related('testrun_set', 'testrun_set__testcase')\
