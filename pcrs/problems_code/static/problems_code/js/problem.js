@@ -343,7 +343,6 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
         main_table.append(actual_td);
         table_location.append(main_table);
     }
-    console.log(table_location);
     var data = {'sub_time':new Date(),
             'submission':myCodeMirrors[div_id].getValue(),
             'score':score,

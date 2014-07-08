@@ -17,15 +17,15 @@
 </div>
 <div class="clearfix visible-xs"></div>
 <div class="visible-xs"> <br> </div>
-{% if page.order|add:"1"|divisibleby:"2"%}
+{% if page.order|divisibleby:"2"%}
     <div class="clearfix visible-sm"></div>
     <div class="visible-sm"> <br> </div>
 {% endif %}
-{% if page.order|add:"1"|divisibleby:"3"%}
+{% if page.order|divisibleby:"3"%}
     <div class="clearfix visible-md"></div>
     <div class="visible-md"> <br> </div>
 {% endif %}
-{% if page.order|add:"1"|divisibleby:"4"%}
+{% if page.order|divisibleby:"4"%}
     <div class="clearfix visible-lg"></div>
     <div class="visible-lg"> <br> </div>
 {% endif %}

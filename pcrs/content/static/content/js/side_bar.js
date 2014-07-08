@@ -11,7 +11,7 @@ $(document).ready(function () {
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
 
         var w_icon = "glyphicon glyphicon-edit";
-        var title_text = $(widgets[w_ind]).find(".widget_title")[0].firstChild.data.trim();
+        var title_text = $(widgets[w_ind]).find(".widget_title")[0].innerHTML.trim();
         var w_color = "DarkOrange";
 
         // if there is a checkmark on the page the question is complete

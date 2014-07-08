@@ -2,7 +2,9 @@
 
 {% block problem_title %}
     {{ block.super }}
-    {{ problem.name|default:"Multiple Choice Question" }}
+    <p class="widget_title">
+        {{ problem.name|default:"Multiple Choice Question" }}
+    </p>
 {% endblock %}
 
 {% block history %}

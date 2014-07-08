@@ -52,7 +52,7 @@
 
             <ul class="nav navbar-nav navbar-right">
             {% include "pcrs/shared_navigation.html" %}
-                <li><p class="navbar-text navbar-right">
+                <li><p class="navbar-text navbar-right" title="Change Session">
                     section: {{ request.session.section|default:None }}
                     <a href="{{ site_prefix }}/sections/change" class="navbar-link">(change)</a>
                 </p>
