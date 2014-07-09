@@ -1,0 +1,3 @@
+http://127.0.0.1:8000/content/quests
+http://127.0.0.1:8000/content/challenges/1/1
+http://127.0.0.1:8000/problems/multiple_choice/1/run
