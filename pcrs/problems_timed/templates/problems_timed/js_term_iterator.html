@@ -1,0 +1,47 @@
+<script type="text/javascript">
+
+    
+    $( document ).ready(function() {
+        
+        $('#form_container').toggle();
+        
+        var terms = [];
+        {% for term in problem.term_set.all %}
+            terms.push("<h1>{{ term.text }}</h1>");
+        {% endfor %}
+        
+        var counter = 0;
+        var delay = parseInt({{ problem.delay }}) * 1000;
+        var elem = document.getElementById("term_container");
+        var intervalId = null
+        
+        $('#timed_start_button').click(function(){
+            
+            $('#timed_start_button').toggle();
+            
+            if (terms.length == 0) {
+                clearInterval(intervalId);
+                $('#form_container').toggle();
+            } else {
+                elem.innerHTML = terms[counter];
+                counter++;
+                intervalId = setInterval(
+                    function Iterate() {
+                        if (counter >= terms.length) {
+                            elem.innerHTML = "<br><br>";
+                            clearInterval(intervalId);
+                            $('#form_container').toggle();
+                        }
+                        else {
+                            elem.innerHTML = terms[counter];
+                            counter++;
+                        }
+                    }, delay);
+                
+            }
+            
+        });
+        
+    });
+    
+</script>

@@ -1,0 +1,21 @@
+{% extends "problems/problem_form.html" %}
+
+{% block scripts %}
+    
+    {{ block.super }}
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            $( "#submit-id-clone" ).toggle();
+        });
+    </script>
+
+{% endblock %}
+
+
+{% block related_items %}
+    {% if object %}
+        {% with list_name='List of Terms' object_list=object.term_set.all related_item_name='term' %}
+            {% include "pcrs/related_items.html" %}
+        {% endwith %}
+    {% endif %}
+{% endblock %}

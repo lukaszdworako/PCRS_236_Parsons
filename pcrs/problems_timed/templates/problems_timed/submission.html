@@ -1,0 +1,44 @@
+{% extends "problems/submission.html" %}
+{% load staticfiles %}
+
+{% block page_title %}
+    <!--
+    <h4>{{ problem.description }}</h4>
+    -->
+    <br>
+{% endblock %}
+
+{% block scripts %}
+    
+    {{ block.super }}
+    {% include "problems_timed/js_term_iterator.html" %}
+
+{% endblock %}
+
+{% block content %}
+
+    <div id="term_container" align="center">
+        <h4>
+            <br><br>
+        </h4>
+    </div>
+    
+    <hr>
+    
+    <div align="center">
+        <button id="timed_start_button" class="btn btn-default" type="button">
+            Start
+        </button>
+    </div>
+
+    <div id="form_container">
+        
+        {% load crispy_forms_tags %}
+        {% crispy form %}
+
+        {% load filters %}
+        
+    </div>
+    
+
+{% endblock %}
