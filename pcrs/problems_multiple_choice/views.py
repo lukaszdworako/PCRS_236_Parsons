@@ -142,6 +142,47 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         results = self.record_submission(request)
         return HttpResponse(json.dumps({
             'score': self.submission.score,
-            'max_score': self.get_problem().option_set.all().count()
+            'max_score': self.get_problem().option_set.all().count(),
+            'best': self.submission.has_best_score,
+            'sub_pk': self.submission.pk
         }
         ), mimetype='application/json')
+
+
+class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        returnable = []
+        problem = self.get_problem()
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section_id=self.request.user.section_id).due_on
+        try:
+            best_score = self.model.objects\
+                .get(user=self.request.user, problem=problem, has_best_score=True).score
+        except self.model.DoesNotExist:
+            best_score = -1
+
+        data = self.model.get_submission_class().objects\
+            .filter(user=self.request.user, problem=problem)\
+            .prefetch_related('optionselection_set__option')
+
+        for sub in data:
+            options_list = [
+                {
+                    'selected': option.was_selected,
+                    'option': option.option.answer_text
+                }
+                for option in sub.optionselection_set.all()]
+
+            returnable.append({
+                'sub_time': sub.timestamp.isoformat(),
+                'score': sub.score,
+                'out_of': problem.max_score,
+                'best': sub.score == best_score and sub.timestamp < deadline,
+                'past_dead_line': False,
+                'problem_pk': problem.pk,
+                'sub_pk': sub.pk,
+                'options': options_list
+            })
+
+        return HttpResponse(json.dumps(returnable), mimetype='application/json')

@@ -1,0 +1,14 @@
+{% extends "pcrs/base.html" %}
+
+{% load filters %}
+{% load feedback %}
+
+{% block page_title %}
+    Quests
+{% endblock %}
+
+{% block content %}
+    {% for quest in object_list %}
+        {% include "content/display_quests.html" %}
+    {% endfor %}
+{% endblock %}

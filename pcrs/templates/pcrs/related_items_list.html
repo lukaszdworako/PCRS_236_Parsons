@@ -2,7 +2,9 @@
 {% for object in object_list %}
     <div class="item">
         {% block item_title %}
+            {% autoescape off %}
             {{ object }}
+            {% endautoescape %}
         {% endblock %}
         <span>
                 {% block item_controls %}

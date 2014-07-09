@@ -1,5 +1,7 @@
 # Django settings for pcrs project.
 
+# The following changes the UI. You should also install/uninstall apps
+# to keep tables from being created.
 LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'),)
 
 PRODUCTION = False
@@ -16,7 +18,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'pcrs_dev',
+        'NAME': 'dev',
         'USER': 'dev',
         'PASSWORD': 'dev',
         'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
@@ -32,7 +34,8 @@ RDB_DATABASE_test = 'crs_data_test'
 # Site prefix
 SITE_PREFIX = ''
 if PRODUCTION:
-    SITE_PREFIX = '/pcrs_108/'
+    SITE_PREFIX = '/pcrs_108'
+FORCE_SCRIPT_NAME = SITE_PREFIX
 
 # Login details
 LOGIN_URL = SITE_PREFIX + '/login'
@@ -55,6 +58,8 @@ TIME_ZONE = 'America/Toronto'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
+# Enables sites and sets default to the site with ID 1. Ensure that the
+# database has a correct "site 1".
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -89,7 +94,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    '/Users/olessia/Projects/fresh/pcrs/resources',
+    '/home/zollar/pcrs_git/pcrs/pcrs/resources',
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -143,6 +148,12 @@ WSGI_APPLICATION = 'pcrs.wsgi.application'
 import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
+INSTALLED_PROBLEM_APPS = (
+    'problems_code',
+    'problems_multiple_choice',
+    'problems_rdb', 'problems_sql', 'problems_ra'
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -159,9 +170,7 @@ INSTALLED_APPS = (
     'users',
     'content',
     'problems',
-    'problems_code', 'problems_multiple_choice',
-    'problems_rdb', 'problems_sql', 'problems_ra'
-)
+) + INSTALLED_PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 

@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_delete
 
 from problems.models import (AbstractSubmission, AbstractTestRun,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 from problems_rdb.db_wrapper import StudentWrapper
 from problems_rdb.models import RDBProblem, RDBTestCase
 
@@ -45,7 +45,7 @@ class Submission(AbstractSubmission):
                                          self.problem.order_matters)
                 TestRun(submission=self, testcase=testcase,
                         test_passed=result['passed']).save()
-                result['testcase'] = testcase
+                result['testcase'] = testcase.id
                 results.append(result)
         return results, None
 
@@ -65,6 +65,16 @@ class TestRun(AbstractTestRun):
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
 
+    def get_history(self):
+        return {
+            'visible': False,
+            'input': '',
+            'output': '',
+            'passed': self.test_passed,
+            'description': str(self.testcase)
+        }
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

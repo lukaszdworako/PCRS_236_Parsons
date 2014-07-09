@@ -32,7 +32,7 @@ class BaseProblemForm(CrispyFormMixin):
                                 css_class='btn-group pull-right'))
         elif self.instance:
             # cloning
-            self.buttons = self.save_button,
+            self.buttons = self.save_and_add,
         else:
             # creating a new one
             self.buttons = self.save_and_add,
@@ -51,9 +51,11 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
                                     css_class='btn-success')
         self.history_button = StrictButton('History', name='history',
                                            data_toggle="modal",
-                                           data_target="#submission_{}"
-                                            .format(problem.pk),
+                                           data_target="#history_window_"+
+                                            problem.get_problem_type_name()+
+                                                       "-{}".format(problem.pk),
                                            css_class='btn-default')
+
 
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):

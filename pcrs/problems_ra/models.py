@@ -15,7 +15,7 @@ from rapt.constants import SET_SEMANTICS, BAG_SEMANTICS
 
 
 from problems.models import (AbstractTestRun, AbstractSubmission,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 from problems_rdb.models import RDBProblem, RDBTestCase, Schema
 
 
@@ -97,7 +97,7 @@ class Submission(AbstractSubmission):
                                              dataset.namespace)
                     TestRun(submission=self, testcase=testcase,
                             test_passed=result['passed']).save()
-                    result['testcase'] = testcase
+                    result['testcase'] = testcase.id
                     results.append(result)
         except ParseException as e:
             error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
@@ -117,5 +117,16 @@ class TestRun(AbstractTestRun):
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
 
+    def get_history(self):
+        return {
+            'visible': False,
+            'input': '',
+            'output': '',
+            'passed': self.test_passed,
+            'description': str(self.testcase)
+        }
+
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

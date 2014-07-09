@@ -1,4 +1,5 @@
 import json
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
@@ -8,6 +9,7 @@ from pcrs.generic_views import GenericItemCreateView, GenericItemListView
 
 from problems.forms import ProgrammingSubmissionForm, MonitoringForm
 from users.models import Section
+from users.section_views import SectionViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -242,16 +244,28 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps(results), mimetype='application/json')
+        return HttpResponse(json.dumps({'results': results,
+                                        'score': self.object.score,
+                                        'sub_pk': self.object.pk,
+                                        'best': self.object.has_best_score,
+                                        'past_dead_line': False,
+             'max_score': self.object.problem.max_score}),
+                             mimetype='application/json')
 
 
-class MonitoringView(CourseStaffViewMixin, SingleObjectMixin, FormView):
+class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,
+                     FormView):
     """
-    Create a submission for a problem.
+    Start monitoring submissions for a problem.
     """
     form_class = MonitoringForm
     template_name = 'problems/monitor.html'
     object = None
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['section'] = self.get_section()
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -271,3 +285,41 @@ class MonitoringAsyncView(MonitoringView):
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
         results = problem.get_monitoring_data(section, time)
         return HttpResponse(json.dumps(results), mimetype='application/json')
+
+
+class SubmissionHistoryAsyncView(SubmissionViewMixin, SectionViewMixin,
+                                 SingleObjectMixin, View):
+    """
+    Return a json object with user's submission history for a problem.
+    """
+    def post(self, request, *args, **kwargs):
+        problem = self.get_problem()
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section=self.get_section()).due_on
+        try:
+            best_score = self.model.objects\
+                .get(user=self.request.user, problem=problem,
+                     has_best_score=True).score
+        except self.model.DoesNotExist:
+            best_score = -1
+
+        data = self.model.objects\
+            .prefetch_related('testrun_set', 'testrun_set__testcase')\
+            .filter(user=self.request.user, problem=problem)
+
+        returnable = []
+        for sub in data:
+            returnable.append({
+                'sub_time': sub.timestamp.isoformat(),
+                'submission': sub.submission,
+                'score': sub.score,
+                'out_of': problem.max_score,
+                'best': sub.score == best_score and sub.timestamp < deadline,
+                'past_dead_line': sub.timestamp < deadline,
+                'problem_pk': problem.pk,
+                'sub_pk': sub.pk,
+                'tests': [testrun.get_history()
+                          for testrun in sub.testrun_set.all()]
+            })
+
+        return HttpResponse(json.dumps(returnable), mimetype='application/json')

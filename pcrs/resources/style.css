@@ -1,0 +1,173 @@
+.tag {
+    background-color: #008BB0
+}
+
+.language-tag {
+    background-color: #E31837;
+}
+
+.icon-ok-green {
+    color: #3C9A45;
+}
+
+@media screen{
+    .video-js {
+        width:480px !important;
+        height:269px !important;
+    }
+}
+
+@media (max-width:600px){
+    .video-js{
+        width:90% !important;
+    }
+}
+
+.complete > i {
+    color: #3C9A45;
+}
+
+.incomplete > i.graded {
+    color: #E31837;
+}
+
+.incomplete > i.problem {
+    color: #E31837;
+}
+
+.complete > i.problem {
+    color: #3C9A45;
+}
+
+.active_sb{
+
+    /*padding-right: 10px;*/
+    /*background: url("http://infoperusahaan.com/wp-content/themes/infoperusahaan/images/widget-dot-orange.png");*/
+    /*background-repeat: no-repeat;*/
+    /*background-position: right;*/
+
+    border-right:groove indigo;
+    padding-right: 5px;
+}
+
+.quest_internal{
+    padding-left:5%;
+}
+
+.panel-challenge-completed{
+    background-color:#E8FFE6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #C4FFBF !important;
+}
+
+.panel-challenge-not-attempted{
+    background-color:#FFE6E6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #FFBFBF !important;
+}
+
+.panel-challenge-attempted{
+    background-color:#FEFFE6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #FCFFBF !important;
+}
+
+.panel-quest-past-due{
+    background-color:#E6E6E6 !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color:#BFBFBF !important;
+}
+
+.panel-quest-not-past-due{
+    background-color:#E6ECFF !important;
+    border-style:solid !important;
+    border-width:1px !important;
+    border-color: #BFCEFF !important;
+}
+
+
+/*remove 'not' not efficiant*/
+a:not(.collapsed) > .quest-icon{
+    transform: rotate(90deg);
+}
+
+.quest-icon {
+    font-size:80%;
+}
+
+.tab-content{
+    overflow-y:scroll;
+    height:100%;
+    min-height:300px;
+}
+
+.page>.item>.remove_item{
+    display:in-line !important;
+    width:20px;
+    height:20px;
+    margin-left:5px;
+    margin-top:-1px;
+}
+
+.items>.item>.remove_item{
+    display:none !important;
+}
+
+.delete-page{
+    width:20px;
+    height:20px;
+    margin-top:-15px;
+    margin-right:-13px;
+}
+
+.visibility-open{
+    color:green !important;
+}
+
+.visibility-closed{
+    color:red !important;
+}
+
+.visibility-draft{
+    color:#CC3300 !important;
+}
+
+.btn-object-visibility{
+    width:20px;
+    height:20px;
+    margin-top:-5px;
+    background:None;
+}
+
+.btn-object-close{
+    background:#E0E0E0 !important;
+}
+
+.problem-description {
+    white-space: pre-wrap;
+    background:none !important;
+}
+
+.table-left{
+    padding-right:2% !important;
+}
+
+.table-right{
+    padding-left:2% !important;
+}
+
+.sql-extra{
+    background-color:#FFE6E6 !important;
+}
+
+.sql-order{
+    background-color:#E6ECFF !important;
+}
+
+.sql-missing{
+    background-color:#FFE6E6 !important;
+}

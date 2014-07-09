@@ -1,0 +1,1 @@
+INSERT INTO users_section VALUES ('master', 'master', 'master', 'master');

@@ -300,7 +300,6 @@ class StudentWrapper(PostgresWrapper):
         Return a dictionary representing this test run.
 
         """
-
         result = {'expected_attrs': None,
                   'actual_attrs': None,
                   'passed': False, 'error': None,

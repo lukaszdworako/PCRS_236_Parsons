@@ -50,7 +50,11 @@ urlpatterns = patterns('',
         SubmissionAsyncView.as_view(model=Submission),
         name='coding_problem_async_submit'),
 
-    url(r'^(?P<problem>[0-9]+)/visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
+    url(r'^(?P<problem>[0-9]+)/history$',
+        SubmissionHistoryAsyncView.as_view(model=Submission),
+        name='coding_problem_async_history'),
+
+    url(r'^visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
 
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',

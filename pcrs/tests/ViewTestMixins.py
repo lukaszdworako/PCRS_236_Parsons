@@ -6,12 +6,13 @@ class UsersMixin:
         self.section = Section.objects.create(pk=1, lecture_time='10-11',
                                               location='SS')
         self.instructor = PCRSUser.objects.create(username='instructor',
-                                                  is_instructor=True)
+                                                  is_instructor=True,
+                                                  section=self.section)
         self.ta = PCRSUser.objects.create(username='ta',
-                                          is_ta=True)
+                                          is_ta=True, section=self.section)
         self.student = PCRSUser.objects.create(username='student',
                                                is_instructor=False,
-                                               is_student=True)
+                                               is_student=True, section=self.section)
 
 
 class InstructorViewTestMixin(UsersMixin):

@@ -12,7 +12,8 @@ from problems_multiple_choice.views import (OptionCreateView,
                                             ProblemCreateAndAddOptView,
                                             ProblemCloneView,
                                             SubmissionView, OptionsCreateView,
-                                            SubmissionAsyncView) #added by alex
+                                            SubmissionAsyncView,
+                                            SubmissionMCHistoryAsyncView) #added by alex
 
 
 urlpatterns = patterns('',
@@ -53,6 +54,10 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='mc_problem_async_submit'),
+
+    url(r'^(?P<problem>[0-9]+)/history$',
+        SubmissionMCHistoryAsyncView.as_view(model=Submission),
+        name='mc_problem_async_history'),
 
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',

@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
-from pcrs.settings import PRODUCTION, SITE_PREFIX
 from django.core.context_processors import csrf
 
 import subprocess
@@ -15,13 +15,14 @@ def is_instructor(user):
 def is_student(user):
     return user.is_student
 
+
 def is_course_staff(user):
     return user.is_instructor or user.is_ta
 
 
 def check_authorization(username, password):
     ''' Return True if user is authized on the university level, False othervise. '''
-    if not PRODUCTION:
+    if not settings.PRODUCTION:
         return True
 
     pwauth = subprocess.Popen("/usr/sbin/pwauth", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -45,9 +46,10 @@ def login_view(request):
     NEXT = ""
     if 'next' in request.GET:
         NEXT = request.GET['next']
+    if request.user and request.user.is_authenticated():
+        return HttpResponseRedirect(NEXT or settings.SITE_PREFIX + '/content/quests')
 
     if request.POST:
-
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
 
@@ -68,13 +70,14 @@ def login_view(request):
                 else: 
                     request.session['section'] = user.section
                     post_link = request.POST['next']
-                    redirect_link = post_link or SITE_PREFIX + '/content/quests'
+                    redirect_link = post_link or settings.SITE_PREFIX + '/content/quests'
 
                     login(request, user)
                     return HttpResponseRedirect(redirect_link)
+
     context = {'NEXT': NEXT, 'NOTIFICATION': NOTIFICATION}
     context.update(csrf(request))
-    return render_to_response('login.html', context)
+    return render_to_response('users/login.html', context)
 
 
 def logout_view(request):

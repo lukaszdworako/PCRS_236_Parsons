@@ -1,0 +1,81 @@
+{% load filters %}
+
+{% if challenge.is_visible_to_students %}
+    <div class="panel panel-default">
+        {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
+            {% if completed == 0 %}
+                <div class="panel-heading panel-challenge-not-attempted">
+            {% elif completed == total and total != 0 %}
+                <div class="panel-heading panel-challenge-completed">
+            {% else %}
+                <div class="panel-heading panel-challenge-attempted">
+            {% endif %}
+            <h3 class="panel-title">
+                {% if prerequisites_set|get_item:challenge.pk|issubset:challenges_completed %}
+                    <a class="collapsed"
+                       data-toggle="collapse"
+                       href="#challenge_collapse_{{ challenge.pk }}">
+                        <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                        {% if completed == total and total != 0 %}
+                            <span class="complete">
+                            <span class="pull-right">
+                            {% if challenge.is_graded %}
+                                Graded &nbsp;&nbsp;
+                            {% else %}
+                                Practice &nbsp;&nbsp;
+                            {% endif %}
+                            <i class="glyphicon glyphicon-ok"></i>
+                        {% elif total != 0 %}
+                            <span class="incomplete">
+                            <span class="pull-right">
+                            {% if challenge.is_graded %}
+                                Graded &nbsp;
+                            {% else %}
+                                Practice &nbsp;
+                            {% endif %}
+                                {{ completed }}/{{ total }}
+                        {% endif %}
+                        {% if challenge.is_graded %}
+                            </span>
+                            <i class="glyphicon glyphicon-bookmark graded"></i>
+                        {% else %}
+                            </span>
+                            <i class="glyphicon glyphicon-book not-graded"></i>
+                        {% endif %}
+                        </span>
+                        {{ challenge.name }}
+                    </a>
+            </h3>
+            </div>
+            <div id="challenge_collapse_{{ challenge.pk }}"
+                 class="table_table panel-body panel-collapse collapse">
+                <h4> {{ challenge.description }} </h4>
+                <br>
+                {% for page in pages|get_item:challenge.pk %}
+                    {% include "content/quest_display_page.html" %}
+                {% endfor %}
+            </div>
+        </div>
+                {% else %}
+                    <a class="collapsed"
+                       data-toggle="collapse"
+                       href="#challenge_collapse_{{ challenge.pk }}">
+                        <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                        <i class="glyphicon glyphicon-lock"></i>
+                            {{ challenge.name }}
+                    </a>
+            </h3>
+            </div>
+            <div id="challenge_collapse_{{ challenge.pk }}"
+                 class="table_table panel-body panel-collapse collapse">
+                <h4> This Challenge has the following prerequisites: </h4>
+                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                    {% for pre_req in prerequisites|get_item:challenge.pk %}
+                        <div>{{ pre_req.name }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+                {% endif %}
+    {% endwith %}
+{% endif %}

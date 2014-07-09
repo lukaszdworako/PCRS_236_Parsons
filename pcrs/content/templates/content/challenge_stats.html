@@ -1,0 +1,27 @@
+{% extends "pcrs/base.html" %}
+
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static "content/js/stats.js" %}"></script>
+    <script src="{% static "csrf_protection.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.common.core.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.common.key.js" %}"></script>
+    <script src="{% static "RGraph/RGraph.bar.js" %}"></script>
+{% endblock %}
+
+
+{% block content %}
+    {{ block.super }}
+
+        {% autoescape off %}
+        <h4>
+        {{ object.description }}
+        </h4>
+    {% endautoescape %}
+
+    <canvas id="attempts-graph" width="400" height="500"># Students
+    </canvas>
+
+{% endblock %}

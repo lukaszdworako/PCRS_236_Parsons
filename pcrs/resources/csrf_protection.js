@@ -1,3 +1,7 @@
+$(document).ajaxError(function () {
+    alert('Something went wrong.');
+});
+
 var csrftoken = getCookie('csrftoken');
 
     jQuery.ajaxSettings.traditional = true;

@@ -1,13 +1,13 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
 
 from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
-from pcrs.settings import LANGUAGE_CHOICES
 from problems.models import (AbstractNamedProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
-                             testcase_delete)
+                             testcase_delete, problem_delete)
 
 
 class Problem(AbstractNamedProblem):
@@ -18,7 +18,8 @@ class Problem(AbstractNamedProblem):
     a language and starter code
     """
 
-    language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES,
+    language = models.CharField(max_length=50, 
+                                choices=settings.LANGUAGE_CHOICES,
                                 default='python')
 
 
@@ -97,8 +98,19 @@ class TestRun(AbstractTestRun):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
 
+    def get_history(self):
+        return {
+            'visible': self.testcase.is_visible,
+            'input': self.testcase.test_input,
+            'output': self.testcase.expected_output,
+            'passed': self.test_passed,
+            'description': self.testcase.description
+        }
+
 
 # Signal handlers
 
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
+
+post_delete.connect(problem_delete, sender=Problem)

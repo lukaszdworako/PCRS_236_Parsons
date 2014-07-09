@@ -1,0 +1,40 @@
+{% load filters %}
+
+{% with item=content_objects|get_item:content_object.pk %}
+
+    <div>
+        {% with item_type=item|classname|lower problem_type=item|module_name %}
+            {% if item_type == "video" %}
+                {% if object.pk in watched %}
+                    <span class="complete">
+                {% else %}
+                    <span class="incomplete">
+                {% endif %}
+                <i class="glyphicon glyphicon-film"></i>
+                <a href="{{ page.get_absolute_url }}#video-{{ item.pk }}">
+                    {{ item.name }}
+                </a>
+                </span>
+            {% elif item_type == "problem" %}
+                {% if item.is_visible_to_students %}
+                    {% with mark=best|get_item:problem_type|get_item:item.pk %}
+                        {% if mark == item.max_score %}
+                            <span class="complete">
+                        {% else %}
+                            <span class="incomplete">
+                        {% endif %}
+                    {% endwith %}
+                    <i class="glyphicon glyphicon-edit problem"></i>
+                    <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}">
+                        {% if item.name %}
+                            {{ item.name }}
+                        {% else %}
+                            Multiple Choice
+                        {% endif %}
+                    </a>
+                    </span>
+                {% endif %}
+            {% endif %}
+        {% endwith %}
+    </div>
+{% endwith %}

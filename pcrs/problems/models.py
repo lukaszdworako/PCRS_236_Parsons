@@ -1,9 +1,12 @@
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
-from django.db.models import Max, Q, Count
+from django.db import models, IntegrityError
+from django.db.models import Max, Q, Count, F
 from django.utils import timezone
-from content.models import AbstractTaggedObject
+from django.conf import settings
 
+import content.models
+from content.tags import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          AbstractSelfAwareModel)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
@@ -13,7 +16,17 @@ def get_problem_labels():
     """
     Return the list app_labels of apps that contain a Problem class.
     """
-    return [c.app_label for c in ContentType.objects.filter(Q(model='problem'))]
+    return [c.app_label for c in get_problem_content_types()]
+
+
+def get_problem_content_types():
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
+
+
+def get_submission_content_types():
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
@@ -23,6 +36,11 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     All problems have visibility level, and optionally tags, and are self-aware.
     """
+    challenge = models.ForeignKey(content.models.Challenge, null=True, blank=True,
+        related_name='%(app_label)s_%(class)s_related', on_delete=models.SET_NULL)
+
+    max_score = models.SmallIntegerField(default=0, blank=True)
+
     class Meta:
         abstract = True
 
@@ -34,17 +52,37 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     @classmethod
     def get_problem_type_name(cls):
-        return cls.get_app_label().replace('problems_', '')
+        return cls.__module__.split('.')[0].replace('problems_', '')
+
+    @classmethod
+    def get_module_name(cls):
+        return cls.__module__.split('.')[0]
+
+    @classmethod
+    def get_challenge_to_problem_number(cls):
+        """
+        Return a dictionary mapping Challenge pk to the the total number of
+        problems of this type in that Challenge.
+        """
+        problems = cls.objects.values('challenge_id')\
+                              .annotate(number=Count('id'))\
+                              .order_by()
+        return {d['challenge_id']: d['number']for d in problems}
 
     @classmethod
     def get_base_url(cls):
         """
         Return the url prefix for the problem type.
         """
-        return '/problems/{}'.format(cls.get_problem_type_name())
+        return '{site}/problems/{typename}'\
+            .format(site=settings.SITE_PREFIX,
+                    typename=cls.get_problem_type_name())
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+
+    def get_monitoring_url(self):
+        return '{}/monitor'.format(self.get_absolute_url())
 
     def best_per_user_before_time(self, deadline=timezone.now()):
         """
@@ -108,10 +146,6 @@ class AbstractProgrammingProblem(AbstractProblem):
     class Meta:
         abstract = True
 
-    @property
-    def max_score(self):
-        return self.testcase_set.count()
-
     def get_testitem_data_for_submissions(self, s_ids):
         """
         Return a list of tuples summarizing for each testcase how many times it
@@ -143,17 +177,6 @@ class AbstractNamedProblem(AbstractNamedObject, AbstractProgrammingProblem):
     """
     class Meta:
         abstract = True
-
-
-class CompletedProblem(AbstractGenericObjectForeignKey):
-    #TODO: add docstring
-    objects = models.Q(model='problem')
-    user = models.ForeignKey(PCRSUser)
-
-    @classmethod
-    def get_completed(cls, user):
-        return {problem.content_object
-                for problem in cls.objects.filter(user=user)}
 
 
 class AbstractSubmission(AbstractSelfAwareModel):
@@ -212,6 +235,56 @@ class AbstractSubmission(AbstractSelfAwareModel):
         self.save()
         self.set_best_submission()
 
+    @classmethod
+    def get_completed_for_challenge_before_deadline(cls, user, section=None):
+        """
+        Return a dictionary mapping challenge_pk to the number of open problems
+        the user has completed in each Challenge.
+        """
+        section = section or user.section
+        subs = cls.objects\
+            .filter(problem__visibility='open',
+                    user=user, score=F('problem__max_score'),
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('problem__challenge')\
+            .annotate(solved=Count('problem', distinct=True))\
+            .order_by()
+        return {d['problem__challenge']: d['solved']for d in subs}
+
+    @classmethod
+    def get_best_attempts_before_deadlines(cls, user, section=None):
+        """
+        Return a dictionary mapping problem pk to the user's best score on the
+        problem with that pk, before the challenge deadline.
+        """
+        section = section or user.section
+        subs = cls.objects\
+            .filter(user=user,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('problem_id')\
+            .annotate(best=Max('score'), max_score=Max('problem__max_score'))\
+            .order_by()
+        return ({d['problem_id']: d['best'] for d in subs},
+                {d['problem_id']: d['best'] == d['max_score'] for d in subs})
+
+    @classmethod
+    def grade(cls, quest, section):
+        return cls.objects\
+            .filter(problem__challenge__quest=quest, user__section=section,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
+
+    @classmethod
+    def get_scores_for_challenge(cls, challenge, section):
+        return cls.objects\
+            .filter(problem__challenge=challenge, user__section=section,
+                    problem__challenge__quest__sectionquest__section=section,
+                    timestamp__lt=F('problem__challenge__quest__sectionquest__due_on'))\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
+
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """
@@ -233,6 +306,13 @@ class AbstractTestCase(AbstractSelfAwareModel):
     def get_absolute_url(self):
         return '{problem}/testcase/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.pk:
+            self.problem.max_score += 1
+            self.problem.save()
+        super().save(force_insert, force_update, using, update_fields)
 
 
 class AbstractTestRun(models.Model):
@@ -260,6 +340,9 @@ def testcase_delete(sender, instance, **kwargs):
     """
     try:
         problem = instance.problem
+        problem.max_score -= 1
+        problem.save()
+
         submissions_affected = problem.submission_set.all()
         for submission in submissions_affected:
             submission.set_score()
@@ -267,3 +350,13 @@ def testcase_delete(sender, instance, **kwargs):
         # problem no longer exists, submissions will be deleted automatically
         # so no need to update scores
         pass
+
+
+def problem_delete(sender, instance, **kwargs):
+    """
+    Deletes the ContentSeequenceItem mapping to the Problem when the Problem
+    is deleted.
+    """
+    content.models.ContentSequenceItem.objects.filter(
+        content_type=instance.get_content_type(), object_id=instance.pk)\
+        .delete()

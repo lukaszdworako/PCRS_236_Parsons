@@ -9,7 +9,7 @@ from problems_multiple_choice.models import Problem, Option
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('description', 'tags', 'visibility')
+        fields = ('name', 'description', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

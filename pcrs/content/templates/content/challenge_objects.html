@@ -1,0 +1,167 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% load filters %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load static %}
+    <script src="{% static "jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "csrf_protection.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "content/js/challenge_objects.js" %}"
+            type="text/javascript"></script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "content/css/style.css" %}"
+          type="text/css">
+{% endblock %}
+
+{% block links %}
+    <a href="{{ object.get_absolute_url }}">< Back to challenge</a>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            {% include "content/search.html" %}
+        </div>
+        <div id="controls" class="btn-group col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <button class="btn btn-default" id="add-text" aria-label="add text">&nbsp;
+                <i class="glyphicon glyphicon-font"></i>dd text
+            </button>
+            <button class="btn btn-default" id="add-page" aria-label="add page">&nbsp;
+                <i class="glyphicon glyphicon-plus">Page</i></button>
+        </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <button class="btn btn-success pull-right" id="save_top" disabled>
+                Save
+            </button>
+        </div>
+    </div>
+    <hr>
+
+    <div class="row">
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 available_problems">
+{#            <ul class="nav nav-tabs">#}
+{#                <li><a href="#video-tab"#}
+{#                       data-toggle="tab"#}
+{#                       aria_label="videos">videos</a>#}
+{#                </li>#}
+{#            </ul>#}
+{##}
+{#            <div class="tab-content">#}
+{#                <div class="tab-pane" id="video-tab">#}
+{#                    <div class="items" id="videos">#}
+{#                        {% for item in videos %}#}
+{#                            {% include "content/video_list_item.html" %}#}
+{#                        {% endfor %}#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+
+            {% with problem_app_labels=problems.keys %}
+                <ul class="nav nav-tabs">
+                    {% for label in problem_app_labels %}
+                        <li><a href="#{{ label }}-tab"
+                               aria_label = '{{ label|problem_type_from_label }} problems'
+                               data-toggle="tab">{{ label|problem_type_from_label }}</a>
+                        </li>
+                    {% endfor %}
+{#                if you want to remove video delete the next 4 lines and uncoment the top lines#}
+                    <li><a href="#video-tab"
+                               aria_label = 'videos'
+                               data-toggle="tab">videos</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    {% for label in problem_app_labels %}
+                        <div class="tab-pane" id="{{ label }}-tab">
+                            <div class="items item-list" id="{{ label }}">
+                                {% for problem in problems|get_item:label %}
+                                    {% include "content/problem_list_item.html" %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+{#                if you want to remove video from problems delete the next 7 lines and uncomment the top#}
+                    <div class="tab-pane" id="video-tab">
+                        <div class="items item-list" id="videos">
+                            {% for item in videos %}
+                                {% include "content/video_list_item.html" %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endwith %}
+        </div>
+
+        <div id="challenge" class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            {% for page in object.contentpage_set.all %}
+                <div class="well page" id="page-{{ page.pk }}">
+                    <button class="btn btn-object-close btn-xs delete-page glyphicon glyphicon-remove pull-right" title="Delete Page"></button>
+                    {% for item in page.contentsequenceitem_set.all %}
+                        {% with item=item.content_object %}
+                            {% if item|classname == 'TextBlock' %}
+                                <div class="textblock item well"
+                                     id="textblock-{{ item.pk }}">
+                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right"
+                                            title="Delete Item">
+                                    </button>
+                                    &nbsp;
+                                    {% autoescape off %}
+                                    {{ item.text|linebreaks }}
+                                    {% endautoescape %}
+                                </div>
+                            {% endif %}
+                            {% if item|classname == 'Video' %}
+                                {% include "content/video_list_item.html" %}
+                            {% endif %}
+                            {% if item|classname == 'Problem' %}
+                                {% with problem=item %}
+                                    {% include "content/problem_list_item.html" %}
+                                {% endwith %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    </div>
+
+
+
+    <div class="modal fade" id="text-entry-modal" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Enter text</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea id="text-entry" class="form-control"
+                              rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">Close
+                    </button>
+                    <button type="button" data-dismiss="modal"
+                            class="btn btn-success" id="save-text">Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-success pull-right" id="save_bot" disabled>
+        Save
+    </button>
+{% endblock %}

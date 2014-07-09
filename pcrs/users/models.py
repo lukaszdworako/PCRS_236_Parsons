@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -5,6 +6,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import (BaseUserManager)
+import content.models
+from pcrs.models import AbstractSelfAwareModel
 
 
 VISIBILITY_LEVELS = (
@@ -13,6 +16,7 @@ VISIBILITY_LEVELS = (
     ('open', 'open')
 )
 
+MASTER_SECTION_ID = 'master'
 
 @python_2_unicode_compatible
 class CustomAbstractBaseUser(models.Model):
@@ -126,7 +130,17 @@ class PCRSUserManager(BaseUserManager):
 
 class PCRSUser(CustomAbstractBaseUser):
     username = models.CharField('username', max_length=30, unique=True, db_index=True)
-    section = models.ForeignKey("Section", blank=True, null=True)
+    section = models.ForeignKey("Section")
+
+    code_style_choices = (
+        ('monokai', 'Dark Background'),
+        ('eclipse', 'Light Background'),
+        ('shaped', 'Black and White')
+    )
+    code_style = models.CharField(max_length=7,
+                                  choices=code_style_choices,
+                                  default='monokai')
+
     is_student = models.BooleanField(default=False)
     is_ta = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)
@@ -185,13 +199,13 @@ class PCRSUser(CustomAbstractBaseUser):
         super(PCRSUser, self).save(*args, **kwargs)
 
 
-class Section(models.Model):
+class Section(AbstractSelfAwareModel):
     """
     Section has an id, location, lecture time, and optional description.
     A user is enrolled in one section.
     Instructors teach one or more sections.
     """
-    section_id = models.CharField("section id", primary_key=True, max_length=10)
+    section_id = models.SlugField("section id", primary_key=True, max_length=10)
     description = models.CharField("section description", max_length=100, blank=True, null=True)
     location = models.CharField("location", max_length=10)
     lecture_time = models.CharField("lecture time", max_length=20)
@@ -202,6 +216,31 @@ class Section(models.Model):
     def __str__(self):
         return '%s @ %s' % (self.lecture_time, self.location)
 
+    @classmethod
+    def get_base_url(cls):
+        return '{site}/sections'.format(site=settings.SITE_PREFIX)
+
+    def is_master(self):
+        return self.section_id == MASTER_SECTION_ID
+
+    def get_manage_section_quests_url(self):
+        return '{site}/content/quests/section/{pk}'\
+            .format(site=settings.SITE_PREFIX, pk=self.pk)
+
+    def get_stats_url(self):
+        return '{}/reports'.format(self.get_absolute_url())
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if not self.__class__.objects.filter(pk=self.pk).exists():
+            # new section: create SectionQuests for it
+            super().save(force_insert, force_update, using, update_fields)
+            for quest in content.models.Quest.objects.all():
+                content.models.SectionQuest.objects.create(section=self,
+                    quest=quest)
+        else:
+            super().save(force_insert, force_update, using, update_fields)
+
 
 class AbstractLimitedVisibilityObject(models.Model):
     visibility = models.CharField(choices=VISIBILITY_LEVELS, max_length=10,
@@ -209,3 +248,40 @@ class AbstractLimitedVisibilityObject(models.Model):
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def get_visible_for_user(cls, user):
+        """
+        Return the objects that the user is allowed to see.
+        """
+        if user.is_student:
+            return cls.objects.filter(visibility='open')
+        if user.is_ta:
+            return cls.objects.exclude(visibility='closed')
+        else:
+            return cls.objects.all()
+
+    def is_visible_to_students(self):
+        return self.is_open()
+
+    def is_open(self):
+        return self.visibility == 'open'
+
+    def is_closed(self):
+        return self.visibility == 'closed'
+
+    def is_draft(self):
+        return self.visibility == 'draft'
+
+    def open(self):
+        self.visibility = "open"
+        self.save()
+
+    def closed(self):
+        self.visibility = "closed"
+        self.save()
+
+    def draft(self):
+        self.visibility = "draft"
+        self.save()
+
