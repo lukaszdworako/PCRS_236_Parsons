@@ -3,7 +3,7 @@
     {% autoescape off %}
         {% block problem_title %}
             {% if user.is_instructor %}
-                <a href="{{ problem.get_monitoring_url }}"><i class="glyphicon glyphicon-stats"></i></a>
+                <a href="{{ problem.get_monitoring_url }}"><i class="glyphicon glyphicon-stats"></i><span class="at">Statistics for {{ problem.name }}</span></a>
             {% endif %}
         {% endblock %}
     {% endautoescape %}
@@ -48,6 +48,7 @@
     <div class="alert" id="alert">
         <icon class="glyphicon"></icon>
         <span></span>
+        <a class="at screen-reader-text" href=''></a>
     </div>
 {% endblock %}
 

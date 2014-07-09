@@ -47,11 +47,11 @@ $(document).ready(function () {
         var entry3 = $('<span/>',{
             id:"sb_"+widgets[w_ind].id,
             class:w_icon,
-            style:"color:"+w_color+";",
-            title:title_text
+            style:"color:"+w_color+";"
         });
 
         entry2.append(entry3);
+        entry2.attr('title',title_text);
         entry.append(entry2);
         side_bar.prepend(entry);
     }

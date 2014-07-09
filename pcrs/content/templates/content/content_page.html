@@ -67,14 +67,16 @@
 
 {% if content_page.order > 1 %}
     <a class="btn btn-success" role="button"
-       href="{{ content_page.order|add:-1 }}">
+       href="{{ content_page.order|add:-1 }}"
+       title="Go to previous page">
         <i class="glyphicon glyphicon-chevron-left"></i>
     </a>
 {% endif %}
 
 {% if next %}
     <a class="btn btn-success pull-right" role="button"
-       href="{{ next.get_absolute_url }}">
+       href="{{ next.get_absolute_url }}"
+       title="Go to next page">
         <i class="glyphicon glyphicon-chevron-right"></i>
     </a>
 {% endif %}

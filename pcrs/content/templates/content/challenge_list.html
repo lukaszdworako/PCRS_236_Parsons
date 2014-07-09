@@ -3,6 +3,7 @@
 {% block item_title %}
     <a href="{{ object.get_stats_page_url }}">
         <i class="glyphicon glyphicon-stats"></i>
+        <span class="at">Statistics for {{ object.name }}</span>
     </a>
     {% if object.get_first_page_url %}
         {% if object.pk in visible_challenges %}

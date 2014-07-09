@@ -88,15 +88,13 @@
                 <div class="well page" id="page-{{ page.pk }}">
                     <button class="btn btn-object-close btn-xs delete-page glyphicon glyphicon-remove pull-right"
                             title="Delete Page {{ page.order }}">
-                                <span class="at">Delete Page {{ page.order }}</span>
                     </button>
                     {% for item in page.contentsequenceitem_set.all %}
                         {% with item=item.content_object %}
                             {% if item|classname == 'TextBlock' %}
                                 <div class="textblock item well"
                                      id="textblock-{{ item.pk }}">
-                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right"
-                                            title="Delete Item">
+                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right">
                                                 <span class="at">Delete text block. {{ item.text }}</span>
                                     </button>
                                     &nbsp;

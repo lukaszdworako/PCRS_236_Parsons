@@ -238,11 +238,13 @@ function getTestcases(div_id) {
                     $('#'+div_id).find('#alert')
                         .children('span')
                         .text("Your solution is correct!");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
                 }
                 else{
                     $('#'+div_id).find('#alert')
                         .children('span')
                         .text("Your solution passed " + score + " out of " + max_score + " cases!");
+                    $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
                 }
                 if (language == 'python'){
                     prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
@@ -407,34 +409,39 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         }
         else{
             if (testcaseInput != null) {
-                newRow.append('<td class="testInputCell">' + testcaseInput + '</td>');
-                newRow.append('<td class="expectedCell">' + testcaseOutput + '</td>');
+                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' + testcaseInput + '</td>');
+                newRow.append('<td class="testDescription col-lg-3 visible-lg">' + description + '</td>');
+                newRow.append('<td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + testcaseOutput + '</td>');
             }
             else {
-                newRow.append('<td >' + "Hidden Test" +'</td>');
-                newRow.append('<td >' + "Hidden Result" +'</td>');
+                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' + "Hidden Test" +'</td>');
+                newRow.append('<td class="testDescription col-lg-3 visible-lg">' + description + '</td>');
+                newRow.append('<td <td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + "Hidden Result" +'</td>');
             }
 
-            newRow.append('<td class="testDescription">' + description + '</td>');
-            newRow.append('<td class="testOutputCell">' + result +'</td>');
+            newRow.append('<td class="testOutputCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + result +'</td>');
 
-            newRow.append('<td class="statusCell"></td>');
+            newRow.append('<td class="statusCell col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>');
+            var pass_status = "";
             if (passed){
                 var smFace = happyFace;
                 score += 1;
+                pass_status = "passed";
             }
             else{
                 var smFace = sadFace;
+                pass_status = "failed";
             }
 
             $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.statusCell').html(smFace.clone());
             if (testcaseInput != null){
-                newRow.append('<td class="debugCell"><button id="' + div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button" data-toggle="modal" data-target="#myModal">Trace</button></td>');
+                newRow.append('<td class="debugCell col-lg-1 col-md-1 col-sm-2 col-xs-2"><button id="' + div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button" data-toggle="modal" data-target="#myModal">Trace</button></td>');
                 bindDebugButton(div_id+"_"+i);
             }
             else{
-                newRow.append('<td></td>')
+                newRow.append('<td class="col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>')
             }
+            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+testcaseOutput+'. Result: '+result+'</a>');
         }
         var test = {'visible':testcaseInput != null,
                     'input': testcaseInput,
