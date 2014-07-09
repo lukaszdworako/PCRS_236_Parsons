@@ -4,7 +4,7 @@ class TestSubmissionHistoryDatabaseHits:
 
     Should be kept constant.
     """
-    db_hits = 10
+    db_hits = 11
 
     def test_num_hits(self):
         self.client.login(username=self.student.username)
