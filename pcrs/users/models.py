@@ -101,6 +101,7 @@ class PCRSUserManager(BaseUserManager):
         section id and password.
         """
         # user = self.create_user(username=username, is_instructor=is_instructor, password=password, section_id=section_id, is_admin=True, is_staff=True)
+        section_id = section_id or MASTER_SECTION_ID
         user = self.create_user(username=username, is_instructor=is_instructor, section_id=section_id, is_admin=True,
                                 is_staff=True)
         user.is_admin = True

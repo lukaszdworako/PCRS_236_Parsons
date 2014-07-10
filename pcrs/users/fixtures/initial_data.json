@@ -1,0 +1,11 @@
+[
+  {
+      "model": "users.section",
+      "pk": 1,
+      "fields": {
+          "section_id": "master",
+          "lecture_time": "master",
+      "location": "master"
+    }
+  }
+]

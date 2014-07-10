@@ -8,7 +8,7 @@ from problems_multiple_choice.models import Problem as MCProblem
 from users.models import Section, PCRSUser
 
 
-class GradesTestMixin:
+class GradesTestWithDeadlineMixin:
     def setUp(self):
         master = Section.objects.create(section_id='master', location='BA', lecture_time='10-11')
         self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
@@ -34,9 +34,51 @@ class GradesTestMixin:
         self.c2 = Challenge.objects.create(name='2', description='2', quest=self.quest2)
 
 
-class TestQuestGrading(GradesTestMixin, test.TestCase):
+class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
     problem_class = Problem
     submission_class = Submission
+
+    def test_no_deadline(self):
+        """
+        Test a single problem in challenge.
+        """
+        SectionQuest.objects.update(due_on=None)
+
+        problem = self.problem_class.objects.create(pk=1, name='test',
+            description='test', challenge=self.c1)
+        for score in [2, 1, 0, 4]:
+            for student in [self.student1, self.student2]:
+                self.submission_class.objects.create(
+                    problem=problem, user=student, score=score
+                )
+        expected = [{'user': 'student1', 'best': 4, 'problem': 1}]
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s1)
+        self.assertListEqual(expected, list(actual))
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s1.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s1.section_id})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student1,4', lines)
+
+        expected = [{'user': 'student2', 'best': 4, 'problem': 1}]
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s2)
+        self.assertListEqual(expected, list(actual))
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s2.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s2.section_id})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student2,4', lines)
 
     def test_multiple_sub_to_one_problem(self):
         """
@@ -386,7 +428,7 @@ class TestQuestGrading(GradesTestMixin, test.TestCase):
         self.assertIn(b'student2,3', lines)
 
 
-class TestGradeReports(GradesTestMixin, test.TestCase):
+class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
 
     def test_headers(self):
         """
@@ -404,9 +446,9 @@ class TestGradeReports(GradesTestMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test, test2: test', lines)
-        self.assertIn(b'4, 3', lines)
-        self.assertIn(b'student1,', lines)
+        self.assertIn(b'test,test2: test', lines)
+        self.assertIn(b'4,3', lines)
+        self.assertIn(b'student1,,', lines)
 
     def test_no_submissions_one_problem(self):
         """
@@ -549,6 +591,33 @@ class TestGradeReports(GradesTestMixin, test.TestCase):
         Test multiple problems of different types in a challenge,
         with multiple submissions to all problems.
         """
+        problem1 = Problem.objects.create(
+            pk=1, name='test', description='test', challenge=self.c1)
+        problem2 = MCProblem.objects.create(
+            pk=2, name='test2', description='test', challenge=self.c1)
+
+        for score in [2, 1, 3, 1]:
+            for student in [self.student1, self.student2]:
+                s = problem1.get_submission_class().objects.create(
+                    problem=problem1, user=student, score=score)
+
+        for score in [2, 1, 0, 1]:
+            for student in [self.student1, self.student2]:
+                s = problem2.get_submission_class().objects.create(
+                    problem=problem2, user=student, score=score)
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s1.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s1.section_id})
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test,test2: test', lines)
+        self.assertIn(b'0,0', lines)
+        self.assertIn(b'student1,3,2', lines)
+
+    def test_no_dealine(self):
+        SectionQuest.objects.update(due_on=None)
         problem1 = Problem.objects.create(
             pk=1, name='test', description='test', challenge=self.c1)
         problem2 = MCProblem.objects.create(

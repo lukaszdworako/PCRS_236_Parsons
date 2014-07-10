@@ -47,23 +47,6 @@
 
     <div class="row">
         <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 available_problems">
-{#            <ul class="nav nav-tabs">#}
-{#                <li><a href="#video-tab"#}
-{#                       data-toggle="tab"#}
-{#                       aria_label="videos">videos</a>#}
-{#                </li>#}
-{#            </ul>#}
-{##}
-{#            <div class="tab-content">#}
-{#                <div class="tab-pane" id="video-tab">#}
-{#                    <div class="items" id="videos">#}
-{#                        {% for item in videos %}#}
-{#                            {% include "content/video_list_item.html" %}#}
-{#                        {% endfor %}#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-
             {% with problem_app_labels=problems.keys %}
                 <ul class="nav nav-tabs">
                     {% for label in problem_app_labels %}
@@ -72,7 +55,6 @@
                                data-toggle="tab">{{ label|problem_type_from_label }}</a>
                         </li>
                     {% endfor %}
-{#                if you want to remove video delete the next 4 lines and uncoment the top lines#}
                     <li><a href="#video-tab"
                                aria_label = 'videos'
                                data-toggle="tab">videos</a>
@@ -89,7 +71,7 @@
                             </div>
                         </div>
                     {% endfor %}
-{#                if you want to remove video from problems delete the next 7 lines and uncomment the top#}
+
                     <div class="tab-pane" id="video-tab">
                         <div class="items item-list" id="videos">
                             {% for item in videos %}
@@ -104,18 +86,20 @@
         <div id="challenge" class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
             {% for page in object.contentpage_set.all %}
                 <div class="well page" id="page-{{ page.pk }}">
-                    <button class="btn btn-object-close btn-xs delete-page glyphicon glyphicon-remove pull-right" title="Delete Page"></button>
+                    <button class="btn btn-object-close btn-xs delete-page glyphicon glyphicon-remove pull-right"
+                            title="Delete Page {{ page.order }}">
+                    </button>
                     {% for item in page.contentsequenceitem_set.all %}
                         {% with item=item.content_object %}
                             {% if item|classname == 'TextBlock' %}
                                 <div class="textblock item well"
                                      id="textblock-{{ item.pk }}">
-                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right"
-                                            title="Delete Item">
+                                    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right">
+                                                <span class="at">Delete text block. {{ item.text }}</span>
                                     </button>
                                     &nbsp;
                                     {% autoescape off %}
-                                    {{ item.text|linebreaks }}
+                                        {{ item.text|linebreaks }}
                                     {% endautoescape %}
                                 </div>
                             {% endif %}
@@ -156,6 +140,31 @@
                     </button>
                     <button type="button" data-dismiss="modal"
                             class="btn btn-success" id="save-text">Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="page-entry-modal" tabindex="-1" role="dialog"
+         aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="page_entry_ModalLabel">There are {{ object.contentpage_set.all.count }} pages. Which page would you like to add the element to?</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea id="page-entry" class="form-control"
+                              rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">Close
+                    </button>
+                    <button type="button" data-dismiss="modal"
+                            class="btn btn-success" id="save-page-num">Save
                     </button>
                 </div>
             </div>

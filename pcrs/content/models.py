@@ -104,6 +104,9 @@ class ContentPage(models.Model):
     challenge = models.ForeignKey('Challenge')
     order = models.SmallIntegerField()
 
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return '{name}: page {order}'.format(name=self.challenge.name,
                                              order=self.order)

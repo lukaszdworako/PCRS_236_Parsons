@@ -1886,6 +1886,10 @@ ExecutionVisualizer.prototype.renderDataStructures = function() {
 			d3DomElement.append('<span class="nullObj">None</span>');
 		}
 		else if (typ == "number") {
+            var is_float = d3DomElement.last('.heapPrimitive').find('.typeLabel').text().indexOf('float');
+            if (is_float != -1 && obj%1===0){
+                obj = obj + ".0";
+            }
 			d3DomElement.append('<span class="numberObj">' + obj + '</span>');
 		}
 		else if (typ == "boolean") {
@@ -3372,9 +3376,7 @@ function renderData_ignoreID(obj, jDomElt) {
 
 //custom resize for bootstrap module
 function resizer(){
-    console.log($(".visualizer").width());
-    console.log($("#myModal"));
-    console.log($(window).width());
+
     if ($(".visualizer").width() > $("#myModal").width()){
         $(".modal-content").width($(".visualizer").width() + 50);
     }

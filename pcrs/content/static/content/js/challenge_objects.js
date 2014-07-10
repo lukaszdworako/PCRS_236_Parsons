@@ -1,5 +1,5 @@
 var $uiselected = null;
-
+var source_button = null;
 
 $(document).ready(function () {
 
@@ -10,10 +10,13 @@ $(document).ready(function () {
     $(document).on('click', '.remove_item', deleteItemHelper);
 
     $(document).on('click', '#add-text', addText);
+    $(document).on('keypress', '#add-text', add_text_enter);
     $(document).on('click', '#save-text', saveText);
+    $(document).on('click', '#save-page-num', select_given_page);
 
     $(document).on('click', '#save_top', savePages);
     $(document).on('click', '#save_bot', savePages);
+    $(document).on('click', '.btn-object-add', add_text_enter);
 
     $('.btn-object-visibility').on('click', change_problem_visibility);
 
@@ -49,6 +52,46 @@ $(document).ready(function () {
 
     resize_problems();
 });
+
+function select_given_page(){
+
+    var selected_page = $('#page-entry').val().trim();
+    if (!selected_page.isNaN){
+        if ($(document).find('#challenge').find('[id*="page-"]').length >= selected_page){
+            if (selected_page > 0){
+                if ($(source_button).hasClass("btn-object-add")){
+                    $($(document).find('#challenge').find('[id*="page-"]')[selected_page-1]).append($(source_button).parent());
+                    $('#save_top').prop('disabled', false);
+                    $('#save_bot').prop('disabled', false);
+                }
+                else{
+                    $(document).find('#challenge').find('[id*="page-"]').removeClass("ui-selected");
+                    $($(document).find('#challenge').find('[id*="page-"]')[selected_page-1]).addClass("ui-selected");
+                    addText();
+                }
+            }
+            else{
+                alert("Number should not be negative");
+            }
+        }
+        else{
+            alert("Number is too big");
+        }
+    }
+    else{
+        alert("Input must be a number");
+    }
+}
+
+function add_text_enter(event){
+    source_button = null;
+    if(event.which == 13 || event.which == 1){
+        event.preventDefault();
+        source_button = this;
+        console.log(source_button);
+        $('#page-entry-modal').modal();
+    }
+}
 
 function resize_problems(){
     $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
@@ -104,7 +147,6 @@ function addText() {
     }
     else {
         $('#text-entry-modal').modal();
-        console.log($('#text-entry-modal'));
         resize_problems();
     }
 }
@@ -118,13 +160,14 @@ function saveText(event) {
     })
         .success(function (data) {
             var $new_item = $("<div/>", {
-                html: "<p class='ui-selectee'>" + $('#text-entry').val() + "</p>",
+                html: "<div><p class='ui-selectee'>" + $('#text-entry').val() + "</p></div>",
                 class: "textblock item well ui-selectee",
                 id: "textblock-" + data['pk']
             });
             $new_item.prepend($("<button/>",{
                 class: "btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item ui-selectee pull-right",
-                title: "Delete Item"
+                title: "Delete Item",
+                html:"<span class='at'>Delete Text Block "+$('#text-entry').val()+"</span>"
             }))
             $page.append($new_item);
             $('#save_top').prop('disabled', false);
@@ -193,17 +236,30 @@ function change_problem_visibility(){
         .success(function (data) {
             var new_visibility = data['new_visibility'];
             var old_visibility = data['old_visibility'];
+
             if (old_visibility == 'open'){
                 $(this_button).removeClass('visibility-open glyphicon-eye-open');
                 $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
+                $(this_button).find('.at').text(
+                    $(this_button).parent().find('.searchable_content').text() +
+                    " Visibility is " +
+                    new_visibility);
             }
             else{
-                $(this_button).removeClass('visibility-'+old_visibility+' glyphicon-eye-close');
+                $(this_button).removeClass('visibility-'+old_visibility+' glyphicon-eye-close glyphicon-eye-open');
                 if (new_visibility == "open"){
                     $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-open');
+                    $(this_button).find('.at').text(
+                        $(this_button).parent().find('.searchable_content').text() +
+                        " Visibility is " +
+                        new_visibility);
                 }
                 else{
                     $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
+                    $(this_button).find('.at').text(
+                        $(this_button).parent().find('.searchable_content').text() +
+                        " Visibility is " +
+                        new_visibility);
                 }
             }
 

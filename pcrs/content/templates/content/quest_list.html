@@ -44,9 +44,11 @@
                             <div class="btn-group btn-group-xs btn-group-vertical">
                                 <button class="btn btn-default up-button"><i
                                         class="glyphicon glyphicon-arrow-up"></i>
+                                    <span class="at"> Move quest Up</span>
                                 </button>
                                 <button class="btn btn-default down-button"><i
                                         class="glyphicon glyphicon-arrow-down"></i>
+                                    <span class="at"> Move quest Down</span>
                                 </button>
                             </div>
                         </div>
@@ -73,7 +75,8 @@
                             {% for challenge in object.challenge_set.all %}
                                 <div id="{{ challenge.pk }}"
                                      class="well challenge">
-                                    <i class="close glyphicon glyphicon-remove pull-right"></i>
+                                    <i class="close glyphicon glyphicon-remove pull-right">
+                                    </i>
                                     {{ challenge.name }}
                                 </div>
                             {% endfor %}

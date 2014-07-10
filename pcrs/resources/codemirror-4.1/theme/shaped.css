@@ -19,7 +19,7 @@
 
 .cm-s-shaped span.cm-variable {font-style:italic;} /*font-style:italic;*/
 .cm-s-shaped span.cm-variable-2 {font-style:italic;}
-.cm-s-shaped span.cm-def {}
+.cm-s-shaped span.cm-def {font-style:italic;}
 .cm-s-shaped span.cm-bracket {color: red;}
 .cm-s-shaped span.cm-tag {font-weight:bold;}
 .cm-s-shaped span.cm-link {}

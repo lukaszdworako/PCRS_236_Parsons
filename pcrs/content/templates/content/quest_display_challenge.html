@@ -16,6 +16,15 @@
                        data-toggle="collapse"
                        href="#challenge_collapse_{{ challenge.pk }}">
                         <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                        {% if challenge.is_graded %}
+                            </span>
+                            <i class="glyphicon glyphicon-bookmark graded" title="Graded Challenge"></i>
+                        {% else %}
+                            </span>
+                            <i class="glyphicon glyphicon-book not-graded" title="Practice Challenge"></i>
+                        {% endif %}
+                        </span>
+                        {{ challenge.name }}
                         {% if completed == total and total != 0 %}
                             <span class="complete">
                             <span class="pull-right">
@@ -34,16 +43,15 @@
                                 Practice &nbsp;
                             {% endif %}
                                 {{ completed }}/{{ total }}
-                        {% endif %}
-                        {% if challenge.is_graded %}
-                            </span>
-                            <i class="glyphicon glyphicon-bookmark graded"></i>
                         {% else %}
-                            </span>
-                            <i class="glyphicon glyphicon-book not-graded"></i>
+                            <span class="incomplete">
+                            <span class="pull-right">
+                            {% if challenge.is_graded %}
+                                Graded &nbsp;
+                            {% else %}
+                                Practice &nbsp;
+                            {% endif %}
                         {% endif %}
-                        </span>
-                        {{ challenge.name }}
                     </a>
             </h3>
             </div>
@@ -61,8 +69,9 @@
                        data-toggle="collapse"
                        href="#challenge_collapse_{{ challenge.pk }}">
                         <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
-                        <i class="glyphicon glyphicon-lock"></i>
+                        <i class="glyphicon glyphicon-lock" title="Locked Challenge"></i>
                             {{ challenge.name }}
+                        <span class="pull-right"> Complete Prerequisites </span>
                     </a>
             </h3>
             </div>
