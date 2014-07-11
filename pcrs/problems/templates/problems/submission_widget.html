@@ -5,6 +5,9 @@
             {% if user.is_instructor %}
                 <a href="{{ problem.get_monitoring_url }}"><i class="glyphicon glyphicon-stats"></i><span class="at">Statistics for {{ problem.name }}</span></a>
             {% endif %}
+            <p class="widget_title">
+                {{ problem.name }}
+            </p>
         {% endblock %}
     {% endautoescape %}
 
@@ -30,7 +33,11 @@
 {% block problem_description %}
     <div>
         {% autoescape off %}
-        <h5  class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+        {% if problem.is_visible_to_students %}
+            <h5  class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+        {% else %}
+            <h5>This question is currently unavailable.</h5>
+        {% endif %}
         {% endautoescape %}
     </div>
     <br>

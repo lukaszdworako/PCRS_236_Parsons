@@ -1,11 +1,5 @@
 {% extends "problems/submission_widget.html" %}
 
-{% block problem_title %}
-    <p class="widget_title">
-        {{ problem.name }}
-    </p>
-{% endblock %}
-
 {% block problem_header %}
     {{ block.super }}
     {% if problem.schema.representation %}
