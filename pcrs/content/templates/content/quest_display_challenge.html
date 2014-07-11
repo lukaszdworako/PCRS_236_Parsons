@@ -11,7 +11,7 @@
                 <div class="panel-heading panel-challenge-attempted">
             {% endif %}
             <h3 class="panel-title">
-                {% if prerequisites_set|get_item:challenge.pk|issubset:challenges_completed %}
+                {% if not challenge.enforce_prerequisites or prerequisites_set|get_item:challenge.pk|issubset:challenges_completed %}
                     <a class="collapsed"
                        data-toggle="collapse"
                        href="#challenge_collapse_{{ challenge.pk }}">
