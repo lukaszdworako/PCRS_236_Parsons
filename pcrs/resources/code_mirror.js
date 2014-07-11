@@ -25,6 +25,7 @@ function history_code_mirror (language, version, location, value, lock){
             theme: user_theme,
             value: value,
             lineNumbers: 'True',
+            indentUnit: 4,
             readOnly: lock,
             lineWrapping: 'True',
             flattenSpans: 'False'});

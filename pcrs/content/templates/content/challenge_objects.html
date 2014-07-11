@@ -153,18 +153,20 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"
                             aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="page_entry_ModalLabel">There are {{ object.contentpage_set.all.count }} pages. Which page would you like to add the element to?</h4>
+                    <h4 class="modal-title" id="page_entry_ModalLabel"></h4>
                 </div>
                 <div class="modal-body">
-                    <textarea id="page-entry" class="form-control"
-                              rows="3"></textarea>
+                    <select id="page_num" title="Select page number">
+                    </select>
+                    <select id="page_location" title="Select page position">
+                    </select>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default"
                             data-dismiss="modal">Close
                     </button>
                     <button type="button" data-dismiss="modal"
-                            class="btn btn-success" id="save-page-num">Save
+                            class="btn btn-success" id="save-page-num">Ok
                     </button>
                 </div>
             </div>
