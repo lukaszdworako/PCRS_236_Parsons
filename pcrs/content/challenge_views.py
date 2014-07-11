@@ -229,3 +229,23 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
             challenge=self.get_object(), section=self.get_section())
         return HttpResponse(json.dumps({'status': 'ok', 'results': results}),
                                 mimetype='application/json')
+
+
+class ChallengePrerequisitesView(CourseStaffViewMixin, DetailView):
+    """
+    Asynchronous data request for getting the prerequisite information for
+    all Challenges.
+    """
+    model = Challenge
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(json.dumps({
+            challenge.pk: {
+                'name': challenge.name,
+                'enforced': challenge.enforce_prerequisites,
+                'prerequisites': list(challenge.prerequisites.all()
+                                               .values_list('id', flat=True))
+            }
+            for challenge in self.model.objects
+                                       .prefetch_related('prerequisites').all()
+        }),  mimetype='application/json')
