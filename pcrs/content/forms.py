@@ -21,6 +21,8 @@ class VideoForm(BaseCrispyForm, forms.ModelForm):
 
 
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
+    prerequisites = forms.ModelMultipleChoiceField(queryset=Challenge.objects.order_by('name'))
+
     class Meta:
         model = Challenge
         fields = ('visibility', 'name', 'description', 'is_graded',
