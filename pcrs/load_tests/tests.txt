@@ -1,0 +1,3 @@
+https://mcs.utm.utoronto.ca/dev/content/quests,
+https://mcs.utm.utoronto.ca/dev/content/challenges/5/1,
+https://mcs.utm.utoronto.ca/dev/problems/multiple_choice/2,submit_multiple_choice.json
