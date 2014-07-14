@@ -22,9 +22,7 @@ def run_get_test(total, concurrent, url):
 def run_post_test(total, concurrent, url, filename):
     return subprocess.check_output(
         ['ab', '-n', str(total), '-c', str(concurrent),
-         '-A', 'admin:admin',
          '-C', 'sessionid={}'.format(sessionid),
-         '-C', 'csrftoken={}'.format(csrftoken),
          '-p', filename, '-T', 'applicatio/json',
          url
         ]).decode('utf-8')
@@ -45,12 +43,10 @@ def process_output(output):
 
 
 if __name__ == '__main__':
-
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         sessionid = input('Session id: ')
-        csrftoken = input('csrftoken: ')
     else:
-        _, sessionid, csrftoken = sys.argv
+        _, sessionid = sys.argv
 
     tests = open('tests.txt').readlines()
     for test in tests:
@@ -61,7 +57,6 @@ if __name__ == '__main__':
             for num_concurrent in [1]:
                 if num_users >= num_concurrent:
                     if post_file.strip():
-                        print('!', post_file, '!')
                         output = run_post_test(
                             num_users, num_concurrent, url, post_file)
                     else:
