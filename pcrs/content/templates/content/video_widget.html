@@ -16,6 +16,7 @@
        data-setup='{"customControlsOnMobile": true }'
        poster="{{ item.thumbnail }}">
       <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
+{#      <source src="{{ item.link }}" type="rtmp/mp4">#}
 </video>
 
 {% if item.download %}

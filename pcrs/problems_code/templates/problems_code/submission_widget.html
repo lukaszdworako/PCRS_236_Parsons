@@ -1,12 +1,5 @@
 {% extends "problems/submission_widget.html" %}
 
-{% block problem_title %}
-    {{ block.super }}
-    <p class="widget_title">
-        {{ problem.name }}
-    </p>
-{% endblock %}
-
 {% block problem_specific %}
     {% include "problems_code/grade_table.html" %}
     {% include "problems_code/code_trace.html" %}

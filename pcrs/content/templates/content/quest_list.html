@@ -19,22 +19,23 @@
 
 
 {% block content %}
-    <div class="row-fluid">
 
-        <div class="col-lg-4 affix-parent">
-            <h3>Challenges</h3>
+    <div class="row-fluid row-height">
 
-            <div id="challenges" class="well affix-element" data-spy="affix"
-                 data-offset-top="200">
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 available_challenges">
+            <h3 class="challenge_title">Challenges</h3>
+
+            <div id="challenges" class="well tab-content">
                 {% for challenge in challenges %}
                     <div id="{{ challenge.pk }}" class="well challenge">
                         {{ challenge.name }}
+                        <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                     </div>
 
                 {% endfor %}
             </div>
         </div>
-        <div class="col-lg-8">
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 set_challenges">
             <h3>Quest list</h3>
 
             <div id="all-quests">
@@ -75,9 +76,11 @@
                             {% for challenge in object.challenge_set.all %}
                                 <div id="{{ challenge.pk }}"
                                      class="well challenge">
-                                    <i class="close glyphicon glyphicon-remove pull-right">
+                                    <i class="close glyphicon glyphicon-remove pull-right"
+                                       title="Remove {{ challenge.name }} from {{ object.name }}">
                                     </i>
                                     {{ challenge.name }}
+                                <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                                 </div>
                             {% endfor %}
                         </div>
@@ -86,13 +89,32 @@
                 {% endfor %}
             </div>
         </div>
-
-        <div class="btn-toolbar">
-            <a class="btn" id="new-quest" data-toggle="modal"
-               href="#quest-modal"><i class="icon-plus"></i></a>
-        </div>
     </div>
 
+    <div class="modal fade" id="page-entry-modal" tabindex="-1" role="dialog"
+         aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="page_entry_ModalLabel"></h4>
+                </div>
+                <div class="modal-body">
+                    <select id="quest_list">
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">Close
+                    </button>
+                    <button type="button" data-dismiss="modal"
+                            class="btn btn-success" id="save-page-num" onclick="move_challenge()">Ok
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <button id="save" class="btn btn-success btn-large disabled pull-right">
         Save

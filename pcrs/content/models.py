@@ -1,4 +1,3 @@
-from collections import defaultdict
 import datetime
 
 from django.contrib.contenttypes import generic
@@ -6,13 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete
-from django.utils.timezone import utc
+from django.utils.timezone import utc, now
 
 from content.tags import AbstractTaggedObject
 
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence)
-# import problems.models
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
 
@@ -156,9 +154,6 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def get_stats_page_url(self):
         return '{}/stats'.format(self.get_absolute_url())
 
-    def get_prerequisite_pks_set(self):
-        return set(c.pk for c in self.prerequisites.all())
-
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
@@ -180,7 +175,7 @@ class Quest(AbstractNamedObject, AbstractSelfAwareModel):
         if not self.__class__.objects.filter(pk=self.pk).exists():
             # new Quest, create SectionQuests for it
             super().save(force_insert, force_update, using, update_fields)
-            for section in Section.objects.all():
+            for section in Section.get_lecture_sections():
                 SectionQuest.objects.get_or_create(section=section, quest=self)
         else:
             super().save(force_insert, force_update, using, update_fields)

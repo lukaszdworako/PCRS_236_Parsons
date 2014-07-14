@@ -1,60 +1,74 @@
 {% block problem_header %}
     <h3>
-    {% autoescape off %}
-        {% block problem_title %}
-            {% if user.is_instructor %}
-                <a href="{{ problem.get_monitoring_url }}"><i class="glyphicon glyphicon-stats"></i><span class="at">Statistics for {{ problem.name }}</span></a>
-            {% endif %}
-        {% endblock %}
-    {% endautoescape %}
+        {% autoescape off %}
+            {% block problem_title %}
+                {% if user.is_instructor %}
+                    <a href="{{ problem.get_monitoring_url }}"><i
+                            class="glyphicon glyphicon-stats"></i><span
+                            class="at">Statistics for {{ problem.name }}</span></a>
+                {% endif %}
+                <p class="widget_title">
+                    {{ problem.name }}
+                </p>
+            {% endblock %}
+        {% endautoescape %}
 
-    {% block problem_score %}
-        {% if mark|default_if_none:'-' == problem.max_score %}
-            <span class="pull-right widget_complete" title="Progress so far">
-            {% include "pcrs/checkmark_complete.html" %}
-        {% else %}
-            {% if mark|length > 0 %}
-                <span class="pull-right widget_incomplete" title="Progress so far">
+        {% block problem_score %}
+            {% if mark|default_if_none:'-' == problem.max_score %}
+                <span class="pull-right widget_complete"
+                      title="Progress so far">
+                {% include "pcrs/checkmark_complete.html" %}
             {% else %}
-                <span class="pull-right widget_not_attempted" title="Progress so far">
+                {% if mark|length > 0 %}
+                    <span class="pull-right widget_incomplete"
+                          title="Progress so far">
+                {% else %}
+                    <span class="pull-right widget_not_attempted"
+                          title="Progress so far">
+                {% endif %}
+                <sup> {{ mark|default_if_none:'-' }} </sup>
+                /
+                <sub> {{ problem.max_score }} </sub>
             {% endif %}
-            <sup> {{ mark|default_if_none:'-' }} </sup>
-            /
-            <sub> {{ problem.max_score }} </sub>
-        {% endif %}
-    </span>
-    {% endblock %}
+        </span>
+        {% endblock %}
     </h3>
 {% endblock %}
 
 {% block problem_description %}
     <div>
         {% autoescape off %}
-        <h5  class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+            {% if problem.is_visible_to_students %}
+                <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+            {% else %}
+                <h5>This question is currently unavailable.</h5>
+            {% endif %}
         {% endautoescape %}
     </div>
     <br>
 {% endblock %}
 
-{% block submission_form %}
-    {% autoescape off %}
-    {% load crispy_forms_tags %}
-    {% crispy form %}
-    {% endautoescape %}
-{% endblock %}
+{% if problem.is_visible_to_students %}
+    {% block submission_form %}
+        {% autoescape off %}
+            {% load crispy_forms_tags %}
+            {% crispy form %}
+        {% endautoescape %}
+    {% endblock %}
 
-{% block alert %}
-    <br>
-    <div class="alert" id="alert">
-        <icon class="glyphicon"></icon>
-        <span></span>
-        <a class="at screen-reader-text" href=''></a>
-    </div>
-{% endblock %}
+    {% block alert %}
+        <br>
+        <div class="alert" id="alert">
+            <icon class="glyphicon"></icon>
+            <span></span>
+            <a class="at screen-reader-text" href=''></a>
+        </div>
+    {% endblock %}
 
-{% block history %}
-    {% include "problems/submission_history.html" %}
-{% endblock %}
+    {% block history %}
+        {% include "problems/submission_history.html" %}
+    {% endblock %}
 
-{% block problem_specific %}
-{% endblock %}
+    {% block problem_specific %}
+    {% endblock %}
+{% endif %}

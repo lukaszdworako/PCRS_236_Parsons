@@ -20,6 +20,8 @@ $(document).ready(function () {
 
     $('.btn-object-visibility').on('click', change_problem_visibility);
 
+    $(document).on('change', '#page_num', update_page_location);
+
     $(".page").sortable({
         connectWith: ".page",
         update: function (event, ui) {
@@ -55,14 +57,16 @@ $(document).ready(function () {
 
 function select_given_page(){
 
-    var selected_page = $('#page-entry').val().trim();
+    var selected_page = $('#page_num').val().trim();
+    var selected_location = $('#page_location').val().trim();
     if (!selected_page.isNaN){
         if ($(document).find('#challenge').find('[id*="page-"]').length >= selected_page){
             if (selected_page > 0){
                 if ($(source_button).hasClass("btn-object-add")){
-                    $($(document).find('#challenge').find('[id*="page-"]')[selected_page-1]).append($(source_button).parent());
+                    $($($(document).find('#challenge').find('[id*="page-"]')[selected_page-1]).children()[selected_location]).after($(source_button).parent());
                     $('#save_top').prop('disabled', false);
                     $('#save_bot').prop('disabled', false);
+                    resize_problems();
                 }
                 else{
                     $(document).find('#challenge').find('[id*="page-"]').removeClass("ui-selected");
@@ -88,8 +92,23 @@ function add_text_enter(event){
     if(event.which == 13 || event.which == 1){
         event.preventDefault();
         source_button = this;
-        console.log(source_button);
+        var number_of_pages = $('#challenge').children().length;
+        $('#page-entry-modal').find('.modal-title').text("There are "+number_of_pages+" pages. To which page and in what position you want to add the element to?");
+        $('#page_num').empty();
+        for (var page_num = 1; page_num < number_of_pages+1; page_num++){
+            $('#page_num').append("<option value="+page_num+">"+page_num+"</option>");
+        }
+        update_page_location();
         $('#page-entry-modal').modal();
+    }
+}
+
+function update_page_location(){
+    var selected_page_num = $('#page_num').val() - 1;
+    var number_of_components = $($('[id*="page-"]')[selected_page_num]).children().length;
+    $('#page_location').empty();
+    for (var comp_index = 0; comp_index < number_of_components; comp_index++){
+        $('#page_location').append("<option value="+comp_index+">"+comp_index+"</option>");
     }
 }
 

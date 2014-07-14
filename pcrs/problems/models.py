@@ -280,7 +280,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
         return cls.objects\
             .filter(cls.deadline_constraint(),
                     problem__challenge__quest=quest, user__section=section,
-                    problem__challenge__quest__sectionquest__section=section)\
+                    problem__challenge__quest__sectionquest__section=section,
+                    problem__visibility='open')\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
 
     @classmethod

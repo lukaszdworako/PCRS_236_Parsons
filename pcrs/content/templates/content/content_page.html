@@ -50,14 +50,7 @@
                         <div id="{{ problem_type|get_div_class }}-{{ item.pk }}">
                     {% endif %}
                     {% with problem=item mark=best|get_item:problem_type|get_item:item.pk form=forms|get_item:problem_type|get_item:item.pk %}
-                        {% if problem.is_visible_to_students %}
-                            {% include item.get_module_name|add:"/submission_widget.html" %}
-                        {% else %}
-                            <h3 class="widget_title"> {{ item }} </h3>
-                            <span class="pull-right widget_down"></span>
-                            <div> Sorry this question is currently not available </div>
-                            <br>
-                        {% endif %}
+                    {% include item.get_module_name|add:"/submission_widget.html" %}
                     {% endwith %}
                 {% endwith %}
             </div>

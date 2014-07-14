@@ -10,7 +10,6 @@ from users.models import Section, PCRSUser
 
 class GradesTestWithDeadlineMixin:
     def setUp(self):
-        master = Section.objects.create(section_id='master', location='BA', lecture_time='10-11')
         self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
         self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
 
@@ -19,7 +18,7 @@ class GradesTestWithDeadlineMixin:
 
         self.instructor = PCRSUser.objects.create(username='instructor',
                                                   is_instructor=True,
-                                                  section=master)
+                                                  section=Section.objects.get(section_id='master'))
 
         self.quest1 = Quest.objects.create(name='q1', description='q1')
         self.quest2 = Quest.objects.create(name='q2', description='q2')
@@ -45,7 +44,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         SectionQuest.objects.update(due_on=None)
 
         problem = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         for score in [2, 1, 0, 4]:
             for student in [self.student1, self.student2]:
                 self.submission_class.objects.create(
@@ -85,7 +84,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         Test a single problem in challenge.
         """
         problem = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         for score in [2, 1, 0, 4]:
             for student in [self.student1, self.student2]:
                 self.submission_class.objects.create(
@@ -127,7 +126,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         deadline.
         """
         problem = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         for score in [2, 1, 0, 3]:
             for student in [self.student1, self.student2]:
                 self.submission_class.objects.create(
@@ -171,15 +170,69 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertIn(b'0', lines)
         self.assertIn(b'student2,3', lines)
 
+    def test_multiple_problems_one_closed(self):
+        """
+        Test a with two problems in challenge, a closed problem should not be
+        graded.
+        """
+        problem = self.problem_class.objects.create(pk=1, name='test',
+            description='test', challenge=self.c1, visibility='open')
+        problem2 = self.problem_class.objects.create(pk=2, name='test2',
+            description='test', challenge=self.c1, visibility='closed')
+
+        for score in [2, 1, 0, 3]:
+            for student in [self.student1, self.student2]:
+                self.submission_class.objects.create(
+                    problem=problem, user=student, score=score)
+        Submission.objects.update(timestamp=localtime(now()) - timedelta(days=10))
+
+        self.submission_class.objects.create(
+                    problem=problem, user=self.student1, score=4)
+        self.submission_class.objects.create(
+                    problem=problem, user=self.student2, score=5)
+        # the latest submission counts only for student1 whose deadline has
+        # not passed
+        expected = [{'user': 'student1', 'best': 4, 'problem': 1}]
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s1)
+        self.assertListEqual(expected, list(actual))
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s1.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s1.section_id})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student1,4', lines)
+
+        # for section2 the deadline passed, submissions made now do not count
+        expected = [{'user': 'student2', 'best': 3, 'problem': 1}]
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s2)
+        self.assertListEqual(expected, list(actual))
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s2.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s2.section_id})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student2,3', lines)
+
+
     def test_multiple_sub_to_multiple_problems_some_after(self):
         """
         Test multiple problems in one challenge, with submissions after the
         deadline.
         """
         problem1 = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -242,9 +295,9 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         submissions after the appropriate deadline.
         """
         problem1 = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c2)
+            description='test', challenge=self.c2, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -340,9 +393,9 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
                             .update(due_on=localtime(now()) - timedelta(days=7))
 
         problem1 = self.problem_class.objects.create(pk=1, name='test',
-            description='test', challenge=self.c1)
+            description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c2)
+            description='test', challenge=self.c2, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -436,9 +489,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         problem sting representation and problem maximum scores.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1, max_score=4)
+            pk=1, name='test', description='test', challenge=self.c1,
+            max_score=4, visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1, max_score=3)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            max_score=3, visibility='open')
 
         self.client.login(username=self.instructor)
         response = self.client.post(
@@ -457,9 +512,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         do not appear in the grades file.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c2)
+            pk=2, name='test2', description='test', challenge=self.c2,
+            visibility='open')
 
         self.client.login(username=self.instructor)
         response = self.client.post(
@@ -476,9 +533,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         Test multiple problems of one type in a challenge, with no submissions.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = Problem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         self.client.login(username=self.instructor)
         response = self.client.post(
@@ -496,9 +555,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         with no submissions.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         self.client.login(username=self.instructor)
         response = self.client.post(
@@ -516,9 +577,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         with submissions to all problems.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         for problem in [problem1, problem2]:
             for score in [2, 1, 0, 1]:
@@ -542,9 +605,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         with submissions to one problem.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -567,9 +632,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         with submissions to one problem, that is the second problem.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -592,9 +659,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
         with multiple submissions to all problems.
         """
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         for score in [2, 1, 3, 1]:
             for student in [self.student1, self.student2]:
@@ -619,9 +688,11 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
     def test_no_dealine(self):
         SectionQuest.objects.update(due_on=None)
         problem1 = Problem.objects.create(
-            pk=1, name='test', description='test', challenge=self.c1)
+            pk=1, name='test', description='test', challenge=self.c1,
+            visibility='open')
         problem2 = MCProblem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1)
+            pk=2, name='test2', description='test', challenge=self.c1,
+            visibility='open')
 
         for score in [2, 1, 3, 1]:
             for student in [self.student1, self.student2]:
