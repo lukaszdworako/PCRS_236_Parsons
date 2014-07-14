@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete
-from django.utils.timezone import utc
+from django.utils.timezone import utc, now
 
 from content.tags import AbstractTaggedObject
 
@@ -158,6 +158,24 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
 
     def get_prerequisite_pks_set(self):
         return set(c.pk for c in self.prerequisites.all())
+
+    @classmethod
+    def get_enforced_prerequisite_pks_set(cls, section):
+        deadline_passed = cls.objects\
+            .filter(quest__sectionquest__section=section,
+                    quest__sectionquest__due_on__lt=now())
+        deadline_passed = set(deadline_passed.values_list('id', flat=True))
+
+        prereqs = defaultdict(list)
+        for challenge in cls.objects.prefetch_related('prerequisites').all():
+            if not challenge.enforce_prerequisites:
+                prereqs[challenge] = []
+            else:
+                for prereq in challenge.prerequisites.all()\
+                        .values_list('id', flat=True):
+                    if prereq not in deadline_passed:
+                        prereqs[challenge].append(prereq)
+        return prereqs
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
