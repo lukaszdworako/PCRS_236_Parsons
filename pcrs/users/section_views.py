@@ -80,7 +80,9 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         problems, names, max_scores = [], [], []
         problem_types = get_problem_content_types()
         for ctype in problem_types:
-            for problem in ctype.model_class().objects.filter(challenge__quest=quest).order_by('id'):
+            for problem in ctype.model_class().objects\
+                    .filter(challenge__quest=quest, visibility='open')\
+                    .order_by('id'):
                 problems.append((ctype.app_label, problem.pk))
                 names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
                 max_scores.append(problem.max_score)
