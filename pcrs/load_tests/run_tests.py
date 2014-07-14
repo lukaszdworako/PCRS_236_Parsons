@@ -53,8 +53,8 @@ if __name__ == '__main__':
         url, post_file = test.split(',')
         print(url)
         results = defaultdict(dict)
-        for num_users in [1]:
-            for num_concurrent in [1]:
+        for num_users in [1, 10, 20, 40, 60, 80, 100]:
+            for num_concurrent in [1, 10, 20, 40, 60, 80, 100]:
                 if num_users >= num_concurrent:
                     if post_file.strip():
                         output = run_post_test(
