@@ -26,7 +26,7 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
     class Meta:
         model = Challenge
         fields = ('visibility', 'name', 'description', 'is_graded',
-                  'prerequisites', 'enforce_prerequisites')
+                  'prerequisites')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

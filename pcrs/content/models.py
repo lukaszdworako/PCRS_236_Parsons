@@ -1,4 +1,3 @@
-from collections import defaultdict
 import datetime
 
 from django.contrib.contenttypes import generic
@@ -12,7 +11,6 @@ from content.tags import AbstractTaggedObject
 
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence)
-# import problems.models
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
 
@@ -156,27 +154,6 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def get_stats_page_url(self):
         return '{}/stats'.format(self.get_absolute_url())
 
-    def get_prerequisite_pks_set(self):
-        return set(c.pk for c in self.prerequisites.all())
-
-    @classmethod
-    def get_enforced_prerequisite_pks_set(cls, section):
-        deadline_passed = cls.objects\
-            .filter(quest__sectionquest__section=section,
-                    quest__sectionquest__due_on__lt=now())
-        deadline_passed = set(deadline_passed.values_list('id', flat=True))
-
-        prereqs = defaultdict(list)
-        for challenge in cls.objects.prefetch_related('prerequisites').all():
-            if not challenge.enforce_prerequisites:
-                prereqs[challenge] = []
-            else:
-                for prereq in challenge.prerequisites.all()\
-                        .values_list('id', flat=True):
-                    if prereq not in deadline_passed:
-                        prereqs[challenge].append(prereq)
-        return prereqs
-
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
@@ -198,7 +175,7 @@ class Quest(AbstractNamedObject, AbstractSelfAwareModel):
         if not self.__class__.objects.filter(pk=self.pk).exists():
             # new Quest, create SectionQuests for it
             super().save(force_insert, force_update, using, update_fields)
-            for section in Section.objects.all():
+            for section in Section.get_lecture_sections():
                 SectionQuest.objects.get_or_create(section=section, quest=self)
         else:
             super().save(force_insert, force_update, using, update_fields)

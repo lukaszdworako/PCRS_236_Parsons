@@ -221,6 +221,10 @@ class Section(AbstractSelfAwareModel):
     def get_base_url(cls):
         return '{site}/sections'.format(site=settings.SITE_PREFIX)
 
+    @classmethod
+    def get_lecture_sections(cls):
+        return cls.objects.exclude(section_id=MASTER_SECTION_ID)
+
     def is_master(self):
         return self.section_id == MASTER_SECTION_ID
 

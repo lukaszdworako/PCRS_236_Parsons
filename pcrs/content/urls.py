@@ -59,9 +59,6 @@ urlpatterns = patterns('',
     url(r'^challenges/prerequisites$',
         ChallengePrerequisitesView.as_view(),
         name='challenge_prerequisite_data'),
-    url(r'^challenges/(?P<pk>[0-9]+)/no_go$',
-        IncompletePrerequisitesView.as_view(),
-        name='challenge_missing_prerequisites'),
 
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
