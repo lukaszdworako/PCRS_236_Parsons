@@ -60,7 +60,8 @@ class QuestSaveChallengesView(CourseStaffViewMixin, CreateView):
     def post(self, request, *args, **kwargs):
         quests = json.loads(request.POST.get('quests'))
         # destroy all quest-challenge relationships
-        Challenge.objects.update(quest=None)
+        Challenge.objects.update(quest=None, order=0)
+
         for quest_id, quest_info in quests.items():
             quest = Quest.objects.get(pk=quest_id)
 
