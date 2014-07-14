@@ -4,7 +4,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_delete
 from django.utils.timezone import utc, now
 
 from content.tags import AbstractTaggedObject
@@ -220,5 +220,14 @@ def contentsequenceitem_delete(sender, instance, **kwargs):
         instance.content_object.challenge = None
         instance.content_object.save()
 
+
+def contenttextitem_delete(sender, instance, **kwargs):
+    """
+    Delete the text block if its ContentSequenceItem was removed.
+    """
+    if instance.content_type.model == 'textblock':
+        instance.content_object.delete()
+
 pre_delete.connect(page_delete, sender=ContentPage)
 pre_delete.connect(contentsequenceitem_delete, sender=ContentSequenceItem)
+post_delete.connect(contenttextitem_delete, sender=ContentSequenceItem)
