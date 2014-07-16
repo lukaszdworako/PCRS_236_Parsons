@@ -192,7 +192,8 @@ class ChallengePrerequisitesView(CourseStaffViewMixin, DetailView):
                 'name': challenge.name,
                 'enforced': challenge.enforce_prerequisites,
                 'prerequisites': list(challenge.prerequisites.all()
-                                               .values_list('id', flat=True))
+                                               .values_list('id', flat=True)),
+                'quest_id': challenge.quest_id
             }
             for challenge in self.model.objects
                                        .prefetch_related('prerequisites').all()
