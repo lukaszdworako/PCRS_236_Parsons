@@ -92,6 +92,9 @@ STATIC_ROOT = ''
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
+#Indicates to django_compress that you want the files to be compressed
+COMPRESS_ENABLED = "True"
+
 # Additional locations of static files
 STATICFILES_DIRS = (
     '/home/zollar/pcrs_git/pcrs/pcrs/resources',
@@ -106,6 +109,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+#finder for django_compress
+    'compressor.finders.CompressorFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -170,6 +175,7 @@ INSTALLED_APPS = (
     'users',
     'content',
     'problems',
+    'compressor',
 ) + INSTALLED_PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'

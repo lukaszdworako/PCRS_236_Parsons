@@ -1,6 +1,8 @@
+//root is a global variable from base.html
+
 $( document ).ready(function() {
 
-    all_mc = $('div[id^="multiple_choice-"]');
+    var all_mc = $('div[id^="multiple_choice-"]');
 
     for (var x = 0; x < all_mc.length; x++){
         $(all_mc[x]).find('#submit-id-submit').click(function(event){
@@ -32,206 +34,231 @@ $( document ).ready(function() {
     }
 });
 
-    function getMCHistory(mc_id){
-        var postParams = { csrftoken: csrftoken };
-        $.post(root+'/problems/multiple_choice/'+mc_id.split("-")[1]+'/history',
-        postParams,
-        function(data){
-            show_mc_history(data, mc_id);
-        },
-        'json')
-        .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+function getMCHistory(mc_id){
+    /**
+     * Get all the previous Multiple choice submission for
+     * the problem give it's main div id field "mc_id"
+     */
+
+    var postParams = { csrftoken: csrftoken };
+
+    $.post(root+'/problems/multiple_choice/'+mc_id.split("-")[1]+'/history',
+    postParams,
+    function(data){
+        show_mc_history(data, mc_id);
+    },
+    'json')
+    .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+}
+
+function show_mc_history(data, div_id){
+    /**
+     * add all the previous submissions one at a time to the history inside the given div "div_id"
+     */
+
+    for (var x = 0; x < data.length; x++){
+        add_mc_history_entry(data[x], div_id, 0);
+    }
+}
+
+function create_mc_timestamp(datetime){
+    /**
+     * Convert Django time to PCRS display time for history
+     */
+
+    var month_names = ["January","February","March","April","May","June",
+                       "July","August","September","October","November","December"];
+    var day = datetime.getDate();
+    var month = month_names[datetime.getMonth()];
+    var year = datetime.getFullYear();
+    var hour = datetime.getHours();
+    var minute = datetime.getMinutes();
+    var cycle = "";
+
+    if (String(minute).length == 1){
+        minute = "0" + minute
     }
 
-    function show_mc_history(data, div_id){
-        for (var x = 0; x < data.length; x++){
-            add_mc_history_entry(data[x], div_id, 0);
-        }
+    if (hour > 12){
+        hour -= 12;
+        cycle = "p.m.";
+    }
+    else{
+        cycle = "a.m.";
     }
 
-    function create_mc_timestamp(datetime){
-        month_names = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-        day = datetime.getDate();
-        month = month_names[datetime.getMonth()];
-        year = datetime.getFullYear();
-        hour = datetime.getHours();
-        minute = datetime.getMinutes();
-        if (String(minute).length == 1){
-            minute = "0" + minute
-        }
-        if (hour > 12){
-            hour -= 12;
-            cycle = "p.m.";
-        }
-        else{
-            cycle = "a.m.";
-        }
+    var formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
+    return formated_datetime;
+}
 
-        formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
-        return formated_datetime;
+function add_mc_history_entry(data, div_id, flag){
+    /**
+     * Add a given previous submission "data" to the history of a given "div_id"
+     * "flag" 0 appends anf "flag" 1 prepends
+     */
+
+    var sub_time = new Date(data['sub_time']);
+    sub_time = create_mc_timestamp(sub_time);
+
+    var panel_class = "panel panel-default";
+
+    if (!data['past_dead_line']){
+        panel_class = "panel panel-warning";
+        sub_time = "Past dead line";
     }
 
-    function add_mc_history_entry(data, div_id, flag){
+    star_text = "";
 
-        var sub_time = new Date(data['sub_time']);
-        sub_time = create_mc_timestamp(sub_time);
-
-        data['past_dead_line'] = false;
-
-        var panel_class = "panel panel-default";
-
-        if (data['past_dead_line']){
-            panel_class = "panel panel-warning";
-            sub_time = "Past dead line";
-        }
-
-        star_text = "";
-        if (data['best']){
-            panel_class = "panel panel-primary";
-            star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
-            $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
-            $('#'+div_id).find('#history_accordion').find(".panel-primary")
-                .addClass("panel-default").removeClass("panel-primary");
-        }
-
-        var entry = $('<div/>',{class:panel_class});
-        var header1 = $('<div/>',{class:"panel-heading"});
-        var header2 = $('<h4/>', {class:"panel-title"});
-        var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
-                                          + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
-                                          + " / "
-                                          + "<sub style='font-size:0.9em'>"+ data['out_of']+" </sub>"
-                                          + "</span>"});
-
-        var header3 = $('<a/>', {'data-toggle':"collapse",
-                                 'data-parent':"#history_accordion",
-                                  href:"#collapse_"+data['sub_pk'],
-                                  html:sub_time + header4.html()});
-
-        var cont1 = $('<div/>', {class:"panel-collapse collapse",
-                                      id:"collapse_" + data['sub_pk']});
-
-        var cont2 = $('<div/>', {id:"MC_answer_"
-                                          + data['problem_pk']
-                                          + "_"
-                                          + data['sub_pk'],
-                                      html:data['submission']});
-
-        var cont3 = $('<ul/>', {class:"list-group"});
-
-        for (var num = 0; num < data['options'].length; num++){
-
-            var ic = "<icon class='glyphicon glyphicon-unchecked'> </icon>";
-            var test_msg = "";
-            if (data['options'][num]['selected']){
-                ic = "<icon class='glyphicon glyphicon-check'> </icon>";
-            }
-
-            var cont4 = $('<li/>', {
-                class: "list-group-item",
-                html:ic + " " + data['options'][num]['option']
-            });
-
-            cont3.append(cont4);
-        }
-
-        header2.append(header3);
-        header1.append(header2);
-
-        entry.append(header1);
-        cont1.append(cont2);
-        cont1.append(cont3);
-        entry.append(cont1);
-
-        if (flag == 0){
-            $('#'+div_id).find('#history_accordion').append(entry);
-        }
-        else{
-            $('#'+div_id).find('#history_accordion').prepend(entry);
-        }
+    if (data['best'] && data['past_dead_line']){
+        panel_class = "panel panel-primary";
+        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
+        $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
+        $('#'+div_id).find('#history_accordion').find(".panel-primary")
+            .addClass("panel-default").removeClass("panel-primary");
     }
 
-    function submit_mc(submission, problem_pk, div_id) {
-        var postParams = { csrftoken: csrftoken, options : submission  };
+    var entry = $('<div/>',{class:panel_class});
+    var header1 = $('<div/>',{class:"panel-heading"});
+    var header2 = $('<h4/>', {class:"panel-title"});
+    var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
+                                      + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
+                                      + " / "
+                                      + "<sub style='font-size:0.9em'>"+ data['out_of']+" </sub>"
+                                      + "</span>"});
 
-        $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
-                postParams,
-                function(data) {
-                    var display_element = $('#multiple_choice-'+problem_pk)
-                        .find("#alert");
+    var header3 = $('<a/>', {'data-toggle':"collapse",
+                             'data-parent':"#history_accordion",
+                              href:"#collapse_"+data['sub_pk'],
+                              html:sub_time + header4.html()});
 
-                    var score = data['score'];
-                    var max_score = data['max_score'];
+    var cont1 = $('<div/>', {class:"panel-collapse collapse",
+                                  id:"collapse_" + data['sub_pk']});
 
-                    var desider = score == max_score;
+    var cont2 = $('<div/>', {id:"MC_answer_"
+                                      + data['problem_pk']
+                                      + "_"
+                                      + data['sub_pk'],
+                                  html:data['submission']});
+
+    var cont3 = $('<ul/>', {class:"list-group"});
+
+    for (var num = 0; num < data['options'].length; num++){
+
+        var ic = "<icon class='glyphicon glyphicon-unchecked'> </icon>";
+        var test_msg = "";
+        if (data['options'][num]['selected']){
+            ic = "<icon class='glyphicon glyphicon-check'> </icon>";
+        }
+
+        var cont4 = $('<li/>', {
+            class: "list-group-item",
+            html:ic + " " + data['options'][num]['option']
+        });
+
+        cont3.append(cont4);
+    }
+
+    header2.append(header3);
+    header1.append(header2);
+
+    entry.append(header1);
+    cont1.append(cont2);
+    cont1.append(cont3);
+    entry.append(cont1);
+
+    if (flag == 0){
+        $('#'+div_id).find('#history_accordion').append(entry);
+    }
+    else{
+        $('#'+div_id).find('#history_accordion').prepend(entry);
+    }
+}
+
+function submit_mc(submission, problem_pk, div_id) {
+    /**
+     * Submits the students solution to a MC problem
+     */
+
+    var postParams = { csrftoken: csrftoken, options : submission  };
+
+    $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
+            postParams,
+            function(data) {
+                var display_element = $('#multiple_choice-'+problem_pk)
+                    .find("#alert");
+
+                var score = data['score'];
+                var max_score = data['max_score'];
+
+                var desider = score == max_score;
+                $(display_element)
+                    .toggleClass("alert-danger", !desider);
+                $(display_element)
+                    .toggleClass("alert-success", desider);
+                $(display_element)
+                    .children('icon')
+                    .toggleClass("glyphicon-remove", !desider);
+                $(display_element)
+                    .children('icon')
+                    .toggleClass("glyphicon-ok", desider);
+                if (desider){
                     $(display_element)
-                        .toggleClass("alert-danger", !desider);
+                        .children('span')
+                        .text("Your solution is correct!");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
+                }
+                else{
                     $(display_element)
-                        .toggleClass("alert-success", desider);
-                    $(display_element)
-                        .children('icon')
-                        .toggleClass("glyphicon-remove", !desider);
-                    $(display_element)
-                        .children('icon')
-                        .toggleClass("glyphicon-ok", desider);
-                    if (desider){
-                        $(display_element)
-                            .children('span')
-                            .text("Your solution is correct!");
-                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
+                        .children('span')
+                        .text("Your solution is incorrect!");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is incorrect!");
+                }
+
+                mc_options = $('#'+div_id).find('[id^="id_options_"]');
+
+                options_list = []
+
+                for (var opt = 0; opt < mc_options.length; opt++){
+                    options_list.push({
+                        'selected': $(mc_options[opt]).is(':checked'),
+                        'option': $(mc_options[opt]).parents('.checkbox').text()
+                    });
+                }
+
+                returnable = {
+                    'sub_time': new Date(),
+                    'score': score,
+                    'out_of': max_score,
+                    'best': data['best'],
+                    'past_dead_line': false,
+                    'problem_pk': problem_pk,
+                    'sub_pk': data['sub_pk'],
+                    'options': options_list
+                }
+                if (data['best']){
+                    var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
+                    var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
+                    if (score == max_score){
+                        $('#'+div_id).find(".widget_title").siblings('span').empty();
+                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                        side_bar.css("color","green");
+                        side_bar.removeClass();
+                        side_bar.addClass("glyphicon glyphicon-check");
+                        new_title += " : Complete"
                     }
                     else{
-                        $(display_element)
-                            .children('span')
-                            .text("Your solution is incorrect!");
-                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is incorrect!");
+                        $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
+                        $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
+                        new_title += " : " + score + " / " + max_score;
+                        side_bar.css("color","DarkOrange");
                     }
+                    side_bar.prop('title', new_title);
+                }
 
-                    mc_options = $('#'+div_id).find('[id^="id_options_"]');
-
-                    options_list = []
-
-                    for (var opt = 0; opt < mc_options.length; opt++){
-                        options_list.push({
-                            'selected': $(mc_options[opt]).is(':checked'),
-                            'option': $(mc_options[opt]).parents('.checkbox').text()
-                        });
-                    }
-
-                    returnable = {
-                        'sub_time': new Date(),
-                        'score': score,
-                        'out_of': max_score,
-                        'best': data['best'],
-                        'past_dead_line': false,
-                        'problem_pk': problem_pk,
-                        'sub_pk': data['sub_pk'],
-                        'options': options_list
-                    }
-                    if (data['best']){
-                        var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-                        var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
-                        if (score == max_score){
-                            $('#'+div_id).find(".widget_title").siblings('span').empty();
-                            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
-                            side_bar.css("color","green");
-                            side_bar.removeClass();
-                            side_bar.addClass("glyphicon glyphicon-check");
-                            new_title += " : Complete"
-                        }
-                        else{
-                            $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
-                            $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
-                            new_title += " : " + score + " / " + max_score;
-                            side_bar.css("color","DarkOrange");
-                        }
-                        side_bar.prop('title', new_title);
-                    }
-
-                    if ($('#'+div_id).find('#history_accordion').children().length != 0){
-                        add_mc_history_entry(returnable, div_id, 1)
-                    }
-                },
-            "json")
-         .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
-    }
+                if ($('#'+div_id).find('#history_accordion').children().length != 0){
+                    add_mc_history_entry(returnable, div_id, 1)
+                }
+            },
+        "json")
+     .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+}

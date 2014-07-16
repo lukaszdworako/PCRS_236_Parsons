@@ -1,10 +1,11 @@
 {% load staticfiles %}
 
-<script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
-
-<script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
-<script src="{% static "codemirror-4.1/mode/sql/sql.js" %}"></script>
-<script src="{% static "codemirror-4.1/mode/ra/ra.js" %}"></script>
+{% load compress %}
+{% compress js %}
+    <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/sql/sql.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/ra/ra.js" %}"></script>
 
 {% include "problems_code/visualizer_python_includes.html" %}
 
@@ -51,3 +52,4 @@
         type="text/javascript"></script>
 <script src="{% static "problems_code/js/visualizer.js" %}"
         type="text/javascript"></script>
+{% endcompress %}

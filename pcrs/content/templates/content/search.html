@@ -1,7 +1,10 @@
 {% block scripts %}
     {% load static %}
-    <script src="{% static "content/js/search.js" %}"
-            type="text/javascript"></script>
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "content/js/search.js" %}"
+                type="text/javascript"></script>
+    {% endcompress %}
 {% endblock %}
 
 <input id="searcher" type="text" name="Search problems" placeholder="Search problems">
