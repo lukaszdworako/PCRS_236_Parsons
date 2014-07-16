@@ -5,7 +5,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
                                   DeleteView, FormView, View)
 from django.views.generic.detail import SingleObjectMixin
-from pcrs.generic_views import GenericItemCreateView, GenericItemListView
+from pcrs.generic_views import GenericItemCreateView, GenericItemListView, \
+    GenericItemUpdateView
 
 from problems.forms import ProgrammingSubmissionForm, MonitoringForm
 from users.models import Section
@@ -46,9 +47,6 @@ class ProblemCreateView(CourseStaffViewMixin, ProblemView,
     """
     template_name = 'problems/problem_form.html'
 
-    def get_success_url(self):
-        return self.model.get_base_url() + '/list'
-
 
 class ProblemCloneView(ProblemCreateView):
     """
@@ -77,14 +75,11 @@ class ProblemCreateAndAddTCView(ProblemCreateView):
         return '{}/testcase'.format(self.object.get_absolute_url())
 
 
-class ProblemUpdateView(CourseStaffViewMixin, ProblemView, UpdateView):
+class ProblemUpdateView(CourseStaffViewMixin, ProblemView, GenericItemUpdateView):
     """
     Update a problem.
     """
     template_name = 'problems/problem_form.html'
-
-    def get_success_url(self):
-        return self.model.get_base_url() + '/list'
 
 
 class ProblemDeleteView(CourseStaffViewMixin, ProblemView, DeleteView):

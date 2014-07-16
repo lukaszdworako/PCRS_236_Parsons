@@ -20,7 +20,7 @@ class GenericItemDetailView:
     A generic detail entry view. Redirect to the item list on success.
     """
     def get_success_url(self):
-        return '{}/list'.format(self.model.get_base_url())
+        return self.object.get_absolute_url()
 
 
 class GenericItemCreateView(GenericItemDetailView, CreateView):
