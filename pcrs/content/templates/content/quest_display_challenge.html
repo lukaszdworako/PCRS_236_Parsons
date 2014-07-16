@@ -11,58 +11,60 @@
                 <div class="panel-heading panel-challenge-attempted">
             {% endif %}
             <h3 class="panel-title">
-                    <a class="collapsed"
-                       data-toggle="collapse"
-                       href="#challenge_collapse_{{ challenge.pk }}">
-                        <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
-                        {% if challenge.is_graded %}
-                            </span>
-                            <i class="glyphicon glyphicon-bookmark graded" title="Graded Challenge"></i>
-                        {% else %}
-                            </span>
-                            <i class="glyphicon glyphicon-book not-graded" title="Practice Challenge"></i>
-                        {% endif %}
+                <a class="collapsed"
+                   data-toggle="collapse"
+                   href="#challenge_collapse_{{ challenge.pk }}">
+                    <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                    {% if challenge.is_graded %}
                         </span>
-                        {{ challenge.name }}
-                        {% if completed == total and total != 0 %}
-                            <span class="complete">
-                            <span class="pull-right">
-                            {% if challenge.is_graded %}
-                                Graded &nbsp;&nbsp;
-                            {% else %}
-                                Practice &nbsp;&nbsp;
-                            {% endif %}
-                            <i class="glyphicon glyphicon-ok"></i>
-                        {% elif total != 0 %}
-                            <span class="incomplete">
-                            <span class="pull-right">
-                            {% if challenge.is_graded %}
-                                Graded &nbsp;
-                            {% else %}
-                                Practice &nbsp;
-                            {% endif %}
-                                {{ completed }}/{{ total }}
+                        <i class="glyphicon glyphicon-bookmark graded"
+                           title="Graded Challenge"></i>
+                    {% else %}
+                        </span>
+                        <i class="glyphicon glyphicon-book not-graded"
+                           title="Practice Challenge"></i>
+                    {% endif %}
+                    </span>
+                    {{ challenge.name }}
+                    {% if completed == total and total != 0 %}
+                        <span class="complete">
+                        <span class="pull-right">
+                        {% if challenge.is_graded %}
+                            Graded &nbsp;&nbsp;
                         {% else %}
-                            <span class="incomplete">
-                            <span class="pull-right">
-                            {% if challenge.is_graded %}
-                                Graded &nbsp;
-                            {% else %}
-                                Practice &nbsp;
-                            {% endif %}
+                            Practice &nbsp;&nbsp;
                         {% endif %}
-                    </a>
+                        <i class="glyphicon glyphicon-ok"></i>
+                    {% elif total != 0 %}
+                        <span class="incomplete">
+                        <span class="pull-right">
+                        {% if challenge.is_graded %}
+                            Graded &nbsp;
+                        {% else %}
+                            Practice &nbsp;
+                        {% endif %}
+                        {{ completed }}/{{ total }}
+                    {% else %}
+                        <span class="incomplete">
+                        <span class="pull-right">
+                        {% if challenge.is_graded %}
+                            Graded &nbsp;
+                        {% else %}
+                            Practice &nbsp;
+                        {% endif %}
+                    {% endif %}
+                </a>
+
             </h3>
             </div>
-            <div id="challenge_collapse_{{ challenge.pk }}"
-                 class="table_table panel-body panel-collapse collapse">
-                <h4> {{ challenge.description }} </h4>
-                <br>
-                {% for page in pages|get_item:challenge.pk %}
-                    {% include "content/quest_display_page.html" %}
-                {% endfor %}
-            </div>
+        <div id="challenge_collapse_{{ challenge.pk }}"
+             class="table_table panel-body panel-collapse collapse">
+            <h4> {{ challenge.description }} </h4>
+            <br>
+            {% for page in pages|get_item:challenge.pk %}
+                {% include "content/quest_display_page.html" %}
+            {% endfor %}
         </div>
-        </div>
-    {% endwith %}
+        {% endwith %}
+    </div>
 {% endif %}
