@@ -6,7 +6,7 @@ from django.test import TransactionTestCase
 
 from content.models import *
 from problems_code.models import Problem, Submission
-from tests.ViewTestMixins import UsersMixin
+from ViewTestMixins import UsersMixin
 
 
 class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):

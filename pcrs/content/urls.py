@@ -63,7 +63,7 @@ urlpatterns = patterns('',
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
     url(r'^challenges/(?P<pk>[0-9]+)/objects/pages$',
-        ChallengePagesObjectsView.as_view()),
+        ChallengePagesObjectsView.as_view(), name='page_manage_objects'),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page/create$',
         PageCreateView.as_view(), name='page_create'),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<pk>[0-9]+)/delete',

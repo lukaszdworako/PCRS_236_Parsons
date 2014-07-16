@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from content.models import Quest, Challenge
-from tests import UsersMixin
+from ViewTestMixins import UsersMixin
 
 
 class TestQuestConstruction(UsersMixin, TestCase):
