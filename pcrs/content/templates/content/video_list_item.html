@@ -1,5 +1,11 @@
 <div class="video item well" id="video-{{ item.pk }}">
-    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right" title="Delete Item"></button>
+    <button class="btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item pull-right"
+            title="Delete Item">
+                <span class="at">Remove {{ item.name }} from page {{ page.order }}</span>
+    </button>
+    <button class="btn btn-object-add btn-xs at" id="btn-object-add">
+        <span class="at">Move {{ item.name }} to a page</span>
+    </button>
     &nbsp;
     <i class="glyphicon glyphicon-facetime-video"></i>
     <b class="searchable_content">{{ item.name }}</b>

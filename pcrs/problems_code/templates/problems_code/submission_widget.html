@@ -1,10 +1,5 @@
 {% extends "problems/submission_widget.html" %}
 
-{% block problem_title %}
-    {{ block.super }}
-    {{ problem.name }}
-{% endblock %}
-
 {% block problem_specific %}
     {% include "problems_code/grade_table.html" %}
     {% include "problems_code/code_trace.html" %}

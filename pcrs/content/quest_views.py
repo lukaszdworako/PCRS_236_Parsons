@@ -166,12 +166,11 @@ class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
             for q in Quest.objects.prefetch_related('challenge_set').all()
         }
 
-        # 3 queries
-        context['pages'], context['prerequisites'], context['prerequisites_set'] = {}, {}, {}
-        for c in Challenge.objects.all().prefetch_related('contentpage_set', 'prerequisites'):
-            context['pages'][c.pk] = c.contentpage_set.all()
-            context['prerequisites_set'][c.pk] = c.get_prerequisite_pks_set()
-            context['prerequisites'][c.pk] = c.prerequisites.all()
+        # 2 queries
+        context['pages'] = {
+            c.pk: c.contentpage_set.all()
+            for c in Challenge.objects.all().prefetch_related('contentpage_set')
+        }
 
         # 2 queries
         context['items'] = {
