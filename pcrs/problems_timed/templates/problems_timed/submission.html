@@ -1,44 +1,70 @@
 {% extends "problems/submission.html" %}
-{% load staticfiles %}
 
-{% block page_title %}
-    <!--
-    <h4>{{ problem.description }}</h4>
-    -->
-    <br>
-{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block scripts %}
-    
     {{ block.super }}
-    {% include "problems_timed/js_term_iterator.html" %}
+    {% load staticfiles %}
+    {% include "problems_timed/js_page_iterator.html" %}
+    <script src="{% static "problems_timed/js/iterator_helpers.js" %}" type="text/javascript"></script>
+{% endblock %}
 
+{% block stylesheets %}
+    {{ block.super }}
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "problems_timed/css/submission_style.css" %}">
 {% endblock %}
 
 {% block content %}
-
-    <div id="term_container" align="center">
-        <h4>
-            <br><br>
-        </h4>
+    <div id="top_block">
+        <div id="next_block">
+                <span id="next_button" class="glyphicon glyphicon-arrow-right"></span>
+        </div>
+        
+        <div id="show_attempts">
+            Attempts: {{ total_submissions }}/{{ problem.attempts }}
+        </div>
     </div>
     
-    <hr>
+    <br id="extra_br">
+        
+    <div id="info_block">
+        <span id="problem_name">{{ problem.name }}</span>
+        <hr id="info_hr" style="">
+        {% if problem.problem_description %}
+            {{ problem.problem_description | linebreaksbr }}
+        {% else %}
+            Press start to begin.
+        {% endif %}
+    </div>
+    
+    <br id="extra_br">
     
     <div align="center">
-        <button id="timed_start_button" class="btn btn-default" type="button">
+        {% if total_submissions >= problem.attempts %}
+            <i>No attempts remaining.</i>
+            <br>
+        {% endif %}
+        <button id="start_problem" class="btn btn-default" type="button">
             Start
         </button>
     </div>
 
-    <div id="form_container">
+        <div id="page_container"></div>
+    
+    <div id="submission_block">
         
+        <div id="info_submission">
+            {% if problem.submission_description %}
+                {{ problem.submission_description | linebreaksbr }}
+            {% else %}
+                Note: enter each term on a separate line.
+            {% endif %}
+        </div>
+        <br>
         {% load crispy_forms_tags %}
         {% crispy form %}
-
         {% load filters %}
-        
     </div>
-    
 
 {% endblock %}

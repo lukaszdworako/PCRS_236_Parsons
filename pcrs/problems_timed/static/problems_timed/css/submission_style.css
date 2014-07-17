@@ -1,0 +1,39 @@
+/* Custom styles for submission page. */
+
+#top_block, #info_block, #submission_block {
+    margin-left:auto;
+    margin-right:auto;
+    width:600px
+}
+
+#next_block, #show_attempts {
+    text-align: right
+}
+
+#next_button {
+    font-size: 30px;
+    cursor:pointer;
+}
+
+#info_block, #info_submission {
+    padding: 10px 25px;
+    background-color:#F8F8F8;
+}
+
+#problem_name {
+    font-size:30px;
+}
+
+#info_hr {
+    border-color:#E7E7E7;
+    margin-top: 5px;
+    margin-bottom: 10px
+}
+
+#page_container, #submission_block {
+    margin-top:25px;
+}
+
+#page_container {
+    text-align: center;
+}

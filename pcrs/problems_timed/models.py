@@ -1,7 +1,9 @@
 from django.db import models
+from django.utils import timezone
 
 from pcrs.models import AbstractSelfAwareModel
 from problems.models import AbstractProblem, AbstractSubmission
+from users.models import PCRSUser, Section
 
 
 class Problem(AbstractProblem):
@@ -9,39 +11,56 @@ class Problem(AbstractProblem):
     A timed problem.
     """
     
-    description = models.TextField(unique=True)
-    delay = models.PositiveIntegerField(default=10)
-
-class Term(AbstractSelfAwareModel):
-    """
-    A timed problem term or phrase.
-    """
-    
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    text = models.CharField(max_length=50)
+    name = models.CharField(max_length=150)
+    problem_description = models.TextField(blank=True)
+    submission_description = models.TextField(blank=True)
+    delay = models.PositiveIntegerField(default=5)
+    attempts = models.PositiveIntegerField(default=0)
     
     def __str__(self):
-        return self.text
+        return self.name
 
+class Page(AbstractSelfAwareModel):
+    """
+    A timed problem page.
+    """
+    class Meta:
+        ordering = ['id']
+    
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    text = models.TextField(blank=True)
+    term_list = models.TextField(blank=True)
+    
+    def __str__(self):
+        return self.term_list
+    
     def get_absolute_url(self):
-        return '{problem}/term/{pk}'.format(
+        return '{problem}/page/{pk}'.format(
             problem=self.problem.get_absolute_url(), pk=self.pk)
+    
+    def clean_text(self):
+        self.text = self.text.replace('"', "'")
+    
+    def save(self, *args, **kwargs):
+        self.clean_text()
+        super(Page, self).save(*args, **kwargs)
 
 class Submission(AbstractSubmission):
     """
     A timed problem submission.
     """
-    
-    score_max = models.SmallIntegerField(default=0)
-    percent = models.DecimalField(max_digits=5, decimal_places=4, default=0)
-    
-    terms_list_problem = models.TextField(blank=True)
-    terms_list_student = models.TextField(blank=True)
-    terms_match = models.TextField(blank=True)
-    terms_miss = models.TextField(blank=True)
-
-    
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    attempt = models.PositiveIntegerField(null=True)
+    
+    timestamp_complete = models.DateTimeField(null=True)
+    score_max = models.SmallIntegerField(null=True)
+    percent = models.DecimalField(max_digits=5, decimal_places=4, null=True)
+    
+    # allowing use of null=True as it indicates that the submission was not completed
+    terms_list_problem = models.TextField(null=True)
+    terms_list_student = models.TextField(null=True)
+    terms_match = models.TextField(null=True)
+    terms_miss = models.TextField(null=True)
     
     def set_best_submission(self):
         # from AbstractSubmission.set_best_submission()
@@ -57,18 +76,24 @@ class Submission(AbstractSubmission):
             self.has_best_score = True
         finally:
             self.save()
-
     
     def set_score(self, submission_text):
-        count = 0
-        total = self.problem.term_set.count()
-        problem_list = []
-        student_list = submission_text.splitlines()
-        match_list = []
-        miss_list = []
+        self.timestamp_complete = timezone.now()
         
-        for term in self.problem.term_set.all() :
-            problem_list.append(str(term))
+        count, total, index = 0, 0, 0
+        problem_list, match_list, miss_list = [], [], []
+        student_list = submission_text.splitlines()
+        
+        for term in student_list:
+            student_list[index] = term.strip().lower()
+            index += 1
+        
+        for page in self.problem.page_set.all() :
+            if page.term_list:
+                problem_list += page.term_list.split(",")
+        for term in problem_list:
+            problem_list[total] = term.strip().lower()
+            total += 1
         
         self.terms_list_problem = str(problem_list)
         self.terms_list_student = str(student_list)
@@ -92,4 +117,3 @@ class Submission(AbstractSubmission):
         
         self.save()
         self.set_best_submission()
-

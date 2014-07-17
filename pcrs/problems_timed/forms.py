@@ -1,42 +1,42 @@
-from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Div
+from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Div, Button
 from django import forms
 
 from pcrs.form_mixins import BaseRelatedObjectForm, CrispyFormMixin
 from problems.forms import BaseProblemForm, BaseSubmissionForm
-from problems_timed.models import Problem, Term, Submission
+from problems_timed.models import Problem, Page, Submission
 
 
 class ProblemForm(forms.ModelForm, BaseProblemForm):
+    
     class Meta:
         model = Problem
-        #widgets = {'tags': forms.HiddenInput()}
-        fields = ('description', 'delay', 'tags', 'visibility')
+        fields = ('name', 'problem_description', 'submission_description', 'delay', 'attempts', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
+        self.save_and_add = Submit('submit', 'Save and Add Pages',
+                               css_class='btn-success pull-right',
+                               formaction='create_redirect')
+        
         super(forms.ModelForm, self).__init__(*args, **kwargs)
-        
-        self.save_and_add = Submit('submit', 'Save and add terms',
-                                   css_class='btn-success pull-right',
-                                   formaction='create_and_add_term')
-        
         BaseProblemForm.__init__(self)
-        self.buttons = (Div(CrispyFormMixin.delete_button,
-                            self.clear_button,
-                            css_class='btn-group'),
-                        Div(self.save_button,
-                            css_class='btn-group pull-right'))
+        
+        if self.instance.pk:
+            self.buttons = (Div(CrispyFormMixin.delete_button,
+                                self.clear_button,
+                                css_class='btn-group'),
+                            Div(self.save_button,
+                                css_class='btn-group pull-right'))
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
                                     ButtonHolder(*self.buttons))
 
-
-class TermForm(BaseRelatedObjectForm):
+class PageForm(BaseRelatedObjectForm):
     class Meta:
-        model = Term
-        widgets = {'problem': forms.HiddenInput()}
-        fields = ('text', 'problem')
+        model = Page
+        widgets = {'problem': forms.HiddenInput, 'term_list': forms.TextInput}
+        fields = ('text', 'term_list', 'problem')
 
     def __init__(self, *args, **kwargs):
-        BaseRelatedObjectForm.__init__(self, *args, formaction='terms',
+        BaseRelatedObjectForm.__init__(self, *args, formaction='pages',
                                        **kwargs)
 
 class SubmissionForm(BaseSubmissionForm):

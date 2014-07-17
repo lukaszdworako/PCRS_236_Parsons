@@ -1,0 +1,6 @@
+{% extends "problems/problem_list.html" %}
+
+{% block item_controls %}
+    {{ block.super }}
+    {% include "problems_timed/download.html" %}
+{% endblock %}

@@ -3,4 +3,4 @@ from .models import *
 
 admin.site.register(Problem)
 admin.site.register(Submission)
-admin.site.register(Term)
+admin.site.register(Page)
