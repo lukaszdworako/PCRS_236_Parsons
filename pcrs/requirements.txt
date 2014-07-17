@@ -5,3 +5,4 @@ pep8==1.4.6
 psycopg2==2.4.5
 pyparsing==2.0.1
 rapt==0.0.1
+django_compressor==1.4

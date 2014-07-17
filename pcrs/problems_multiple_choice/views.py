@@ -179,7 +179,7 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin, View
                 'score': sub.score,
                 'out_of': problem.max_score,
                 'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': False,
+                'past_dead_line': sub.timestamp < deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'options': options_list

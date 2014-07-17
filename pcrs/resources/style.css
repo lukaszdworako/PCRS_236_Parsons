@@ -208,3 +208,7 @@ a:not(.collapsed) > .quest-icon{
     border-width:1px !important;
     border-color: #B4CCA3 !important;
 }
+
+.h_score{
+    font-size:0.9em;
+}

@@ -1,49 +1,46 @@
 /**
- * global variables 
- * note: global variables language, problem_id are declared in problem-view.html 
+ * global variables
 */
-
 var testcases = null;
 var code_problem_id = -1;
+var code_problem_id = -1;
+var myCodeMirrors = {};
+var cmh_list = {};
+//root is a global variable from base.html
 
-function changeView(mode) {
-
-    if (mode == "edit-code") {
-    $(".testcase").hide();
-    $(".visualizer-options").hide();
-    // ShowHide();
-    }
-
-    // display only current mode
-    $('#' + mode).siblings().hide();
-    $('#' + mode).show();
-
-    // disable button leading to current mode
-    $('.' + mode).siblings().removeAttr('disabled');
-    $('.' + mode).attr('disabled','disabled');
-}
 
 function bindDebugButton(buttonId) {
+    /**
+    * For coding problems bing a given "Debug" button to start code visualizer
+    */
 
     $('#'+ buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId + ' td.testInputCell').html();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId)},250
+            prepareVisualizer("debug", testcaseCode, buttonId)}, 250
         );
     });
 }
 
+
 function prepareVisualizer(option, data, buttonId) {
+    /**
+     * Prepare Coding problem visualizer
+     */
 
-    key = buttonId.split("_")[0];
+    var key = buttonId.split("_")[0];
     var newCode = myCodeMirrors[key].getValue() + "\n";
-
     var addCode = (option == "viz") ? myCodeMirrors[key].getValue() : data;
     newCode += addCode;
+
     getVisualizerComponents(newCode);
 }
 
+
 function getVisualizerComponents(newCode) {
+    /**
+     * Get Components for coding problem visualization
+     */
 
     var postParams = { language : language, user_script : newCode};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
@@ -57,9 +54,15 @@ function getVisualizerComponents(newCode) {
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
+
 function getHistory(div_id){
+    /**
+     * Get submission history for a coding problem based on 'div_id' of the problem
+     */
+
     var postParams = { csrftoken: csrftoken };
     var problem_path = "";
+
     check_language(div_id);
     if (language == 'python'){
         problem_path = root+'/problems/code/'+div_id.split("-")[1]+'/history';
@@ -79,24 +82,29 @@ function getHistory(div_id){
         .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
+
 function add_history_entry(data, div_id, flag){
+    /**
+     * Add "data" to the history inside the given "div_id"
+     * "flag" 0 appends anf "flag" 1 prepends
+     */
 
     var sub_time = new Date(data['sub_time']);
+    var panel_class = "panel panel-default";
+    var star_text = "";
+
     sub_time = create_timestamp(sub_time);
 
-    data['past_dead_line'] = false;
-
-    var panel_class = "panel panel-default";
-
-    if (data['past_dead_line']){
+    if (!data['past_dead_line']){
         panel_class = "panel panel-warning";
         sub_time = "Past dead line";
     }
 
-    star_text = "";
-    if (data['best']){
+    if (data['best'] && data['past_dead_line']){
         panel_class = "panel panel-primary";
-        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star" title="Latest Best Submission"> </icon>';
+        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star" ' +
+                    'title="Latest Best Submission"> </icon>';
+
         $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
         $('#'+div_id).find('#history_accordion').find(".panel-primary")
             .addClass("panel-default").removeClass("panel-primary");
@@ -105,10 +113,10 @@ function add_history_entry(data, div_id, flag){
     var entry = $('<div/>',{class:panel_class});
     var header1 = $('<div/>',{class:"panel-heading"});
     var header2 = $('<h4/>', {class:"panel-title"});
-    var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
-                                      + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
+    var header4 = $('<td/>', {html:"<span class='pull-right'> " + star_text + " "
+                                      + "<sup class='h_score'>" + data['score'] + "</sup>"
                                       + " / "
-                                      + "<sub style='font-size:0.9em'>" + data['out_of'] + "</sub>"
+                                      + "<sub class='h_score'>" + data['out_of'] + "</sub>"
                                       + "</span>"});
 
     var header3 = $('<a/>', {'data-toggle':"collapse",
@@ -179,6 +187,7 @@ function add_history_entry(data, div_id, flag){
     else{
         $('#'+div_id).find('#history_accordion').prepend(entry);
     }
+
     check_language(div_id);
     if (language == "python"){
         create_history_code_mirror("python", 3, "history_mirror_"
@@ -194,16 +203,26 @@ function add_history_entry(data, div_id, flag){
     }
 }
 
+
 function show_history(data, div_id){
+    /**
+     * Given all the previous submissions "data" add it to the "div_id"
+     */
 
     for (var x = 0; x < data.length; x++){
         add_history_entry(data[x], div_id, 0);
     }
 }
 
+
 function getTestcases(div_id) {
+    /**
+     * Submit code from div_id and get back the test cases
+     */
+
     var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
     var call_path = "";
+
     check_language(div_id);
     if (language == 'python'){
         call_path = root + '/problems/code/'+div_id.split("-")[1]+'/run'
@@ -214,6 +233,7 @@ function getTestcases(div_id) {
     else if (language == 'ra'){
         call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
     }
+
     $.post(call_path,
             postParams,
             function(data) {
@@ -222,38 +242,57 @@ function getTestcases(div_id) {
 
                 var score = data['score'];
                 var max_score = data['max_score'];
-
                 var desider = score == max_score;
+
                 $('#'+div_id).find('#alert')
                     .toggleClass("alert-danger", !desider);
+
                 $('#'+div_id).find('#alert')
                     .toggleClass("alert-success", desider);
+
                 $('#'+div_id).find('#alert')
                     .children('icon')
                     .toggleClass("glyphicon-remove", !desider);
+
                 $('#'+div_id).find('#alert')
                     .children('icon')
                     .toggleClass("glyphicon-ok", desider);
+
                 if (desider){
                     $('#'+div_id).find('#alert')
                         .children('span')
                         .text("Your solution is correct!");
+
                     $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
                 }
                 else{
                     $('#'+div_id).find('#alert')
                         .children('span')
                         .text("Your solution passed " + score + " out of " + max_score + " cases!");
+
                     $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
                 }
+
                 if (language == 'python'){
-                    prepareGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                    prepareGradingTable(div_id,
+                                        data['best'],
+                                        data['past_dead_line'],
+                                        data['sub_pk'],
+                                        max_score);
                 }
                 else if (language=='sql'){
-                    prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                    prepareSqlGradingTable(div_id,
+                                           data['best'],
+                                           data['past_dead_line'],
+                                           data['sub_pk'],
+                                           max_score);
                 }
                 else if (language=='ra'){
-                    prepareSqlGradingTable(div_id, data['best'], data['past_dead_line'], data['sub_pk'], max_score);
+                    prepareSqlGradingTable(div_id,
+                                           data['best'],
+                                           data['past_dead_line'],
+                                           data['sub_pk'],
+                                           max_score);
                 }
             },
         "json")
@@ -261,6 +300,14 @@ function getTestcases(div_id) {
 }
 
 function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
+    /**
+     * Display the results of the SQL and RA test cases.
+     * "div_id" the main div of the problem
+     * "best" bool which indicates if this is the best submission so far
+     * "past_dead_line" bool which indicates of the submission is on time
+     * "sub_pk" submission id
+     * "max_score" maximum score for this problem
+     */
 
     var score = 0;
     var tests = [];
@@ -282,19 +329,23 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
         var actual_entry = $('<tr/>', {class:"gradeMatrixRow"});
 
         if (current_testcase['passed']){
-            table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'></icon><span> Test Case Passed</span></div>");
+            table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'>" +
+                                  "</icon><span> Test Case Passed</span></div>");
             score++;
         }
         else{
-            table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'></icon><span> Test Case Failed</span></div>");
+            table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'>" +
+                                  "</icon><span> Test Case Failed</span></div>");
         }
 
         for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-            expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +"'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+            expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
+                                  "'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
         }
 
         for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
-            actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +"'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
+            actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
+                                "'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
         }
 
         expected_table.append(expected_entry);
@@ -359,7 +410,9 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
         var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
         if (score == max_score){
             $('#'+div_id).find(".widget_title").siblings('span').empty();
-            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
+                {class:"glyphicon glyphicon-ok icon-ok-green"}));
+
             new_title += " : Complete"
             side_bar.css("color","green");
             side_bar.removeClass();
@@ -380,49 +433,69 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
 
 
 function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
+    /**
+     * Display the results of the python test cases.
+     * "div_id" the main div of the problem
+     * "best" bool which indicates if this is the best submission so far
+     * "past_dead_line" bool which indicates of the submission is on time
+     * "sub_pk" submission id
+     * "max_score" maximum score for this problem
+     */
 
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];
+
     for (var i = 0; i < testcases.length; i++) {
         var current_testcase = testcases[i];
-
         var description = current_testcase.test_desc;
-        if (description == ""){
-            description = "No Description Provided"
-        }
         var passed = current_testcase.passed_test;
         var testcaseInput = current_testcase.test_input;
         var testcaseOutput = current_testcase.expected_output;
-
         var result = create_output(current_testcase.test_val);
-
         var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
+
+        if (description == ""){
+            description = "No Description Provided"
+        }
+
         if (cleaner){
             cleaner.remove();
         }
 
         var newRow = $('<tr class="gradeMatrixRow" id="tcase_'+div_id+'_'+i + '"></tr>');
         gradingTable.append(newRow);
+
         if ("exception" in current_testcase){
-            newRow.append('<th class="alert alert-danger" colspan="6">' + current_testcase.exception + '<th>');
+            newRow.append('<th class="alert alert-danger" colspan="6">' +
+                          current_testcase.exception + '<th>');
         }
         else{
             if (testcaseInput != null) {
-                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' + testcaseInput + '</td>');
-                newRow.append('<td class="testDescription col-lg-3 visible-lg">' + description + '</td>');
-                newRow.append('<td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + testcaseOutput + '</td>');
+                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' +
+                               testcaseInput + '</td>');
+
+                newRow.append('<td class="testDescription col-lg-3 visible-lg">' +
+                               description + '</td>');
+
+                newRow.append('<td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
+                               testcaseOutput + '</td>');
             }
             else {
-                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' + "Hidden Test" +'</td>');
+                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' +
+                              "Hidden Test" +'</td>');
                 newRow.append('<td class="testDescription col-lg-3 visible-lg">' + description + '</td>');
-                newRow.append('<td <td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + "Hidden Result" +'</td>');
+                newRow.append('<td <td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
+                              "Hidden Result" +'</td>');
             }
 
-            newRow.append('<td class="testOutputCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' + result +'</td>');
+            newRow.append('<td class="testOutputCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
+                           result +'</td>');
 
             newRow.append('<td class="statusCell col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>');
+
             var pass_status = "";
+
             if (passed){
                 var smFace = happyFace;
                 score += 1;
@@ -434,20 +507,25 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             }
 
             $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.statusCell').html(smFace.clone());
+
             if (testcaseInput != null){
-                newRow.append('<td class="debugCell col-lg-1 col-md-1 col-sm-2 col-xs-2"><button id="' + div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button" data-toggle="modal" data-target="#myModal">Trace</button></td>');
+                newRow.append('<td class="debugCell col-lg-1 col-md-1 col-sm-2 col-xs-2"><button id="' +
+                               div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button"' +
+                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
                 bindDebugButton(div_id+"_"+i);
             }
             else{
                 newRow.append('<td class="col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>')
             }
-            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+testcaseOutput+'. Result: '+result+'</a>');
+            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
+                           testcaseOutput+'. Result: '+result+'</a>');
         }
         var test = {'visible':testcaseInput != null,
                     'input': testcaseInput,
                     'output': testcaseOutput,
                     'passed': passed,
                     'description': description};
+
         tests.push(test);
     }
     var data = {'sub_time':new Date(),
@@ -459,12 +537,15 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'sub_pk':sub_pk,
             'out_of':max_score,
             'tests': tests};
+
     if (best){
         var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
         var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
         if (score == max_score){
             $('#'+div_id).find(".widget_title").siblings('span').empty();
-            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
+                          {class:"glyphicon glyphicon-ok icon-ok-green"}));
+
             new_title += " : Complete"
             side_bar.css("color","green");
             side_bar.removeClass();
@@ -484,12 +565,19 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 }
 
 function create_timestamp(datetime){
-    month_names = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    day = datetime.getDate();
-    month = month_names[datetime.getMonth()];
-    year = datetime.getFullYear();
-    hour = datetime.getHours();
-    minute = datetime.getMinutes();
+    /**
+     * Convert django "datetime" to PCRS style for history
+     */
+
+    var month_names = ["January","February","March","April","May","June","July",
+                   "August","September","October","November","December"];
+
+    var day = datetime.getDate();
+    var month = month_names[datetime.getMonth()];
+    var year = datetime.getFullYear();
+    var hour = datetime.getHours();
+    var minute = datetime.getMinutes();
+
     if (String(minute).length == 1){
         minute = "0" + minute
     }
@@ -501,13 +589,18 @@ function create_timestamp(datetime){
         cycle = "a.m.";
     }
 
-    formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
+    var formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
     return formated_datetime;
 }
 
 function create_output(input){
+    /**
+     * Convert the given "input" in to a string representing the students python solution
+     */
+
     brakets_o = {"list":"[","tuple":"(","dict":"{"};
     brakets_c = {"list":"]","tuple":")","dict":"}"};
+
     if (input.length == 2){
         return create_output(input[0])+":"+create_output(input[1]);
     }
@@ -539,6 +632,11 @@ function create_output(input){
 }
 
 function check_language(container){
+    /**
+     * Check the language of a problem
+     * "container" is the id of the main_div
+     */
+
     if (container.indexOf("code") > -1){
         language = 'python';
     }
@@ -553,9 +651,6 @@ function check_language(container){
     }
 }
 
-var code_problem_id = -1;
-var myCodeMirrors = {};
-var cmh_list = {};
 
 $( document).ready(function() {
 
@@ -563,6 +658,7 @@ $( document).ready(function() {
 
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
+
         check_language(all_wrappers[x].id);
         if (language == "python"){
             myCodeMirrors[all_wrappers[x].id] =
