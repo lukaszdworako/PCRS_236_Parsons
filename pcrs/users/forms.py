@@ -53,9 +53,11 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        export_button = Submit('submit', 'Export grade file',
+                               css_class='btn-success pull-right')
         self.helper.layout = Layout(
             Fieldset('Get grade report for this section', 'quest', 'section'),
-            ButtonHolder(self.save_button)
+            ButtonHolder(export_button)
         )
 
 
