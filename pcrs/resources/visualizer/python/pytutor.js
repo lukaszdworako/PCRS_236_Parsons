@@ -178,7 +178,7 @@ function ExecutionVisualizer(domRootID, dat, params) {
 	this.hasRendered = false;
 
 	this.render(); // go for it!
-	
+
 }
 
 
@@ -310,7 +310,7 @@ ExecutionVisualizer.prototype.render = function() {
 		if (this.params.codeDivHeight === undefined) {
 			this.params.codeDivHeight = 400;
 		}
-		
+
 		this.allowEditAnnotations = false;
 	}
 
@@ -340,7 +340,7 @@ ExecutionVisualizer.prototype.render = function() {
 		this.domRoot.find('#annotateBtn').hide();
 	}
 
-	
+
 	// not enough room for these extra buttons ...
 	if (this.params.codeDivWidth &&
 			this.params.codeDivWidth < 470) {
@@ -459,7 +459,7 @@ ExecutionVisualizer.prototype.render = function() {
 	this.updateOutput();
 
 	this.hasRendered = true;
-	
+
 }
 
 
@@ -937,7 +937,7 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
 			}
 		});
 
- 
+
 		// if there is a comment containing 'breakpoint' and this line was actually executed,
 		// then set a breakpoint on this line
 		var breakpointInComment = false;
@@ -1139,7 +1139,7 @@ ExecutionVisualizer.prototype.updateOutput = function(smoothTransition) {
 	// bnm	Render a question
 	if (curEntry.question) {
 			//alert(curEntry.question.text);
-			
+
 			$('#'+curEntry.question.div).modal({position:["25%","50%"]});
 	}
 
@@ -1251,7 +1251,7 @@ ExecutionVisualizer.prototype.updateOutput = function(smoothTransition) {
 			var translatePrevCmd = 'translate(0, ' + (((prevLineNumber - 1) * myViz.codeRowHeight) + myViz.arrowOffsetY + prevVerticalNudge) + ')';
 
 			if (smoothTransition) {
-				pla 
+				pla
 					.transition()
 					.duration(200)
 					.attr('fill', 'white')
@@ -1278,7 +1278,7 @@ ExecutionVisualizer.prototype.updateOutput = function(smoothTransition) {
 			var translateCurCmd = 'translate(0, ' + (((curLineNumber - 1) * myViz.codeRowHeight) + myViz.arrowOffsetY + curVerticalNudge) + ')';
 
 			if (smoothTransition) {
-				cla 
+				cla
 					.transition()
 					.delay(200)
 					.duration(250)
@@ -1869,7 +1869,7 @@ ExecutionVisualizer.prototype.renderDataStructures = function() {
 
 
 	function renderNestedObject(obj, d3DomElement) {
-        
+
 		if (isPrimitiveType(obj)) {
 			renderPrimitiveObject(obj, d3DomElement);
 		}
@@ -2947,7 +2947,7 @@ AnnotationBubble.prototype.showEditor = function() {
 		}
 	}));
 
-	
+
 	$(this.qTipContentID()).find('textarea.bubbleInputText')
 		// set handler when the textarea loses focus
 		.blur(function() {
@@ -3181,7 +3181,7 @@ function closeModal(divId) {
    obj: is in a format encoded by py/pg_encoder.py.*/
 function getObjectID(obj) {
     var typ = typeof obj;
-    
+
     /* For all types except INSTANCE and CLASS, obj[1] contains object's
        unique_id, for INSTANCE and CLASS, obj[2] contains object's unique_id.*/
     if ((obj[0] == 'INSTANCE') || (obj[0] == 'CLASS')) {
@@ -3233,7 +3233,7 @@ function renderData_ignoreID(obj, jDomElt) {
         jDomElt.append('<div class="typeLabel">' + label + '</div>');
         jDomElt.append('<table class="' + label + 'Tbl"></table>');
         var tbl = jDomElt.children('table');
-      
+
         if (obj[0] == 'list' || obj[0] == 'tuple') {
             tbl.append('<tr></tr><tr></tr>');
             var headerTr = tbl.find('tr:first');
@@ -3249,7 +3249,7 @@ function renderData_ignoreID(obj, jDomElt) {
               contentTr.append('<td class="'+ label + 'Elt"></td>');
               renderData_ignoreID(val, contentTr.find('td:last'));
             });
-        }    
+        }
 
         else if (obj[0] == 'set') {
             // create an R x C matrix:
@@ -3286,7 +3286,7 @@ function renderData_ignoreID(obj, jDomElt) {
               var newRow = tbl.find('tr:last');
               var keyTd = newRow.find('td:first');
               var valTd = newRow.find('td:last');
-          
+
               renderData_ignoreID(kvPair[0], keyTd);
               renderData_ignoreID(kvPair[1], valTd);
             });

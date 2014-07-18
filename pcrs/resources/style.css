@@ -101,8 +101,6 @@ a:not(.collapsed) > .quest-icon{
 
 .tab-content{
     overflow-y:scroll;
-    height:100%;
-    min-height:300px;
 }
 
 .page>.item>.remove_item{

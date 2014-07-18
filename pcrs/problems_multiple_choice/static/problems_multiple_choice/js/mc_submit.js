@@ -104,7 +104,7 @@ function add_mc_history_entry(data, div_id, flag){
 
     if (!data['past_dead_line']){
         panel_class = "panel panel-warning";
-        sub_time = "Past dead line";
+        sub_time = sub_time + " Submitted after the deadline";
     }
 
     star_text = "";
@@ -184,6 +184,9 @@ function submit_mc(submission, problem_pk, div_id) {
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,
             function(data) {
+                if (!data['past_dead_line']){
+                    alert('This submission is past the deadline!');
+                }
                 var display_element = $('#multiple_choice-'+problem_pk)
                     .find("#alert");
 
