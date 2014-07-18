@@ -184,22 +184,24 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
                             mimetype='application/json')
 
 
-class ChallengePrerequisitesView(CourseStaffViewMixin, DetailView):
+class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
+                                     DetailView):
     """
-    Asynchronous data request for getting the prerequisite information for
-    all Challenges.
+    Asynchronous data request for getting the information about how many
+    problems the user has completed in each Challenge, as we as the total
+    number of problems in that Challenge.
     """
     model = Challenge
 
     def get(self, request, *args, **kwargs):
+        user, section = self.get_user(), self.get_section()
+
+        data = self.model.get_challenge_problem_data(user, section)
+
         return HttpResponse(json.dumps({
-            challenge.pk: {
-                'name': challenge.name,
-                'enforced': challenge.enforce_prerequisites,
-                'prerequisites': list(challenge.prerequisites.all()
-                                               .values_list('id', flat=True)),
-                'quest_id': challenge.quest_id
-            }
-            for challenge in self.model.objects
-                                       .prefetch_related('prerequisites').all()
+            challenge.pk: (
+                    data['challenge_to_completed'].get(challenge.pk, 0),
+                    data['challenge_to_total'].get(challenge.pk, 0)
+            )
+            for challenge in self.model.objects.all()
         }),  mimetype='application/json')

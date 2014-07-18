@@ -56,9 +56,11 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<pk>[0-9]+)/stats/data$',
         ChallengeStatsGetData.as_view(),
         name='challenge_stats_data'),
-    url(r'^challenges/prerequisites$',
-        ChallengePrerequisitesView.as_view(),
-        name='challenge_prerequisite_data'),
+
+    # prerequisites graph
+    url(r'^challenges/prerequisites/for_user$',
+        ChallengeCompletionForUserView.as_view(),
+        name='challenge_prerequisite_data_for_user'),
 
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
