@@ -48,9 +48,11 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
     section = forms.ModelChoiceField(Section.objects.all(),
                                      widget=forms.HiddenInput())
     quest = forms.ModelChoiceField(Quest.objects.all())
+    active = forms.BooleanField(required=False,
+                                label='Include only active users')
 
     class Meta:
-        fields = ('section', 'quest')
+        fields = ('section', 'quest', 'active')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

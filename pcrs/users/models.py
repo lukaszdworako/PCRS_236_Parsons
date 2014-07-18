@@ -128,6 +128,16 @@ class PCRSUserManager(BaseUserManager):
         """
         return PCRSUser.objects.filter(is_student=True).all()
 
+    def get_users(self, active_only=False):
+        """
+        Return all users, optionally excluding inactive users.
+        """
+        if active_only:
+            return PCRSUser.objects.filter(is_active=True).all()
+        else:
+            return PCRSUser.objects.all()
+
+
 
 class PCRSUser(CustomAbstractBaseUser):
     username = models.CharField('username', max_length=30, unique=True, db_index=True)

@@ -276,8 +276,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
                 {d['problem_id']: d['best'] == d['max_score'] for d in subs})
 
     @classmethod
-    def grade(cls, quest, section):
-        return cls.objects\
+    def grade(cls, quest, section, active_only=False):
+        return cls.get_for_students(active_only)\
             .filter(cls.deadline_constraint(),
                     problem__challenge__quest=quest, user__section=section,
                     problem__challenge__quest__sectionquest__section=section,

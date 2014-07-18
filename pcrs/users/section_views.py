@@ -75,6 +75,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
     def form_valid(self, form):
         section = form.cleaned_data['section']
         quest = form.cleaned_data['quest']
+        active_only = bool(form.cleaned_data['active'])
 
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
@@ -98,7 +99,8 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         # collect grades for each student
         results = defaultdict(dict)
         for ctype in get_submission_content_types():
-            grades = ctype.model_class().grade(quest=quest, section=section)
+            grades = ctype.model_class().grade(quest=quest, section=section,
+                                               active_only=active_only)
             for record in grades:
                 problem = (ctype.app_label,
                            record['problem'])
@@ -109,7 +111,9 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                             [score_dict.get(problem, '') for problem in problems]))
 
         # collect students in the section who has not submitted anything
-        for student in PCRSUser.objects.filter(section=section)\
-                                          .exclude(username__in=results.keys()):
+
+        for student in PCRSUser.objects.get_users(active_only=active_only)\
+                                       .filter(section=section)\
+                                       .exclude(username__in=results.keys()):
             writer.writerow([student.username] + ['' for problem in problems])
         return response
