@@ -11,6 +11,7 @@ from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
 from problems.models import get_submission_content_types, \
     get_problem_content_types
 from users.section_views import SectionViewMixin
+from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm
@@ -65,7 +66,7 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
     """
 
 
-class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView):
+class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
     """
     View a ContentPage.
     """
@@ -116,18 +117,20 @@ class ContentPageView(ProtectedViewMixin, SectionViewMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user, section = self.get_user(), self.get_section()
+
         context['content_page'] = self.page
         context['best'] = {}
 
         for content_type in get_submission_content_types():
             best, _ = content_type.model_class()\
-                .get_best_attempts_before_deadlines(self.request.user, self.get_section())
+                .get_best_attempts_before_deadlines(user, section)
             context['best'][content_type.app_label] = best
 
         context['next'] = self.page.next()
         context['num_pages'] = self.page.challenge.contentpage_set.count()
         context['forms'] = self._get_forms()
-        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+        context['watched'] = WatchedVideo.get_watched_pk_list(user)
         return context
 
 

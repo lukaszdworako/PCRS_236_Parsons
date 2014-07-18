@@ -12,6 +12,7 @@ from problems_multiple_choice.forms import SubmissionForm, OptionForm
 
 from problems_multiple_choice.models import (Problem, Option, OptionSelection,
                                              Submission)
+from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
 
@@ -149,21 +150,24 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         ), mimetype='application/json')
 
 
-class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
+                                   UserViewMixin, View):
 
     def post(self, request, *args, **kwargs):
         returnable = []
         problem = self.get_problem()
+        user, section = self.get_user(), self.get_section()
+
         deadline = problem.challenge.quest.sectionquest_set\
-            .get(section_id=self.request.user.section_id).due_on
+            .get(section=section).due_on
         try:
             best_score = self.model.objects\
-                .get(user=self.request.user, problem=problem, has_best_score=True).score
+                .get(user=user, problem=problem, has_best_score=True).score
         except self.model.DoesNotExist:
             best_score = -1
 
         data = self.model.get_submission_class().objects\
-            .filter(user=self.request.user, problem=problem)\
+            .filter(user=user, problem=problem)\
             .prefetch_related('optionselection_set__option')
 
         for sub in data:

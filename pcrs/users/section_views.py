@@ -34,6 +34,11 @@ class ChangeSectionView(CourseStaffViewMixin, SectionViewMixin, FormView):
         initial['section'] = self.get_section()
         return initial
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'View pages as section'
+        return context
+
 
 class SectionListView(CourseStaffViewMixin, GenericItemListView):
     model = Section

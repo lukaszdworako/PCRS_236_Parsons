@@ -1,7 +1,5 @@
 from collections import defaultdict
 import json
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
@@ -15,7 +13,7 @@ from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from problems.models import get_problem_content_types
 from users.models import Section
-from users.section_views import SectionViewMixin
+from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
 
@@ -112,7 +110,7 @@ class QuestSectionListView(CourseStaffViewMixin, FormView):
             return self.form_invalid(formset)
 
 
-class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
+class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
     """
     List all available Quests and their Challenges for the user in the section.
     """
@@ -140,18 +138,18 @@ class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
         challenge_to_total, challenge_to_completed = [], []
         best = {}
 
-        section = self.get_section()
+        user, section = self.get_user(), self.get_section()
 
         for content_type in get_problem_content_types():  # 1 query
             problem_class = content_type.model_class()
             submission_class = problem_class.get_submission_class()
             challenge_to_total.append(problem_class.get_challenge_to_problem_number())
             challenge_to_completed.append(
-                submission_class.get_completed_for_challenge_before_deadline(self.request.user, section))
+                submission_class.get_completed_for_challenge_before_deadline(user, section))
 
             best[content_type.app_label], _ = submission_class\
-                .get_best_attempts_before_deadlines(self.request.user, section)
-        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+                .get_best_attempts_before_deadlines(user, section)
+
         context['best'] = best
         context['challenge_to_completed'] = self.sum_dict_values(*challenge_to_completed)
         context['challenge_to_total'] = self.sum_dict_values(*challenge_to_total)
@@ -159,7 +157,7 @@ class QuestsView(ProtectedViewMixin, SectionViewMixin, ListView):
             context['challenge_to_completed'], context['challenge_to_total'])
 
         # 1 query
-        context['watched'] = WatchedVideo.get_watched_pk_list(self.request.user)
+        context['watched'] = WatchedVideo.get_watched_pk_list(user)
 
         # 2 queries
         context['challenges'] = {

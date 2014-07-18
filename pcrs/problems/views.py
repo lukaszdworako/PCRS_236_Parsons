@@ -1,16 +1,15 @@
 import json
-from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
-from django.views.generic import (ListView, DetailView, CreateView, UpdateView,
-                                  DeleteView, FormView, View)
+from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
+                                  View)
 from django.views.generic.detail import SingleObjectMixin
-from pcrs.generic_views import GenericItemCreateView, GenericItemListView, \
-    GenericItemUpdateView
+from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
+                                GenericItemUpdateView)
 
 from problems.forms import ProgrammingSubmissionForm, MonitoringForm
-from users.models import Section
 from users.section_views import SectionViewMixin
+from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
@@ -282,25 +281,25 @@ class MonitoringAsyncView(MonitoringView):
         return HttpResponse(json.dumps(results), mimetype='application/json')
 
 
-class SubmissionHistoryAsyncView(SubmissionViewMixin, SectionViewMixin,
+class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                                  SingleObjectMixin, View):
     """
     Return a json object with user's submission history for a problem.
     """
     def post(self, request, *args, **kwargs):
         problem = self.get_problem()
+        user, section = self.get_user(), self.get_section()
         deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=self.get_section()).due_on
+            .get(section=section).due_on
         try:
             best_score = self.model.objects\
-                .get(user=self.request.user, problem=problem,
-                     has_best_score=True).score
+                .get(user=user, problem=problem, has_best_score=True).score
         except self.model.DoesNotExist:
             best_score = -1
 
         data = self.model.objects\
             .prefetch_related('testrun_set', 'testrun_set__testcase')\
-            .filter(user=self.request.user, problem=problem)
+            .filter(user=user, problem=problem)
 
         returnable = []
         for sub in data:
