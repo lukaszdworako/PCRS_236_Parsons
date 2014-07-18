@@ -6,7 +6,7 @@ from django.test import TransactionTestCase
 
 from content.models import *
 from problems_code.models import Problem, Submission
-from tests.ViewTestMixins import UsersMixin
+from ViewTestMixins import UsersMixin
 
 
 class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):
@@ -15,7 +15,7 @@ class TestQuestsPageDatabaseHits(UsersMixin, TransactionTestCase):
 
     Should be kept constant.
     """
-    db_hits = 30
+    db_hits = 29
     # This number depends on whether or not there are quests, challenges and
     # problems: the diagnostic tests run in under the number of db hits due to
     # that, but they are useful in case something goes wrong to figure out

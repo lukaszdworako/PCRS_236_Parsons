@@ -2,6 +2,7 @@ from crispy_forms.layout import Submit, Fieldset, Layout, HTML, Div, \
     ButtonHolder
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from content.models import Quest
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
@@ -53,9 +54,11 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        export_button = Submit('submit', 'Export grade file',
+                               css_class='btn-success pull-right')
         self.helper.layout = Layout(
             Fieldset('Get grade report for this section', 'quest', 'section'),
-            ButtonHolder(self.save_button)
+            ButtonHolder(export_button)
         )
 
 
@@ -66,3 +69,27 @@ class SettingsForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(
             Fieldset('', 'colour_scheme'), self.save_button)
+
+
+class UserForm(CrispyFormMixin, forms.Form):
+    username = forms.CharField(required=False, help_text='Enter the username, or leave blank to clear')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        button = Submit('submit', 'View as user',
+                         css_class='btn-success pull-right')
+        self.helper.layout = Layout(
+            Fieldset('', 'username'), button)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        if username:
+            try:
+                user = PCRSUser.objects.get(username=username)
+                cleaned_data['user'] = user
+            except PCRSUser.DoesNotExist:
+                raise ValidationError({'username': 'Enter a valid username.'})
+        else:
+            cleaned_data['user'] = None
+        return cleaned_data

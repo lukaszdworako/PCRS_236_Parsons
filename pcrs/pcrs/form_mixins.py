@@ -39,9 +39,12 @@ class BaseRelatedObjectForm(CrispyFormMixin, forms.ModelForm):
         self.save_and_add = Submit('submit', 'Save and add another',
                                    css_class='btn-success',
                                    formaction=formaction)
-        self.buttons = (Div(self.save_and_add if not self.instance.pk else None,
-                            self.save_and_back,
-                            css_class='btn-group pull-right'),)
+        if self.instance.pk:
+            self.buttons = Div(self.delete_button, Div(self.save_and_back,
+                                css_class='btn-group pull-right'))
+        else:
+            self.buttons = Div(Div(self.save_and_add, self.save_and_back,
+                                   css_class='btn-group pull-right'))
 
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
                                     ButtonHolder(*self.buttons))
