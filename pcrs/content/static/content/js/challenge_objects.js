@@ -27,7 +27,7 @@ $(document).ready(function () {
         update: function (event, ui) {
             $('#save_top').prop('disabled', false);
             $('#save_bot').prop('disabled', false);
-            resize_problems();
+//            resize_problems();
         }
     });
 
@@ -52,7 +52,28 @@ $(document).ready(function () {
             }
         });
 
-    resize_problems();
+    var original_position = $('.tab-content').offset().top;
+    $(window).scroll(function(e){
+        $el = $('.tab-content');
+        if ($(window).scrollTop() > original_position) {
+            $el.css({
+                'margin-top':$(window).scrollTop()-original_position+40,
+                'height':$(window).height() - 60});
+        }
+        else{
+            $el.css({
+                'margin-top':''});
+        }
+    });
+
+    if ($(window).scrollTop() > original_position) {
+            $('.tab-content').css({
+                'margin-top':$(window).scrollTop()-original_position+40,
+                'height':$(window).height() - 60});
+    }
+    $('.tab-content').css({'height':$(window).height() - 60});
+
+//    resize_problems();
 });
 
 function select_given_page(){
@@ -69,7 +90,7 @@ function select_given_page(){
                     $($($(document).find('#challenge').find('[id*="page-"]')[selected_page-1]).children()[selected_location]).after($(source_button).parent());
                     $('#save_top').prop('disabled', false);
                     $('#save_bot').prop('disabled', false);
-                    resize_problems();
+//                    resize_problems();
                 }
                 else{
                     $(document).find('#challenge').find('[id*="page-"]').removeClass("ui-selected");
@@ -123,13 +144,13 @@ function update_page_location(){
     }
 }
 
-function resize_problems(){
-    /**
-     * Resize the problem window
-     */
-
-    $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
-}
+//function resize_problems(){
+//    /**
+//     * Resize the problem window
+//     */
+//
+//    $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
+//}
 
 function select(event) {
     /**
@@ -164,7 +185,7 @@ function addPage() {
                 update: function (event, ui) {
                     $('#save_top').prop('disabled', false);
                     $('#save_bot').prop('disabled', false);
-                    resize_problems();
+//                    resize_problems();
                 }
             });
         });
@@ -180,7 +201,7 @@ function deletePage() {
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
             .success(function (data) {
                 $item.remove();
-                resize_problems();
+//                resize_problems();
             });
     }
 }
@@ -197,7 +218,7 @@ function addText() {
     }
     else {
         $('#text-entry-modal').modal();
-        resize_problems();
+//        resize_problems();
     }
 }
 
@@ -255,7 +276,7 @@ function deleteItem($item) {
     $uiselected = null;
     $('#save_top').prop('disabled', false);
     $('#save_bot').prop('disabled', false);
-    resize_problems();
+//    resize_problems();
 }
 
 function savePages() {

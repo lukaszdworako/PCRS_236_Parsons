@@ -38,7 +38,7 @@ $(document).ready(function () {
         },
         update: function (event, ui) {
             $save_button.removeClass('disabled');
-            resize_challenge();
+//            resize_challenge();
         }
     });
 
@@ -48,10 +48,31 @@ $(document).ready(function () {
         $('#challenges').append($challenge);
         // list has changed - provide visual clue that some changes are not saved
         $save_button.removeClass('disabled');
-        resize_challenge();
+//        resize_challenge();
     });
 
-    resize_challenge();
+    var original_position = $('.tab-content').offset().top;
+    $(window).scroll(function(e){
+        $el = $('.tab-content');
+        if ($(window).scrollTop() > original_position) {
+            $el.css({
+                'margin-top':$(window).scrollTop()-original_position+40,
+                'height':$(window).height() - 60});
+        }
+        else{
+            $el.css({
+                'margin-top':''});
+        }
+    });
+
+    if ($(window).scrollTop() > original_position) {
+            $('.tab-content').css({
+                'margin-top':$(window).scrollTop()-original_position+40,
+                'height':$(window).height() - 60});
+    }
+    $('.tab-content').css({'height':$(window).height() - 60});
+//    resize_challenge();
+
 });
 
 function select_quest(challenge_pk){
@@ -73,13 +94,12 @@ function move_challenge(){
     var moving_item = $(document).find('.challenge#'+selected_challenge);
     destination_location.append(moving_item.remove());
     $save_button.removeClass('disabled');
-    resize_challenge();
+//    resize_challenge();
 }
 
-function resize_challenge(){
-    $('#challenges').height($('.set_challenges').height()-$('.challenge_title').height()*5);
-
-}
+//function resize_challenge(){
+//    $('#challenges').height($('.set_challenges').height()-$('.challenge_title').height()*5);
+//}
 
 
 function moveUp() {
