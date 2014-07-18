@@ -141,11 +141,18 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
+
+        problem = self.get_problem()
+        user, section = self.request.user, self.request.user.section
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section=section).due_on
+
         return HttpResponse(json.dumps({
             'score': self.submission.score,
             'max_score': self.get_problem().option_set.all().count(),
             'best': self.submission.has_best_score,
-            'sub_pk': self.submission.pk
+            'sub_pk': self.submission.pk,
+            'past_dead_line': self.submission.timestamp > deadline,
         }
         ), mimetype='application/json')
 
@@ -183,7 +190,7 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
                 'score': sub.score,
                 'out_of': problem.max_score,
                 'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': sub.timestamp < deadline,
+                'past_dead_line': sub.timestamp > deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'options': options_list
