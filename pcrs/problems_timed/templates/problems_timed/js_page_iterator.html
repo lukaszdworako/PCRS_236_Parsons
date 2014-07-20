@@ -23,7 +23,7 @@
             
             $.post(root + '/problems/timed/' + String({{ problem.pk }}) + '/attempt')
             .fail( function() {
-                window.location.replace('/content/quests');
+                window.location.replace('/problems/timed/list');
             });
             
             $('#start_problem, #links_block, #info_block, #show_attempts, #extra_br').fadeOut();

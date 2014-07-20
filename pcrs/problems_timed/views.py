@@ -4,8 +4,8 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.views.generic import (CreateView, UpdateView, DeleteView, FormView)
 from django.views.generic.detail import SingleObjectMixin
 
-from problems_timed.models import Problem, Page, Submission#, Attempt
-from problems_timed.forms import PageForm, SubmissionForm#, AttemptForm
+from problems_timed.models import Problem, Page, Submission
+from problems_timed.forms import PageForm, SubmissionForm
 
 from problems.views import ProblemListView, TestCaseView, SubmissionView, SubmissionViewMixin
 from pcrs.generic_views import GenericItemCreateView
@@ -106,4 +106,4 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
             return HttpResponseForbidden()
         
         self.submission.set_score(request.REQUEST['submission'])
-        return HttpResponseRedirect('/content/quests')
+        return HttpResponseRedirect('/problems/timed/list')

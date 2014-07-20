@@ -1,5 +1,14 @@
 {% extends "problems/problem_list.html" %}
 
+{% block stylesheets %}
+    {{ block.super }}
+    <style>
+        #download_button {
+            margin-right: 25px;
+        }
+    </style>
+{% endblock %}
+
 {% block item_controls %}
     {{ block.super }}
     {% include "problems_timed/download.html" %}

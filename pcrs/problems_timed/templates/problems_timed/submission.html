@@ -22,7 +22,7 @@
         </div>
         
         <div id="show_attempts">
-            Attempts: {{ total_submissions }}/{{ problem.attempts }}
+            Attempts: {{ total_submissions }} of {{ problem.attempts }}
         </div>
     </div>
     
@@ -58,7 +58,7 @@
             {% if problem.submission_description %}
                 {{ problem.submission_description | linebreaksbr }}
             {% else %}
-                Note: enter each term on a separate line.
+                Enter each term on a separate line.
             {% endif %}
         </div>
         <br>

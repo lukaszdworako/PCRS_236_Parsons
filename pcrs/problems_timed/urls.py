@@ -9,7 +9,7 @@ from problems_timed.views import (ProblemCreateRedirectView,
                                   PageCreateView, PagesCreateView,
                                   PageUpdateView, PageDeleteView,
                                   SubmissionView, ProblemListView)
-from problems_timed import async_requests
+from problems_timed.async_requests import AsyncAttempt, AsyncDownload
 
 urlpatterns = patterns('',
                        
@@ -59,7 +59,11 @@ urlpatterns = patterns('',
         name='timed_submit'),
     
     url(r'^(?P<problem_pk>[0-9]+)/attempt$',
-        async_requests.problem_attempt,
+        AsyncAttempt.problem_attempt,
         name='attempt'),
-    
+
+    url(r'^(?P<problem_pk>[0-9]+)/download$',
+        AsyncDownload.download_submissions,
+        name='download'),
+
 )
