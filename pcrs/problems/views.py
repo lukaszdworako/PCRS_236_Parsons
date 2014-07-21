@@ -12,6 +12,10 @@ from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
+#
+import logging
+from django.utils.timezone import localtime
+#
 
 class ProblemView:
     """
@@ -243,6 +247,12 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
 
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(localtime(self.object.timestamp)) + " | " +
+                    str(user) + " | Submit " +
+                    str(problem.get_problem_type_name()) + " " +
+                    str(problem.pk))
+
         return HttpResponse(json.dumps({
             'results': results,
             'score': self.object.score,
@@ -315,7 +325,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                 'score': sub.score,
                 'out_of': problem.max_score,
                 'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': sub.timestamp < deadline,
+                'past_dead_line': sub.timestamp > deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'tests': [testrun.get_history()

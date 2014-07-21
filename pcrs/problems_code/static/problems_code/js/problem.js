@@ -3,7 +3,6 @@
 */
 var testcases = null;
 var code_problem_id = -1;
-var code_problem_id = -1;
 var myCodeMirrors = {};
 var cmh_list = {};
 //root is a global variable from base.html
@@ -95,12 +94,12 @@ function add_history_entry(data, div_id, flag){
 
     sub_time = create_timestamp(sub_time);
 
-    if (!data['past_dead_line']){
+    if (data['past_dead_line']){
         panel_class = "panel panel-warning";
         sub_time = sub_time + " Submitted after the deadline";
     }
 
-    if (data['best'] && data['past_dead_line']){
+    if (data['best'] && !data['past_dead_line']){
         panel_class = "panel panel-primary";
         star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star" ' +
                     'title="Latest Best Submission"> </icon>';
@@ -237,7 +236,7 @@ function getTestcases(div_id) {
     $.post(call_path,
             postParams,
             function(data) {
-                if (!data['past_dead_line']){
+                if (data['past_dead_line']){
                     alert("This submission is past the dead line!")
                 }
                 testcases = data['results'][0];
@@ -541,7 +540,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'out_of':max_score,
             'tests': tests};
 
-    if (best){
+    if (best && !data['past_dead_line']){
         var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
         var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
         if (score == max_score){

@@ -15,6 +15,12 @@ from problems_multiple_choice.models import (Problem, Option, OptionSelection,
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
+#
+import logging
+from django.utils.timezone import localtime
+#
+
+
 
 class ProblemCloneView(CourseStaffViewMixin, CreateView):
     """
@@ -146,6 +152,12 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         user, section = self.request.user, self.request.user.section
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
+
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(localtime(self.submission.timestamp)) + " | " +
+                    str(user) + " | Submit " +
+                    str(problem.get_problem_type_name()) + " " +
+                    str(problem.pk))
 
         return HttpResponse(json.dumps({
             'score': self.submission.score,
