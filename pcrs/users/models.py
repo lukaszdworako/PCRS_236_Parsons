@@ -122,11 +122,24 @@ class PCRSUserManager(BaseUserManager):
         # hash password
         # save user
 
-    def get_students(self):
+    def get_students(self, active_only=False):
         """
         Returns all student users.
         """
-        return PCRSUser.objects.filter(is_student=True).all()
+        if active_only:
+            return PCRSUser.objects.filter(is_student=True, is_active=True).all()
+        else:
+            return PCRSUser.objects.filter(is_student=True).all()
+
+    def get_users(self, active_only=False):
+        """
+        Return all users, optionally excluding inactive users.
+        """
+        if active_only:
+            return PCRSUser.objects.filter(is_active=True).all()
+        else:
+            return PCRSUser.objects.all()
+
 
 
 class PCRSUser(CustomAbstractBaseUser):

@@ -117,44 +117,10 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
     template_name = "content/quests.html"
     model = Quest
 
-    @classmethod
-    def sum_dict_values(cls, *args):
-        total = {}
-        for arg in args:
-            for key, value in arg.items():
-                existing = total.get(key, 0)
-                new = existing + value
-                total[key] = new
-        return total
-
-    @classmethod
-    def get_completed_challenges(cls, completed, total):
-        return {challenge.pk for challenge in Challenge.objects.all()
-                if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        challenge_to_total, challenge_to_completed = [], []
-        best = {}
-
         user, section = self.get_user(), self.get_section()
-
-        for content_type in get_problem_content_types():  # 1 query
-            problem_class = content_type.model_class()
-            submission_class = problem_class.get_submission_class()
-            challenge_to_total.append(problem_class.get_challenge_to_problem_number())
-            challenge_to_completed.append(
-                submission_class.get_completed_for_challenge_before_deadline(user, section))
-
-            best[content_type.app_label], _ = submission_class\
-                .get_best_attempts_before_deadlines(user, section)
-
-        context['best'] = best
-        context['challenge_to_completed'] = self.sum_dict_values(*challenge_to_completed)
-        context['challenge_to_total'] = self.sum_dict_values(*challenge_to_total)
-        context['challenges_completed'] = self.get_completed_challenges(
-            context['challenge_to_completed'], context['challenge_to_total'])
+        context.update(Challenge.get_challenge_problem_data(user, section))
 
         # 1 query
         context['watched'] = WatchedVideo.get_watched_pk_list(user)

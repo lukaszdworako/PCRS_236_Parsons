@@ -238,13 +238,19 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps({'results': results,
-                                        'score': self.object.score,
-                                        'sub_pk': self.object.pk,
-                                        'best': self.object.has_best_score,
-                                        'past_dead_line': False,
-             'max_score': self.object.problem.max_score}),
-                             mimetype='application/json')
+        problem = self.get_problem()
+        user, section = self.request.user, self.request.user.section
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section=section).due_on
+
+        return HttpResponse(json.dumps({
+            'results': results,
+            'score': self.object.score,
+            'sub_pk': self.object.pk,
+            'best': self.object.has_best_score,
+            'past_dead_line': self.object.timestamp > deadline,
+            'max_score': self.object.problem.max_score}),
+        mimetype='application/json')
 
 
 class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,

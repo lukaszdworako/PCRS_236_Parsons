@@ -10,7 +10,8 @@ from django.utils.timezone import utc, now
 from content.tags import AbstractTaggedObject
 
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
-                         AbstractOrderedGenericObjectSequence)
+                         AbstractOrderedGenericObjectSequence,
+                         get_problem_content_types)
 from users.models import AbstractLimitedVisibilityObject, PCRSUser, Section
 
 
@@ -153,6 +154,63 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
 
     def get_stats_page_url(self):
         return '{}/stats'.format(self.get_absolute_url())
+
+    @staticmethod
+    def _get_completed_challenges(completed, total):
+        return {challenge.pk for challenge in Challenge.objects.all()
+                if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
+
+    @classmethod
+    def get_challenge_problem_data(cls, user, section):
+        def sum_dict_values(*args):
+            total = {}
+            for arg in args:
+                for key, value in arg.items():
+                    existing = total.get(key, 0)
+                    new = existing + value
+                    total[key] = new
+            return total
+
+        data = {}
+        challenge_to_total, challenge_to_completed = [], []
+        best = {}
+
+        for content_type in get_problem_content_types():  # 1 query
+            problem_class = content_type.model_class()
+            submission_class = problem_class.get_submission_class()
+            challenge_to_total.append(problem_class.get_challenge_to_problem_number())
+            challenge_to_completed.append(
+                submission_class.get_completed_for_challenge_before_deadline(user, section))
+
+            best[content_type.app_label], _ = submission_class\
+                .get_best_attempts_before_deadlines(user, section)
+
+        data['best'] = best
+        # number of problems completed by a student in this challenge
+        data['challenge_to_completed'] = sum_dict_values(*challenge_to_completed)
+        # total number of problems in this challenge
+        data['challenge_to_total'] = sum_dict_values(*challenge_to_total)
+
+        data['challenges_completed'] = cls._get_completed_challenges(
+            data['challenge_to_completed'], data['challenge_to_total'])
+
+        return data
+
+    @classmethod
+    def get_challenge_graph_data(cls):
+        """
+        Return a dictionary mapping challenge id to a dictionary defining
+        the challenge name, prerequisites, and quest id.
+        """
+        return {
+            challenge.pk: {
+                'name': challenge.name,
+                'prerequisites': list(challenge.prerequisites.all()
+                                               .values_list('id', flat=True)),
+                'quest': challenge.quest_id
+            }
+            for challenge in cls.objects.prefetch_related('prerequisites').all()
+        }
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):

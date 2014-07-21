@@ -97,7 +97,7 @@ function add_history_entry(data, div_id, flag){
 
     if (!data['past_dead_line']){
         panel_class = "panel panel-warning";
-        sub_time = "Past dead line";
+        sub_time = sub_time + " Submitted after the deadline";
     }
 
     if (data['best'] && data['past_dead_line']){
@@ -237,6 +237,9 @@ function getTestcases(div_id) {
     $.post(call_path,
             postParams,
             function(data) {
+                if (!data['past_dead_line']){
+                    alert("This submission is past the dead line!")
+                }
                 testcases = data['results'][0];
                 $("#"+div_id).find("#grade-code").show();
 

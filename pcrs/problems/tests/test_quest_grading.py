@@ -13,8 +13,8 @@ class GradesTestWithDeadlineMixin:
         self.s1 = Section.objects.create(section_id='001', location='BA', lecture_time='10-11')
         self.s2 = Section.objects.create(section_id='002', location='BA', lecture_time='11-12')
 
-        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1)
-        self.student2 = PCRSUser.objects.create(username='student2', section=self.s2)
+        self.student1 = PCRSUser.objects.create(username='student1', section=self.s1, is_student=True)
+        self.student2 = PCRSUser.objects.create(username='student2', section=self.s2, is_student=True)
 
         self.instructor = PCRSUser.objects.create(username='instructor',
                                                   is_instructor=True,
@@ -36,6 +36,73 @@ class GradesTestWithDeadlineMixin:
 class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
     problem_class = Problem
     submission_class = Submission
+
+    def test_inactive_user(self):
+        """
+        Test inactive users not appearing in the report.
+        """
+
+        self.student1.is_active = False
+        self.student1.save()
+
+        SectionQuest.objects.update(due_on=None)
+
+        problem = self.problem_class.objects.create(pk=1, name='test',
+            description='test', challenge=self.c1, visibility='open')
+        for score in [2, 1, 0, 4]:
+            for student in [self.student1, self.student2]:
+                self.submission_class.objects.create(
+                    problem=problem, user=student, score=score
+                )
+        expected = []
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s1,
+                                             active_only=True)
+        self.assertListEqual(expected, list(actual))
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s1.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s1.section_id,
+             'active': 'on'})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(2, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+
+        expected = [{'user': 'student2', 'best': 4, 'problem': 1}]
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s2,
+                                             active_only=True)
+        self.assertListEqual(expected, list(actual))
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s2.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s2.section_id, 'active': 'on'})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student2,4', lines)
+
+        # now test both users in one section, student1 should be excluded
+        self.student1.section = self.student2.section
+        self.student1.save()
+
+        actual = self.submission_class.grade(quest=self.quest1, section=self.s2,
+                                             active_only=True)
+        self.assertListEqual(expected, list(actual))
+
+        self.client.login(username=self.instructor)
+        response = self.client.post(
+            reverse('section_reports', kwargs={'pk': self.s2.section_id}),
+            {'quest': self.quest1.pk, 'section': self.s2.section_id, 'active': 'on'})
+        self.assertEqual(200, response.status_code)
+        lines = response.content.splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertIn(b'test', lines)
+        self.assertIn(b'0', lines)
+        self.assertIn(b'student2,4', lines)
 
     def test_no_deadline(self):
         """

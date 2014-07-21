@@ -214,6 +214,17 @@ class AbstractSubmission(AbstractSelfAwareModel):
             Q(problem__challenge__quest__sectionquest__due_on__gt=F('timestamp'))
         )
 
+    @classmethod
+    def get_for_users(cls, active_only):
+        if active_only:
+            return cls.objects.filter(user__is_active=True)
+        else:
+            return cls.objects
+
+    @classmethod
+    def get_for_students(cls, active_only):
+        return cls.get_for_users(active_only).filter(user__is_student=True)
+
     def set_best_submission(self):
         """
         Update the submission such that the latest submission with highest score
@@ -276,8 +287,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
                 {d['problem_id']: d['best'] == d['max_score'] for d in subs})
 
     @classmethod
-    def grade(cls, quest, section):
-        return cls.objects\
+    def grade(cls, quest, section, active_only=False):
+        return cls.get_for_students(active_only)\
             .filter(cls.deadline_constraint(),
                     problem__challenge__quest=quest, user__section=section,
                     problem__challenge__quest__sectionquest__section=section,
@@ -285,8 +296,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .values('user', 'problem').annotate(best=Max('score')).order_by()
 
     @classmethod
-    def get_scores_for_challenge(cls, challenge, section):
-        return cls.objects\
+    def get_scores_for_challenge(cls, challenge, section, active_only=False):
+        return cls.get_for_students(active_only)\
             .filter(problem__challenge=challenge, user__section=section,
                     problem__challenge__quest__sectionquest__section=section)\
             .values('user', 'problem').annotate(best=Max('score')).order_by()

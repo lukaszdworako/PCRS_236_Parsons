@@ -4,6 +4,24 @@ from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
+
+
+def get_problem_labels():
+    """
+    Return the list app_labels of apps that contain a Problem class.
+    """
+    return [c.app_label for c in get_problem_content_types()]
+
+
+def get_problem_content_types():
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
+
+
+def get_submission_content_types():
+    apps = settings.INSTALLED_PROBLEM_APPS
+    return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
 class AbstractSelfAwareModel(models.Model):

@@ -67,6 +67,8 @@ def login_view(request):
 
                 if user is None:
                     NOTIFICATION = "djangoaccount"
+                if not user.is_active:
+                    NOTIFICATION = "user inactive"
                 else: 
                     request.session['section'] = user.section
                     post_link = request.POST['next']
