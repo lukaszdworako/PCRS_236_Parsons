@@ -238,9 +238,10 @@ function getTestcases(div_id) {
             function(data) {
                 if (data['past_dead_line']){
                     alert("This submission is past the deadline!")
+                    $('#'+div_id).find('#deadline_msg').remove();
                     $('#'+div_id)
                         .find('#alert')
-                        .after('<div class="alert alert-danger">Submitted after the deadline!<div>');
+                        .after('<div id="deadline_msg" class="alert alert-danger">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
                 $("#"+div_id).find("#grade-code").show();
@@ -410,7 +411,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             'sub_pk':sub_pk,
             'out_of':max_score,
             'tests': table_location};
-    if (best){
+    if (best && !data['past_dead_line']){
         var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
         var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
         if (score == max_score){
