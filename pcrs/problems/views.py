@@ -244,14 +244,15 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
         results = self.record_submission(request)
         problem = self.get_problem()
         user, section = self.request.user, self.request.user.section
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
 
         logger = logging.getLogger('activity.logging')
         logger.info(str(localtime(self.object.timestamp)) + " | " +
                     str(user) + " | Submit " +
                     str(problem.get_problem_type_name()) + " " +
                     str(problem.pk))
+
+        deadline = problem.challenge.quest.sectionquest_set\
+            .get(section=section).due_on
 
         return HttpResponse(json.dumps({
             'results': results,

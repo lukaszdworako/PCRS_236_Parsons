@@ -237,7 +237,10 @@ function getTestcases(div_id) {
             postParams,
             function(data) {
                 if (data['past_dead_line']){
-                    alert("This submission is past the dead line!")
+                    alert("This submission is past the deadline!")
+                    $('#'+div_id)
+                        .find('#alert')
+                        .after('<div class="alert alert-danger">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
                 $("#"+div_id).find("#grade-code").show();
