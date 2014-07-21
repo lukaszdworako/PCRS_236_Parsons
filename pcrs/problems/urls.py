@@ -7,4 +7,5 @@ urlpatterns = patterns('',
     url(r'^rdb/', include('problems_rdb.urls')),
     url(r'^sql/', include('problems_sql.urls')),
     url(r'^ra/', include('problems_ra.urls')),
+    url(r'^timed/', include('problems_timed.urls')),
 )

@@ -1,0 +1,41 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $( document ).ready( function() {
+            $( "#id_text" ).focus();
+            
+            $("#tags_toggle").click( function() {
+                $("#tags_down, #tags_up").toggle();
+                $("#tags_reference").slideToggle("slow");
+            });
+        });
+    </script>
+{% endblock %}
+
+{% if object %}
+    {% block page_title %}
+        Edit Page
+    {% endblock %}
+{% endif %}
+
+{% block links %}
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to problem</a>
+{% endblock %}
+
+{% block content %}
+    {% with object_list=problem.page_set.all list_name='Existing Pages' %}
+        {% include "pcrs/related_items_list.html" %}
+        <hr>
+    {% endwith %}
+    <div id="tags_toggle" style="text-align:right;cursor:pointer">
+        <span id="tags_down" class="glyphicon glyphicon-chevron-down" style="vertical-align:middle"></span>
+        <span id="tags_up" class="glyphicon glyphicon-chevron-up" style="vertical-align:middle;display:none"></span>
+        HTML Tags Reference
+    </div>
+    <div id="tags_reference" style="margin-left:auto; margin-right:0;width:850px;display:none">
+        {% include "problems_timed/html_reference.html" %}
+    </div>
+    {{ block.super }}
+{% endblock %}
