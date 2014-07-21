@@ -10,6 +10,8 @@
             pages.push("<h1>{{ page.text | safe | linebreaksbr }}</h1>");
         {% endfor %}
         
+        preloadImages(pages);
+        
         var counter = 0;
         var delay = parseInt({{ problem.delay }}) * 1000;
         var container = document.getElementById('page_container');
@@ -23,7 +25,7 @@
             
             $.post(root + '/problems/timed/' + String({{ problem.pk }}) + '/attempt')
             .fail( function() {
-                window.location.replace('/problems/timed/list');
+                window.location.replace('/content/quests');
             });
             
             $('#start_problem, #links_block, #info_block, #show_attempts, #extra_br').fadeOut();

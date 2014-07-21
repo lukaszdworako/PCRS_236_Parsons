@@ -100,10 +100,11 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
     def post(self, request, *args, **kwargs):
         form = self.get_form(self.get_form_class())
         info = self.get_request_info(request)
-        self.submission = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem']).order_by('-pk')[:1][0]
+        submission = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem']).order_by('-pk')[:1][0]
         
-        if self.submission.timestamp_complete:
+        if submission.timestamp_complete:
             return HttpResponseForbidden()
         
-        self.submission.set_score(request.REQUEST['submission'])
-        return HttpResponseRedirect('/problems/timed/list')
+        submission.set_score(request.REQUEST['submission'])
+        
+        return HttpResponseRedirect('/content/quests')

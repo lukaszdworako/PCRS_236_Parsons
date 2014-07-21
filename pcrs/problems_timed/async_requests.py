@@ -31,7 +31,7 @@ class AsyncAttempt:
         attempt_submission = Submission.objects.create(user=user, section=section,
                                                        problem=problem, attempt=total+1)
         attempt_submission.save()
-    
+        
         return HttpResponse()
 
 class AsyncDownload:
