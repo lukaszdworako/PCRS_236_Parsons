@@ -26,9 +26,11 @@
                             <a href="{{ site_prefix }}/problems/multiple_choice/list">Multiple
                                 Choice</a></li>
                         <li class="divider"></li>
+                        {% if 'problems_timed' in problem_types %}
                         <li>
                             <a href="{{ site_prefix }}/problems/timed/list">Timed</a>
                         </li>
+                        {% endif %}
                         {% if 'sql' in languages or 'ra' in languages %}
                             <li class="divider"></li>
                             <li>
