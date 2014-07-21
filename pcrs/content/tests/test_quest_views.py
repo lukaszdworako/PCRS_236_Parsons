@@ -1,7 +1,8 @@
 from django import test
 from django.core.urlresolvers import reverse
+
 from content.models import Quest, SectionQuest
-from tests.ViewTestMixins import CourseStaffViewTestMixin
+from ViewTestMixins import CourseStaffViewTestMixin
 from users.models import Section
 
 
@@ -22,6 +23,7 @@ class TestQuestCreateView(CourseStaffViewTestMixin, test.TestCase):
         post_data = {
             'name': 'Quest 1',
             'description': 'Quest 1 desc',
+            'mode': 'live'
         }
         response = self.client.post(self.url, post_data)
         self.assertRedirects(response, self.successful_redirect_url)
@@ -57,6 +59,7 @@ class TestQuestUpdateView(CourseStaffViewTestMixin, test.TestCase):
         post_data = {
             'name': 'Updated Quest 1',
             'description': 'Updated Quest 1 desc',
+            'mode': 'live'
         }
         response = self.client.post(self.url, post_data)
         self.assertRedirects(response, self.successful_redirect_url)

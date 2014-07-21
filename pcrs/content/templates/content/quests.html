@@ -6,8 +6,11 @@
 {% block scripts %}
     {{ block.super }}
     {% load static %}
-    <script src="{% static "content/js/Quest_color_control.js" %}"
-            type="text/javascript"></script>
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "content/js/Quest_color_control.js" %}"
+                type="text/javascript"></script>
+    {% endcompress %}
 {% endblock %}
 
 {% block page_title %}

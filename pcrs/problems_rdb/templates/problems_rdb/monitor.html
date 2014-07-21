@@ -4,17 +4,23 @@
 
 {% block stylesheets %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static "problems/css/style.css" %}"
-          type="text/css">
+    {% load compress %}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "problems/css/style.css" %}"
+              type="text/css">
+    {% endcompress %}
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
-    <script src="{% static "problems/js/monitor.js" %}"></script>
-    <script src="{% static "csrf_protection.js" %}"></script>
-    <script src="{% static "RGraph/RGraph.common.core.js" %}"></script>
-    <script src="{% static "RGraph/RGraph.bar.js" %}"></script>
-    <script src="{% static "RGraph/RGraph.hbar.js" %}"></script>
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "problems/js/monitor.js" %}"></script>
+        <script src="{% static "csrf_protection.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.common.core.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.bar.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.hbar.js" %}"></script>
+    {% endcompress %}
 {% endblock %}
 
 {% block page_title %}

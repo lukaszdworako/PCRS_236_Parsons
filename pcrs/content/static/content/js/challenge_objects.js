@@ -56,6 +56,9 @@ $(document).ready(function () {
 });
 
 function select_given_page(){
+    /**
+     * For Visually impaired users, after they choose page and location add content
+     */
 
     var selected_page = $('#page_num').val().trim();
     var selected_location = $('#page_location').val().trim();
@@ -88,6 +91,10 @@ function select_given_page(){
 }
 
 function add_text_enter(event){
+    /**
+     * Set up page number choices for visually impaired users
+     */
+
     source_button = null;
     if(event.which == 13 || event.which == 1){
         event.preventDefault();
@@ -104,6 +111,10 @@ function add_text_enter(event){
 }
 
 function update_page_location(){
+    /**
+     * Change the possible problem locations given selected page
+     */
+
     var selected_page_num = $('#page_num').val() - 1;
     var number_of_components = $($('[id*="page-"]')[selected_page_num]).children().length;
     $('#page_location').empty();
@@ -113,10 +124,18 @@ function update_page_location(){
 }
 
 function resize_problems(){
+    /**
+     * Resize the problem window
+     */
+
     $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
 }
 
 function select(event) {
+    /**
+     * Allows to select a ui element
+     */
+
     if ($uiselected != null) {
         $uiselected.toggleClass('uiselected');
     }
@@ -125,6 +144,10 @@ function select(event) {
 }
 
 function addPage() {
+    /**
+     * Add a new page to the window
+     */
+
     $.post(document.URL + '/page/create', {csrftoken: csrftoken})
         .success(function (data) {
             $new_item = $("<div/>", {
@@ -148,6 +171,10 @@ function addPage() {
 }
 
 function deletePage() {
+    /**
+     * remove selected page form the window
+     */
+
     if (confirm('Are you sure you would like to delete this page?')) {
         $item = $(this).parent('.page');
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
@@ -159,6 +186,10 @@ function deletePage() {
 }
 
 function addText() {
+    /**
+     *  Allows to add text of button was clicked
+     */
+
     $uiselected = null;
     var $page = $('.ui-selected');
     if ($page.length == 0) {
@@ -171,6 +202,10 @@ function addText() {
 }
 
 function saveText(event) {
+    /**
+     * Add a text element to a page
+     */
+
     var $page = $('.ui-selected');
 
     $.post(document.URL + '/' + $page.attr('id') + '/text/create', {
@@ -244,6 +279,10 @@ function savePages() {
 }
 
 function change_problem_visibility(){
+    /**
+     * Change the visibility of the problem and change the look of the button
+     */
+
     var parent_id = $(this).parent('div').attr('id');
     var current_problem_type = parent_id.split("-")[0];
     var current_problem_pk = parent_id.split("-")[1];

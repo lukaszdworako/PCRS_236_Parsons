@@ -21,7 +21,9 @@ class VideoForm(BaseCrispyForm, forms.ModelForm):
 
 
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
-    prerequisites = forms.ModelMultipleChoiceField(queryset=Challenge.objects.order_by('name'))
+    prerequisites = forms.ModelMultipleChoiceField(
+        queryset=Challenge.objects.order_by('name'),
+        required=False)
 
     class Meta:
         model = Challenge
@@ -35,6 +37,8 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
             Fieldset('', *self.Meta.fields),
         )
         if self.instance.pk:
+            self.fields['prerequisites'].queryset = \
+                Challenge.objects.exclude(pk=self.instance.pk).order_by('name')
             add_objects = HTML('<a class="btn btn-success" role="button" '
                                'href="{{ object.get_absolute_url }}/objects">'
                                'Manage content</a>')

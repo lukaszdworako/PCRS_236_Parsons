@@ -1,1 +1,1 @@
-from .ViewTestMixins import *
+import ViewTestMixins
