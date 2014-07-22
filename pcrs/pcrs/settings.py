@@ -216,7 +216,7 @@ LOGGING = {
         'activity.logging': {
             'handlers': ['file'],
             'level': 'INFO',
-            'propagate': 'True',
+            'propagate': True,
         }
     }
 }
