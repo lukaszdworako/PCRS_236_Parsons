@@ -259,7 +259,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
             'score': self.object.score,
             'sub_pk': self.object.pk,
             'best': self.object.has_best_score,
-            'past_dead_line': self.object.timestamp > deadline,
+            'past_dead_line': deadline and self.object.timestamp > deadline,
             'max_score': self.object.problem.max_score}),
         mimetype='application/json')
 
@@ -325,8 +325,9 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                 'submission': sub.submission,
                 'score': sub.score,
                 'out_of': problem.max_score,
-                'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': sub.timestamp > deadline,
+                'best': sub.score == best_score and \
+                        ((not deadline) or sub.timestamp < deadline),
+                'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'tests': [testrun.get_history()

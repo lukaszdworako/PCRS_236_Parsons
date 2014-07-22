@@ -102,7 +102,7 @@ function add_mc_history_entry(data, div_id, flag){
 
     var panel_class = "panel panel-default";
 
-    if (!data['past_dead_line']){
+    if (data['past_dead_line']){
         panel_class = "panel panel-warning";
         sub_time = sub_time + " Submitted after the deadline";
     }
