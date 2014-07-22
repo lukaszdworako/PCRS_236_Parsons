@@ -109,7 +109,7 @@ function add_mc_history_entry(data, div_id, flag){
 
     star_text = "";
 
-    if (data['best'] && data['past_dead_line']){
+    if (data['best'] && !data['past_dead_line']){
         panel_class = "panel panel-primary";
         star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
         $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();

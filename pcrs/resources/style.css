@@ -41,11 +41,6 @@
 
 .active_sb{
 
-    /*padding-right: 10px;*/
-    /*background: url("http://infoperusahaan.com/wp-content/themes/infoperusahaan/images/widget-dot-orange.png");*/
-    /*background-repeat: no-repeat;*/
-    /*background-position: right;*/
-
     border-right:groove indigo;
     padding-right: 5px;
 }
