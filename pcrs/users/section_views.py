@@ -112,7 +112,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         # collect students in the section who has not submitted anything
 
-        for student in PCRSUser.objects.get_users(active_only=active_only)\
+        for student in PCRSUser.objects.get_students(active_only=active_only)\
                                        .filter(section=section)\
                                        .exclude(username__in=results.keys()):
             writer.writerow([student.username] + ['' for problem in problems])
