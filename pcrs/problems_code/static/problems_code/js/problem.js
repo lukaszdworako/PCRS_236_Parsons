@@ -417,7 +417,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
         if (score == max_score){
             $('#'+div_id).find(".widget_title").siblings('span').empty();
             $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
-                {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                {class:"glyphicon glyphicon-ok ok-icon-green"}));
 
             new_title += " : Complete"
             side_bar.css("color","green");
@@ -550,7 +550,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         if (score == max_score){
             $('#'+div_id).find(".widget_title").siblings('span').empty();
             $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
-                          {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                          {class:"glyphicon glyphicon-ok ok-icon-green"}));
 
             new_title += " : Complete"
             side_bar.css("color","green");

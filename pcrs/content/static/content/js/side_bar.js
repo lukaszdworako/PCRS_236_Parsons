@@ -6,8 +6,7 @@ $(document).ready(function () {
     // fill up the side bar with information
     for (var w_ind = widgets.length - 1; w_ind > -1; w_ind--){
 
-        var entry = $('<div/>',{style:"margin-left:25%;",
-                                class:"side-bar-el"});
+        var entry = $('<div/>',{class:"side-bar-el"});
         var entry2 = $('<a/>',{href:"#"+widgets[w_ind].id});
 
         var w_icon = "glyphicon glyphicon-edit";
@@ -41,6 +40,10 @@ $(document).ready(function () {
         if ((widgets[w_ind].id).split("-")[0] == "video"){
             w_icon = "glyphicon glyphicon-film";
             w_color = "black";
+            if ($(widgets[w_ind]).find('.ok-icon-green').length > 0){
+                w_icon += " ok-icon-green";
+                w_color = "green";
+            }
             title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
         }
 
@@ -96,5 +99,11 @@ function onScroll(){
 }
 
 function video_watched(video_id){
-    $(document).find("#sb_video-"+video_id).css("color","green");
+    if (!$("#sb_video-"+video_id).hasClass('ok-icon-green')){
+        $.post(root+"/content/videos/"+video_id+"/watched",
+            {csrftoken:csrftoken})
+            .success(function (data) {
+                $(document).find("#sb_video-"+video_id).addClass("ok-icon-green");
+            });
+    }
 }

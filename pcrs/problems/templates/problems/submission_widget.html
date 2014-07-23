@@ -8,7 +8,7 @@
                             class="at">Statistics for {{ problem.name }}</span></a>
                 {% endif %}
                 <p class="widget_title">
-                    {{ problem.name }}
+                    {{ problem.name|default_if_none:"Multiple Choice Question" }}
                 </p>
             {% endblock %}
         {% endautoescape %}

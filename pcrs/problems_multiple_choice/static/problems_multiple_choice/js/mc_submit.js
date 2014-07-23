@@ -247,7 +247,7 @@ function submit_mc(submission, problem_pk, div_id) {
                     var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
                     if (score == max_score){
                         $('#'+div_id).find(".widget_title").siblings('span').empty();
-                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
+                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
                         side_bar.css("color","green");
                         side_bar.removeClass();
                         side_bar.addClass("glyphicon glyphicon-check");

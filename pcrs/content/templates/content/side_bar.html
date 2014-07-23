@@ -1,14 +1,14 @@
 <div class="bs-docs-sidebar hidden-print affix" role="complementary" style="margin-left:86%;
 margin-top:-55px;">
-    <ul class="nav bs-docs-sidenav" style="margin-left:-2%;">
+    <ul class="nav bs-docs-sidenav" style="margin-left:-15px;">
         <br>
         <div>
             {% if content_page.order > 1 %}
-                <a href="{{ content_page.order|add:-1 }}" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}">
+                <a style="margin-left:-10px;" href="{{ content_page.order|add:-1 }}" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}">
                 <span id="step_left" class="glyphicon glyphicon-chevron-left" style="color:green;">
                 </span>
             {% else %}
-                <a>
+                <a style="margin-left:-10px;">
                 <span class="glyphicon glyphicon-chevron-left" style="color:grey;">
                 </span>
             {% endif %}

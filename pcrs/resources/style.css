@@ -6,8 +6,8 @@
     background-color: #E31837;
 }
 
-.icon-ok-green {
-    color: #3C9A45;
+.ok-icon-green {
+    color: #3C9A45 !important;
 }
 
 @media screen{
@@ -128,7 +128,7 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .visibility-draft{
-    color:#CC3300 !important;
+    color:#FF8400 !important;
 }
 
 .btn-object-visibility{

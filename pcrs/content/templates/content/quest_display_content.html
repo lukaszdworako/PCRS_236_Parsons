@@ -5,7 +5,7 @@
     <div>
         {% with item_type=item|classname|lower problem_type=item|module_name %}
             {% if item_type == "video" %}
-                {% if object.pk in watched %}
+                {% if item.pk in watched %}
                     <span class="complete">
                 {% else %}
                     <span class="incomplete">
