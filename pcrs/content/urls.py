@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, url
+from content.api import InclassProblems, InclassProblemsView
 
 from content.challenge_content_views import (TextCreateView, PageCreateView,
                                              ChallengeObjectsView,
@@ -93,4 +94,11 @@ urlpatterns = patterns('',
 
     url(r'^quests/section/(?P<section>[\w-]+)$', QuestSectionListView.as_view(),
         name='section_quests_setup'),
+
+
+    url(r'^inclass$', InclassProblemsView.as_view(),
+        name='inclass_problems_page'),
+
+    url(r'^inclass/list$', InclassProblems.as_view(),
+        name='inclass_problems'),
 )
