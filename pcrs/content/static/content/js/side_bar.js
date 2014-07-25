@@ -11,19 +11,19 @@ $(document).ready(function () {
 
         var w_icon = "glyphicon glyphicon-edit";
         var title_text = $(widgets[w_ind]).find(".widget_title")[0].innerHTML.trim();
-        var w_color = "DarkOrange";
+        var w_color = " problem-attempted";
 
         // if there is a checkmark on the page the question is complete
         if ($(widgets[w_ind]).find(".widget_complete").length != 0){
             w_icon = "glyphicon glyphicon-check";
-            w_color = "green";
+            w_color = " problem-complete";
             title_text += " : Complete";
         }
         //grab the score from the question on the page
         else if ($(widgets[w_ind]).find(".widget_down").length != 0){
             w_icon = "glyphicon glyphicon-unchecked";
             title_text += " : Down for maintenance";
-            w_color = "grey";
+            w_color = " problem-closed";
         }
         else{
             var current_mark = $(widgets[w_ind]).find("sup").text();
@@ -33,24 +33,23 @@ $(document).ready(function () {
             }
             else{
                 title_text += " : not attempted";
-                w_color = "red";
+                w_color = " problem-idle";
             }
         }
 
         if ((widgets[w_ind].id).split("-")[0] == "video"){
             w_icon = "glyphicon glyphicon-film";
-            w_color = "black";
+            w_color = " problem-none";
             if ($(widgets[w_ind]).find('.ok-icon-green').length > 0){
                 w_icon += " ok-icon-green";
-                w_color = "green";
+                w_color = " problem-complete";
             }
             title_text = $(widgets[w_ind]).find("h3")[0].firstChild.data.trim();
         }
 
         var entry3 = $('<span/>',{
             id:"sb_"+widgets[w_ind].id,
-            class:w_icon,
-            style:"color:"+w_color+";"
+            class:w_icon + w_color
         });
 
         entry2.append(entry3);

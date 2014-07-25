@@ -248,16 +248,16 @@ function submit_mc(submission, problem_pk, div_id) {
                     if (score == max_score){
                         $('#'+div_id).find(".widget_title").siblings('span').empty();
                         $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
-                        side_bar.css("color","green");
                         side_bar.removeClass();
-                        side_bar.addClass("glyphicon glyphicon-check");
+                        side_bar.addClass("glyphicon glyphicon-check problem-complete");
                         new_title += " : Complete"
                     }
                     else{
                         $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
                         $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
                         new_title += " : " + score + " / " + max_score;
-                        side_bar.css("color","DarkOrange");
+                        side_bar.removeClass("problem-idle")
+                        side_bar.addClass("problem-attempted");
                     }
                     side_bar.prop('title', new_title);
                 }

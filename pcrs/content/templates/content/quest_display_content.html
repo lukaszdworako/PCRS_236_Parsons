@@ -18,10 +18,12 @@
             {% elif item_type == "problem" %}
                 {% if item.is_visible_to_students %}
                     {% with mark=best|get_item:problem_type|get_item:item.pk %}
-                        {% if mark == item.max_score %}
-                            <span class="complete">
+                        {% if mark == None %}
+                            <span class="problem-idle">
+                        {% elif mark == item.max_score %}
+                            <span class="problem-complete">
                         {% else %}
-                            <span class="incomplete">
+                            <span class="problem-attempted">
                         {% endif %}
                     {% endwith %}
                     <i class="glyphicon glyphicon-edit problem"></i>

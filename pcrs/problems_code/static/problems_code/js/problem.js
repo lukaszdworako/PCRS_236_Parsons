@@ -218,8 +218,14 @@ function getTestcases(div_id) {
     /**
      * Submit code from div_id and get back the test cases
      */
+    var clean_code = myCodeMirrors[div_id].getValue();
 
-    var postParams = { csrftoken: csrftoken, submission: myCodeMirrors[div_id].getValue() };
+    // replace all the tabs with 4 spaces before submitting the code to the database
+    while (clean_code.indexOf('\t') != -1){
+        clean_code = clean_code.replace('\t',"    ");
+    }
+
+    var postParams = { csrftoken: csrftoken, submission: clean_code };
     var call_path = "";
 
     check_language(div_id);
@@ -420,15 +426,15 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                 {class:"glyphicon glyphicon-ok ok-icon-green"}));
 
             new_title += " : Complete"
-            side_bar.css("color","green");
             side_bar.removeClass();
-            side_bar.addClass("glyphicon glyphicon-check");
+            side_bar.addClass("glyphicon glyphicon-check problem-complete");
         }
         else{
             $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
             $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
             new_title += " : " + score + " / " + max_score;
-            side_bar.css("color","DarkOrange");
+            side_bar.removeClass("problem-idle");
+            side_bar.addClass("problem-attempted");
         }
         side_bar.prop('title', new_title);
     }
@@ -553,15 +559,15 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                           {class:"glyphicon glyphicon-ok ok-icon-green"}));
 
             new_title += " : Complete"
-            side_bar.css("color","green");
             side_bar.removeClass();
-            side_bar.addClass("glyphicon glyphicon-check");
+            side_bar.addClass("glyphicon glyphicon-check problem-complete");
         }
         else{
             $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
             $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
             new_title += " : " + score + " / " + max_score;
-            side_bar.css("color","DarkOrange");
+            side_bar.removeClass("problem-idle");
+            side_bar.addClass("problem-attempted");
         }
         side_bar.prop('title', new_title);
     }
