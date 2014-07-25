@@ -93,8 +93,8 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                 names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
                 max_scores.append(problem.max_score)
 
-        writer.writerow(names)
-        writer.writerow(max_scores)
+        writer.writerow(['problems'] + names)
+        writer.writerow(['users/max_scores'] + max_scores)
 
         # collect grades for each student
         results = defaultdict(dict)

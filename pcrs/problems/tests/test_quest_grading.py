@@ -66,8 +66,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(2, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
 
         expected = [{'user': 'student2', 'best': 4, 'problem': 1}]
         actual = self.submission_class.grade(quest=self.quest1, section=self.s2,
@@ -81,8 +81,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,4', lines)
 
         # now test both users in one section, student1 should be excluded
@@ -100,8 +100,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,4', lines)
 
     def test_no_deadline(self):
@@ -127,8 +127,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         expected = [{'user': 'student2', 'best': 4, 'problem': 1}]
@@ -142,8 +142,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,4', lines)
 
     def test_multiple_sub_to_one_problem(self):
@@ -167,8 +167,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -182,8 +182,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,', lines)
 
 
@@ -217,8 +217,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -233,8 +233,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,3', lines)
 
     def test_multiple_problems_one_closed(self):
@@ -270,8 +270,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -286,8 +286,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,3', lines)
 
 
@@ -337,8 +337,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,4,6', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -352,8 +352,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student2,2,3', lines)
 
     def test_multiple_sub_to_multiple_problems_challenges_some_after(self):
@@ -403,8 +403,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -417,8 +417,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,2', lines)
 
         # quest 2
@@ -431,8 +431,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test2', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test2', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,6', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -445,8 +445,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test2', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test2', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,3', lines)
 
     def test_multiple_sub_to_multiple_problems_quests(self):
@@ -500,8 +500,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,4', lines)
 
         expected = [{'user': 'student2', 'best': 5, 'problem': 1}]
@@ -513,8 +513,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,5', lines)
 
         # quest 2
@@ -528,8 +528,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test2', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test2', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,3', lines)
 
         # for section2 the deadline passed, submissions made now do not count
@@ -543,8 +543,8 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         self.assertEqual(200, response.status_code)
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test2', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test2', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student2,3', lines)
 
 
@@ -568,8 +568,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'4,3', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,4,3', lines)
         self.assertIn(b'student1,,', lines)
 
     def test_no_submissions_one_problem(self):
@@ -591,8 +591,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test', lines)
-        self.assertIn(b'0', lines)
+        self.assertIn(b'problems,test', lines)
+        self.assertIn(b'users/max_scores,0', lines)
         self.assertIn(b'student1,', lines)
 
     def test_no_submissions_one_type_problems(self):
@@ -612,8 +612,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,,', lines)
 
     def test_no_submissions(self):
@@ -634,8 +634,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,,', lines)
 
     def test_with_all_submissions(self):
@@ -662,8 +662,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,2,2', lines)
 
     def test_with_some_submissions(self):
@@ -689,8 +689,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,2,', lines)
 
     def test_with_some_submissions2(self):
@@ -716,8 +716,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,,2', lines)
 
     def test_with_many_submissions(self):
@@ -748,8 +748,8 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,3,2', lines)
 
     def test_no_dealine(self):
@@ -777,6 +777,6 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             {'quest': self.quest1.pk, 'section': self.s1.section_id})
         lines = response.content.splitlines()
         self.assertEqual(3, len(lines))
-        self.assertIn(b'test,test2: test', lines)
-        self.assertIn(b'0,0', lines)
+        self.assertIn(b'problems,test,test2: test', lines)
+        self.assertIn(b'users/max_scores,0,0', lines)
         self.assertIn(b'student1,3,2', lines)
