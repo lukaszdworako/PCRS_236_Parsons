@@ -196,8 +196,7 @@ class SubmissionViewMixin:
         context = super().get_context_data(**kwargs)
         problem = self.get_problem()
         context['problem'] = problem
-        context['submissions'] = self.model.get_submission_class().objects\
-            .filter(user=self.request.user, problem=problem).all()
+        context['mark'] = problem.get_best_score_before_deadline(self.get_user())
         return context
 
     def record_submission(self, request):
@@ -229,7 +228,7 @@ class SubmissionViewMixin:
 
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
-                     FormView):
+                     FormView, UserViewMixin):
     """
     Create a submission for a problem.
     """
@@ -252,9 +251,11 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                     str(user) + " | Submit " +
                     str(problem.get_problem_type_name()) + " " +
                     str(problem.pk))
-
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except Exception:
+            deadline = False
 
         return HttpResponse(json.dumps({
             'results': results,

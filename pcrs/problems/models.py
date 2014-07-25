@@ -150,6 +150,10 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                 restult.add(submission)
         return restult
 
+    def get_best_score_before_deadline(self, user):
+        return self.get_submission_class()\
+            .get_best_score_before_deadline(self, user)
+
 
 class AbstractProgrammingProblem(AbstractProblem):
     """
@@ -319,6 +323,13 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .filter(problem__challenge=challenge, user__section=section,
                     problem__challenge__quest__sectionquest__section=section)\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
+
+    @classmethod
+    def get_best_score_before_deadline(cls, problem, user):
+        scores = cls.objects.filter(cls.deadline_constraint())\
+                            .filter(user=user, problem=problem)\
+                            .values_list('score', flat=True)
+        return max(scores) if scores else None
 
 
 class AbstractTestCase(AbstractSelfAwareModel):
