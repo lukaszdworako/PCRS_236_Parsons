@@ -62,4 +62,8 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/monitor_data$',
         MonitoringAsyncView.as_view(model=Problem),
         name='ra_problem_get_monitor_data'),
-    )
+
+    url(r'^(?P<pk>[0-9]+)/browse_submissions$',
+            BrowseSubmissionsView.as_view(model=Problem),
+            name='ra_problem_browse_submissions'),
+)
