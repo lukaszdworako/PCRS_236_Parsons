@@ -58,11 +58,8 @@ class TestCase(AbstractTestCase):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
                                 null=False, blank=False)
-    description = models.TextField(null=False, blank=True)
     test_input = models.TextField()
     expected_output = models.TextField()
-    is_visible = models.BooleanField(null=False, default=False,
-        verbose_name='Test input and output visible to students')
 
     def __str__(self):
         testcase = '{input} -> {output}'.format(input=self.test_input,
@@ -71,9 +68,6 @@ class TestCase(AbstractTestCase):
             return self.description + ' : ' + testcase
         else:
             return testcase
-
-    def display(self):
-        return self.description or 'Hidden Test' if not self.is_visible else str(self)
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
