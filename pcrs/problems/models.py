@@ -84,6 +84,9 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_monitoring_url(self):
         return '{}/monitor'.format(self.get_absolute_url())
 
+    def get_browse_submissions_url(self):
+        return '{}/browse_submissions'.format(self.get_absolute_url())
+
     def best_per_user_before_time(self, deadline=timezone.now()):
         """
         Return a list of dictionaries of the form {user_id: , score:)
@@ -131,6 +134,21 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
             # order by the id of related object
             'data': [data[key] for key in sorted(data.keys())]
         }
+
+    def get_submissions_for_conditions(self, conditions, starttime=None,
+                                       endtime=None):
+        restult = set()
+        submissions = self.get_submission_class().objects.filter(problem=self)
+        if starttime:
+            submissions = submissions.filter(timestamp__gt=starttime)
+            submissions = submissions.filter(timestamp__lt=endtime)
+
+        for submission in submissions.prefetch_related('testrun_set').all():
+            if all([conditions[testrun.testcase.pk] is None or
+                                    testrun.test_passed == conditions[testrun.testcase.pk]
+                    for testrun in submission.testrun_set.all()]):
+                restult.add(submission)
+        return restult
 
 
 class AbstractProgrammingProblem(AbstractProblem):

@@ -72,6 +72,9 @@ class TestCase(AbstractTestCase):
         else:
             return testcase
 
+    def display(self):
+        return self.description or 'Hidden Test' if not self.is_visible else str(self)
+
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
         if self.pk:

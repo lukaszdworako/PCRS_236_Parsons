@@ -1,13 +1,14 @@
 import json
 from django.http import HttpResponse
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render_to_response
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 
-from problems.forms import ProgrammingSubmissionForm, MonitoringForm
+from problems.forms import ProgrammingSubmissionForm, MonitoringForm, \
+    BrowseSubmissionsForm
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -236,14 +237,15 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     object = None
 
 
-class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
+                          SectionViewMixin, View):
     """
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
         problem = self.get_problem()
-        user, section = self.request.user, self.request.user.section
+        user, section = self.request.user, self.get_section()
 
         logger = logging.getLogger('activity.logging')
         logger.info(str(localtime(self.object.timestamp)) + " | " +
@@ -335,3 +337,46 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
             })
 
         return HttpResponse(json.dumps(returnable), mimetype='application/json')
+
+
+class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
+                            SectionViewMixin, FormView):
+    form_class = BrowseSubmissionsForm
+    template_name = 'pcrs/crispy_form.html'
+    object = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['problem'] = self.get_object()
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        section = self.get_section()
+        if not section.is_master():
+            initial['section'] = section
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Browse submissions'
+        return context
+
+    def form_valid(self, form):
+        conditions = {}
+        problem = self.get_object()
+        starttime = form.cleaned_data['starttime']
+        endtime = form.cleaned_data['stoptime']
+
+        for key, value in form.cleaned_data.items():
+            if key.startswith('testcase'):
+                _, pk = key.split('-')
+                conditions[int(pk)] = None if value == 'any' else value == 'pass'
+        submissions = problem.get_submissions_for_conditions(
+            conditions=conditions, starttime=starttime, endtime=endtime)
+
+        return render_to_response('problems/submission_list.html',
+            {
+                'submissions': submissions,
+                'testcases': {tc.pk: tc for tc in problem.testcase_set.all()}
+            })

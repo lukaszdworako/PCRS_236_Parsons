@@ -1,0 +1,28 @@
+{% extends "pcrs/base.html" %}
+
+{% load filters %}
+
+{% block page_title %}
+    Matched submissions: {{ submissions|length }}
+{% endblock %}
+
+{% block content %}
+    {% for submission in submissions %}
+        <div>
+            <h5>{{ submission.timestamp }}</h5>
+            <div>
+                <pre>{{ submission.submission }}</pre>
+                <table class="table">
+                    {% for testrun in submission.testrun_set.all %}
+                        {% with testcase=testcases|get_item:testrun.testcase.pk %}
+                            <tr>
+                            <td>{{ testcase.display|default:'Hidden' }}</td><td>{{testrun.test_passed}}</td>
+                            </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <hr>
+    {% endfor %}
+{% endblock %}

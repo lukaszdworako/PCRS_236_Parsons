@@ -82,3 +82,25 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(Fieldset('', 'time', 'section', 'final',
                                     ButtonHolder(go)))
+
+
+class BrowseSubmissionsForm(CrispyFormMixin, forms.Form):
+    starttime = forms.DateTimeField(label='Submissions after')
+    stoptime = forms.DateTimeField(label='Submissions before', initial=now())
+    section = forms.ModelChoiceField(queryset=Section.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        self.submit_button = Submit('Browse', value='Browse',
+                                    css_class='btn-success')
+        problem = kwargs.pop('problem')
+        super().__init__(*args, **kwargs)
+
+        for testcase in problem.testcase_set.all():
+            self.fields['testcase-'+str(testcase.pk)] = \
+                forms.ChoiceField(
+                    label=testcase.display(), widget=forms.RadioSelect(),
+                    choices=[('pass', 'pass'), ('fail', 'fail'), ('any', 'any')],
+                    initial='any')
+
+        self.helper.layout = Layout(Fieldset('', *self.fields.keys()),
+                                    ButtonHolder(self.submit_button))
