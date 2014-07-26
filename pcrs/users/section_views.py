@@ -93,8 +93,8 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                 names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
                 max_scores.append(problem.max_score)
 
-        writer.writerow(names)
-        writer.writerow(max_scores)
+        writer.writerow(['problems'] + names)
+        writer.writerow(['users/max_scores'] + max_scores)
 
         # collect grades for each student
         results = defaultdict(dict)
@@ -112,7 +112,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         # collect students in the section who has not submitted anything
 
-        for student in PCRSUser.objects.get_users(active_only=active_only)\
+        for student in PCRSUser.objects.get_students(active_only=active_only)\
                                        .filter(section=section)\
                                        .exclude(username__in=results.keys()):
             writer.writerow([student.username] + ['' for problem in problems])

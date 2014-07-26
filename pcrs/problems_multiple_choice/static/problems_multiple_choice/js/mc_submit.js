@@ -102,14 +102,14 @@ function add_mc_history_entry(data, div_id, flag){
 
     var panel_class = "panel panel-default";
 
-    if (!data['past_dead_line']){
+    if (data['past_dead_line']){
         panel_class = "panel panel-warning";
         sub_time = sub_time + " Submitted after the deadline";
     }
 
     star_text = "";
 
-    if (data['best'] && data['past_dead_line']){
+    if (data['best'] && !data['past_dead_line']){
         panel_class = "panel panel-primary";
         star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
         $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
@@ -184,8 +184,12 @@ function submit_mc(submission, problem_pk, div_id) {
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,
             function(data) {
-                if (!data['past_dead_line']){
+                if (data['past_dead_line']){
                     alert('This submission is past the deadline!');
+                    $('#'+div_id).find('#deadline_msg').remove();
+                    $('#'+div_id)
+                        .find('#alert')
+                        .after('<div id="deadline_msg" class="alert alert-danger">Submitted after the deadline!<div>');
                 }
                 var display_element = $('#multiple_choice-'+problem_pk)
                     .find("#alert");
@@ -238,22 +242,22 @@ function submit_mc(submission, problem_pk, div_id) {
                     'sub_pk': data['sub_pk'],
                     'options': options_list
                 }
-                if (data['best']){
+                if (data['best'] && !data['past_dead_line']){
                     var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
                     var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
                     if (score == max_score){
                         $('#'+div_id).find(".widget_title").siblings('span').empty();
-                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok icon-ok-green"}));
-                        side_bar.css("color","green");
+                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
                         side_bar.removeClass();
-                        side_bar.addClass("glyphicon glyphicon-check");
+                        side_bar.addClass("glyphicon glyphicon-check problem-complete");
                         new_title += " : Complete"
                     }
                     else{
                         $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
                         $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
                         new_title += " : " + score + " / " + max_score;
-                        side_bar.css("color","DarkOrange");
+                        side_bar.removeClass("problem-idle")
+                        side_bar.addClass("problem-attempted");
                     }
                     side_bar.prop('title', new_title);
                 }

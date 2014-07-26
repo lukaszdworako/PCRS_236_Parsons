@@ -2,9 +2,12 @@
 
 {% block problem_title %}
     {{ block.super }}
-    <p class="widget_title">
-        {{ problem.name|default:"Multiple Choice Question" }}
-    </p>
+{% endblock %}
+
+{% block instructor_options %}
+    <a href="{{ problem.get_monitoring_url }}"><i
+            class="glyphicon glyphicon-stats pull-right"></i><span
+            class="at">Statistics for {{ problem.name }}</span></a>
 {% endblock %}
 
 {% block history %}

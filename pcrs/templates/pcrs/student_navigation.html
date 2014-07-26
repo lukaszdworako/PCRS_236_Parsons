@@ -10,6 +10,15 @@
             </button>
             <a class="navbar-brand" href="#">PCRS</a>
         </div>
+        {% if user %}
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="{{ site_prefix }}/content/quests" title="Quests">
+                        Quests
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="student-navbar">

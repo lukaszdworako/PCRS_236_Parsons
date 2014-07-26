@@ -283,7 +283,7 @@ def contenttextitem_delete(sender, instance, **kwargs):
     """
     Delete the text block if its ContentSequenceItem was removed.
     """
-    if instance.content_type.model == 'textblock':
+    if instance.content_type.model == 'text block':
         instance.content_object.delete()
 
 pre_delete.connect(page_delete, sender=ContentPage)

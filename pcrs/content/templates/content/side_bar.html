@@ -1,26 +1,25 @@
-<div class="bs-docs-sidebar hidden-print affix" role="complementary" style="margin-left:86%;
-margin-top:-55px;">
-    <ul class="nav bs-docs-sidenav" style="margin-left:-2%;">
+<div class="bs-docs-sidebar hidden-print affix" role="complementary">
+    <ul class="nav bs-docs-sidenav">
         <br>
         <div>
             {% if content_page.order > 1 %}
-                <a href="{{ content_page.order|add:-1 }}" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}">
-                <span id="step_left" class="glyphicon glyphicon-chevron-left" style="color:green;">
+                <a class="side-bar-arrow" href="{{ content_page.order|add:-1 }}" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}">
+                <span id="step_left" class="glyphicon glyphicon-chevron-left problem-complete" >
                 </span>
             {% else %}
-                <a>
-                <span class="glyphicon glyphicon-chevron-left" style="color:grey;">
+                <a class="side-bar-arrow">
+                <span class="glyphicon glyphicon-chevron-left problem-closed">
                 </span>
             {% endif %}
                 </a>
 
             {% if next %}
                 <a href="{{ next.get_absolute_url }}" title="Go to page {{ content_page.order|add:1 }} of {{ num_pages }}">
-                <span id="step_right" class="glyphicon glyphicon-chevron-right" style="color:green; display:inline-block;">
+                <span id="step_right" class="glyphicon glyphicon-chevron-right problem-complete in_line">
                 </span>
             {% else %}
                 <a>
-                <span class="glyphicon glyphicon-chevron-right" style="color:grey; display:inline-block;">
+                <span class="glyphicon glyphicon-chevron-right problem-closed in_line">
                 </span>
             {% endif %}
                 </a>

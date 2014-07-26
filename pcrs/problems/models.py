@@ -84,6 +84,9 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_monitoring_url(self):
         return '{}/monitor'.format(self.get_absolute_url())
 
+    def get_browse_submissions_url(self):
+        return '{}/browse_submissions'.format(self.get_absolute_url())
+
     def best_per_user_before_time(self, deadline=timezone.now()):
         """
         Return a list of dictionaries of the form {user_id: , score:)
@@ -131,6 +134,25 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
             # order by the id of related object
             'data': [data[key] for key in sorted(data.keys())]
         }
+
+    def get_submissions_for_conditions(self, conditions, starttime=None,
+                                       endtime=None):
+        restult = set()
+        submissions = self.get_submission_class().objects.filter(problem=self)
+        if starttime:
+            submissions = submissions.filter(timestamp__gt=starttime)
+            submissions = submissions.filter(timestamp__lt=endtime)
+
+        for submission in submissions.prefetch_related('testrun_set').all():
+            if all([conditions[testrun.testcase.pk] is None or
+                                    testrun.test_passed == conditions[testrun.testcase.pk]
+                    for testrun in submission.testrun_set.all()]):
+                restult.add(submission)
+        return restult
+
+    def get_best_score_before_deadline(self, user):
+        return self.get_submission_class()\
+            .get_best_score_before_deadline(self, user)
 
 
 class AbstractProgrammingProblem(AbstractProblem):
@@ -302,6 +324,13 @@ class AbstractSubmission(AbstractSelfAwareModel):
                     problem__challenge__quest__sectionquest__section=section)\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
 
+    @classmethod
+    def get_best_score_before_deadline(cls, problem, user):
+        scores = cls.objects.filter(cls.deadline_constraint())\
+                            .filter(user=user, problem=problem)\
+                            .values_list('score', flat=True)
+        return max(scores) if scores else None
+
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """
@@ -312,6 +341,10 @@ class AbstractTestCase(AbstractSelfAwareModel):
     problem semantics, as well as define what it means for a testcase to pass.
     """
 
+    description = models.TextField(null=False, blank=True)
+    is_visible = models.BooleanField(null=False, default=False,
+        verbose_name='Testcase visible to students')
+
     class Meta:
         abstract = True
         ordering = ['pk']
@@ -319,6 +352,10 @@ class AbstractTestCase(AbstractSelfAwareModel):
     def __str__(self):
         return '{problem}: testcase {pk}'.format(
             pk=self.pk, problem=self.problem)
+
+    def display(self):
+        return self.description or 'Hidden Test' \
+               if not self.is_visible else str(self)
 
     def get_absolute_url(self):
         return '{problem}/testcase/{pk}'.format(
