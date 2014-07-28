@@ -9,6 +9,10 @@ socket.on('problems', function (data) {
     renderProblemList();
 });
 
+socket.on('user007', function (data) {
+    console.log('received for user: ', data);
+});
+
 var ProblemList = React.createClass({
 
     componentDidMount: function () {
@@ -16,10 +20,8 @@ var ProblemList = React.createClass({
             url: '/content/inclass/list',
             dataType: 'json',
             success: function (data) {
-                console.log(data);
                 problems = data;
                 this.setState({data: problems});
-
             }.bind(this)
         });
     },
@@ -45,8 +47,12 @@ var Problem = React.createClass({
     render: function () {
         return (
             <div className="problem">
-                <a href={this.props.url}>{this.props.name}</a>
+                <a href={this.props.url}>
+                    <span dangerouslySetInnerHTML={{__html: this.props.name}} />
+                </a>
+            <hr/>
             </div>
+
             );
     }
 });
