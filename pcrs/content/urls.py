@@ -9,7 +9,7 @@ from content.challenge_content_views import (TextCreateView, PageCreateView,
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
-                                 QuestsView)
+                                 QuestsView, QuestsViewLive)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -79,6 +79,7 @@ urlpatterns = patterns('',
         ChangeProblemVisibilityView.as_view(model=TextBlock)),
 
     url(r'^quests$', QuestsView.as_view(), name='quests'),
+    url(r'^quests_live$', QuestsViewLive.as_view(), name='quests_live'),
 
     url(r'^quests/list$', QuestListView.as_view(),
         name='quest_list'),

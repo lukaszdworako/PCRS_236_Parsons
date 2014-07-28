@@ -1,0 +1,22 @@
+{% extends "pcrs/base.html" %}
+
+{% load filters %}
+{% load feedback %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load static %}
+    {% load compress %}
+{#    {% compress js %}#}
+        {% include "content/node_includes.html" %}
+{#    {% endcompress %}#}
+{% endblock %}
+
+{% block page_title %}
+    Quests LIVE
+{% endblock %}
+
+{% block content %}
+    <div id="quests"></div>
+    <script type="text/jsx" src="{% static "content/js/quests.js" %}"></script>
+{% endblock %}

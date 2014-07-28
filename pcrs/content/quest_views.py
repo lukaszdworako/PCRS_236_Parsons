@@ -4,7 +4,8 @@ from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import now
-from django.views.generic import CreateView, FormView, ListView
+from django.views.generic import CreateView, FormView, ListView, View, \
+    TemplateView
 
 from content.forms import QuestForm, QuestSectionForm
 from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
@@ -156,3 +157,7 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
             .filter(section=self.get_section())\
             .filter(visibility='open', open_on__lt=now())\
             .select_related('quest')
+
+
+class QuestsViewLive(ProtectedViewMixin, TemplateView):
+    template_name = "content/quests_live.html"
