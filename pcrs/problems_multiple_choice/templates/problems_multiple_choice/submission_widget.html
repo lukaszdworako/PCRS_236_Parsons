@@ -5,9 +5,11 @@
 {% endblock %}
 
 {% block instructor_options %}
-    <a href="{{ problem.get_monitoring_url }}"><i
-            class="glyphicon glyphicon-stats pull-right"></i><span
-            class="at">Statistics for {{ problem.name }}</span></a>
+    <span class="pull-right widget_controls">
+        <a href="{{ problem.get_monitoring_url }}"><i
+                class="glyphicon glyphicon-stats pull-right"></i><span
+                class="at">Statistics for {{ problem.name }}</span></a>
+    </span>
 {% endblock %}
 
 {% block history %}

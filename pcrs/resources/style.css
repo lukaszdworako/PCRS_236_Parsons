@@ -247,3 +247,7 @@ a:not(.collapsed) > .quest-icon{
     top: 5%;
     left: 5%;
 }
+
+.widget_controls{
+    margin-right:15px !important;
+}

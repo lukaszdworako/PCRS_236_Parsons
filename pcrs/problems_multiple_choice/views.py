@@ -122,7 +122,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
 
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
-                     FormView):
+                     FormView, UserViewMixin):
     """
     Create a submission for a problem.
     """

@@ -5,6 +5,12 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
 from django.core.context_processors import csrf
 
+#
+import logging
+import datetime
+from django.utils.timezone import localtime, utc
+#
+
 import subprocess
 
 
@@ -60,6 +66,9 @@ def login_view(request):
             if not existing_user:
                 NOTIFICATION = "username"
             else:
+                logger = logging.getLogger('activity.logging')
+                logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+                str(username) + " | Log in")
                 # password-based authorization was provided at university level, 
                 # just create a user object. 
                 # user = authenticate(username=username, password=password)
@@ -84,6 +93,9 @@ def login_view(request):
 
 def logout_view(request):
     """ Log out the user using django logout and redirect them to the login page. """
-
+    user = getattr(request, 'user', None)
+    logger = logging.getLogger('activity.logging')
+    logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+            str(user) + " | Log out")
     from pcrs.settings import LOGIN_URL
     return logout_then_login(request, login_url=LOGIN_URL)
