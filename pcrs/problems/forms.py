@@ -85,9 +85,11 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
 
 
 class BrowseSubmissionsForm(CrispyFormMixin, forms.Form):
-    starttime = forms.DateTimeField(label='Submissions after')
-    stoptime = forms.DateTimeField(label='Submissions before', initial=now())
-    section = forms.ModelChoiceField(queryset=Section.objects.all())
+    starttime = forms.DateTimeField(label='Submissions after', required=False)
+    stoptime = forms.DateTimeField(label='Submissions before', initial=now(),
+                                   required=False)
+    section = forms.ModelChoiceField(queryset=Section.get_lecture_sections(),
+                                     required=True)
 
     def __init__(self, *args, **kwargs):
         self.submit_button = Submit('Browse', value='Browse',
