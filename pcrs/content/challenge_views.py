@@ -1,7 +1,7 @@
 from collections import defaultdict
 import json
 from django.http import HttpResponse
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, View
 from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
@@ -149,7 +149,7 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
     """
     model = Challenge
 
-    def get_attempt_stats(self, challenge, section):
+    def get_attempt_stats(self, challenge, section, active_only=False):
         results, max_scores = defaultdict(dict), defaultdict(dict)
         completed = 0
         for ctype in get_problem_content_types():
@@ -159,7 +159,7 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
 
         for ctype in get_submission_content_types():
             grades = ctype.model_class().get_scores_for_challenge(
-                challenge=challenge, section=section)
+                challenge=challenge, section=section, active_only=active_only)
             for record in grades:
                 problem = (ctype.app_label,
                            record['problem'])
@@ -170,34 +170,38 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
                 completed += 1
 
         attempted = len(results) - completed
-        did_not_attempt = PCRSUser.objects.get_students()\
-                              .filter(section=section).count() - attempted
+        all_students = PCRSUser.objects.get_students(active_only)\
+                                       .filter(section=section).count()
+        did_not_attempt = all_students - attempted
 
         return did_not_attempt, attempted, completed
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
+        active_only = request.POST.get('active_only', False)
         results = self.get_attempt_stats(
-            challenge=self.get_object(), section=self.get_section())
+            self.get_object(), self.get_section(), active_only)
         return HttpResponse(json.dumps({'status': 'ok', 'results': results}),
-                                mimetype='application/json')
+                            mimetype='application/json')
 
 
-class ChallengePrerequisitesView(CourseStaffViewMixin, DetailView):
+class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
+                                     DetailView):
     """
-    Asynchronous data request for getting the prerequisite information for
-    all Challenges.
+    Asynchronous data request for getting the information about how many
+    problems the user has completed in each Challenge, as we as the total
+    number of problems in that Challenge.
     """
     model = Challenge
 
     def get(self, request, *args, **kwargs):
+        user, section = self.get_user(), self.get_section()
+
+        data = self.model.get_challenge_problem_data(user, section)
+
         return HttpResponse(json.dumps({
-            challenge.pk: {
-                'name': challenge.name,
-                'enforced': challenge.enforce_prerequisites,
-                'prerequisites': list(challenge.prerequisites.all()
-                                               .values_list('id', flat=True)),
-                'quest_id': challenge.quest_id
-            }
-            for challenge in self.model.objects
-                                       .prefetch_related('prerequisites').all()
+            challenge.pk: (
+                    data['challenge_to_completed'].get(challenge.pk, 0),
+                    data['challenge_to_total'].get(challenge.pk, 0)
+            )
+            for challenge in self.model.objects.all()
         }),  mimetype='application/json')

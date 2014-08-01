@@ -199,6 +199,13 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        # Handler for logging student activity which is save to a file
+        # filename contains the path to a file where you want to store the log
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'activity.log'
         }
     },
     'loggers': {
@@ -207,5 +214,10 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'activity.logging': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }

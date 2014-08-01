@@ -1,17 +1,22 @@
 import json
 from django.http import HttpResponse
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render_to_response
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 
-from problems.forms import ProgrammingSubmissionForm, MonitoringForm
+from problems.forms import ProgrammingSubmissionForm, MonitoringForm, \
+    BrowseSubmissionsForm
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
+#
+import logging
+from django.utils.timezone import localtime
+#
 
 class ProblemView:
     """
@@ -191,8 +196,7 @@ class SubmissionViewMixin:
         context = super().get_context_data(**kwargs)
         problem = self.get_problem()
         context['problem'] = problem
-        context['submissions'] = self.model.get_submission_class().objects\
-            .filter(user=self.request.user, problem=problem).all()
+        context['mark'] = problem.get_best_score_before_deadline(self.get_user())
         return context
 
     def record_submission(self, request):
@@ -224,7 +228,7 @@ class SubmissionViewMixin:
 
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
-                     FormView):
+                     FormView, UserViewMixin):
     """
     Create a submission for a problem.
     """
@@ -232,19 +236,35 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     object = None
 
 
-class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
+                          SectionViewMixin, View):
     """
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
         results = self.record_submission(request)
-        return HttpResponse(json.dumps({'results': results,
-                                        'score': self.object.score,
-                                        'sub_pk': self.object.pk,
-                                        'best': self.object.has_best_score,
-                                        'past_dead_line': False,
-             'max_score': self.object.problem.max_score}),
-                             mimetype='application/json')
+        problem = self.get_problem()
+        user, section = self.request.user, self.get_section()
+
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(localtime(self.object.timestamp)) + " | " +
+                    str(user) + " | Submit " +
+                    str(problem.get_problem_type_name()) + " " +
+                    str(problem.pk))
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except Exception:
+            deadline = False
+
+        return HttpResponse(json.dumps({
+            'results': results,
+            'score': self.object.score,
+            'sub_pk': self.object.pk,
+            'best': self.object.has_best_score,
+            'past_dead_line': deadline and self.object.timestamp > deadline,
+            'max_score': self.object.problem.max_score}),
+        mimetype='application/json')
 
 
 class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,
@@ -308,8 +328,9 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                 'submission': sub.submission,
                 'score': sub.score,
                 'out_of': problem.max_score,
-                'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': sub.timestamp < deadline,
+                'best': sub.score == best_score and \
+                        ((not deadline) or sub.timestamp < deadline),
+                'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'tests': [testrun.get_history()
@@ -317,3 +338,46 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
             })
 
         return HttpResponse(json.dumps(returnable), mimetype='application/json')
+
+
+class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
+                            SectionViewMixin, FormView):
+    form_class = BrowseSubmissionsForm
+    template_name = 'pcrs/crispy_form.html'
+    object = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['problem'] = self.get_object()
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        section = self.get_section()
+        if not section.is_master():
+            initial['section'] = section
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Browse submissions'
+        return context
+
+    def form_valid(self, form):
+        conditions = {}
+        problem = self.get_object()
+        starttime = form.cleaned_data['starttime']
+        endtime = form.cleaned_data['stoptime']
+
+        for key, value in form.cleaned_data.items():
+            if key.startswith('testcase'):
+                _, pk = key.split('-')
+                conditions[int(pk)] = None if value == 'any' else value == 'pass'
+        submissions = problem.get_submissions_for_conditions(
+            conditions=conditions, starttime=starttime, endtime=endtime)
+
+        return render_to_response('problems/submission_list.html',
+            {
+                'submissions': submissions,
+                'testcases': {tc.pk: tc for tc in problem.testcase_set.all()}
+            })

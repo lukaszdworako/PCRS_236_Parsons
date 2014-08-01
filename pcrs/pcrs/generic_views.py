@@ -49,3 +49,6 @@ class GenericCourseStaffDeleteView(CourseStaffViewMixin, GenericItemDetailView,
     A generic Delete view accessible to only the course staff.
     """
     template_name = 'pcrs/check_delete.html'
+
+    def get_success_url(self):
+        return '{}/list'.format(self.object.get_base_url())

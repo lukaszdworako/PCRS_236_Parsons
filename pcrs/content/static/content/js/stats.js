@@ -1,4 +1,8 @@
 function createAttemptsGraph(data) {
+    var canvas = document.getElementById('attempts-graph');
+    var ctx1 = canvas.getContext("2d");
+    ctx1.clearRect(0, 0, canvas.width, canvas.height);
+
     var graph = new RGraph.Bar('attempts-graph', data);
     graph.Set('chart.gutter.bottom', 50);
     graph.Set('chart.gutter.right', 200);
@@ -19,7 +23,15 @@ function createAttemptsGraph(data) {
 }
 
 $(function () {
-    $.get(document.URL + '/data').success(function (data) {
-        createAttemptsGraph([data['results']])
-    });
+    $('#generate_graph').click(function() {
+        var active_only = $('#active_only').is(':checked');
+        var post_data = {};
+        if (active_only) {
+            post_data = {'active_only': active_only};
+        }
+        $.post(document.URL + '/data', post_data)
+            .success(function (data) {
+                createAttemptsGraph([data['results']])
+        });
+    })
 });

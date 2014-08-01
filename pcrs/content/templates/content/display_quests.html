@@ -14,7 +14,23 @@
                        data-toggle="collapse">
                         <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
                         {{ quest.quest.name }}
-                        <span class="pull-right">
+                        <div class="visible-xs">
+                            &nbsp;
+                            <span class="pull-right">
+                                {% if quest.is_past_due %}
+                                    Submission closed :
+                                {% else %}
+                                    Due date :
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="visible-xs">
+                            &nbsp;
+                            <span class="pull-right">
+                                {{ quest.due_on|default:'' }}
+                            </span>
+                        </div>
+                        <span class="pull-right visible-lg visible-md visible-sm">
                             {% if quest.is_past_due %}
                                 Submission closed :
                             {% else %}
