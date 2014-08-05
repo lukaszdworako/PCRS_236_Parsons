@@ -15,6 +15,12 @@ from problems_multiple_choice.models import (Problem, Option, OptionSelection,
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
+#
+import logging
+from django.utils.timezone import localtime
+#
+
+
 
 class ProblemCloneView(CourseStaffViewMixin, CreateView):
     """
@@ -147,12 +153,18 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
 
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(localtime(self.submission.timestamp)) + " | " +
+                    str(user) + " | Submit " +
+                    str(problem.get_problem_type_name()) + " " +
+                    str(problem.pk))
+
         return HttpResponse(json.dumps({
             'score': self.submission.score,
             'max_score': self.get_problem().option_set.all().count(),
             'best': self.submission.has_best_score,
             'sub_pk': self.submission.pk,
-            'past_dead_line': self.submission.timestamp > deadline,
+            'past_dead_line': deadline and self.submission.timestamp > deadline,
         }
         ), mimetype='application/json')
 
@@ -189,8 +201,9 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
                 'sub_time': sub.timestamp.isoformat(),
                 'score': sub.score,
                 'out_of': problem.max_score,
-                'best': sub.score == best_score and sub.timestamp < deadline,
-                'past_dead_line': sub.timestamp > deadline,
+                'best': sub.score == best_score and \
+                        ((not deadline) or sub.timestamp < deadline),
+                'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,
                 'sub_pk': sub.pk,
                 'options': options_list

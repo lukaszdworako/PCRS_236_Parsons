@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<metadata>Copyright (C) 2014 by original authors @ fontello.com</metadata>
+<defs>
+<font id="fontello" horiz-adv-x="1000" >
+<font-face font-family="fontello" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="bullhorn" unicode="&#xe800;" d="m251 420c9 0 16 9 16 18s-7 16-16 16l-100 0c-9 0-18-7-18-16s9-18 18-18l100 0z m0-72c9 0 16 9 16 17s-7 17-16 17l-100 0c-9 0-18-8-18-17s9-17 18-17l100 0z m210-14c119 0 211-42 290-121l0 376c-78-82-171-126-290-126l0-129z m497 220l-33 34 137 136 34-32z m25-175l0 48 230 0 0-48-230 0z m-58-171l33 34 138-138-34-32z m-128 516c20 0 36-15 36-34l0-577c0-19-16-34-36-34s-35 15-35 34c-59 72-162 165-317 165l-64 0 140-236-85-62c-21-11-44 3-56 18l-174 280-94 0s-87 47-87 122 87 118 87 118l333 0c155 0 258 96 317 172 0 19 15 34 35 34z" horiz-adv-x="1213" />
+<glyph glyph-name="cinema" unicode="&#xe801;" d="m700 775l-112-33 54-148 108 31z m-181-52l-147-42 3-6 28-77 25-65 147 42z m-214-60l-130-38 56-148 130 37-33 84z m-197-57l-108-31 50-150 113 33z m-58-181l0-450c0-28 22-50 50-50l650 0c28 0 50 22 50 50l0 450z m100-100l550 0 0-150-550 0z" horiz-adv-x="800" />
+<glyph glyph-name="library" unicode="&#xe802;" d="m0 700l0-500c150-150 350-100 350-200l50 0 0 450c0 150-250 150-400 250z m850 0c-150-100-400-100-400-250l0-450 50 0c0 100 200 50 350 200z" horiz-adv-x="850" />
+</font>
+</defs>
+</svg>

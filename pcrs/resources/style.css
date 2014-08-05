@@ -6,8 +6,8 @@
     background-color: #E31837;
 }
 
-.icon-ok-green {
-    color: #3C9A45;
+.ok-icon-green {
+    color: #3C9A45 !important;
 }
 
 @media screen{
@@ -40,11 +40,6 @@
 }
 
 .active_sb{
-
-    /*padding-right: 10px;*/
-    /*background: url("http://infoperusahaan.com/wp-content/themes/infoperusahaan/images/widget-dot-orange.png");*/
-    /*background-repeat: no-repeat;*/
-    /*background-position: right;*/
 
     border-right:groove indigo;
     padding-right: 5px;
@@ -133,8 +128,30 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .visibility-draft{
-    color:#CC3300 !important;
+    color:#FF8400 !important;
 }
+
+.problem-complete{
+    color:green;
+}
+
+.problem-attempted{
+    color:darkorange;
+}
+
+.problem-idle{
+    color:red;
+}
+
+.problem-closed{
+    color:grey;
+}
+
+.problem-none{
+    color:black;
+}
+
+.problem
 
 .btn-object-visibility{
     width:20px;
@@ -209,4 +226,24 @@ a:not(.collapsed) > .quest-icon{
 
 .h_score{
     font-size:0.9em;
+}
+
+.in_line{
+    display:inline-block;
+}
+
+.bs-docs-sidebar{
+    margin-left:85%;
+    position:fixed;
+    margin-top:-75px;
+}
+
+.side-bar-arrow{
+    margin-left:-10px;
+}
+
+.modal-content{
+    width:90%;
+    top: 5%;
+    left: 5%;
 }

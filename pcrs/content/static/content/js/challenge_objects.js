@@ -57,7 +57,7 @@ $(document).ready(function () {
         $el = $('.tab-content');
         if ($(window).scrollTop() > original_position) {
             $el.css({
-                'margin-top':$(window).scrollTop()-original_position+40,
+                'margin-top':$(window).scrollTop()-original_position+10,
                 'height':$(window).height() - 60});
         }
         else{
@@ -68,7 +68,7 @@ $(document).ready(function () {
 
     if ($(window).scrollTop() > original_position) {
             $('.tab-content').css({
-                'margin-top':$(window).scrollTop()-original_position+40,
+                'margin-top':$(window).scrollTop()-original_position+10,
                 'height':$(window).height() - 60});
     }
     $('.tab-content').css({'height':$(window).height() - 60});

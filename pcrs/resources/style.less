@@ -1,0 +1,42 @@
+//@import "bootstrap-3.2.0/less/bootstrap.less";
+//@import "bootstrap-3.2.0/less/variables.less";
+//@import "bootstrap-3.2.0/less/utilities.less";
+
+@green: #3C9A45;
+@red:  #E31837;
+@orange: DarkOrange;
+
+@background-green: #3C9A45;
+@background-red:  #E31837;
+@background-orange: DarkOrange;
+
+.problem-not-attempted {
+//  &:extend(.glyphicon);
+//  &:extend(.glyphicon-edit);
+  color: @red;
+}
+
+.problem-attempted {
+//  &:extend(.glyphicon);
+//  &:extend(.glyphicon-edit);
+  color: @orange;
+}
+
+.problem-completed {
+//  &:extend(.glyphicon);
+//  &:extend(.glyphicon-edit);
+  color: @green;
+}
+
+
+.challenge-not-attempted {
+  background-color: @background-red;
+}
+
+.challenge-attempted {
+  background-color: @background-orange;
+}
+
+.challenge-completed {
+  background-color: @background-green;
+}

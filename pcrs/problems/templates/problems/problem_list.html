@@ -1,5 +1,5 @@
 {% extends "pcrs/item_list.html" %}
 
 {% block item_title %}
-    <a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object|striptags|truncatechars:150 }}</a>
+    <a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object|striptags|truncatechars:150 }} | {{ object.challenge }}</a>
 {% endblock %}
