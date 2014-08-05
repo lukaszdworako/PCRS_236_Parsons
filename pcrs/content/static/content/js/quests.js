@@ -60,7 +60,25 @@ function is_problem_completed(pType, pID) {
 }
 
 function countCompleted(challengeID) {
+    var count = 0;
+    console.log(data.pages[challengeID]);
+    // iterate over pages in challenge
+    for (var i = 0; i < data.pages[challengeID].length; i++) {
+        var page = data.pages[challengeID][i];
+        console.log("page", page);
+        // iterate over problems on the page
+        for (var j = 0; j < data.problem_lists[page.pk].length; j++) {
 
+            var pID = data.problem_lists[page.pk][j];
+            var pType = pID.split('-')[0];
+            var ID = pID.split('-')[1];
+            console.log("id", pType, ID);
+
+            if (is_problem_completed(pType, ID))
+                count += 1;
+        }
+    }
+    return count;
 }
 
 var ToggleMixin = {
@@ -93,22 +111,27 @@ var QuestList = React.createClass({
     },
 
     updateProblemStatus: function (problem, status) {
-        data.problems_attempted[problem.problem_type][problem.pk] = status.attempted;
-        data.problems_completed[problem.problem_type][problem.pk] = status.completed;
-        this.setState({data: data.quests});
-
-        // calculate number completed in challenge after the update
-
+        if (status.hasOwnProperty('attempted')) {
+            data.problems_attempted[problem.problem_type][problem.pk] = status.attempted;
+            this.setState({data: data.quests});
+        }
+        if (status.hasOwnProperty('completed')) {
+            var currentStatus = data.problems_completed[problem.problem_type][problem.pk];
+            data.problems_completed[problem.problem_type][problem.pk] = status.completed;
+            if (currentStatus != status.completed) {
+                // calculate number completed in challenge after the update
+                var challengeID = data.problems[problem.problem_type][problem.pk].challenge;
+                data.challenge_to_completed[challengeID] = countCompleted(challengeID);
+                this.setState({data: data.quests});
+            }
+        }
     },
 
     updateProblems: function (problem) {
-        console.log('updating problem');
         var problemToUpdate = data.problems[problem.problem_type][problem.pk];
         for (var property in problem.properties) {
-            console.log(property);
             if (problemToUpdate.hasOwnProperty(property)) {
                 problemToUpdate[property] = problem.properties[property];
-                console.log(problem.properties[property]);
             }
         }
         this.setState({data: data.quests});
@@ -309,5 +332,3 @@ $.ajax({
         renderQuestList();
     }
 });
-
-//renderQuestList();

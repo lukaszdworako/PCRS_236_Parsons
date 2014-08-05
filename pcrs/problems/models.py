@@ -156,7 +156,8 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     def serialize(self):
             return {'pk': self.pk, 'name': self.name,
-                    'is_visible': self.is_visible_to_students()}
+                    'is_visible': self.is_visible_to_students(),
+                    'challenge': self.challenge_id}
 
 
 class AbstractProgrammingProblem(AbstractProblem):
