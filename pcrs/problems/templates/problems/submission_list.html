@@ -1,5 +1,25 @@
 {% extends "pcrs/base.html" %}
 
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/sql/sql.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/ra/ra.js" %}"></script>
+        <script src="{% static "code_mirror.js" %}"></script>
+        <script src="{% static "code_mirror_browse_submissions.js" %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems_code/code_problem_stylesheets.html" %}
+{% endblock %}
+
 {% load filters %}
 
 {% block page_title %}
@@ -11,7 +31,7 @@
         <div>
             <h5>{{ submission.timestamp }}</h5>
             <div>
-                <pre>{{ submission.submission }}</pre>
+                <div class="code" id="{{ submission.problem.language }}_{{ submission.pk }}">{{ submission.submission }}</div>
                 <table class="table">
                     {% for testrun in submission.testrun_set.all %}
                         {% with testcase=testcases|get_item:testrun.testcase.pk %}

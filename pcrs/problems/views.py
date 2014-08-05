@@ -344,7 +344,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
 class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
                             SectionViewMixin, FormView):
     form_class = BrowseSubmissionsForm
-    template_name = 'pcrs/crispy_form.html'
+    template_name = 'pcrs/crispy_form_dateandtime.html'
     object = None
 
     def get_form_kwargs(self):
