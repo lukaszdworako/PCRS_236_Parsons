@@ -174,6 +174,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         data = {}
         challenge_to_total, challenge_to_completed = [], []
         best = {}
+        problems_completed = {}
 
         for content_type in get_problem_content_types():  # 1 query
             problem_class = content_type.model_class()
@@ -182,10 +183,13 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
             challenge_to_completed.append(
                 submission_class.get_completed_for_challenge_before_deadline(user, section))
 
-            best[content_type.app_label], _ = submission_class\
+            best[content_type.app_label], \
+            problems_completed[content_type.app_label] = submission_class\
                 .get_best_attempts_before_deadlines(user, section)
 
+
         data['best'] = best
+        data['problems_completed'] = problems_completed
         # number of problems completed by a student in this challenge
         data['challenge_to_completed'] = sum_dict_values(*challenge_to_completed)
         # total number of problems in this challenge

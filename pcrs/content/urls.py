@@ -9,7 +9,8 @@ from content.challenge_content_views import (TextCreateView, PageCreateView,
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
-                                 QuestsView, QuestsViewLive)
+                                 QuestsView, QuestsViewLive,
+                                 QuestsViewLiveQuestData)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -102,4 +103,9 @@ urlpatterns = patterns('',
 
     url(r'^inclass/list$', InclassProblems.as_view(),
         name='inclass_problems'),
+
+    url(r'^get_quest_list$', QuestsViewLiveQuestData.as_view(),
+        name='live_quest_list'),
+
+
 )

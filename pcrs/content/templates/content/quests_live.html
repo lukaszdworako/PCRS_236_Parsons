@@ -1,15 +1,26 @@
 {% extends "pcrs/base.html" %}
 
-{% load filters %}
+{#{% load compress %}#}
 {% load feedback %}
+{% load filters %}
+{% load static %}
+
+
 
 {% block scripts %}
     {{ block.super }}
-    {% load static %}
-    {% load compress %}
 {#    {% compress js %}#}
-        {% include "content/node_includes.html" %}
+        {% include "pcrs/node_includes.html" %}
+        {% include "pcrs/react_includes.html" %}
+{##}
+        <link rel="stylesheet" type="text/css"
+          href="{% static "style_less.css" %}">
+
+
+
+{#        <script src="{% static "less-1.7.3.min.js" %}"></script>#}
 {#    {% endcompress %}#}
+
 {% endblock %}
 
 {% block page_title %}

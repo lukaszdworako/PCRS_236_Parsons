@@ -132,6 +132,10 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
             'data': [data[key] for key in sorted(data.keys())]
         }
 
+    def serialize(self):
+        return {'pk': self.pk, 'name': self.name,
+                'is_visible': self.is_visible_to_students()}
+
 
 class AbstractProgrammingProblem(AbstractProblem):
     """
@@ -302,6 +306,12 @@ class AbstractSubmission(AbstractSelfAwareModel):
                     problem__challenge__quest__sectionquest__section=section)\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
 
+    @classmethod
+    def get_problem_status(cls, user):
+        return cls.objects\
+            .filter(cls.deadline_constraint(), user=user,
+                    problem__challenge__quest__sectionquest__section=user.section)\
+            .values('user', 'problem').annotate(best=Max('score')).order_by()
 
 class AbstractTestCase(AbstractSelfAwareModel):
     """

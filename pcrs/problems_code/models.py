@@ -22,12 +22,6 @@ class Problem(AbstractNamedProblem):
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='python')
 
-    def serialize(self):
-        return {
-            'name': self.name,
-            'url': self.get_absolute_url()
-        }
-
 
 class Submission(AbstractSubmission):
     """

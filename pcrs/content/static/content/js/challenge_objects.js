@@ -315,6 +315,11 @@ function change_problem_visibility(){
         .success(function (data) {
             var new_visibility = data['new_visibility'];
             var old_visibility = data['old_visibility'];
+            socket.emit('problems', {
+                problem: {problem_type: current_problem_type.replace('problems_', ''),
+                          pk: current_problem_pk,
+                          properties: {is_visible: new_visibility == 'open'}},
+                secret_key: secret_key});
 
             if (old_visibility == 'open'){
                 $(this_button).removeClass('visibility-open glyphicon-eye-open');
