@@ -243,23 +243,7 @@ function submit_mc(submission, problem_pk, div_id) {
                     'options': options_list
                 }
                 if (data['best'] && !data['past_dead_line']){
-                    var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-                    var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
-                    if (score == max_score){
-                        $('#'+div_id).find(".widget_mark").empty();
-                        $('#'+div_id).find(".widget_mark").append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
-                        side_bar.removeClass();
-                        side_bar.addClass("glyphicon glyphicon-check problem-complete");
-                        new_title += " : Complete"
-                    }
-                    else{
-                        $('#'+div_id).find(".widget_mark").find('sup').text(score);
-                        $('#'+div_id).find(".widget_mark").find('sub').text(max_score);
-                        new_title += " : " + score + " / " + max_score;
-                        side_bar.removeClass("problem-idle")
-                        side_bar.addClass("problem-attempted");
-                    }
-                    side_bar.prop('title', new_title);
+                    update_marks(div_id, score, max_score);
                 }
 
                 if ($('#'+div_id).find('#history_accordion').children().length != 0){
