@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
 from django.utils.timezone import utc, now
+from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
 
@@ -159,6 +160,11 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def _get_completed_challenges(completed, total):
         return {challenge.pk for challenge in Challenge.objects.all()
                 if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+        output_graph(self.get_challenge_graph_data())
 
     @classmethod
     def get_challenge_problem_data(cls, user, section):

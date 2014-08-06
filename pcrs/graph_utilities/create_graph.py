@@ -1,4 +1,5 @@
-import dot_graph as cg
+import os
+import graph_utilities.dot_graph as cg
 from bs4 import BeautifulSoup
 import random
 
@@ -113,7 +114,8 @@ def write_graph(graph_soup):
     """
     Write the graph to a file.
     """
-    # TODO: Change file when integrating into PCRS.
-    f = open('../ui/graph_gen.svg', 'w')
+    svg = os.path.join(os.getcwd(),
+            'resources/challenge_graph/ui/graph_gen.svg')
+    f = open(svg, 'w')
     f.write(graph_soup.svg.prettify())
     f.close()

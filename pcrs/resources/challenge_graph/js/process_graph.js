@@ -96,7 +96,7 @@ function appendGraph() {
     "use strict";
     var graph = null;
     $.ajax({
-        url: "../ui/graph_gen.svg",
+        url: root + "/content/challenges/prereq_graph/generate",
         dataType: "text",
         async: false,
         success: function (data) {
