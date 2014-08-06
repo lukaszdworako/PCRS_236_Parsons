@@ -60,6 +60,8 @@ urlpatterns = patterns('',
         name='challenge_stats_data'),
 
     # prerequisites graph
+    url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
+    url(r'^challenges/prereq_graph/generate$', ChallengeGraphGenView.as_view()),
     url(r'^challenges/prerequisites/for_user$',
         ChallengeCompletionForUserView.as_view(),
         name='challenge_prerequisite_data_for_user'),

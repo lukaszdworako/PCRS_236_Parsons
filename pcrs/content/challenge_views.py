@@ -1,7 +1,9 @@
 from collections import defaultdict
 import json
+import os
+
 from django.http import HttpResponse
-from django.views.generic import ListView, DetailView, View
+from django.views.generic import ListView, DetailView, View, TemplateView
 from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
@@ -205,3 +207,23 @@ class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
             )
             for challenge in self.model.objects.all()
         }),  mimetype='application/json')
+
+
+class ChallengeGraphView(ProtectedViewMixin, TemplateView):
+    """
+    View the challenge dependency graph.
+    """
+    template_name = 'content/challenge_graph.html'
+
+
+class ChallengeGraphGenView(CourseStaffViewMixin, UserViewMixin, View):
+    """
+    Return the svg needed to display the dependency graph.
+    """
+    model = Challenge
+
+    def get(self, request, *args, **kwargs):
+        svg = os.path.join(os.getcwd(),
+                           'resources/challenge_graph/ui/graph_gen.svg')
+        return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
+                            mimetype='text')
