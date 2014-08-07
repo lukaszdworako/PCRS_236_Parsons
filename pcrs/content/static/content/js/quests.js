@@ -239,7 +239,7 @@ var Problem = React.createClass({
         var classes = React.addons.classSet({
             'glyphicon': true,
             'glyphicon-edit': true,
-            'problem-idle': !this.props.attempted,
+            'problem-idle': !this.props.attempted && !this.props.completed,
             'problem-attempted': this.props.attempted && !this.props.completed,
             'problem-complete': this.props.completed
         });
