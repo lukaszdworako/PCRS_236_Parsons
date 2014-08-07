@@ -146,6 +146,12 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     class Meta:
         ordering = ['quest', 'order']
 
+    def serialize(self):
+        return {
+            'pk': self.pk, 'name': self.name, 'graded': self.is_graded,
+            'url': self.get_absolute_url()
+        }
+
     def get_first_page_url(self):
         try:
             page = self.contentpage_set.get(order=1)

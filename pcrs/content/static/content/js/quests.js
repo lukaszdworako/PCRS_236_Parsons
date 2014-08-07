@@ -1,59 +1,14 @@
 /** @jsx React.DOM */
 
-//var quests = [
-//    {pk: 1, name: 'testquest', deadline: null}
-//];
-//
-//var challenges = {
-//    1: [
-//        {pk: 1, name: 'c1', graded: false}
-//    ]
-//};
-//
-//var pages = {
-//    1: [
-//        {pk: 1, order: 1}
-//    ]
-//};
-//
-//var problem_lists = {
-//    1: ['code-1', 'code-2', 'code-3']
-//};
-//
-//var problems = {
-//    "code": {
-//        1: {name: 'Problem 1 (not att)', challenge: 1},
-//        2: {name: 'Problem 2 (att)', challenge: 1},
-//        3: {name: 'Problem 3 (solved)', challenge: 1}
-//    }
-//};
-//
-//var problems_attempted = {
-//    'code': {2: true, 3: true}
-//};
-//
-//var problems_completed = {
-//    'code': {3: true}
-//};
-//
-//var challenge_to_completed = {
-//  1: 1, 2:0
-//};
-//
-//var challenge_to_total = {
-//    1: 3,
-//    2: 0
-//};
-
 var data;
 
-function is_problem_attempted(pType, pID) {
+function isProblemAttempted(pType, pID) {
     return (data.problems_attempted.hasOwnProperty(pType) &&
         data.problems_attempted[pType].hasOwnProperty(pID) &&
         data.problems_attempted[pType][pID]);
 }
 
-function is_problem_completed(pType, pID) {
+function isProblemCompleted(pType, pID) {
     return (data.problems_completed.hasOwnProperty(pType) &&
         data.problems_completed[pType].hasOwnProperty(pID) &&
         data.problems_completed[pType][pID]);
@@ -74,25 +29,13 @@ function countCompleted(challengeID) {
             var ID = pID.split('-')[1];
             console.log("id", pType, ID);
 
-            if (is_problem_completed(pType, ID))
+            if (isProblemCompleted(pType, ID))
                 count += 1;
         }
     }
     return count;
 }
 
-var ToggleMixin = {
-    toggle: function (e) {
-        this.setState({visible: !this.state.visible});
-        e.stopPropagation();
-        e.nativeEvent.stopImmediatePropagation();
-    },
-    getInitialState: function () {
-        return {
-            visible: true
-        };
-    }
-};
 
 var QuestList = React.createClass({
     getInitialState: function () {
@@ -154,26 +97,17 @@ var QuestList = React.createClass({
 
 
 var Quest = React.createClass({
-    mixins: [ToggleMixin],
 
     render: function () {
-        var id = 'Quest-' + this.props.pk;
-
-        var style = {};
-
-        if (!this.state.visible) {
-            style.display = "none";
-        }
-
         return (
-            <div id={id}
+            <div id={'Quest-' + this.props.pk}
             onClick={this.toggle}>
                 <h3>
                     <a>{this.props.name}
                         <span className="pull-right">{this.props.deadline}</span>
                     </a>
                 </h3>
-                <div id={this.props.pk} style={style}>
+                <div id={this.props.pk}>
                     <ChallengeList questID={this.props.pk} />
                 </div>
             </div>
@@ -189,7 +123,8 @@ var ChallengeList = React.createClass({
         var challengeNodes = (data.challenges[this.props.questID] || []).map(
             function (challenge) {
                 return (
-                    <Challenge id={challenge.pk} name={challenge.name} graded={challenge.graded}>
+                    <Challenge id={challenge.pk} name={challenge.name}
+                    graded={challenge.graded} url={challenge.url}>
                     </Challenge>
                     );
             });
@@ -200,14 +135,7 @@ var ChallengeList = React.createClass({
 });
 
 var Challenge = React.createClass({
-    mixins: [ToggleMixin],
-
     render: function () {
-        var style = {};
-        if (!this.state.visible) {
-            style.display = "none";
-        }
-
         var challengeID = this.props.id;
 
         var total = data.challenge_to_total[challengeID] || 0;
@@ -229,8 +157,9 @@ var Challenge = React.createClass({
                     {completed}/{total}
                     </span>
                 </h3>
-                <div style={style}>
-                    <PageList challengeID={this.props.id} />
+                <div>
+                    <PageList challengeID={this.props.id}
+                    challengeUrl={this.props.url} />
                 </div>
             </div>
             );
@@ -238,13 +167,15 @@ var Challenge = React.createClass({
 });
 
 var PageList = React.createClass({
-
     render: function () {
+        var url = this.props.challengeUrl;
         var total = (data.pages[this.props.challengeID] || []).length;
         var pageNodes = (data.pages[this.props.challengeID] || []).map(
             function (page) {
                 return (
-                    <Page id={page.pk} order={page.order} total={total}></Page>
+                    <Page id={page.pk} order={page.order} total={total}
+                    url={url + '/' + page.order}>
+                    </Page>
                     );
             });
         return (
@@ -254,7 +185,6 @@ var PageList = React.createClass({
 });
 
 var Page = React.createClass({
-
     render: function () {
         var classes = React.addons.classSet({
             'panel': true,
@@ -263,9 +193,11 @@ var Page = React.createClass({
         });
         return (
             <div className={classes}>
-                <div className="panel-heading">Page {this.props.order} of {this.props.total}</div>
+                <div className="panel-heading">
+                    <a href={this.props.url} target="_blank">Go to Part {this.props.order}</a>
+                </div>
                 <div className="panel-body">
-                    <ProblemList pageID={this.props.id} />
+                    <ProblemList pageID={this.props.id} pageUrl={this.props.url}/>
                 </div>
             </div>
             );
@@ -274,7 +206,7 @@ var Page = React.createClass({
 
 var ProblemList = React.createClass({
     render: function () {
-        console.log('rendering page ', this.props.pageID, data.problem_lists[this.props.pageID]);
+        var pageUrl = this.props.pageUrl;
 
         var problemNodes = (data.problem_lists[this.props.pageID] || []).map(
             function (problemID) {
@@ -282,12 +214,17 @@ var ProblemList = React.createClass({
                 var pType = problemID[0];
                 var pID = problemID[1];
                 var problem = data.problems[pType][pID];
-                var attempted = is_problem_attempted(pType, pID);
-                var completed = is_problem_completed(pType, pID);
+
+                var attempted = isProblemAttempted(pType, pID);
+                var completed = isProblemCompleted(pType, pID);
+                var url = pageUrl + '#' + pType + '-' + pID;
+
                 if (problem.is_visible) {
                     return (
                         <Problem name={problem.name}
-                        attempted={attempted} completed={completed}/>
+                        attempted={attempted} completed={completed}
+                        url={url}
+                        />
                         );
                 }
             });
@@ -298,18 +235,19 @@ var ProblemList = React.createClass({
 });
 
 var Problem = React.createClass({
-
     render: function () {
         var classes = React.addons.classSet({
             'glyphicon': true,
             'glyphicon-edit': true,
-            'problem-not-attempted': !this.props.attempted,
-            'problem-attempted': this.props.attempted,
-            'problem-completed': this.props.completed
+            'problem-idle': !this.props.attempted,
+            'problem-attempted': this.props.attempted && !this.props.completed,
+            'problem-complete': this.props.completed
         });
         return (
             <div>
-                <i className={classes}></i>{this.props.name}
+                <a href={this.props.url} target="_blank">
+                    <i className={classes}></i>{this.props.name}
+                </a>
             </div>
             );
     }

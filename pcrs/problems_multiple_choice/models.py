@@ -51,8 +51,9 @@ class Problem(AbstractProblem):
         return results
 
     def serialize(self):
-        return {'pk': self.pk, 'name': self.name or 'Multiple Choice',
-                'is_visible': self.is_visible_to_students()}
+        serialized = super().serialize()
+        serialized['name'] = serialized['name'] or 'Multiple Choice'
+        return serialized
 
 
 class Submission(AbstractSubmission):

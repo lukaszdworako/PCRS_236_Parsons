@@ -10,20 +10,19 @@ function update_marks(div_id, score, max_score){
     var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
     var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
 
-    problem = get_problem_type_and_id(div_id);
+    var problem = get_problem_type_and_id(div_id);
 
     if (score == max_score){
         $('#'+div_id).find(".widget_mark").empty();
         $('#'+div_id).find(".widget_mark").append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
         side_bar.removeClass();
         side_bar.addClass("glyphicon glyphicon-check problem-complete");
-        new_title += " : Complete"
+        new_title += " : Complete";
 
         // send message that this user completed the problem
-
         socket.emit('user-problems',
             {problem: {problem_type: problem.type, pk: problem.pk},
-             status:{ attempted: true, completed: true},
+             status:{completed: true},
              userhash: userhash
             });
     }
@@ -41,5 +40,8 @@ function update_marks(div_id, score, max_score){
              userhash: userhash
             });
     }
+            console.log(problem.type, problem.pk);
+
+
     side_bar.prop('title', new_title);
 }

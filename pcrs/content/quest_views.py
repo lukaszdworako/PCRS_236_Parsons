@@ -4,7 +4,7 @@ import json
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from django.views.generic import CreateView, FormView, ListView, View, \
     TemplateView
 
@@ -13,7 +13,8 @@ from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
     ContentPage, ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
-from pcrs.models import get_problem_content_types
+from pcrs.models import get_problem_content_types, get_problem_labels
+from pcrs.settings import INSTALLED_PROBLEM_APPS
 from users.models import Section
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
@@ -188,14 +189,13 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
             {
                 'pk': quest.quest.pk,
                 'name': quest.quest.name,
-                'deadline': quest.due_on.isoformat() if quest.due_on else None
+                'deadline': str(localtime(quest.due_on)) if quest.due_on else None
             }
             for quest in quests]
 
         # 1
         for c in Challenge.objects.all():
-            data['challenges'][c.quest_id].append(
-                {'pk': c.pk, 'name': c.name, 'graded': c.is_graded})
+            data['challenges'][c.quest_id].append(c.serialize())
 
         # 1
         for p in ContentPage.objects.all():
@@ -213,14 +213,17 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
         data['challenge_to_completed'] = info['challenge_to_completed']
         data['challenge_to_total'] = info['challenge_to_total']
 
-        for key, d in info['best'].items():
-            _, ptype = key.split('problems_')
-            for problem, score in d.items():
+        for problem_type in get_problem_labels():
+            _, ptype = problem_type.split('problems_')
+
+            attempted = info['best'].get(problem_type, {})
+            data['problems_attempted'][ptype] = {}
+            for problem, score in attempted.items():
                 data['problems_attempted'][ptype][problem] = True
 
-        for key, d in info['problems_completed'].items():
-            _, ptype = key.split('problems_')
-            for problem, status in d.items():
+            completed = info['problems_completed'].get(problem_type, {})
+            data['problems_completed'][ptype] = {}
+            for problem, status in completed.items():
                 data['problems_completed'][ptype][problem] = status
 
         return HttpResponse(json.dumps(data))
