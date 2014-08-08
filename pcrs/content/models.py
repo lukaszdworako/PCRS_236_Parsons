@@ -223,7 +223,8 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 'name': challenge.name,
                 'prerequisites': list(challenge.prerequisites.all()
                                                .values_list('id', flat=True)),
-                'quest': challenge.quest_id
+                'quest': challenge.quest_id,
+                'url': challenge.get_first_page_url()
             }
             for challenge in cls.objects.prefetch_related('prerequisites').all()
         }

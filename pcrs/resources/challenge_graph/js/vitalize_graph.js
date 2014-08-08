@@ -15,7 +15,7 @@ function initializeGraphSettings() {
     graphObject.find('path').attr('data-active', 'inactive');
     graphObject.find('.node').attr('data-active', 'inactive');
 
-//  var userData = getJSON();
+  var userData = getJSON();
 
     $.each(nodes, function (i, node) {
         window[node].updateStatus();
@@ -27,12 +27,12 @@ function initializeGraphSettings() {
         });
     });
 
-//    $.each(userData, function(i, val) {
-//        if (val[0] === val[1]) {
-//            window[i].turn();
-//            console.log(typeof i);
-//        }
-//    });
+    $.each(userData, function(i, val) {
+        if (val[0] === val[1]) {
+            window['node-' + i].turn();
+            console.log(typeof i);
+        }
+    });
 }
 
 
@@ -44,13 +44,14 @@ function getJSON() {
     "use strict";
     var json = null;
     $.ajax({
-        url: 'challenge_prerequisite_data_for_user',
+        url: 'prereq_graph/for_user',
         dataType: 'text',
         async: false,
         success: function (data) {
             json = data;
         }
     });
+    console.log(json);
     return json;
 }
 
