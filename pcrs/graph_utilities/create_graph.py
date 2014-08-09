@@ -50,6 +50,11 @@ def customize_quests(graph_soup, challenges):
     """
     keys = list(challenges.keys())
     quests = {}
+
+    # Non-dithering colors from: http://www.htmlgoodies.com/tutorials/colors/article.php/3479001
+    colours = ["#33CCFF", "#00CC33", "#FF9999", "#996699", "#0066FF", "#009966", "#FFCC33",
+               "#CC6699", "#33FF66", "#FFCCFF", "#FFCC99", "#FF9933", "#6699CC", "#6699FF"]
+
     for g in graph_soup.findAll('g', {'class': 'node'}):
         text = []
         for t in g.findAll('text'):
@@ -66,10 +71,10 @@ def customize_quests(graph_soup, challenges):
 
             if text == challenge_text:
                 if not challenges[keys[i]]['quest'] in quests:
-
-                    # Generates the random CSS colour for each individual quest.
-                    r = lambda: random.randint(0, 255)
-                    colour = '#%02X%02X%02X' % (r(), r(), r())
+                    k = i
+                    if i < len(colours):
+                        k = i % len(colours)
+                    colour = colours[k]
                     quests[challenges[keys[i]]['quest']] = colour
                 g.rect['stroke'] = quests[challenges[keys[i]]['quest']]
 
