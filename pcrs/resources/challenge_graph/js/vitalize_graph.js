@@ -15,7 +15,7 @@ function initializeGraphSettings() {
     graphObject.find('path').attr('data-active', 'inactive');
     graphObject.find('.node').attr('data-active', 'inactive');
 
-  var userData = getJSON();
+    var userData = getJSON();
 
     $.each(nodes, function (i, node) {
         window[node].updateStatus();
@@ -28,9 +28,9 @@ function initializeGraphSettings() {
     });
 
     $.each(userData, function(i, val) {
-        if (val[0] === val[1]) {
-            window['node-' + i].turn();
-            console.log(typeof i);
+       console.log(userData[i]);
+        if (userData[i][0] === userData[i][1]) {
+            window["node-" + i].turn();
         }
     });
 }
@@ -52,7 +52,7 @@ function getJSON() {
         }
     });
     console.log(json);
-    return json;
+    return $.parseJSON(json);
 }
 
 
@@ -215,6 +215,7 @@ function getAbsoluteSizes() {
     graphViewWidth = graphViewObject.width();
     graphViewHeight = graphViewObject.height();
 }
+
 
 /**
  * Sets the maps size.
