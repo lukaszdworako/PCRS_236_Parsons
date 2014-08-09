@@ -1,29 +1,39 @@
 import os
 import graph_utilities.dot_graph as cg
 from bs4 import BeautifulSoup
-import random
 
 
 def output_graph(challenges):
     """
-    Creates a challenge graph and outputs the created SVG.
+    Create a challenge graph and outputs the created SVG.
     """
-    svg_graph = cg.layout_graph(challenges)
+    svg_graph_horizontal = cg.layout_graph(challenges, "LR")
+    svg_graph_vertical = cg.layout_graph(challenges, "TB")
 
     # Beautiful Soup is used to manipulate the svg into a desired format, as GraphViz creates its own unique output.
-    graph_soup = BeautifulSoup(''.join(svg_graph))
+    graph_soup_horizontal = BeautifulSoup(''.join(svg_graph_horizontal))
+    graph_soup_vertical = BeautifulSoup(''.join(svg_graph_vertical))
 
     # Since graphViz doesn't provide the svg defs we want, we need to append them.
-    svg_defs = create_defs()
-    graph_soup.svg.insert(0, svg_defs.defs)
+    # svg_defs_horizontal = create_defs()
+    # svg_defs_vertical = create_defs()
+    # graph_soup_horizontal.svg.insert(0, svg_defs.defs)
+    # graph_soup_vertical.svg.insert(0, svg_defs.defs)
 
     # svg polygons cannot be modified as well as svg rects can, mainly the rx and ry attributes, so the polygons
     # are replaced with rects. The javascript currently searches through svg rect elements, but can easily read
     # polygons if need be.
-    replace_polygons(graph_soup)
-    remove_titles(graph_soup)
-    customize_quests(graph_soup, challenges)
-    write_graph(graph_soup)
+    replace_polygons(graph_soup_horizontal)
+    replace_polygons(graph_soup_vertical)
+
+    remove_titles(graph_soup_horizontal)
+    remove_titles(graph_soup_vertical)
+
+    customize_quests(graph_soup_horizontal, challenges)
+    customize_quests(graph_soup_vertical, challenges)
+
+    write_graph(graph_soup_horizontal, 'horizontal')
+    write_graph(graph_soup_vertical, 'vertical')
 
 
 def replace_polygons(graph_soup):
@@ -115,12 +125,12 @@ def remove_titles(graph_soup):
         title.extract()
 
 
-def write_graph(graph_soup):
+def write_graph(graph_soup, orientation):
     """
     Write the graph to a file.
     """
     svg = os.path.join(os.getcwd(),
-            'resources/challenge_graph/ui/graph_gen.svg')
+            'resources/challenge_graph/ui/graph_gen_' + orientation + '.svg')
     f = open(svg, 'w')
     f.write(graph_soup.svg.prettify())
     f.close()

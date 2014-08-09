@@ -97,7 +97,7 @@ function appendGraph() {
     "use strict";
     var graph = null;
     $.ajax({
-        url: root + "/content/challenges/prereq_graph/generate",
+        url: root + "/content/challenges/prereq_graph/generate_vertical",
         dataType: "text",
         async: false,
         success: function (data) {

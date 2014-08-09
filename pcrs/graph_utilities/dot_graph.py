@@ -1,22 +1,22 @@
 import pydot
 
 
-def layout_graph(challenges):
+def layout_graph(challenges, orientation):
     """
     Layout a challenge graph.
     """
-    graph = create_graph()
+    graph = create_graph(orientation)
     add_challenges(challenges, graph)
     return str(graph.create(format="svg"))
 
 
-def create_graph():
+def create_graph(orientation):
     """
     Create a challenge graph.
     """
     return pydot.Dot(graph_type="digraph",
                      strict=True,
-                     rankdir='LR',
+                     rankdir=orientation,
                      splines="ortho",
                      concentrate="true",
                      rank="same",
