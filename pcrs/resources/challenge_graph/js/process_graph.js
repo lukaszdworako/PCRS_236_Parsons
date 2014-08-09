@@ -24,7 +24,8 @@ $(document).ready(function () {
     setMainGraphID(); // Sets the main graph id.
     vitalizeGraph(); // Builds the graph based on prerequisite structure.
     addNodeDecorations(); // Adds each node's inner rects.
-    setZoomInButtonFunctions(); // Sets the click functino of the zoom in and zoom out buttons.
+    setZoomInButtonFunctions(); // Sets the click function of the zoom in and zoom out buttons.
+    initializeUserData();
 });
 
 
@@ -110,27 +111,6 @@ function appendGraph() {
 }
 
 
-///**
-// * Creates an svg rect.
-// * @param
-// * @param
-// * @param
-// * @param
-// */
-//function createRect(posX, posY, width, height) {
-//    return $(document.createElementNS("http://www.w3.org/2000/svg", "rect")).attr({
-//        x: posX,
-//        y: posY,
-//        rx: 20,
-//        ry: 20,
-//        fill:"black",
-//        stroke: "blue",
-//        width: width,
-//        height: height
-//    });
-//}
-
-
 /**
  * Adds node decorations: the parent counting circle.
  */
@@ -195,7 +175,7 @@ function getNonActiveParentNames(node) {
 
 
 /**
- * Creates small video icon on the Node rectangle.
+ * Creates small icon on the Node rectangle.
  * @param parentRect The parent of the newly created svg rect/text/
  */
 function appendCounterRect(parentRect) {

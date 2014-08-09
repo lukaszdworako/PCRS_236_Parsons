@@ -7,7 +7,6 @@
  */
 function Node(name) {
     "use strict";
-
     this.name = name;
     this.parents = [];
     this.children = [];
@@ -21,7 +20,6 @@ function Node(name) {
  */
 Node.prototype.isSelected = function () {
     "use strict";
-
     return this.status === 'active' || this.status === 'overridden';
 };
 
@@ -33,9 +31,11 @@ Node.prototype.isSelected = function () {
 Node.prototype.arePrereqsSatisfied = function () {
     "use strict";
     var sat = true;
+
     for (var i = 0; i < this.parents.length; i++) {
         sat = sat && this.parents[i].isSelected();
     }
+
     return sat;
 };
 
@@ -45,7 +45,6 @@ Node.prototype.arePrereqsSatisfied = function () {
  */
 Node.prototype.updateSVG = function () {
     "use strict";
-
     $('#' + this.name).attr('data-active', this.status);
 };
 
@@ -60,12 +59,14 @@ Node.prototype.focus = function () {
         if (this.status !== 'overridden') {
             $('#' + this.name).attr('data-active', 'missing');
         }
+
         $.each(this.inEdges, function (i, edge) {
             if (edge.parent.status !== 'active') {
                 $('#' + edge.name).attr('data-active', 'missing')
                                   .parent().children('polygon').first().attr('data-active', 'missing');
             }
         });
+
         $.each(this.parents, function (i, node) {
             node.focus();
         });
@@ -82,9 +83,11 @@ Node.prototype.unfocus = function () {
     if (!this.isSelected()) {
         $('#' + this.name).attr('data-active', this.status);
     }
+
     $.each(this.parents, function (i, node) {
         node.unfocus();
     });
+
     $.each(this.outEdges, function (i, edge) {
         edge.updateStatus();
     });
@@ -123,9 +126,9 @@ Node.prototype.turn = function () {
     "use strict";
 
     this.status = 'active';
-    var nodeSelector = $('#' + this.name);
-    nodeSelector.children('.counter-text').remove();
-    nodeSelector.children('.missing-counter').attr('fill', 'url(#active-image)');
+    var nodObject = $('#' + this.name);
+    nodObject.children('.counter-text').remove();
+    nodObject.children('.missing-counter').remove();
 
     this.updateStatus();
 
@@ -140,6 +143,7 @@ Node.prototype.turn = function () {
     });
 
     this.updateSVG();
+    updateNavGraph($("#" + this.name));
 };
 
 
@@ -152,7 +156,6 @@ Node.prototype.turn = function () {
  */
 function Edge(parent, child, name) {
     "use strict";
-
     this.parent = parent;
     this.child = child;
     this.name = name;
@@ -165,7 +168,6 @@ function Edge(parent, child, name) {
  */
 Edge.prototype.updateSVG = function () {
     "use strict";
-
     $('#' + this.name).attr('data-active', this.status)
                       .parent().children('polygon').first().attr('data-active', this.status);
 };
@@ -190,6 +192,7 @@ Edge.prototype.updateStatus = function () {
 
 
 /**
+ * Makes a Node.
  * @param {string} name - The name of the Node, also the id of the SVG counterpart.
  */
 function makeNode(name) {
@@ -200,7 +203,7 @@ function makeNode(name) {
 
 
 /**
- * Makes an Edge with a parent Node parent and a child node Child.
+ * Makes an Edge with a parent Node parent and a child node child.
  * @param parent The parent Node that the new Edge points from.
  * @param child The child Node that the new Edge points to.
  * @param name The 'name' of the new Edge.

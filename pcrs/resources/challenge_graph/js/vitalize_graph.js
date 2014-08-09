@@ -15,8 +15,6 @@ function initializeGraphSettings() {
     graphObject.find('path').attr('data-active', 'inactive');
     graphObject.find('.node').attr('data-active', 'inactive');
 
-    var userData = getJSON();
-
     $.each(nodes, function (i, node) {
         window[node].updateStatus();
         window[node].updateSVG();
@@ -26,39 +24,12 @@ function initializeGraphSettings() {
             }
         });
     });
-
-    $.each(userData, function(i, val) {
-       console.log(userData[i]);
-        if (userData[i][0] === userData[i][1]) {
-            window["node-" + i].turn();
-        }
-    });
-}
-
-
-/**
- * Gets the JSON produced for the current user.
- * @returns {*}
- */
-function getJSON() {
-    "use strict";
-    var json = null;
-    $.ajax({
-        url: 'prereq_graph/for_user',
-        dataType: 'text',
-        async: false,
-        success: function (data) {
-            json = data;
-        }
-    });
-    console.log(json);
-    return $.parseJSON(json);
 }
 
 
 /**
  * Builds the interactive graph based on intersections between paths and
- * polygons (with a large offset).
+ * rects (with a large offset).
  */
 function buildGraph() {
     "use strict";
@@ -145,7 +116,6 @@ function setMouseCallbacks() {
     var nodeObjects = $('#graph').find('.node');
     nodeObjects.click(function (event) {
         turnNode(event);
-        updateNavGraph($(this));
     })
         .mouseenter(function (event) {
             updateParentCount($(this).children('.counter-text'), true);
