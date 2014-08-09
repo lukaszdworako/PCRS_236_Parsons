@@ -14,19 +14,25 @@ var missingCounter = 0;
 var missingTextCounter = 0;
 var scrollLeft = 0;
 var scrollTop = 0;
+var orientation;
 
 
 $(document).ready(function () {
     "use strict";
-    appendGraph(); // Appends the graph to both the #scroll-content div and the map div.
+    appendGraph("horizontal"); // Appends the graph to both the #scroll-content div and the map div.
+    setupGraph();
+    setChangeOrientationEvent();
+    setZoomInButtonFunctions(); // Sets the click function of the zoom in and zoom out buttons.
+});
+
+function setupGraph() {
     processGraph(); // Cleans up the svg. TODO: Put into Beautiful Soup as a pre-processor.
     setScrollableContent(); // Sets the custom scroll bars for the main graph.
     setMainGraphID(); // Sets the main graph id.
     vitalizeGraph(); // Builds the graph based on prerequisite structure.
     addNodeDecorations(); // Adds each node's inner rects.
-    setZoomInButtonFunctions(); // Sets the click function of the zoom in and zoom out buttons.
     initializeUserData();
-});
+}
 
 
 /**
@@ -89,15 +95,29 @@ function processGraph() {
            .attr("id", function (i) { return "p" + i; });
 }
 
+/**
+ * Sets the #change-orientation button click event.
+ */
+function setChangeOrientationEvent() {
+    $("#change-orientation").click(function () {
+        console.log("hey listen!");
+        $("svg").remove();
+        orientation = orientation === "horizontal" ? "vertical" : "horizontal";
+        appendGraph(orientation);
+        setupGraph();
+    });
+}
+
 
 /**
  * Finds the GraphViz svg output and appends it to the #scroll-content div.
  */
-function appendGraph() {
+function appendGraph(suffix) {
     "use strict";
     var graph = null;
+    orientation = suffix;
     $.ajax({
-        url: root + "/content/challenges/prereq_graph/generate_vertical",
+        url: root + "/content/challenges/prereq_graph/generate_" + suffix,
         dataType: "text",
         async: false,
         success: function (data) {
