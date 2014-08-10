@@ -1,4 +1,5 @@
 import pydot
+from bs4 import BeautifulSoup
 
 
 def layout_graph(challenges, orientation):
@@ -7,6 +8,21 @@ def layout_graph(challenges, orientation):
     """
     graph = create_graph(orientation)
     add_challenges(challenges, graph)
+    rough_graph = str(graph.create(format='svg'))
+    width = 0
+    height = 0
+    rough_soup = BeautifulSoup(''.join(rough_graph))
+    for g in rough_soup.findAll('g', {'class': 'node'}):
+        for poly in g.findAll('polygon'):
+            coordinates = poly['points'].split()
+            poly_width = abs(float(coordinates[2].split(',')[0]) - float(coordinates[0].split(',')[0]))
+            poly_height = abs(float(coordinates[2].split(',')[0]) - float(coordinates[0].split(',')[0]))
+
+            if poly_width > width:
+                width = poly_width
+            if poly_height > height:
+                height = poly_height
+    set_node_sizes(graph, width, height)
     return str(graph.create(format="svg"))
 
 
@@ -71,9 +87,9 @@ def create_node(node_label, node_id, graph):
 
     node = pydot.Node(node_id,
                       shape="rect",
-                      height=".4",
-                      width="1",
                       margin="0.5, 0.05",
+                      width=1,
+                      height=1,
                       label=node_label,
                       id=node_id)
     node.set_shape("box")
@@ -88,3 +104,14 @@ def create_edge(parent, child, graph):
     edge = pydot.Edge(child, parent, splines="ortho")
     graph.add_edge(edge)
     return edge
+
+
+def set_node_sizes(graph, width, height):
+    nodes = graph.get_nodes()
+    for node in nodes:
+        width = int(str(float(width) * 0.011888)[0:5])
+        height = int(str(float(height) * 0.011888)[0:5])
+        print(width)
+        node.set('width', width)
+        node.set('height', height)
+

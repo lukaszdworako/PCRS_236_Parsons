@@ -7,6 +7,7 @@ def output_graph(challenges):
     """
     Create a challenge graph and outputs the created SVG.
     """
+
     svg_graph_horizontal = cg.layout_graph(challenges, "LR")
     svg_graph_vertical = cg.layout_graph(challenges, "TB")
 
@@ -14,6 +15,7 @@ def output_graph(challenges):
     graph_soup_horizontal = BeautifulSoup(''.join(svg_graph_horizontal))
     graph_soup_vertical = BeautifulSoup(''.join(svg_graph_vertical))
 
+    # Uncomment below for defs. Current graph does not need them.
     # Since graphViz doesn't provide the svg defs we want, we need to append them.
     # svg_defs_horizontal = create_defs()
     # svg_defs_vertical = create_defs()
@@ -40,6 +42,7 @@ def replace_polygons(graph_soup):
     """
     Remove all svg polygon elements and replace them with svg rect elements.
     """
+
     for g in graph_soup.findAll('g', {'class': 'node'}):
         for poly in g.findAll('polygon'):
 
