@@ -105,10 +105,12 @@ function setChangeOrientationEvent() {
         var substr = graph.substring(index + 9);
         index = substr.indexOf("\"");
         var viewBox = substr.substring(0, index);
-        console.log(viewBox);
-        console.log($(graph).attr("viewbox"));
         document.getElementsByTagName("svg")[0].setAttribute("viewBox", viewBox);
         document.getElementsByTagName("svg")[1].setAttribute("viewBox", viewBox);
+
+        svgWidth = parseFloat($(graph).attr("width"));
+        $("#map").width(parseFloat($(graph).attr("width")) * 0.1);
+        svgHeight = parseFloat($(graph).attr("height")) * (4/3);
         $.each($(graph).find(".edge"), function () {
             d3.select("#" + $(this).attr("id")).select("path").transition().duration(5000)
                 .attr("d", $(this).find("path").attr("d"));
@@ -161,6 +163,7 @@ function setChangeOrientationEvent() {
             $("#HUD")
                 .animate({width: "15%",
                           height: "100%"}, 2000);
+//            $("#scroll-background-bottom").css("display", "inline").css("float", "right");
         } else {
             $("#scroll-content").css("display", "block").animate({width: "100%"}, 2000);
             d3.select("#scroll-content").transition().duration(2000).style("float", "");
@@ -168,14 +171,15 @@ function setChangeOrientationEvent() {
                 .animate({width: "100%",
                           height: "15%"}, 2000);
         }
+            $("#scroll-background-bottom").css("display", "block");
 //        setTimeout($("svg").remove(), 5000);
 //        setTimeout(appendGraph(orientation), 5000);
+
     $('#scroll-content').mCustomScrollbar('update');
     resetMapGraph();
     setMapSize();
-//    $("#map").css("width", parseFloat($("svg:first").width()) * 0.1);
-//    $("#map").css("height", parseFloat($("svg:first").height()) * 0.1);
-    $("#graph-view").css("width", parseFloat($("#mCSB_1_container").width()) * 0.1);
+//    setGraphViewSizes();
+    $("#graph-view").css("width", parseFloat($("#scroll-content").width()) * 0.1);
     });
 }
 

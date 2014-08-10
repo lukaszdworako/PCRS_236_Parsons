@@ -7,18 +7,21 @@
  */
 function setupMap() {
     "use strict";
-    var scrollContentObject = $('#scroll-content');
-
     resetMapSize();
 
-    $('#graph-view').css('width', scrollContentObject.width() * 0.1)
-        .css('height', scrollContentObject.height() * 0.1);
+    setGraphViewSizes();
 
     modifyNavGraphIDs();
     setMapDragNavigation();
     addScrollBackgroundHeight();
     removeArrowHeadsFromMap();
     setMapClickNavigation();
+}
+
+function setGraphViewSizes() {
+    var scrollContentObject = $('#scroll-content');
+    $('#graph-view').css('width', scrollContentObject.width() * 0.1)
+        .css('height', scrollContentObject.height() * 0.1);
 }
 
 function resetMapSize() {
@@ -254,4 +257,15 @@ function resetGraphViewXPosition() {
 function removeArrowHeadsFromMap() {
     "use strict";
     $('#nav-graph').find('polygon').remove();
+}
+
+
+/**
+ * Sets the maps size.
+ */
+function setMapSize() {
+    "use strict";
+    $('#map').css('height', Math.max($('#scroll-content').height(),
+                            $('#graph').height()) * 0.1)
+             .css('width', svgWidth * 0.1);
 }

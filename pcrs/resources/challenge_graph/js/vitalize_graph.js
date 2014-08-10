@@ -186,16 +186,6 @@ function getAbsoluteSizes() {
 }
 
 
-/**
- * Sets the maps size.
- */
-function setMapSize() {
-    "use strict";
-    $('#map').css('height', Math.max($('#scroll-content').height(),
-                            $('#graph').height()) * 0.1)
-             .css('width', svgWidth * 0.1);
-}
-
 
 
 /**
