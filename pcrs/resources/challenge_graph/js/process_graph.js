@@ -107,9 +107,9 @@ function setChangeOrientationEvent() {
         document.getElementsByTagName("svg")[0].setAttribute("viewBox", viewBox);
         document.getElementsByTagName("svg")[1].setAttribute("viewBox", viewBox);
 
-        svgWidth = parseFloat($(graph).attr("width"));
+        svgWidth = parseFloat($(graph).attr("width")) * 4/3;
         $("#map").width(parseFloat($(graph).attr("width")) * 0.1);
-        svgHeight = parseFloat($(graph).attr("height"));
+        svgHeight = parseFloat($(graph).attr("height")) * 4/3;
         $.each($(graph).find(".edge"), function () {
             d3.select("#" + $(this).attr("id")).select("path").transition().duration(5000)
                 .attr("d", $(this).find("path").attr("d"));
@@ -169,24 +169,20 @@ function setChangeOrientationEvent() {
                 .animate({width: "100%",
                           height: "15%"}, 2000);
         }
-            $("#scroll-background-bottom").css("display", "block");
-//        setTimeout($("svg").remove(), 5000);
-//        setTimeout(appendGraph(orientation), 5000);
 
-    $('#scroll-content').mCustomScrollbar('update');
-    resetGraphSize();
-    resetMapGraph();
-    setMapSize();
-//    $("#graph-view").css("width", parseFloat($("#scroll-content").width()) * 0.1);
+        $('#scroll-content').mCustomScrollbar('update');
+
+        resetGraphSize();
+        resetMapGraph();
+        setMapSize();
     });
 }
 
-function removeIt() {
-    $("svg").remove();
-    appendGraph(orientation);
-    setupGraph();
-}
-
+/**
+ *
+ * @param suffix The suffix of the generated graph file. Either 'horizontal' or 'vertical'.
+ * @returns {*}
+ */
 function getGraph(suffix) {
     "use strict";
     var graph = null;
