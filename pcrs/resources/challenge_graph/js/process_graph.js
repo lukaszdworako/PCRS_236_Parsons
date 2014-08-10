@@ -97,8 +97,7 @@ function processGraph() {
  */
 function setChangeOrientationEvent() {
     $("#change-orientation").click(function () {
-//        $("svg").remove();
-//        $("#nav-graph").remove();
+        zoom = 100;
         orientation = orientation === "horizontal" ? "vertical" : "horizontal";
         var graph = getGraph(orientation);
         var index  = graph.indexOf("viewbox");
@@ -110,7 +109,7 @@ function setChangeOrientationEvent() {
 
         svgWidth = parseFloat($(graph).attr("width"));
         $("#map").width(parseFloat($(graph).attr("width")) * 0.1);
-        svgHeight = parseFloat($(graph).attr("height")) * (4/3);
+        svgHeight = parseFloat($(graph).attr("height"));
         $.each($(graph).find(".edge"), function () {
             d3.select("#" + $(this).attr("id")).select("path").transition().duration(5000)
                 .attr("d", $(this).find("path").attr("d"));
@@ -163,7 +162,6 @@ function setChangeOrientationEvent() {
             $("#HUD")
                 .animate({width: "15%",
                           height: "100%"}, 2000);
-//            $("#scroll-background-bottom").css("display", "inline").css("float", "right");
         } else {
             $("#scroll-content").css("display", "block").animate({width: "100%"}, 2000);
             d3.select("#scroll-content").transition().duration(2000).style("float", "");
@@ -176,10 +174,10 @@ function setChangeOrientationEvent() {
 //        setTimeout(appendGraph(orientation), 5000);
 
     $('#scroll-content').mCustomScrollbar('update');
+    resetGraphSize();
     resetMapGraph();
     setMapSize();
-//    setGraphViewSizes();
-    $("#graph-view").css("width", parseFloat($("#scroll-content").width()) * 0.1);
+//    $("#graph-view").css("width", parseFloat($("#scroll-content").width()) * 0.1);
     });
 }
 

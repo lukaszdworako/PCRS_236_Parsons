@@ -109,8 +109,8 @@ function setMapClickNavigation() {
         var x = e.clientX - offset.left;
         var y = e.clientY - offset.top;
 
-        if (x + parseFloat(graphView.width()) / 2 < parseFloat(
-            parseFloat(navGraph.width())
+        if (x + parseFloat(graphView.width()) / 2 <
+            parseFloat(navGraph.width()
             )) {
 
             if ((x - parseFloat(graphView.width()) / 2) > 0) {
@@ -124,8 +124,8 @@ function setMapClickNavigation() {
                 parseFloat(graphView.width());
         }
 
-        if (y + parseFloat(graphView.height()) / 2 < parseFloat(
-            parseFloat(map.height())
+        if (y + parseFloat(graphView.height()) / 2 <
+            parseFloat(map.height()
             )) {
 
             if ((y - parseFloat(graphView.height()) / 2) > 0) {
@@ -163,8 +163,8 @@ function setMapClickNavigation() {
 function resetGraphSize() {
     "use strict";
 
-    $('#graph').css('height', svgHeight * zoom / 100)
-        .css('width', svgWidth * zoom / 100);
+    $('#graph').attr('height', svgHeight * zoom / 100)
+        .attr('width', svgWidth * zoom / 100);
     $('#mCSB_1_container').css('width', svgWidth * zoom / 100);
 }
 
@@ -198,10 +198,10 @@ function resetGraphViewWidth() {
     if ((scrollContentObject.width() * 0.1 * 100 / zoom) < parseFloat(
         $('#nav-graph').css('width')
         )) {
-        graphViewObject.animate({width: scrollContentObject.width() * 0.1 * 100 /
-            zoom});
+        graphViewObject.css("width", scrollContentObject.width() * 0.1 * 100 /
+            zoom);
     } else {
-        graphViewObject.animate({width: $('#map').css('width')});
+        graphViewObject.css("width", $('#map').css('width'));
     }
 }
 

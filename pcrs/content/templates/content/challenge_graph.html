@@ -35,7 +35,13 @@
             src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
     <script type="text/javascript"
+            src="http://d3js.org/d3.v3.min.js"
+            charset="utf-8"></script>
+
+    <script type="text/javascript"
             src="{% static "challenge_graph/js/map.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/jquery.mousewheel.min.js" %}"></script>
     <script type="text/javascript"
             src="{% static "challenge_graph/js/initialize_user_data.js" %}"></script>
     <script type="text/javascript"
@@ -73,6 +79,9 @@
         <div id="HUD">
             <div id="map">
             </div>
+            <button id="change-orientation" class="btn">
+                Change Orientation
+            </button>
             <!-- <div id="slider-container">
 
                 <span id="week">Quest N</span>
