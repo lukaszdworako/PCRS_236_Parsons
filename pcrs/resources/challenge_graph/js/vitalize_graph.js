@@ -140,7 +140,6 @@ function vitalizeGraph() {
     buildGraph();
     setMouseCallbacks();
     initializeGraphSettings();
-    setInterval(pulseTakeable, 1000);
 
     $('text').attr('id', function (i) {return 'text-' + i; });
     setKeydown();
@@ -197,16 +196,6 @@ function setMapSize() {
              .css('width', svgWidth * 0.1);
 }
 
-
-/**
- * Sets the main svg graph id.
- * Note: This is necessary in the JavaScript. It cannot be put into Beautiful
- * Soup because the generated svg is duplicated in the HTML.
- */
-function setMainGraphID() {
-    "use strict";
-    $('svg:first').attr('id', 'graph');
-}
 
 
 /**

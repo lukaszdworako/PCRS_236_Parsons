@@ -49,3 +49,14 @@ function turnNode(event) {
     var id = event.target.parentNode.id;
     window[id].turn();
 }
+
+
+/**
+ * Sets the main svg graph id.
+ * Note: This is necessary in the JavaScript. It cannot be put into Beautiful
+ * Soup because the generated svg is duplicated in the HTML.
+ */
+function setMainGraphID() {
+    "use strict";
+    $('svg:first').attr('id', 'graph');
+}

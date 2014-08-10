@@ -7,16 +7,9 @@
  */
 function setupMap() {
     "use strict";
-    var mapObject = $('#map');
     var scrollContentObject = $('#scroll-content');
 
-    setMapSize();
-
-    mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
-        0.1).attr('width', svgWidth * 0.1);
-    mapObject.find('.node').attr('data-active', 'display');
-    mapObject.find('path').attr('data-active', 'inactive');
-    mapObject.append('<div id="graph-view"></div>');
+    resetMapSize();
 
     $('#graph-view').css('width', scrollContentObject.width() * 0.1)
         .css('height', scrollContentObject.height() * 0.1);
@@ -28,6 +21,17 @@ function setupMap() {
     setMapClickNavigation();
 }
 
+function resetMapSize() {
+    var mapObject = $('#map');
+
+    setMapSize();
+
+    mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
+        0.1).attr('width', svgWidth * 0.1);
+    mapObject.find('.node').attr('data-active', 'display');
+    mapObject.find('path').attr('data-active', 'inactive');
+    mapObject.append('<div id="graph-view"></div>');
+}
 
 /**
  * Updates the nav-graphs nodes to reflect active nodes in the main graph.
