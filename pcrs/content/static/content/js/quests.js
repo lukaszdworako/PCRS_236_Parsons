@@ -273,6 +273,7 @@ var Problem = React.createClass({
             'hidden': !this.state.isVisible
         });
 
+        console.log('bla', !this.state.attempted);
         var problemClasses = React.addons.classSet({
             'glyphicon': true,
             'glyphicon-edit': true,
@@ -297,7 +298,7 @@ var Problem = React.createClass({
         var problem = event.detail.problem;
         var status = event.detail.status;
 
-        var attempted = status.attempted || this.state.attempted;
+        var attempted = status.attempted || this.state.attempted || this.state.completed;
         var completed = status.completed || this.state.completed;
 
         data.problems_attempted[problem.problem_type][problem.pk] = attempted;
@@ -314,9 +315,10 @@ var Problem = React.createClass({
                 );
             }
         }
-        this.setState({
+        this.replaceState({
             attempted: attempted,
-            completed: completed
+            completed: completed,
+            isVisible: this.state.isVisible
         });
     },
 
