@@ -2,6 +2,25 @@
 
 var data;
 
+// Listen for updates to problems.
+// These events are dispatched by the socket listener.
+window.addEventListener('problemUpdate', function (event) {
+    var receiver = 'problemUpdate-' +
+        event.detail.problem.problem_type + event.detail.problem.pk;
+    window.dispatchEvent(
+        new CustomEvent(receiver, {detail: event.detail})
+    );
+}, false);
+
+window.addEventListener('problemStatusUpdate', function (event) {
+    var receiver = 'problemStatusUpdate-' +
+        event.detail.problem.problem_type + event.detail.problem.pk;
+    console.log('propagating', receiver);
+    window.dispatchEvent(
+        new CustomEvent(receiver, {detail: event.detail})
+    );
+}, false);
+
 function isProblemAttempted(pType, pID) {
     return (data.problems_attempted.hasOwnProperty(pType) &&
         data.problems_attempted[pType].hasOwnProperty(pID) &&
@@ -14,76 +33,16 @@ function isProblemCompleted(pType, pID) {
         data.problems_completed[pType][pID]);
 }
 
-function countCompleted(challengeID) {
-    var count = 0;
-    console.log(data.pages[challengeID]);
-    // iterate over pages in challenge
-    for (var i = 0; i < data.pages[challengeID].length; i++) {
-        var page = data.pages[challengeID][i];
-        console.log("page", page);
-        // iterate over problems on the page
-        for (var j = 0; j < data.problem_lists[page.pk].length; j++) {
-
-            var pID = data.problem_lists[page.pk][j];
-            var pType = pID.split('-')[0];
-            var ID = pID.split('-')[1];
-            console.log("id", pType, ID);
-
-            if (isProblemCompleted(pType, ID))
-                count += 1;
-        }
-    }
-    return count;
+function isProblemVisible(pType, pID) {
+    return data.problems[pType][pID].is_visible;
 }
 
-
 var QuestList = React.createClass({
-    getInitialState: function () {
-        return {data: quests};
-    },
-
-    componentWillMount: function () {
-        var component = this;
-        socket.on(userhash, function (data) {
-            component.updateProblemStatus(data.problem, data.status);
-        });
-
-        socket.on('problems', function (data) {
-            component.updateProblems(data.problem);
-        });
-    },
-
-    updateProblemStatus: function (problem, status) {
-        if (status.hasOwnProperty('attempted')) {
-            data.problems_attempted[problem.problem_type][problem.pk] = status.attempted;
-            this.setState({data: data.quests});
-        }
-        if (status.hasOwnProperty('completed')) {
-            var currentStatus = data.problems_completed[problem.problem_type][problem.pk];
-            data.problems_completed[problem.problem_type][problem.pk] = status.completed;
-            if (currentStatus != status.completed) {
-                // calculate number completed in challenge after the update
-                var challengeID = data.problems[problem.problem_type][problem.pk].challenge;
-                data.challenge_to_completed[challengeID] = countCompleted(challengeID);
-                this.setState({data: data.quests});
-            }
-        }
-    },
-
-    updateProblems: function (problem) {
-        var problemToUpdate = data.problems[problem.problem_type][problem.pk];
-        for (var property in problem.properties) {
-            if (problemToUpdate.hasOwnProperty(property)) {
-                problemToUpdate[property] = problem.properties[property];
-            }
-        }
-        this.setState({data: data.quests});
-    },
-
     render: function () {
         var questNodes = data.quests.map(function (quest) {
             return (
-                <Quest name={quest.name} deadline={quest.deadline} pk={quest.pk}>
+                <Quest id={quest.pk} name={quest.name}
+                deadline={quest.deadline}>
                 </Quest>
                 );
         });
@@ -97,18 +56,16 @@ var QuestList = React.createClass({
 
 
 var Quest = React.createClass({
-
     render: function () {
         return (
-            <div id={'Quest-' + this.props.pk}
-            onClick={this.toggle}>
+            <div id={'Quest-' + this.props.id}>
                 <h3>
                     <a>{this.props.name}
                         <span className="pull-right">{this.props.deadline}</span>
                     </a>
                 </h3>
-                <div id={this.props.pk}>
-                    <ChallengeList questID={this.props.pk} />
+                <div id={this.props.id}>
+                    <ChallengeList questID={this.props.id} />
                 </div>
             </div>
             );
@@ -117,7 +74,6 @@ var Quest = React.createClass({
 
 
 var ChallengeList = React.createClass({
-
     render: function () {
 
         var challengeNodes = (data.challenges[this.props.questID] || []).map(
@@ -135,26 +91,79 @@ var ChallengeList = React.createClass({
 });
 
 var Challenge = React.createClass({
+    getInitialState: function () {
+        return {
+            completed: this.countCompleted(this.props.id),
+            total: this.countTotal(this.props.id)
+        }
+    },
+
+    countCondition: function (challengeID, condition) {
+        var count = 0;
+        console.log('challengepk', challengeID);
+
+        // iterate over pages in challenge
+        if (data.pages.hasOwnProperty(challengeID)) {
+            for (var i = 0; i < data.pages[challengeID].length; i++) {
+                var page = data.pages[challengeID][i];
+                // iterate over problems on the page
+                if (data.problem_lists.hasOwnProperty(page.pk)) {
+
+                    for (var j = 0; j < data.problem_lists[page.pk].length; j++) {
+                        var ID = data.problem_lists[page.pk][j];
+                        var pType = ID.split('-')[0];
+                        var pID = ID.split('-')[1];
+                        if (condition(pType, pID)) {
+                            count += 1;
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    },
+
+    countCompleted: function (challengeID) {
+        return this.countCondition(challengeID, function (pType, pID) {
+                return isProblemVisible(pType, pID) &&
+                       isProblemCompleted(pType, pID);
+            }
+        );
+    },
+
+    countTotal: function (challengeID) {
+        return this.countCondition(challengeID, function (pType, pID) {
+                return isProblemVisible(pType, pID);
+            }
+        );
+    },
+
+    componentDidMount: function () {
+        var component = this;
+        var event = 'challengeUpdated-' + this.props.id;
+        window.addEventListener(event, function (event) {
+            component.setState({
+                    completed: component.countCompleted(component.props.id),
+                    total: component.countTotal(component.props.id)
+                }
+            );
+        }, false);
+
+    },
+
     render: function () {
-        var challengeID = this.props.id;
-
-        var total = data.challenge_to_total[challengeID] || 0;
-        var completed = data.challenge_to_completed[challengeID] || 0;
-
         var classes = React.addons.classSet({
-            'challenge-not-attempted': completed == 0,
-            'challenge-attempted': completed > 0,
-            'challenge-completed': completed == total
+            'challenge-not-attempted': this.state.completed == 0,
+            'challenge-attempted': this.state.completed > 0,
+            'challenge-completed': this.state.completed == this.state.total
         });
-
-        var graded = this.props.graded ? 'Graded' : 'Practice';
 
         return (
             <div onClick={this.toggle}>
                 <h3 className={classes}>{this.props.name}
                     <span className="pull-right">
-                    {graded}:
-                    {completed}/{total}
+                    {this.props.graded ? 'Graded' : 'Practice'}:
+                    {this.state.completed}/{this.state.total}
                     </span>
                 </h3>
                 <div>
@@ -215,18 +224,12 @@ var ProblemList = React.createClass({
                 var pID = problemID[1];
                 var problem = data.problems[pType][pID];
 
-                var attempted = isProblemAttempted(pType, pID);
-                var completed = isProblemCompleted(pType, pID);
-                var url = pageUrl + '#' + pType + '-' + pID;
-
-                if (problem.is_visible) {
-                    return (
-                        <Problem name={problem.name}
-                        attempted={attempted} completed={completed}
-                        url={url}
-                        />
-                        );
-                }
+                return (
+                    <Problem pType={pType} id={pID}
+                    challengeID={problem.challenge}
+                    name={problem.name}
+                    url={pageUrl + '#' + pType + '-' + pID}/>
+                    );
             });
         return (
             <div>{problemNodes}</div>
@@ -235,31 +238,113 @@ var ProblemList = React.createClass({
 });
 
 var Problem = React.createClass({
+
+    getInitialState: function () {
+        var pType = this.props.pType;
+        var pID = this.props.id;
+        return {
+            attempted: isProblemAttempted(pType, pID),
+            completed: isProblemCompleted(pType, pID),
+            isVisible: isProblemVisible(pType, pID)
+        }
+    },
+
+    componentDidMount: function () {
+        var component = this;
+
+        // Listen for problem updates.
+        var update = 'problemUpdate-' + this.props.pType + this.props.id;
+        window.addEventListener(update, function (event) {
+            // Update problem properties
+            component.updateProblem(event);
+        }, false);
+
+        update = 'problemStatusUpdate-' + this.props.pType + this.props.id;
+
+        window.addEventListener(update, function (event) {
+            // Update problem attempted / completed state.
+            console.log('captured');
+            component.updateProblemStatus(event);
+        }, false);
+    },
+
     render: function () {
-        var classes = React.addons.classSet({
+        var problemVisibilityClass = React.addons.classSet({
+            'hidden': !this.state.isVisible
+        });
+
+        var problemClasses = React.addons.classSet({
             'glyphicon': true,
             'glyphicon-edit': true,
-            'problem-idle': !this.props.attempted && !this.props.completed,
-            'problem-attempted': this.props.attempted && !this.props.completed,
-            'problem-complete': this.props.completed
+            'problem-idle': !this.state.attempted,
+            'problem-attempted': this.state.attempted && !this.state.completed,
+            'problem-complete': this.state.completed
         });
+
         return (
-            <div>
+            <div className={problemVisibilityClass}>
                 <a href={this.props.url} target="_blank">
-                    <i className={classes}></i>{this.props.name}
+                    <i className={problemClasses}></i>{this.props.name}
                 </a>
             </div>
             );
+    },
+
+    updateProblemStatus: function (event) {
+        console.log('updating');
+        console.log(event.detail);
+
+        var problem = event.detail.problem;
+        var status = event.detail.status;
+
+        var attempted = status.attempted || this.state.attempted;
+        var completed = status.completed || this.state.completed;
+
+        data.problems_attempted[problem.problem_type][problem.pk] = attempted;
+
+        if (status.hasOwnProperty('completed')) {
+            var currentStatus = data.problems_completed[problem.problem_type][problem.pk];
+            data.problems_completed[problem.problem_type][problem.pk] = status.completed;
+
+            if (currentStatus != status.completed) {
+                // Problem completion status has changed.
+                // Challenge needs to update.
+                window.dispatchEvent(
+                    new CustomEvent('challengeUpdated-' + this.props.challengeID)
+                );
+            }
+        }
+        this.setState({
+            attempted: attempted,
+            completed: completed
+        });
+    },
+
+    updateProblem: function (event) {
+        var problem = event.detail.problem;
+        var problemToUpdate = data.problems[problem.problem_type][problem.pk];
+
+        var previousVisibility = problemToUpdate.is_visible;
+
+        for (var property in problem.properties) {
+            if (problemToUpdate.hasOwnProperty(property)) {
+                problemToUpdate[property] = problem.properties[property];
+            }
+        }
+        if (previousVisibility != problemToUpdate.is_visible) {
+            // Problem visibility has changed. Challenge needs to update.
+            window.dispatchEvent(
+                new CustomEvent('challengeUpdated-' + this.props.challengeID)
+            );
+        }
+
+        this.setState({
+            isVisible: problemToUpdate.is_visible
+        });
+
+
     }
 });
-
-
-function renderQuestList() {
-    React.renderComponent(
-        <QuestList />,
-        document.getElementById("quests")
-    );
-}
 
 $.ajax({
     url: 'get_quest_list',
@@ -267,6 +352,9 @@ $.ajax({
     success: function (newData) {
         console.log('loaded data', newData);
         data = newData;
-        renderQuestList();
+        React.renderComponent(
+            <QuestList />,
+            document.getElementById("quests")
+        );
     }
 });
