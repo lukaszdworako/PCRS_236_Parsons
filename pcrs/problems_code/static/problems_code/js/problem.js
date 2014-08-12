@@ -2,6 +2,7 @@
  * global variables
 */
 var testcases = null;
+var error_msg = null;
 var code_problem_id = -1;
 var myCodeMirrors = {};
 var cmh_list = {};
@@ -250,6 +251,9 @@ function getTestcases(div_id) {
                         .after('<div id="deadline_msg" class="alert alert-danger">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
+                if ((language == 'sql' || language == 'ra') && data['results'][1] != null ){
+                    error_msg = data['results'][1];
+                }
                 $("#"+div_id).find("#grade-code").show();
 
                 var score = data['score'];
@@ -325,88 +329,99 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
     var tests = [];
     var table_location = $('#'+div_id).find('#table_location');
     table_location.empty();
+    //error ra
+    if (error_msg != null){
+        table_location.append("<div class='alert alert-danger'>"+error_msg+"</div>");
+        error_msg = null;
+    }
+    else{
+        for (var i = 0; i < testcases.length; i++) {
+            var current_testcase = testcases[i];
+            var main_table = $('<table/>', {id:"gradeMatrix"+current_testcase['testcase'],
+                                            class:"table span12"});
 
-    for (var i = 0; i < testcases.length; i++) {
-        var current_testcase = testcases[i];
-        var main_table = $('<table/>', {id:"gradeMatrix"+current_testcase['testcase'],
-                                        class:"table span12"});
+            var expected_td = $('<td/>', {class:"gradeMatrixRow table-left"}).append("Expected");
+            var actual_td = $('<td/>', {class:"gradeMatrixRow table-right "}).append("Actual");
 
-        var expected_td = $('<td/>', {class:"gradeMatrixRow table-left"}).append("Expected");
-        var actual_td = $('<td/>', {class:"gradeMatrixRow table-right "}).append("Actual");
+            var expected_table = $('<table/>', {class:"table span6"});
+            var actual_table = $('<table/>', {class:"table span6"});
 
-        var expected_table = $('<table/>', {class:"table span6"});
-        var actual_table = $('<table/>', {class:"table span6"});
+            var expected_entry = $('<tr/>', {class:"gradeMatrixRow"});
+            var actual_entry = $('<tr/>', {class:"gradeMatrixRow"});
 
-        var expected_entry = $('<tr/>', {class:"gradeMatrixRow"});
-        var actual_entry = $('<tr/>', {class:"gradeMatrixRow"});
-
-        if (current_testcase['passed']){
-            table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'>" +
-                                  "</icon><span> Test Case Passed</span></div>");
-            score++;
-        }
-        else{
-            table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'>" +
-                                  "</icon><span> Test Case Failed</span></div>");
-        }
-
-        for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-            expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
-                                  "'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
-        }
-
-        for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
-            actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
-                                "'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
-        }
-
-        expected_table.append(expected_entry);
-        actual_table.append(actual_entry);
-
-        for (var entry = 0; entry < current_testcase['expected'].length; entry++){
-            var entry_class = 'gradeMatrixRow';
-            var test_entry = current_testcase['expected'][entry];
-            if (test_entry['missing']){
-                entry_class = "gradeMatrixRow sql-missing";
+            if (current_testcase['passed']){
+                table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'>" +
+                                      "</icon><span> Test Case Passed</span></div>");
+                score++;
             }
-            var expected_entry = $('<tr/>', {class:entry_class});
-            for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-                expected_entry.append("<td colspan='" +
-                                     6/current_testcase['expected_attrs'].length +
-                                     "'>" +
-                                     test_entry[current_testcase['expected_attrs'][header]] +
-                                     "</td>");
+            else{
+                table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'>" +
+                                      "</icon><span> Test Case Failed</span></div>");
             }
-            expected_table.append(expected_entry);
+
+            if (current_testcase['error'] != null){
+                table_location.append("<div class='alert alert-danger'>"+current_testcase['error']+"</div>");
+            }
+            else{
+                for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                    expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
+                                          "'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+                }
+
+                for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+                    actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
+                                        "'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
+                }
+
+                expected_table.append(expected_entry);
+                actual_table.append(actual_entry);
+
+                for (var entry = 0; entry < current_testcase['expected'].length; entry++){
+                    var entry_class = 'gradeMatrixRow';
+                    var test_entry = current_testcase['expected'][entry];
+                    if (test_entry['missing']){
+                        entry_class = "gradeMatrixRow sql-missing";
+                    }
+                    var expected_entry = $('<tr/>', {class:entry_class});
+                    for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                        expected_entry.append("<td colspan='" +
+                                             6/current_testcase['expected_attrs'].length +
+                                             "'>" +
+                                             test_entry[current_testcase['expected_attrs'][header]] +
+                                             "</td>");
+                    }
+                    expected_table.append(expected_entry);
+                }
+
+                for (var entry = 0; entry < current_testcase['actual'].length; entry++){
+                    var entry_class = 'gradeMatrixRow';
+                    var test_entry = current_testcase['actual'][entry];
+                    if (test_entry['extra']){
+                        entry_class = 'gradeMatrixRow sql-extra';
+                    }
+                    else if (test_entry['out_of_order']){
+                        entry_class = 'gradeMatrixRow sql-order';
+                    }
+                    var actual_entry = $('<tr/>', {class:entry_class});
+                    for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+
+                       actual_entry.append("<td colspan='" +
+                                           6/current_testcase['actual_attrs'].length +
+                                           "'>" +
+                                           test_entry[current_testcase['actual_attrs'][header]] +
+                                           "</td>");
+                    }
+                    actual_table.append(actual_entry);
+                }
+
+                expected_td.append(expected_table);
+                actual_td.append(actual_table);
+
+                main_table.append(expected_td);
+                main_table.append(actual_td);
+                table_location.append(main_table);
+            }
         }
-
-        for (var entry = 0; entry < current_testcase['actual'].length; entry++){
-            var entry_class = 'gradeMatrixRow';
-            var test_entry = current_testcase['actual'][entry];
-            if (test_entry['extra']){
-                entry_class = 'gradeMatrixRow sql-extra';
-            }
-            else if (test_entry['out_of_order']){
-                entry_class = 'gradeMatrixRow sql-order';
-            }
-            var actual_entry = $('<tr/>', {class:entry_class});
-            for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
-
-               actual_entry.append("<td colspan='" +
-                                   6/current_testcase['actual_attrs'].length +
-                                   "'>" +
-                                   test_entry[current_testcase['actual_attrs'][header]] +
-                                   "</td>");
-            }
-            actual_table.append(actual_entry);
-        }
-
-        expected_td.append(expected_table);
-        actual_td.append(actual_table);
-
-        main_table.append(expected_td);
-        main_table.append(actual_td);
-        table_location.append(main_table);
     }
     var data = {'sub_time':new Date(),
             'submission':myCodeMirrors[div_id].getValue(),
@@ -418,25 +433,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             'out_of':max_score,
             'tests': table_location};
     if (best && !data['past_dead_line']){
-        var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-        var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
-        if (score == max_score){
-            $('#'+div_id).find(".widget_title").siblings('span').empty();
-            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
-                {class:"glyphicon glyphicon-ok ok-icon-green"}));
-
-            new_title += " : Complete"
-            side_bar.removeClass();
-            side_bar.addClass("glyphicon glyphicon-check problem-complete");
-        }
-        else{
-            $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
-            $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
-            new_title += " : " + score + " / " + max_score;
-            side_bar.removeClass("problem-idle");
-            side_bar.addClass("problem-attempted");
-        }
-        side_bar.prop('title', new_title);
+        update_marks(div_id, score, max_score);
     }
     if ($('#'+div_id).find('#history_accordion').children().length != 0){
         add_history_entry(data, div_id, 1);
@@ -551,25 +548,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             'tests': tests};
 
     if (best && !data['past_dead_line']){
-        var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-        var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
-        if (score == max_score){
-            $('#'+div_id).find(".widget_title").siblings('span').empty();
-            $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>',
-                          {class:"glyphicon glyphicon-ok ok-icon-green"}));
-
-            new_title += " : Complete"
-            side_bar.removeClass();
-            side_bar.addClass("glyphicon glyphicon-check problem-complete");
-        }
-        else{
-            $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
-            $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
-            new_title += " : " + score + " / " + max_score;
-            side_bar.removeClass("problem-idle");
-            side_bar.addClass("problem-attempted");
-        }
-        side_bar.prop('title', new_title);
+        update_marks(div_id, score, max_score);
     }
     if ($('#'+div_id).find('#history_accordion').children().length != 0){
         add_history_entry(data, div_id, 1);
@@ -664,7 +643,7 @@ function check_language(container){
 }
 
 
-$( document).ready(function() {
+$(document).ready(function() {
 
     var all_wrappers = $('.code-mirror-wrapper');
 
@@ -705,9 +684,11 @@ $( document).ready(function() {
             getHistory(div_id);
         }));
     }
-    for (var key in myCodeMirrors){
-        myCodeMirrors[key].refresh();
-    }
+    $(window).bind("load", function() {
+        $('.CodeMirror').each(function(i, el){
+            el.CodeMirror.refresh();
+        });
+    });
 });
 
 

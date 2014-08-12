@@ -1,0 +1,31 @@
+{% extends "pcrs/base.html" %}
+
+{% load staticfiles %}
+{% load compress %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% compress js %}
+        <script src="{% static "date_picker/js/moment.js" %}"></script>
+        <script src="{% static "date_picker/js/datetimepicker.js" %}"></script>
+        <script src="{% static "date_picker/js/date_time_code.js" %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "date_picker/css/datetimepicker.css" %}">
+    {% endcompress %}
+{% endblock %}
+
+{% block content %}
+
+    {{ block.super }}
+    {% load crispy_forms_tags %}
+    {% crispy form %}
+
+    {% block related_items %}
+    {% endblock %}
+
+{% endblock %}

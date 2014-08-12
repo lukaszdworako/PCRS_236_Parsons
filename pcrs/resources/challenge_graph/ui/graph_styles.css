@@ -1,0 +1,341 @@
+@charset "utf-8";
+
+html {
+    background-color: rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    color: white;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
+a {
+    display: block;
+}
+
+.text {
+    font-family: arial;
+}
+
+#master-layout {
+    overflow: auto;
+    height: 100%;
+}
+
+.slider-selection {
+    background: blue;
+    fill: blue;
+    stroke: blue;
+    color: blue;
+}
+
+#slider-container {
+    float: right;
+    background-color: rgba(0, 0, 0, 0.9)
+}
+
+#scroll-pane {
+   height: 100%;
+}
+
+#map {
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 5px;
+    cursor: crosshair;
+    border: 2px solid black;
+}
+
+#scroll-content {
+    overflow: auto;
+    height: 80%;
+    width: 100%;
+}
+
+#graoh {
+    margin: 2px 2px 2px 2px;
+}
+
+#graph-view {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 500;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1.5px solid black;
+}
+
+g.video-link {
+    fill: url(#play-image) !important;
+    stroke:white;
+}
+
+#HUD {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    height: 15%;
+    width: 100%;
+    position: relative;
+}
+
+/* Node styles */
+g.node {
+    cursor: pointer;
+    z-index:5;
+}
+
+g[data-active="active"] {
+    opacity: 1.0;
+    stroke-width: 3;
+}
+
+g[data-active="active"] text {
+    opacity: 1.0;
+}
+
+g[data-active="active"] .rect {
+    opacity: 1.0;
+    fill: rgba(0, 0, 255, 0.1);
+}
+
+
+g[data-active="doable"] .rect {
+    opacity: 1.0;
+    fill: rgba(0, 0, 0, 0.1);
+}
+
+g[data-active="inactive"] {
+    opacity: 1;
+}
+
+g[data-active="inactive"] rect {
+    opacity: 0.2;
+    stroke-width: 3;
+    stroke: grey;
+    fill: grey;
+}
+
+g[data-active="inactive"] text {
+    opacity: 0.5;
+    stroke-width: 3;
+    stroke: none;
+    fill: grey;
+}
+
+g[data-active="doable"] {
+    stroke-width: 3;
+    fill: grey;
+}
+
+g[data-active="doable"] text {
+}
+
+g[data-active="missing"] .rect {
+    stroke: grey;
+    fill: rgba(255,255,255,0.3);
+}
+
+g[data-active="missing"] .rect {
+    fill: rgba(255,255,255,0.3);
+}
+
+g[data-active="missing"] text {
+}
+
+g[data-active="overridden"] {
+    fill: rgba(255,100,0,0.3);
+    stroke: black;
+}
+
+g[data-active="overridden"] text {
+    stroke: black;
+    stroke-width: 1;
+}
+
+g[data-active="display"] {
+    opacity: 1;
+    stroke-width: 3;
+    cursor: crosshair;
+}
+
+g[data-active="display"] rect {
+    opacity: 0.2;
+    stroke-width: 3;
+    stroke: blue;
+    fill: blue;
+    cursor: crosshair;
+}
+
+g[data-active="display"] text {
+    opacity: 0.5;
+    stroke-width: 3;
+    stroke: none;
+    fill: blue;
+}
+
+g[data-active="display-selected"] {
+    opacity: 1;
+    stroke-width: 3;
+    cursor: crosshair;
+}
+
+g[data-active="display-selected"] rect {
+    opacity: 0.2;
+    stroke-width: 3;
+    stroke: red;
+    fill: red;
+    cursor: crosshair;
+}
+
+g[data-active="display-selected"] text {
+    opacity: 0.5;
+    stroke-width: 3;
+    stroke: none;
+    fill: red;
+}
+
+/* Path Styles */
+path {
+    fill: none;
+}
+
+path[data-active="doable"] {
+    opacity: 1;
+    stroke-dasharray: 6, 4;
+    stroke: rgba(0, 0, 0, 0.3);
+}
+
+path[data-active="inactive"] {
+    opacity: 0.05;
+    stroke-dasharray: 6, 4;
+    fill: rgba(0, 0, 0, 0.2);
+}
+
+path[data-active="active"] {
+    opacity: 1.0;
+    stroke: rgba(0, 0, 0, 0.5);
+}
+
+path[data-active="missing"] {
+    stroke: rgba(0, 0, 0, 0.4);
+    opacity: 0.5;
+}
+
+/* Path Styles */
+polygon[data-active="doable"] {
+    opacity: 1;
+    stroke: rgba(0, 0, 0, 0.3);
+}
+
+polygon[data-active="inactive"] {
+    opacity: 0.05;
+    fill: rgba(0, 0, 0, 0.2);
+}
+
+polygon[data-active="active"] {
+    opacity: 1.0;
+    stroke: rgba(0, 0, 0, 0.5);
+}
+
+polygon[data-active="missing"] {
+    stroke: rgba(0, 0, 0, 0.4);
+    opacity: 0.5;
+}
+
+.week-1-rect {
+	stroke: rgb(204,255,255);
+}
+
+.week-2-rect {
+	stroke: rgb(204,255,204);
+}
+
+.week-3-rect {
+	stroke: rgb(204,153,255);
+}
+
+.week-4-rect {
+	stroke: rgb(255,204,153);
+}
+
+.week-5-rect {
+	stroke: rgb(255,255,153);
+}
+
+.week-6-rect {
+	stroke: rgb(255,153,204);
+}
+
+.week-7-rect {
+	stroke: lime;
+}
+
+.week-8-rect {
+	stroke: blue;
+}
+
+.week-9-rect {
+	stroke: rgb(153,51,0);
+}
+
+.week-10-rect {
+	/*fill: rgb(153,51,0);*/
+	stroke: black;
+}
+.week-11-rect {
+	stroke: white;
+}
+
+.week-12-rect {
+	stroke: red;
+}
+
+#week {
+    float: left;
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 90px;
+    min-width: 90px;
+    text-align: center;
+    border-radius: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: 50px;
+}
+
+#video-title {
+    float: left;
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 500px;
+    min-width: 300px;
+    text-align: center;
+    border-radius: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: 70px;
+    margin-right: 70px;
+}
+
+#video-play-div {
+    width: 50px;
+    padding-left: 35px;
+}
+
+#slider-container {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#video-play-img {
+    cursor: pointer;
+}
+
+.text-overflow {
+    font-size: 9px;
+}
+
+.missing-counter {
+    visibility: hidden;
+}

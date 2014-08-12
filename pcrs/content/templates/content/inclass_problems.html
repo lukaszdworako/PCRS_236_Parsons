@@ -1,0 +1,28 @@
+{% extends "pcrs/base.html" %}
+{% load static %}
+
+{% block scripts %}
+    {{ block.super }}
+
+    <script type="text/javascript"
+            src="{% static "csrf_protection.js" %}"></script>
+
+    <script type="text/jsx"
+            src="{% static "node/node_modules/socket.io/node_modules/socket.io-client/socket.io.js" %}"></script>
+    <script type="text/jsx"
+            src="{% static "content/js/io_connection.js" %}"></script>
+
+    <script src="http://fb.me/react-0.11.0.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.11.0.js"></script>
+    <script src="http://cdn.pubnub.com/socket.io.min.js"></script>
+
+{% endblock %}
+
+{% block page_title %}
+    Open problems
+{% endblock %}
+
+{% block content %}
+    <div id="problemList"></div>
+    <script type="text/jsx" src="{% static "content/js/inclass.js" %}"></script>
+{% endblock %}

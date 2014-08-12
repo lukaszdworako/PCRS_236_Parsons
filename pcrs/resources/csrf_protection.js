@@ -3,6 +3,8 @@ $(document).ajaxError(function () {
 });
 
 var csrftoken = getCookie('csrftoken');
+var sessionid = getCookie('sessionid');
+
 
     jQuery.ajaxSettings.traditional = true;
 

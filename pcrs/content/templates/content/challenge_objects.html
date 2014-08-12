@@ -11,6 +11,9 @@
                 type="text/javascript"></script>
         <script src="{% static "csrf_protection.js" %}"
                 type="text/javascript"></script>
+         <script src="{% static "secret_key.js" %}"
+                type="text/javascript"></script>
+        {% include "pcrs/node_includes.html" %}
         <script src="{% static "content/js/challenge_objects.js" %}"
                 type="text/javascript"></script>
     {% endcompress %}

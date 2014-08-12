@@ -1,22 +1,23 @@
 import json
+import logging
+
 from django.http import HttpResponse
-from django.shortcuts import redirect, get_object_or_404, render_to_response
+from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
+from django.utils.timezone import localtime
+
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
-
-from problems.forms import ProgrammingSubmissionForm, MonitoringForm, \
-    BrowseSubmissionsForm
+from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
+                            BrowseSubmissionsForm)
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
-#
-import logging
-from django.utils.timezone import localtime
-#
+
+
 
 class ProblemView:
     """
@@ -343,7 +344,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
 class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
                             SectionViewMixin, FormView):
     form_class = BrowseSubmissionsForm
-    template_name = 'pcrs/crispy_form.html'
+    template_name = 'pcrs/crispy_form_dateandtime.html'
     object = None
 
     def get_form_kwargs(self):
@@ -376,7 +377,7 @@ class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
         submissions = problem.get_submissions_for_conditions(
             conditions=conditions, starttime=starttime, endtime=endtime)
 
-        return render_to_response('problems/submission_list.html',
+        return render(self.request, 'problems/submission_list.html',
             {
                 'submissions': submissions,
                 'testcases': {tc.pk: tc for tc in problem.testcase_set.all()}

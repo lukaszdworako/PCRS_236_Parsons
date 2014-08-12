@@ -7,6 +7,9 @@
     {% compress js %}
         <script src="{% static "csrf_protection.js" %}"
                 type="text/javascript"></script>
+        {% include "pcrs/node_includes.html" %}
+        <script src="{% static "content/js/io_connection.js" %}"
+                type="text/javascript"></script>
     {% endcompress %}
 {% endblock %}
 

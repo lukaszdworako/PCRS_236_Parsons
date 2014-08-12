@@ -1,0 +1,1 @@
+var sessionid = getCookie('sessionid');
