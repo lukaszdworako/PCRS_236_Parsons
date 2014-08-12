@@ -44,6 +44,11 @@ text {
     width: 100%;
 }
 
+#nav-graph {
+    height: 100%;
+    width: 100%;
+}
+
 #graph-view {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.1);
@@ -54,6 +59,10 @@ text {
 g.video-link {
     fill: url(#play-image) !important;
     stroke:white;
+}
+
+a:hover {
+    text-decoration:none;
 }
 
 #HUD {
