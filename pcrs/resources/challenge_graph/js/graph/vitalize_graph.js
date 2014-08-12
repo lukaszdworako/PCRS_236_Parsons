@@ -13,7 +13,7 @@ function vitalizeGraph() {
 
     $('text').attr('id', function (i) {return 'text-' + i; });
     setKeydown();
-    resetMapGraph();
+    resetGraphView();
 }
 
 

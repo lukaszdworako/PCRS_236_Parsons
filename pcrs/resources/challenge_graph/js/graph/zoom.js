@@ -23,7 +23,7 @@ function zoomOut() {
         zoom = zoom - 10;
     }
     resetGraphSize();
-    resetMapGraph();
+    resetGraphView();
 }
 
 
@@ -37,5 +37,5 @@ function zoomIn() {
         zoom = zoom + 10;
     }
     resetGraphSize();
-    resetMapGraph();
+    resetGraphView();
 }

@@ -7,7 +7,7 @@
 $(window).resize(function() {
     "use strict";
     resetGraphSize();
-    resetMapGraph();
+    resetGraphView();
     setMapSize();
 });
 
