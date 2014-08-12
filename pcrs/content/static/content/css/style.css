@@ -40,3 +40,7 @@ i[class^="delete"] {
     background-color: #008BB0;
     color: white
 }
+
+.hidden {
+    display: none;
+}
