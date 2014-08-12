@@ -6,8 +6,16 @@
  * and size setting / resizing.
  */
 function setupMap() {
+    var mapObject = $('#map');
     "use strict";
-    resetMapSize();
+
+    // TODO: Move all ID setting into processGraph().
+    mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
+        0.1).attr('width', svgWidth * 0.1);
+    mapObject.find('.node').attr('data-active', 'display');
+    mapObject.find('path').attr('data-active', 'inactive');
+    mapObject.append('<div id="graph-view"></div>');
+    setMapSize();
 
     setGraphViewSizes();
 
@@ -16,6 +24,7 @@ function setupMap() {
     addScrollBackgroundHeight();
     removeArrowHeadsFromMap();
     setMapClickNavigation();
+    removeTextFromMap();
 }
 
 function setGraphViewSizes() {
@@ -24,16 +33,9 @@ function setGraphViewSizes() {
         .css('height', scrollContentObject.height() * 0.1);
 }
 
-function resetMapSize() {
-    var mapObject = $('#map');
 
-    setMapSize();
-
-    mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
-        0.1).attr('width', svgWidth * 0.1);
-    mapObject.find('.node').attr('data-active', 'display');
-    mapObject.find('path').attr('data-active', 'inactive');
-    mapObject.append('<div id="graph-view"></div>');
+function removeTextFromMap() {
+    $('#nav-graph').find('text').remove();
 }
 
 /**
@@ -139,7 +141,6 @@ function setMapClickNavigation() {
                 parseFloat(graphView.height());
         }
 
-        createRect(x, y, 10, 10, 'blue');
         graphView.animate({left: xCenter});
         graphView.css({top: yCenter});
 
@@ -172,18 +173,18 @@ function resetGraphSize() {
 /**
  * Re-sizes the map and the graph-view.
  */
-function resetMapGraph() {
+function resetGraphView() {
     "use strict";
 
     $('#scroll-background-top').css('height', 0);// scrollBackgroundHeight / 2 *
         //zoom / 100);
     $('#scroll-background-bottom').css('height', scrollBackgroundHeight *
         zoom / 100);
-    
-    resetGraphViewXPosition();
-    resetGraphViewYPosition();
     resetGraphViewHeight();
     resetGraphViewWidth();
+
+    resetGraphViewXPosition();
+    resetGraphViewYPosition();
 }
 
 
