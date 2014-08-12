@@ -133,6 +133,7 @@ function getNonActiveParentNames(node) {
 /**
  * Creates small icon on the Node rectangle.
  * @param parentRect The parent of the newly created svg rect/text/
+ * @param missingCounter TODO: Define.
  */
 function appendCounterRect(parentRect, missingCounter) {
     "use strict";

@@ -119,11 +119,7 @@ function resetGraphViewHeight() {
     "use strict";
     var graphViewObject = $('#graph-view');
     var mapObject = $('#map');
-    var scrollContainerObject = $('#mCSB_1_container_wrapper');
-    // TODO: Bad Hack.
-    if (scrollContainerObject.length === 0) {
-        scrollContainerObject = $('#mCSB_2_container_wrapper');
-    }
+    var scrollContainerObject = $('.mCSB_container_wrapper');
 
     if (scrollContainerObject.height() * 0.1 * 100 / zoom <
         parseFloat(mapObject.css('height'))) {

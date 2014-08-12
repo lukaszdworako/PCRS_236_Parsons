@@ -3,8 +3,9 @@
  * completed challenges.
  */
 function initializeUserData() {
+    "use strict";
     var userData = getJSON();
-    $.each(userData, function(i, val) {
+    $.each(userData, function (i, val) {
         if (val[0] === val[1]) {
             window["node-" + i].turn();
         }

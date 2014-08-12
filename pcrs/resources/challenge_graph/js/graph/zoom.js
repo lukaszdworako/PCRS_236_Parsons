@@ -2,6 +2,7 @@
  * Sets the button click events for zoom and scrolling.
  */
 function setZoomInButtonFunctions() {
+    "use strict";
     $("#zoomIn").click(function () {
         zoomIn();
         $('#scroll-content').mCustomScrollbar('update');

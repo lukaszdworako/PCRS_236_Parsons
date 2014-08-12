@@ -18,8 +18,7 @@ function setMapClickNavigation() {
         var y = e.clientY - offset.top;
 
         if (x + parseFloat(graphView.width()) / 2 <
-            parseFloat(navGraph.width()
-            )) {
+            parseFloat(navGraph.width())) {
 
             if ((x - parseFloat(graphView.width()) / 2) > 0) {
                 xCenter = x - parseFloat(graphView.width()) / 2;
@@ -33,8 +32,7 @@ function setMapClickNavigation() {
         }
 
         if (y + parseFloat(graphView.height()) / 2 <
-            parseFloat(map.height()
-            )) {
+            parseFloat(map.height())) {
 
             if ((y - parseFloat(graphView.height()) / 2) > 0) {
                 yCenter = y - parseFloat(graphView.height()) / 2;

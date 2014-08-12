@@ -1,13 +1,16 @@
+/*global svgHeight, svgWidth*/
+
 /**
  * Sets the custom scroll bar of the graph.
+ * @param mousewheelAxis TODO: Define.
  */
-function setScrollableContent() {
+function setScrollableContent(mousewheelAxis) {
     "use strict";
     $("#scroll-content").mCustomScrollbar({
         axis: "xy",
         theme: "dark",
         mouseWheel: { enable: true,
-                     axis: "x",
+                     axis: mousewheelAxis,
                      scrollAmount: 500
                    },
         advanced: { updateOnContentResize: true },
