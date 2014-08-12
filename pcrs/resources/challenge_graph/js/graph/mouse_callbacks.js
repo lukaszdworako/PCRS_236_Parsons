@@ -4,10 +4,7 @@
 function setMouseCallbacks() {
     "use strict";
     var nodeObjects = $('#graph').find('.node');
-    nodeObjects.click(function (event) {
-        turnNode(event);
-    })
-        .mouseenter(function (event) {
+    nodeObjects.mouseenter(function (event) {
             updateParentCount($(this).children('.counter-text'), true);
             hoverFocus(event);
         })
