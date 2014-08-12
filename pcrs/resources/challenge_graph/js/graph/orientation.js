@@ -56,7 +56,8 @@ function setChangeOrientationEvent() {
         });
 
         animateNavGraphNodes(newGraph);
-
+        $("#scroll-content").mCustomScrollbar("destroy");
+        setScrollableContent("y");
         if (orientation === "vertical") {
             $("#scroll-content").css("display", "inline").animate({width: "80%"}, 2000);
             d3.select("#scroll-content").transition().duration(2000).style("float", "right");
