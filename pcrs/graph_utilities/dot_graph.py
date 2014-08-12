@@ -1,5 +1,4 @@
 import pydot
-from bs4 import BeautifulSoup
 
 
 def layout_graph(challenges, orientation):
@@ -8,21 +7,6 @@ def layout_graph(challenges, orientation):
     """
     graph = create_graph(orientation)
     add_challenges(challenges, graph)
-    rough_graph = str(graph.create(format='svg'))
-    width = 0
-    height = 0
-    rough_soup = BeautifulSoup(''.join(rough_graph))
-    for g in rough_soup.findAll('g', {'class': 'node'}):
-        for poly in g.findAll('polygon'):
-            coordinates = poly['points'].split()
-            poly_width = abs(float(coordinates[2].split(',')[0]) - float(coordinates[0].split(',')[0]))
-            poly_height = abs(float(coordinates[2].split(',')[0]) - float(coordinates[0].split(',')[0]))
-
-            if poly_width > width:
-                width = poly_width
-            if poly_height > height:
-                height = poly_height
-    set_node_sizes(graph, width, height)
     return str(graph.create(format="svg"))
 
 
@@ -51,9 +35,12 @@ def add_challenges(challenges, graph):
     keys = list(challenges.keys())
     for i in range(0, len(challenges)):
         label = add_newlines(challenges[keys[i]]['name'])
+        url = challenges[keys[i]]['url']
         root = create_node(label, str(keys[i]), graph)
+
         for li in challenges[keys[i]]['prerequisites']:
             label = add_newlines(challenges[li]['name'])
+            url = challenges[li]['url']
             node = create_node(label, str(li), graph)
             create_edge(root, node, graph)
 
@@ -78,18 +65,22 @@ def add_newlines(text):
 
 def create_node(node_label, node_id, graph):
     """
-    Create a node.
+    Create a Node.
     """
 
     # This ensures that the id starts with a letter, should the input prefix ever be numeric.
     # HTML 4 strictly states that ids must start with an alphabetical character.
     node_id = "node-" + node_id
 
+    # Note: Although URL can be set here, it has been known to only
+    # make the text node direct to the xlink:href attribute (what
+    # 'url' would be set to). For future reference, the GraphViz attribute
+    # to produce this behaviour is URL.
     node = pydot.Node(node_id,
                       shape="rect",
                       margin="0.5, 0.05",
                       width=1,
-                      height=1,
+                      height=0.5,
                       label=node_label,
                       id=node_id)
     node.set_shape("box")
@@ -104,14 +95,4 @@ def create_edge(parent, child, graph):
     edge = pydot.Edge(child, parent, splines="ortho")
     graph.add_edge(edge)
     return edge
-
-
-def set_node_sizes(graph, width, height):
-    nodes = graph.get_nodes()
-    for node in nodes:
-        width = int(str(float(width) * 0.011888)[0:5])
-        height = int(str(float(height) * 0.011888)[0:5])
-        print(width)
-        node.set('width', width)
-        node.set('height', height)
 

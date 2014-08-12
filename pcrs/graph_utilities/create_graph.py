@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 def output_graph(challenges):
     """
-    Create a challenge graph and outputs the created SVG.
+    Create a challenge graph and output the corresponding SVG.
     """
 
     svg_graph_horizontal = cg.layout_graph(challenges, "LR")
@@ -33,6 +33,8 @@ def output_graph(challenges):
 
     customize_quests(graph_soup_horizontal, challenges)
     customize_quests(graph_soup_vertical, challenges)
+    add_node_hyperlinks(graph_soup_horizontal, challenges)
+    add_node_hyperlinks(graph_soup_vertical, challenges)
 
     write_graph(graph_soup_horizontal, 'horizontal')
     write_graph(graph_soup_vertical, 'vertical')
@@ -55,6 +57,35 @@ def replace_polygons(graph_soup):
             rect = create_svg_rect(x_position, y_position, width, height)
             g.insert(1, rect.rect)
             poly.extract()
+
+
+def add_node_hyperlinks(graph_soup, challenges):
+    """
+    Enable nodes to link to their corresponding challenge page.
+    """
+
+    keys = list(challenges.keys())
+
+    # Iterate through every challenge, create an 'a' tag and set
+    # the xlink:href attribute to the challenge 'url' provided in
+    # challenges.
+    for i in range(0, len(challenges)):
+        node = graph_soup.find('g', {'id': 'node-' + str(keys[i])})
+
+        # Create a new 'a' tag with BeautifulSoup.
+        a_tag = graph_soup.new_tag('a')
+
+        # Wrap the 'g' node with the 'a' tag to make the entire link
+        # direct to the 'a''s xlink:href attribute.
+        node_contents = node.replace_with(a_tag)
+        a_tag.append(node_contents)
+        challenge_url = str(challenges[keys[i]]['url'])
+
+        # Challenges often returns 'None' (str). If 'None' is added
+        # as the challenge link, the PCRS will direct to a non-existent
+        # page, content/None.
+        if str(challenge_url) != 'None':
+            a_tag['xlink:href'] = str(challenge_url)
 
 
 def customize_quests(graph_soup, challenges):
@@ -85,7 +116,7 @@ def customize_quests(graph_soup, challenges):
             if text == challenge_text:
                 if not challenges[keys[i]]['quest'] in quests:
                     k = i
-                    if i < len(colours):
+                    if i >= len(colours):
                         k = i % len(colours)
                     colour = colours[k]
                     quests[challenges[keys[i]]['quest']] = colour
