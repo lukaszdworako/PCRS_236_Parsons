@@ -138,7 +138,7 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
 
 class ChallengeStatsView(CourseStaffViewMixin, DetailView):
     """
-    View the graph displaying the numbers of students who did not attemt,
+    View the graph displaying the numbers of students who did not attempt,
     attempted, or completed the Challenge.
     """
     model = Challenge
@@ -218,7 +218,7 @@ class ChallengeGraphView(ProtectedViewMixin, TemplateView):
 
 class ChallengeGraphGenViewHorizontal(CourseStaffViewMixin, UserViewMixin, View):
     """
-    Return the svg needed to display the dependency graph.
+    Return the svg needed to display the horizontal dependency graph.
     """
     model = Challenge
 
@@ -231,7 +231,7 @@ class ChallengeGraphGenViewHorizontal(CourseStaffViewMixin, UserViewMixin, View)
 
 class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
     """
-    Return the svg needed to display the dependency graph.
+    Return the svg needed to display the vertical dependency graph.
     """
     model = Challenge
 
