@@ -40,7 +40,7 @@ text {
     cursor: crosshair;
     outline: 1px solid black;
     position: relative;
-    top: 15px;
+    top: 5px;
     left: 15px;
     display: inline-block;
 }
@@ -49,9 +49,9 @@ text {
     background-color: rgba(0, 0, 0, 0.5);
     position: relative;
     padding: 5px 5px 5px 5px;
-    display: inline-block;
     float: right;
-    top: 15px;
+    top: 5px;
+    display: inline-block;
 }
 
 .zoom {
@@ -86,7 +86,6 @@ a:hover {
     width: 100%;
     position: relative;
     display: inline-block;
-    overflow: auto;
 }
 
 /* Node styles */
