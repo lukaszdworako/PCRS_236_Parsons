@@ -130,7 +130,7 @@ g[data-active="inactive"] text {
     opacity: 0.5;
     stroke-width: 3;
     stroke: none;
-    fill: grey;
+    fill: black;
 }
 
 g[data-active="doable"] {
@@ -139,6 +139,7 @@ g[data-active="doable"] {
 }
 
 g[data-active="doable"] text {
+    fill: black;
 }
 
 g[data-active="missing"] .rect {
