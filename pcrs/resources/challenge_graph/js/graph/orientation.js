@@ -3,6 +3,8 @@
 
 /**
  * Sets the #change-orientation button click event.
+ * TODO: The code has been difficult to split up. d3 transitions haven't been working in separate functions.
+ * TODO: (cont) This is something that needs to be worked on, but no time before test instance roll out.
  */
 function setChangeOrientationEvent() {
     "use strict";
@@ -13,7 +15,7 @@ function setChangeOrientationEvent() {
         var navGraphObject = $("#nav-graph");
 
         var transitionDuration = 5000;
-        var slideDuration = 2000;
+        var animationDuration = 2000;
         var ease = 'elastic';
 
         orientation = getNewOrientation(orientation);
@@ -49,39 +51,40 @@ function setChangeOrientationEvent() {
 
         if (orientation === "vertical") {
             scrollObject.css("display", "inline")
-                        .animate({width: "80%"}, 2000);
+                        .animate({width: "80%"}, animationDuration);
 
             $('#button-container').css('float', 'left').css('left', 15);
             d3.select("#scroll-content").style("float", "right");
 
-            $("#HUD").animate({width: "15%"}, 2000)
-                     .animate({height: "100%"}, 2000);
+            $("#HUD").animate({width: "15%"}, animationDuration)
+                     .animate({height: "100%"}, animationDuration);
 
             // Set the mousewheel to scroll vertically
             setScrollableContent("y");
 
         } else {
             scrollObject.css("display", "block")
-                        .animate({width: "100%"}, 2000);
+                        .animate({width: "100%"}, animationDuration);
             $('#button-container').css('float', 'right').css('left', 0);
 
             d3.select("#scroll-content")
               .transition()
-              .duration(2000)
+              .duration(animationDuration)
               .style("float", "");
 
             $("#HUD")
-                .animate({height: "15%"}, 2000)
-                .animate({width: "100%"}, 2000);
+                .animate({height: "15%"}, animationDuration)
+                .animate({width: "100%"}, animationDuration);
 
             // Set the mousewheel to scroll horizontally
             setScrollableContent("x");
         }
 
-        setTimeout(function () { resetGraphView(); }, 5000);
+        setTimeout(function () { resetGraphView(); }, transitionDuration);
         setMapSize();
     });
 }
+
 
 /**
  * Sets the new coordinates of the rects, text, counter rects, and counter texts.
@@ -92,6 +95,8 @@ function setChangeOrientationEvent() {
  * @param transitionDuration The duration the d3 transitions take.
  */
 function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
+    "use strict";
+
     $.each($(newGraph).find(".node"), function (i, node) {
         // TODO: Find out why below helper functions don't work.
         var texts = $("#graph")
@@ -146,6 +151,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
 
     });
 }
+
 
 //function animateGraphNodes(transitionDuration, node, ease) {
 //    d3.select("#graph")
@@ -205,6 +211,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
 //
 //}
 
+
 /**
  * Sets the SVG viewBox attribute of the new graph.
  * @param newGraph The SVG content of the new graph.
@@ -215,6 +222,7 @@ function setViewBoxOfGraphs(newGraph) {
     document.getElementsByTagName("svg")[0].setAttribute("viewBox", viewBox);
     document.getElementsByTagName("svg")[1].setAttribute("viewBox", viewBox);
 }
+
 
 /**
  * Gets the new viewBox attribute from the new graph.
@@ -228,6 +236,7 @@ function getViewBox(newGraph) {
     index = substr.indexOf("\"");
     return substr.substring(0, index);
 }
+
 
 /**
  * Animates the #nav-graph nodes (map nodes).
@@ -251,6 +260,7 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
           .attr('end', function () { resetGraphView(); });
     });
 }
+
 
 /**
  * Animates the graph edges.
@@ -278,6 +288,7 @@ function animateGraphEdges(newGraph, ease, transitionDuration) {
     });
 }
 
+
 /**
  * Updates the absolute sizes of the main graph.
  * @param newGraph The SVG content of the new graph.
@@ -302,6 +313,7 @@ function resetZoom() {
  * Resets the scroll position of #scroll-content to 0.
  */
 function resetScrollPosition() {
+    "use strict";
     $("#scroll-content").mCustomScrollbar("scrollTo", "0");
 }
 
@@ -312,6 +324,7 @@ function resetScrollPosition() {
  * @returns {string} The new orientation of the graph.
  */
 function getNewOrientation(orientation) {
+    "use strict";
     return orientation === "horizontal" ? "vertical" : "horizontal";
 }
 
@@ -320,5 +333,6 @@ function getNewOrientation(orientation) {
  * Removes the custom scrollbar from #scroll-content.
  */
 function removeScrollbar() {
-    $("#scroll-content").mCustomScrollbar("destroy")
+    "use strict";
+    $("#scroll-content").mCustomScrollbar("destroy");
 }
