@@ -10,6 +10,8 @@
 /*global getNonActiveParentNames */
 /*global vitalizeGraph */
 var orientation;
+var horizontalGraph = null;
+var verticalGraph = null;
 
 
 /**
@@ -32,6 +34,16 @@ function processGraph() {
 function getGraph(suffix) {
     "use strict";
     var graph = null;
+
+    if (suffix === 'vertical' && verticalGraph !== null) {
+        console.log('cache');
+        return verticalGraph;
+    } else if (suffix === 'horizontal' && horizontalGraph !== null) {
+        console.log('cache');
+
+        return horizontalGraph;
+    }
+
     orientation = suffix;
     $.ajax({
         url: root + "/content/challenges/prereq_graph/generate_" + suffix,
@@ -41,6 +53,13 @@ function getGraph(suffix) {
             graph = data;
         }
     });
+
+    if (suffix === 'vertical') {
+        verticalGraph = graph;
+    } else if (suffix === 'horizontal') {
+        horizontalGraph = graph;
+    }
+
     return graph;
 }
 
@@ -50,20 +69,10 @@ function getGraph(suffix) {
  */
 function appendGraph(suffix) {
     "use strict";
-    var graph = null;
     orientation = suffix;
-    $.ajax({
-        url: root + "/content/challenges/prereq_graph/generate_" + suffix,
-        dataType: "text",
-        async: false,
-        success: function (data) {
-            graph = data;
-        }
-    });
-    if (graph !== null) {
-        $(graph).insertBefore($("#scroll-background-bottom"));
-        $("#map").append(graph);
-    }
+    var graph = getGraph(suffix);
+    $(graph).insertBefore($("#scroll-background-bottom"));
+    $("#map").append(graph);
 }
 
 
