@@ -35,13 +35,27 @@ text {
 #graph {
 }
 
-#nav-graph {
-}
-
 #map {
     background-color: rgba(255, 255, 255, 1);
     cursor: crosshair;
     outline: 1px solid black;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    display: inline-block;
+}
+
+#button-container {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: relative;
+    padding: 5px 5px 5px 5px;
+    display: inline-block;
+    float: right;
+    top: 15px;
+}
+
+.zoom {
+    margin-top: 10px;
 }
 
 #scroll-content {
@@ -62,11 +76,6 @@ text {
     cursor: pointer;
 }
 
-g.video-link {
-    fill: url(#play-image) !important;
-    stroke:white;
-}
-
 a:hover {
     text-decoration:none;
 }
@@ -76,6 +85,8 @@ a:hover {
     height: 15%;
     width: 100%;
     position: relative;
+    display: inline-block;
+    overflow: auto;
 }
 
 /* Node styles */
@@ -271,20 +282,11 @@ polygon[data-active="missing"] {
     margin-right: 70px;
 }
 
-#video-play-div {
-    width: 50px;
-    padding-left: 35px;
-}
-
 #slider-container {
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     padding-left: 15px;
     padding-right: 15px;
-}
-
-#video-play-img {
-    cursor: pointer;
 }
 
 .text-overflow {

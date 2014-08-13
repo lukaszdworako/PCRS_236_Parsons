@@ -16,9 +16,7 @@ function setupMap() {
     mapObject.find('path').attr('data-active', 'inactive');
     mapObject.append('<div id="graph-view"></div>');
     setMapSize();
-
     setGraphViewSizes();
-
     modifyNavGraphIDs();
     setMapDragNavigation();
     addScrollBackgroundHeight();
@@ -174,4 +172,5 @@ function setMapSize() {
     $('#map').css('height', Math.max($('#scroll-content').height(),
                             $('#graph').height()) * 0.1)
              .css('width', svgWidth * 0.1);
+    $('#button-container').attr('left', $('#map').width() + $('#map').attr('left'));
 }

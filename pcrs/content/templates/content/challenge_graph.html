@@ -67,6 +67,12 @@
     <script type="text/javascript"
             src="{% static "challenge_graph/js/objects/node_object.js" %}"></script>
 
+    <script type="text/javascript"
+    src="{% static "challenge_graph/js/map/graph_view_drag_event.js" %}"></script>
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/map/graph_view_click_event.js" %}"></script>
+
 
     <script type="text/javascript"
             src="{% static "challenge_graph/js//utilities/jquery.mousewheel.min.js" %}"></script>
@@ -105,16 +111,18 @@
         <div id="HUD">
             <div id="map">
             </div>
-            <button id="change-orientation" class="btn">
-                Change Orientation
-            </button>
-            <!-- <div id="slider-container">
-
-                <span id="week">Quest N</span>
-                <span id="video-title">The Name of a Challenge!</span>
-                <button class="btn" onclick="zoomIn()">+</button>
-                <button class="btn" onclick="zoomOut()">-</button>
-            </div> -->
+            <div id="button-container">
+                <button id="change-orientation" class="btn">
+                    Change Orientation
+                </button>
+                <br/>
+                <button class="zoom btn" onclick="zoomIn()">+</button>
+                <button class="zoom btn" onclick="zoomOut()">-</button>
+            </div>
+            <!--<div id="slider-container">-->
+                <!--<span id="week">Quest N</span>-->
+                <!--<span id="video-title">The Name of a Challenge!</span>-->
+            <!--</div>-->
         </div>
     </div>
 </div>
