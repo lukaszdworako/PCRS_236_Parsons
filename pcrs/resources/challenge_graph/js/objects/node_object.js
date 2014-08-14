@@ -1,5 +1,17 @@
 /*global $*/
 
+
+/**
+ * Makes a Node.
+ * @param {string} name - The name of the Node, also the id of the SVG counterpart.
+ */
+function makeNode(name) {
+    "use strict";
+    window[name] = new Node(name);
+    nodes.push(name);
+}
+
+
 /**
  * Represents an SVG graph node (with svg rects and svg texts).
  * @constructor
@@ -7,7 +19,6 @@
  */
 function Node(name) {
     "use strict";
-
     this.name = name;
     this.parents = [];
     this.children = [];
@@ -21,7 +32,6 @@ function Node(name) {
  */
 Node.prototype.isSelected = function () {
     "use strict";
-
     return this.status === 'active' || this.status === 'overridden';
 };
 
@@ -33,9 +43,11 @@ Node.prototype.isSelected = function () {
 Node.prototype.arePrereqsSatisfied = function () {
     "use strict";
     var sat = true;
+
     for (var i = 0; i < this.parents.length; i++) {
         sat = sat && this.parents[i].isSelected();
     }
+
     return sat;
 };
 
@@ -45,7 +57,6 @@ Node.prototype.arePrereqsSatisfied = function () {
  */
 Node.prototype.updateSVG = function () {
     "use strict";
-
     $('#' + this.name).attr('data-active', this.status);
 };
 
@@ -60,12 +71,14 @@ Node.prototype.focus = function () {
         if (this.status !== 'overridden') {
             $('#' + this.name).attr('data-active', 'missing');
         }
+
         $.each(this.inEdges, function (i, edge) {
             if (edge.parent.status !== 'active') {
                 $('#' + edge.name).attr('data-active', 'missing')
                                   .parent().children('polygon').first().attr('data-active', 'missing');
             }
         });
+
         $.each(this.parents, function (i, node) {
             node.focus();
         });
@@ -82,9 +95,11 @@ Node.prototype.unfocus = function () {
     if (!this.isSelected()) {
         $('#' + this.name).attr('data-active', this.status);
     }
+
     $.each(this.parents, function (i, node) {
         node.unfocus();
     });
+
     $.each(this.outEdges, function (i, edge) {
         edge.updateStatus();
     });
@@ -123,9 +138,9 @@ Node.prototype.turn = function () {
     "use strict";
 
     this.status = 'active';
-    var nodeSelector = $('#' + this.name);
-    nodeSelector.children('.counter-text').remove();
-    nodeSelector.children('.missing-counter').attr('fill', 'url(#active-image)');
+    var nodObject = $('#' + this.name);
+    nodObject.children('.counter-text').remove();
+    nodObject.children('.missing-counter').remove();
 
     this.updateStatus();
 
@@ -140,79 +155,5 @@ Node.prototype.turn = function () {
     });
 
     this.updateSVG();
+    updateNavGraph($("#" + this.name));
 };
-
-
-/**
- * Represents an SVG path.
- * @constructor
- * @param {Node} parent - The Node that this edge points from.
- * @param {Node} child - The Node that this Edge points to.
- * @param {string} name - The name of the Edge, also the id of the SVG counterpart.
- */
-function Edge(parent, child, name) {
-    "use strict";
-
-    this.parent = parent;
-    this.child = child;
-    this.name = name;
-    this.status = 'inactive';
-}
-
-
-/**
- * Updates the data-active attribute of this edge, as well as its arrow head (the parents only polygon child).
- */
-Edge.prototype.updateSVG = function () {
-    "use strict";
-
-    $('#' + this.name).attr('data-active', this.status)
-                      .parent().children('polygon').first().attr('data-active', this.status);
-};
-
-
-/**
- * Updates this Node's status based on its prerequisites and whether this Node is selected.
- */
-Edge.prototype.updateStatus = function () {
-    "use strict";
-
-    if (!this.parent.isSelected()) {
-        this.status = 'inactive';
-    } else if (!this.child.isSelected()) {
-        this.status = 'doable';
-    } else {
-        this.status = 'active';
-    }
-
-    this.updateSVG();
-};
-
-
-/**
- * @param {string} name - The name of the Node, also the id of the SVG counterpart.
- */
-function makeNode(name) {
-    "use strict";
-    window[name] = new Node(name);
-    nodes.push(name);
-}
-
-
-/**
- * Makes an Edge with a parent Node parent and a child node Child.
- * @param parent The parent Node that the new Edge points from.
- * @param child The child Node that the new Edge points to.
- * @param name The 'name' of the new Edge.
- */
-function makeEdge(parent, child, name) {
-    "use strict";
-
-    if (typeof parent !== 'undefined' && typeof child !== 'undefined') {
-        window[name] = new Edge(parent, child, name);
-        parent.outEdges.push(window[name]);
-        child.inEdges.push(window[name]);
-        parent.children.push(child);
-        child.parents.push(parent);
-    }
-}

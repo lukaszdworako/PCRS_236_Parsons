@@ -1,35 +1,50 @@
 import os
 import graph_utilities.dot_graph as cg
 from bs4 import BeautifulSoup
-import random
 
 
 def output_graph(challenges):
     """
-    Creates a challenge graph and outputs the created SVG.
+    Create a challenge graph and output the corresponding SVG.
     """
-    svg_graph = cg.layout_graph(challenges)
+
+    svg_graph_horizontal = cg.layout_graph(challenges, "LR")
+    svg_graph_vertical = cg.layout_graph(challenges, "TB")
 
     # Beautiful Soup is used to manipulate the svg into a desired format, as GraphViz creates its own unique output.
-    graph_soup = BeautifulSoup(''.join(svg_graph))
+    graph_soup_horizontal = BeautifulSoup(''.join(svg_graph_horizontal))
+    graph_soup_vertical = BeautifulSoup(''.join(svg_graph_vertical))
 
+    # Uncomment below for defs. Current graph does not need them.
     # Since graphViz doesn't provide the svg defs we want, we need to append them.
-    svg_defs = create_defs()
-    graph_soup.svg.insert(0, svg_defs.defs)
+    # svg_defs_horizontal = create_defs()
+    # svg_defs_vertical = create_defs()
+    # graph_soup_horizontal.svg.insert(0, svg_defs.defs)
+    # graph_soup_vertical.svg.insert(0, svg_defs.defs)
 
     # svg polygons cannot be modified as well as svg rects can, mainly the rx and ry attributes, so the polygons
     # are replaced with rects. The javascript currently searches through svg rect elements, but can easily read
     # polygons if need be.
-    replace_polygons(graph_soup)
-    remove_titles(graph_soup)
-    customize_quests(graph_soup, challenges)
-    write_graph(graph_soup)
+    replace_polygons(graph_soup_horizontal)
+    replace_polygons(graph_soup_vertical)
+
+    remove_titles(graph_soup_horizontal)
+    remove_titles(graph_soup_vertical)
+
+    customize_quests(graph_soup_horizontal, challenges)
+    customize_quests(graph_soup_vertical, challenges)
+    add_node_hyperlinks(graph_soup_horizontal, challenges)
+    add_node_hyperlinks(graph_soup_vertical, challenges)
+
+    write_graph(graph_soup_horizontal, 'horizontal')
+    write_graph(graph_soup_vertical, 'vertical')
 
 
 def replace_polygons(graph_soup):
     """
     Remove all svg polygon elements and replace them with svg rect elements.
     """
+
     for g in graph_soup.findAll('g', {'class': 'node'}):
         for poly in g.findAll('polygon'):
 
@@ -44,12 +59,46 @@ def replace_polygons(graph_soup):
             poly.extract()
 
 
+def add_node_hyperlinks(graph_soup, challenges):
+    """
+    Enable nodes to link to their corresponding challenge page.
+    """
+
+    keys = list(challenges.keys())
+
+    # Iterate through every challenge, create an 'a' tag and set
+    # the xlink:href attribute to the challenge 'url' provided in
+    # challenges.
+    for i in range(0, len(challenges)):
+        node = graph_soup.find('g', {'id': 'node-' + str(keys[i])})
+
+        # Create a new 'a' tag with BeautifulSoup.
+        a_tag = graph_soup.new_tag('a')
+
+        # Wrap the 'g' node with the 'a' tag to make the entire link
+        # direct to the 'a''s xlink:href attribute.
+        node_contents = node.replace_with(a_tag)
+        a_tag.append(node_contents)
+        challenge_url = str(challenges[keys[i]]['url'])
+
+        # Challenges often returns 'None' (str). If 'None' is added
+        # as the challenge link, the PCRS will direct to a non-existent
+        # page, content/None.
+        if str(challenge_url) != 'None':
+            a_tag['xlink:href'] = str(challenge_url)
+
+
 def customize_quests(graph_soup, challenges):
     """
     Customize Quest groupings by generating different strokes for each Quest.
     """
     keys = list(challenges.keys())
     quests = {}
+
+    # Non-dithering colors from: http://www.htmlgoodies.com/tutorials/colors/article.php/3479001
+    colours = ["#33CCFF", "#00CC33", "#FF9999", "#996699", "#0066FF", "#009966", "#FFCC33",
+               "#CC6699", "#33FF66", "#FFCCFF", "#FFCC99", "#FF9933", "#6699CC", "#6699FF"]
+
     for g in graph_soup.findAll('g', {'class': 'node'}):
         text = []
         for t in g.findAll('text'):
@@ -66,10 +115,10 @@ def customize_quests(graph_soup, challenges):
 
             if text == challenge_text:
                 if not challenges[keys[i]]['quest'] in quests:
-
-                    # Generates the random CSS colour for each individual quest.
-                    r = lambda: random.randint(0, 255)
-                    colour = '#%02X%02X%02X' % (r(), r(), r())
+                    k = i
+                    if i >= len(colours):
+                        k = i % len(colours)
+                    colour = colours[k]
                     quests[challenges[keys[i]]['quest']] = colour
                 g.rect['stroke'] = quests[challenges[keys[i]]['quest']]
 
@@ -110,12 +159,12 @@ def remove_titles(graph_soup):
         title.extract()
 
 
-def write_graph(graph_soup):
+def write_graph(graph_soup, orientation):
     """
     Write the graph to a file.
     """
     svg = os.path.join(os.getcwd(),
-            'resources/challenge_graph/ui/graph_gen.svg')
+            'resources/challenge_graph/ui/graph_gen_' + orientation + '.svg')
     f = open(svg, 'w')
     f.write(graph_soup.svg.prettify())
     f.close()

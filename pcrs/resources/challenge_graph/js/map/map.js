@@ -8,26 +8,35 @@
 function setupMap() {
     "use strict";
     var mapObject = $('#map');
-    var scrollContentObject = $('#scroll-content');
 
-    setMapSize();
-
+    // TODO: Move all ID setting into processGraph().
     mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
         0.1).attr('width', svgWidth * 0.1);
     mapObject.find('.node').attr('data-active', 'display');
     mapObject.find('path').attr('data-active', 'inactive');
     mapObject.append('<div id="graph-view"></div>');
-
-    $('#graph-view').css('width', scrollContentObject.width() * 0.1)
-        .css('height', scrollContentObject.height() * 0.1);
-
+    setMapSize();
+    setGraphViewSizes();
     modifyNavGraphIDs();
     setMapDragNavigation();
     addScrollBackgroundHeight();
     removeArrowHeadsFromMap();
     setMapClickNavigation();
+    removeTextFromMap();
 }
 
+function setGraphViewSizes() {
+    "use strict";
+    var scrollContentObject = $('#scroll-content');
+    $('#graph-view').css('width', scrollContentObject.width() * 0.1)
+        .css('height', scrollContentObject.height() * 0.1);
+}
+
+
+function removeTextFromMap() {
+    "use strict";
+    $('#nav-graph').find('text').remove();
+}
 
 /**
  * Updates the nav-graphs nodes to reflect active nodes in the main graph.
@@ -54,110 +63,12 @@ function modifyNavGraphIDs() {
 
 
 /**
- * Sets the map drag functionality (Users can control the graph by dragging
- * the graph-view div).
- * TODO: Known issue: #graph-view is contained inside of the map, and can't
- * make it close to the edges of the graph.
- */
-function setMapDragNavigation() {
-    "use strict";
-    var graphViewObject = $("#graph-view");
-    var graphObject = $("#graph");
-    var mapObject = $("#map");
-
-    graphViewObject.draggable({containment: '#map'});
-    graphViewObject.on('drag', function () {
-
-        var axisArray = [
-            (parseFloat($(this).css('top')) / parseFloat(mapObject.height()) *
-                parseFloat(graphObject.height())),
-            (parseFloat($(this).css('left')) / parseFloat(mapObject.width()) *
-                parseFloat(graphObject.width()))
-        ];
-
-        $('#scroll-content').mCustomScrollbar('scrollTo', axisArray, {
-                callbacks: false,
-                scrollInertia: 250
-        });
-    });
-}
-
-
-/**
- * Sets the map's click navigation functionality (Users can point and click
- * to go where the want in the graph).
- */
-function setMapClickNavigation() {
-    "use strict";
-
-    var graphView = $('#graph-view');
-    var navGraph = $('#nav-graph');
-    var map = $('#map');
-    var graph = $('#graph');
-    var scrollContent = $('#scroll-content');
-
-    map.click(function (e) {
-        var xCenter, yCenter;
-        var offset = $(this).offset();
-        var x = e.clientX - offset.left;
-        var y = e.clientY - offset.top;
-
-        if (x + parseFloat(graphView.width()) / 2 < parseFloat(
-            parseFloat(navGraph.width())
-            )) {
-
-            if ((x - parseFloat(graphView.width()) / 2) > 0) {
-                xCenter = x - parseFloat(graphView.width()) / 2;
-            } else {
-                xCenter = 0;
-            }
-
-        } else {
-            xCenter = parseFloat(parseFloat(navGraph.width())) -
-                parseFloat(graphView.width());
-        }
-
-        if (y + parseFloat(graphView.height()) / 2 < parseFloat(
-            parseFloat(map.height())
-            )) {
-
-            if ((y - parseFloat(graphView.height()) / 2) > 0) {
-                yCenter = y - parseFloat(graphView.height()) / 2;
-            } else {
-                yCenter = 0;
-            }
-
-        } else {
-            yCenter = parseFloat(parseFloat(map.height())) -
-                parseFloat(graphView.height());
-        }
-
-        createRect(x, y, 10, 10, 'blue');
-        graphView.animate({left: xCenter});
-        graphView.css({top: yCenter});
-
-        var axisArray = [(yCenter /
-            parseFloat(navGraph.height()) *
-            parseFloat(graph.height())), (xCenter /
-            parseFloat(navGraph.css('width')) *
-            parseFloat(graph.css('width')))];
-
-        scrollContent.mCustomScrollbar('scrollTo', axisArray, {
-            callbacks: false,
-            scrollInertia: 250
-        });
-    });
-}
-
-
-/**
  * Re-sizes the main graph.
  */
 function resetGraphSize() {
     "use strict";
-
-    $('#graph').css('height', svgHeight * zoom / 100)
-        .css('width', svgWidth * zoom / 100);
+    $('#graph').attr('height', svgHeight * zoom / 100)
+        .attr('width', svgWidth * zoom / 100);
     $('#mCSB_1_container').css('width', svgWidth * zoom / 100);
 }
 
@@ -165,18 +76,18 @@ function resetGraphSize() {
 /**
  * Re-sizes the map and the graph-view.
  */
-function resetMapGraph() {
+function resetGraphView() {
     "use strict";
 
     $('#scroll-background-top').css('height', 0);// scrollBackgroundHeight / 2 *
         //zoom / 100);
     $('#scroll-background-bottom').css('height', scrollBackgroundHeight *
         zoom / 100);
-    
-    resetGraphViewXPosition();
-    resetGraphViewYPosition();
     resetGraphViewHeight();
     resetGraphViewWidth();
+
+    resetGraphViewXPosition();
+    resetGraphViewYPosition();
 }
 
 
@@ -191,10 +102,10 @@ function resetGraphViewWidth() {
     if ((scrollContentObject.width() * 0.1 * 100 / zoom) < parseFloat(
         $('#nav-graph').css('width')
         )) {
-        graphViewObject.animate({width: scrollContentObject.width() * 0.1 * 100 /
-            zoom});
+        graphViewObject.css("width", scrollContentObject.width() * 0.1 * 100 /
+            zoom);
     } else {
-        graphViewObject.animate({width: $('#map').css('width')});
+        graphViewObject.css("width", $('#map').css('width'));
     }
 }
 
@@ -206,7 +117,7 @@ function resetGraphViewHeight() {
     "use strict";
     var graphViewObject = $('#graph-view');
     var mapObject = $('#map');
-    var scrollContainerObject = $('#mCSB_1_container_wrapper');
+    var scrollContainerObject = $('.mCSB_container_wrapper');
 
     if (scrollContainerObject.height() * 0.1 * 100 / zoom <
         parseFloat(mapObject.css('height'))) {
@@ -250,4 +161,16 @@ function resetGraphViewXPosition() {
 function removeArrowHeadsFromMap() {
     "use strict";
     $('#nav-graph').find('polygon').remove();
+}
+
+
+/**
+ * Sets the maps size.
+ */
+function setMapSize() {
+    "use strict";
+    $('#map').css('height', Math.max($('#scroll-content').height(),
+                            $('#graph').height()) * 0.1)
+             .css('width', svgWidth * 0.1);
+    $('#button-container').attr('left', $('#map').width() + $('#map').attr('left'));
 }
