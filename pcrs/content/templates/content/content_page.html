@@ -3,7 +3,7 @@
 {% block scripts %}
     {{ block.super }}
     {% load staticfiles %}
-    {% include "problems_code/code_problem_scripts.html" %}
+    {% include "problems/code_problem_scripts.html" %}
     {% load compress %}
     {% compress js %}
         <script src="{% static "csrf_protection.js" %}"
@@ -24,7 +24,7 @@
 
 {% block stylesheets %}
     {{ block.super }}
-    {% include "problems_code/code_problem_stylesheets.html" %}
+    {% include "problems/code_problem_stylesheets.html" %}
     {% load compress %}
     {% compress css %}
         <link rel="stylesheet" href="{% static "video_js/video-js.css" %}">
