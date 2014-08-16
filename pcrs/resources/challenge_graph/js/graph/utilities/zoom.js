@@ -24,7 +24,7 @@ function zoomOut() {
         zoom = zoom - 10;
     }
     resetGraphSize();
-    resetGraphView();
+    window['graph-view'].reset();
 }
 
 
@@ -38,5 +38,5 @@ function zoomIn() {
         zoom = zoom + 10;
     }
     resetGraphSize();
-    resetGraphView();
+    window['graph-view'].reset();
 }

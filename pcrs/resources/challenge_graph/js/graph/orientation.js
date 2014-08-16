@@ -79,7 +79,7 @@ function setChangeOrientationEvent() {
             setScrollableContent("x");
         }
 
-        setTimeout(function () { resetGraphView(); }, transitionDuration);
+        setTimeout(function () { window['graph-view'].reset(); }, transitionDuration);
         setMapSize();
     });
 }
@@ -256,7 +256,7 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
           .ease(ease)
           .attr({x: $(node).find('rect').attr("x"),
                  y: $(node).find('rect').attr("y")})
-          .attr('end', function () { resetGraphView(); });
+          .attr('end', function () { window['graph-view'].reset(); });
     });
 }
 

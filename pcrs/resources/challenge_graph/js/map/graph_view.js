@@ -71,11 +71,11 @@ function resetGraphView() {
     //zoom / 100);
     $('#scroll-background-bottom').css('height', scrollBackgroundHeight *
         zoom / 100);
-    resetGraphViewHeight();
-    resetGraphViewWidth();
-
-    resetGraphViewXPosition();
-    resetGraphViewYPosition();
+//    resetGraphViewHeight();
+//    resetGraphViewWidth();
+//
+//    resetGraphViewXPosition();
+//    resetGraphViewYPosition();
 }
 
 function setGraphViewSizes() {

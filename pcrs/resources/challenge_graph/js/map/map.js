@@ -7,8 +7,9 @@
  */
 function setupMap() {
     "use strict";
+    console.log('setup');
     var mapObject = $('#map');
-
+    window['graph-view'] = new GraphView('graph-view');
     // TODO: Move all ID setting into processGraph().
     mapObject.find('svg')
              .attr('id', 'nav-graph')
@@ -18,7 +19,7 @@ function setupMap() {
     mapObject.find('path').attr('data-active', 'inactive');
     mapObject.append('<div id="graph-view"></div>');
     setMapSize();
-    setGraphViewSizes();
+    window['graph-view'].setSizes();
     modifyNavGraphIDs();
     setMapDragNavigation();
     addScrollBackgroundHeight();
