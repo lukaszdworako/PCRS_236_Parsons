@@ -18,11 +18,12 @@ function makeEdge(parent, child, name) {
 
 
 /**
- * Represents an SVG path.
+ * Creates an Edge that represents an SVG path.
  * @constructor
- * @param {Node} parent - The Node that this edge points from.
- * @param {Node} child - The Node that this Edge points to.
- * @param {string} name - The name of the Edge, also the id of the SVG counterpart.
+ * @param {Node} parent The Node that this edge points from.
+ * @param {Node} child  The Node that this Edge points to.
+ * @param {string} name The name of the Edge, also the id of the SVG
+ *                      counterpart.
  */
 function Edge(parent, child, name) {
     "use strict";
@@ -34,7 +35,8 @@ function Edge(parent, child, name) {
 
 
 /**
- * Updates the data-active attribute of this Edge, as well as its arrow head (the parents only polygon child).
+ * Updates the data-active attribute of this Edge, as well as its arrow head
+ * (the parents only polygon child).
  */
 Edge.prototype.updateSVG = function () {
     "use strict";
@@ -47,7 +49,8 @@ Edge.prototype.updateSVG = function () {
 
 
 /**
- * Updates this Edge's status based on the status's of this Edge's parent and child Nodes.
+ * Updates this Edge's status based on the status's of this Edge's parent
+ * and child Nodes.
  */
 Edge.prototype.updateStatus = function () {
     "use strict";

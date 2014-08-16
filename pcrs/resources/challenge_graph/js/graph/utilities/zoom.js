@@ -23,7 +23,8 @@ function zoomOut() {
     if (zoom > 10) {
         zoom = zoom - 10;
     }
-    resetGraphSize();
+
+    window['graph'].resetSize();
     window['graph-view'].reset();
 }
 
@@ -34,9 +35,11 @@ function zoomOut() {
  */
 function zoomIn() {
     "use strict";
+
     if (zoom < 200) {
         zoom = zoom + 10;
     }
-    resetGraphSize();
+
+    window['graph'].resetSize();
     window['graph-view'].reset();
 }

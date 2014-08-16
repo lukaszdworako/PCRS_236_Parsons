@@ -6,9 +6,9 @@
  */
 $(window).resize(function() {
     "use strict";
-    resetGraphSize();
     window['graph-view'].reset();
-    setMapSize();
+    resetGraphView();
+    window['map'].setSize();
 });
 
 

@@ -70,6 +70,7 @@ function appendGraph(suffix) {
     var graph = getGraph(suffix);
     $(graph).insertBefore($("#scroll-background-bottom"));
     $("#map").append(graph);
+    window['graph'] = new Graph('graph');
 }
 
 

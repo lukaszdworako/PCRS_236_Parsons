@@ -80,7 +80,7 @@ function setChangeOrientationEvent() {
         }
 
         setTimeout(function () { window['graph-view'].reset(); }, transitionDuration);
-        setMapSize();
+        window['map'].setSize();
     });
 }
 
