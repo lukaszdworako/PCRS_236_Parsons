@@ -3,10 +3,15 @@
  */
 function vitalizeGraph() {
     "use strict";
+
+    window['graph-view'] = new GraphView('graph-view');
+    window['map'] = new GraphMap('map');
+    window['nav-graph'] = new NavGraph('nav-graph');
+
     getAbsoluteSizes(); // Gets the absolute sizes for zoom/resizing
                         // functionality.
-    setupMap(); // Sets up all of the map functions, including map sizing,
-                // dragging and clicking.
+    window['map'].initialize();
+
     buildGraph();
     setMouseCallbacks();
     initializeGraphSettings();

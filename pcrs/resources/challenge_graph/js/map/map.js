@@ -7,9 +7,7 @@
  */
 function setupMap() {
     "use strict";
-    console.log('setup');
     var mapObject = $('#map');
-    window['graph-view'] = new GraphView('graph-view');
     // TODO: Move all ID setting into processGraph().
     mapObject.find('svg')
              .attr('id', 'nav-graph')
@@ -33,11 +31,7 @@ function removeTextFromMap() {
     $('#nav-graph').find('text').remove();
 }
 
-/**
- * Updates the nav-graphs nodes to reflect active nodes in the main graph.
- * @param node The selected node in the graph. This node is updated in the
- * nav-graph.
- */
+
 function updateNavGraph(node) {
     "use strict";
     var newId = '#' + node.attr('id') + '-map-node';

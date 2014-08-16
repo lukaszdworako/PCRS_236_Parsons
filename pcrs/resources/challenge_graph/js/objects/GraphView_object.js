@@ -1,9 +1,17 @@
+/**
+ *
+ * @param id
+ * @constructor
+ */
 function GraphView(id) {
     this.id = id;
     this.obj = $('#' + id);
 }
 
 
+/**
+ *
+ */
 GraphView.prototype.reset = function() {
     "use strict";
 
@@ -19,6 +27,9 @@ GraphView.prototype.reset = function() {
 };
 
 
+/**
+ *
+ */
 GraphView.prototype.resetWidth = function () {
     "use strict";
     var graphViewObject = $('#graph-view');
@@ -35,6 +46,9 @@ GraphView.prototype.resetWidth = function () {
 };
 
 
+/**
+ *
+ */
 GraphView.prototype.resetHeight = function () {
     "use strict";
     var graphViewObject = $('#graph-view');
@@ -51,6 +65,9 @@ GraphView.prototype.resetHeight = function () {
 };
 
 
+/**
+ *
+ */
 GraphView.prototype.resetYPostition = function () {
     "use strict";
     var graphViewObject = $('#graph-view');
@@ -61,6 +78,9 @@ GraphView.prototype.resetYPostition = function () {
 };
 
 
+/**
+ *
+ */
 GraphView.prototype.resetXPosition = function () {
     "use strict";
     var graphViewObject = $('#graph-view');
@@ -71,9 +91,28 @@ GraphView.prototype.resetXPosition = function () {
 };
 
 
+/**
+ *
+ */
 GraphView.prototype.setSizes = function () {
     "use strict";
     var scrollContentObject = $('#scroll-content');
     $('#graph-view').css('width', scrollContentObject.width() * 0.1)
         .css('height', scrollContentObject.height() * 0.1);
+};
+
+
+/**
+ *
+ */
+GraphView.prototype.setDrag = function () {
+    setMapDragNavigation();
+};
+
+
+/**
+ *
+ */
+GraphView.prototype.setClick = function () {
+    setMapClickNavigation();
 };
