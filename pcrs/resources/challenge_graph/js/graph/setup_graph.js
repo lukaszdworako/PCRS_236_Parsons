@@ -1,9 +1,13 @@
 /*global $ */
+
 var nodes = [];
 var zoom = 100;
 var svgWidth, svgHeight;
 var graphViewWidth, graphViewHeight;
 var scrollBackgroundHeight;
+var orientation;
+var horizontalGraph = null;
+var verticalGraph = null;
 
 
 $(document).ready(function () {

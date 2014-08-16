@@ -4,7 +4,6 @@
 /**
  * Sets the #change-orientation button click event.
  * TODO: The code has been difficult to split up. d3 transitions haven't been working in separate functions.
- * TODO: (cont) This is something that needs to be worked on, but no time before test instance roll out.
  */
 function setChangeOrientationEvent() {
     "use strict";

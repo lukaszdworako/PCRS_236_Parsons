@@ -9,9 +9,6 @@
 /*global window */
 /*global getNonActiveParentNames */
 /*global vitalizeGraph */
-var orientation;
-var horizontalGraph = null;
-var verticalGraph = null;
 
 
 /**

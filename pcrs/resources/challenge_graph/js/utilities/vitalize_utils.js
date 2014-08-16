@@ -41,17 +41,6 @@ function hoverUnfocus(event) {
 
 
 /**
- * The click function for a Node.
- * @param event
- */
-function turnNode(event) {
-    "use strict";
-    var id = event.target.parentNode.id;
-    window[id].turn();
-}
-
-
-/**
  * Sets the main svg graph id.
  * Note: This is necessary in the JavaScript. It cannot be put into Beautiful
  * Soup because the generated svg is duplicated in the HTML.

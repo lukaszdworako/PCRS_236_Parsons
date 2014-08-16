@@ -10,8 +10,10 @@ function setupMap() {
     var mapObject = $('#map');
 
     // TODO: Move all ID setting into processGraph().
-    mapObject.find('svg').attr('id', 'nav-graph').attr('height', svgHeight *
-        0.1).attr('width', svgWidth * 0.1);
+    mapObject.find('svg')
+             .attr('id', 'nav-graph')
+             .attr('height', svgHeight * 0.1)
+             .attr('width', svgWidth * 0.1);
     mapObject.find('.node').attr('data-active', 'display');
     mapObject.find('path').attr('data-active', 'inactive');
     mapObject.append('<div id="graph-view"></div>');
@@ -24,14 +26,6 @@ function setupMap() {
     setMapClickNavigation();
     removeTextFromMap();
 }
-
-function setGraphViewSizes() {
-    "use strict";
-    var scrollContentObject = $('#scroll-content');
-    $('#graph-view').css('width', scrollContentObject.width() * 0.1)
-        .css('height', scrollContentObject.height() * 0.1);
-}
-
 
 function removeTextFromMap() {
     "use strict";
@@ -70,88 +64,6 @@ function resetGraphSize() {
     $('#graph').attr('height', svgHeight * zoom / 100)
         .attr('width', svgWidth * zoom / 100);
     $('#mCSB_1_container').css('width', svgWidth * zoom / 100);
-}
-
-
-/**
- * Re-sizes the map and the graph-view.
- */
-function resetGraphView() {
-    "use strict";
-
-    $('#scroll-background-top').css('height', 0);// scrollBackgroundHeight / 2 *
-        //zoom / 100);
-    $('#scroll-background-bottom').css('height', scrollBackgroundHeight *
-        zoom / 100);
-    resetGraphViewHeight();
-    resetGraphViewWidth();
-
-    resetGraphViewXPosition();
-    resetGraphViewYPosition();
-}
-
-
-/**
- * Resets the graph-view's width.
- */
-function resetGraphViewWidth() {
-    "use strict";
-    var graphViewObject = $('#graph-view');
-    var scrollContentObject = $("#scroll-content");
-
-    if ((scrollContentObject.width() * 0.1 * 100 / zoom) < parseFloat(
-        $('#nav-graph').css('width')
-        )) {
-        graphViewObject.css("width", scrollContentObject.width() * 0.1 * 100 /
-            zoom);
-    } else {
-        graphViewObject.css("width", $('#map').css('width'));
-    }
-}
-
-
-/**
- * Resets the graph-view's height.
- */
-function resetGraphViewHeight() {
-    "use strict";
-    var graphViewObject = $('#graph-view');
-    var mapObject = $('#map');
-    var scrollContainerObject = $('.mCSB_container_wrapper');
-
-    if (scrollContainerObject.height() * 0.1 * 100 / zoom <
-        parseFloat(mapObject.css('height'))) {
-        graphViewObject.animate({height: scrollContainerObject.height() *
-            0.1 * 100 / zoom});
-    } else {
-        graphViewObject.animate({height: mapObject.css('height')});
-    }
-}
-
-
-/**
- * Resets the graph-view's y (top attribute) position.
- */
-function resetGraphViewYPosition() {
-    "use strict";
-    var graphViewObject = $('#graph-view');
-    var scrollContentObject = $('#scroll-content');
-    graphViewObject.css("top", ($('#nav-graph').height() *
-        scrollContentObject.scrollTop()) / 100 -
-        (graphViewObject.height() * scrollContentObject.scrollTop()) / 100);
-}
-
-
-/**
- * Resets the graph-view's x (left attribute) position.
- */
-function resetGraphViewXPosition() {
-    "use strict";
-    var graphViewObject = $('#graph-view');
-    var scrollContentObject = $('#scroll-content');
-    graphViewObject.css("left", ($('#nav-graph').width() *
-        scrollContentObject.scrollLeft()) / 10 -
-        (graphViewObject.width() * scrollContentObject.scrollLeft()) / 100);
 }
 
 

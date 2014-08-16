@@ -13,3 +13,21 @@ function setMouseCallbacks() {
             hoverUnfocus(event);
         });
 }
+
+/**
+ * Sets the keydown events for zoom and scrolling.
+ */
+function setKeydown() {
+    "use strict";
+    $(document).keydown(function(e){
+        switch (e.keyCode) {
+            case 187: // + Key
+                zoomIn();
+                break;
+            case 189: // - Key
+                zoomOut();
+                break;
+        }
+        $('#scroll-content').mCustomScrollbar('update');
+    });
+}

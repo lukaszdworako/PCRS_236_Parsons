@@ -2,7 +2,7 @@
 
 /**
  * Sets the custom scroll bar of the graph.
- * @param mousewheelAxis TODO: Define.
+ * @param mousewheelAxis The axis that the mouse wheel acts on.
  */
 function setScrollableContent(mousewheelAxis) {
     "use strict";
