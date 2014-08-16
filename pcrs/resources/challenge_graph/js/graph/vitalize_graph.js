@@ -12,12 +12,11 @@ function vitalizeGraph() {
                         // functionality.
     window['map'].initialize();
 
-    buildGraph();
+    window['graph'].build();
     setMouseCallbacks();
-    initializeGraphSettings();
+    window['graph'].initializeSettings();
 
     $('text').attr('id', function (i) {return 'text-' + i; });
-    setKeydown();
     window['graph-view'].reset();
 }
 
@@ -43,25 +42,3 @@ function pulseTakeable() {
 }
 
 
-/**
- * Creates an svg rect and appends it to #graph0.
- * @param posX The x position of the rect.
- * @param posY The y position of the rect.
- * @param width The width of the rect.
- * @param height The height of the rect.
- * @param color The fill and stroke color of the rect.
- */
-function createRect(posX, posY, width, height, color) {
-    "use strict";
-    $('#graph0').append($(document.createElementNS(
-      'http://www.w3.org/2000/svg', 'rect')).attr({
-      x: posX,
-      y: posY,
-      rx: 20,
-      ry: 20,
-      fill: color,
-      stroke: color,
-      width: width,
-      height: height
-    }));
-}

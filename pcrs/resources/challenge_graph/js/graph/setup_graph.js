@@ -26,8 +26,7 @@ $(document).ready(function () {
 function setupGraph() {
     processGraph(); // Cleans up the svg. TODO: Put into Beautiful Soup as a pre-processor.
     setScrollableContent("x"); // Sets the custom scroll bars for the main graph.
-    setMainGraphID(); // Sets the main graph id.
     vitalizeGraph(); // Builds the graph based on prerequisite structure.
     addNodeDecorations(); // Adds each node's inner rects.
-    initializeUserData();
+    window['graph'].initializeUserData();
 }

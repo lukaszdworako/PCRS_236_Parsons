@@ -41,11 +41,43 @@ function hoverUnfocus(event) {
 
 
 /**
- * Sets the main svg graph id.
- * Note: This is necessary in the JavaScript. It cannot be put into Beautiful
- * Soup because the generated svg is duplicated in the HTML.
+ * Gets the JSON object produced for the current user.
+ * @returns {*} The JSON object of the current user's challenge data.
  */
-function setMainGraphID() {
+function getJSON() {
     "use strict";
-    $('svg:first').attr('id', 'graph');
+    var json = null;
+    $.ajax({
+        url: 'prereq_graph/for_user',
+        dataType: 'text',
+        async: false,
+        success: function (data) {
+            json = data;
+        }
+    });
+    return $.parseJSON(json);
+}
+
+
+/**
+ * Creates an svg rect and appends it to #graph0.
+ * @param posX The x position of the rect.
+ * @param posY The y position of the rect.
+ * @param width The width of the rect.
+ * @param height The height of the rect.
+ * @param color The fill and stroke color of the rect.
+ */
+function createRect(posX, posY, width, height, color) {
+    "use strict";
+    $('#graph0').append($(document.createElementNS(
+        'http://www.w3.org/2000/svg', 'rect')).attr({
+        x: posX,
+        y: posY,
+        rx: 20,
+        ry: 20,
+        fill: color,
+        stroke: color,
+        width: width,
+        height: height
+    }));
 }

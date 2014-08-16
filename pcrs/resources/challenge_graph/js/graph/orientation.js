@@ -9,78 +9,7 @@ function setChangeOrientationEvent() {
     "use strict";
     var orientation = 'horizontal';
     $("#change-orientation").click(function () {
-        var graphObject = $("#graph");
-        var scrollObject = $("#scroll-content");
-        var navGraphObject = $("#nav-graph");
-
-        var transitionDuration = 5000;
-        var animationDuration = 2000;
-        var ease = 'elastic';
-
-        orientation = getNewOrientation(orientation);
-        var newGraph = getGraph(orientation);
-        resetScrollPosition();
-        resetZoom();
-        setViewBoxOfGraphs(newGraph);
-        $("#map").width(parseFloat($(newGraph).attr("width")) * 0.1);
-        updateAbsoluteSizes(newGraph);
-        animateGraphEdges(newGraph, ease, transitionDuration);
-
-        graphObject.attr("width", $(newGraph).attr("width"))
-                   .attr("height", $(newGraph).attr("height"));
-
-        navGraphObject
-            .attr("width", parseFloat($(newGraph).attr("width")) * 0.1)
-            .attr("height", parseFloat($(newGraph).attr("height")) * 0.1);
-
-        navGraphObject
-            .find("#graph0")
-            .attr("transform", $(newGraph).find("#graph0").attr("transform"));
-
-        d3.select("#graph0")
-          .transition()
-          .duration(transitionDuration)
-          .attr("transform", $(newGraph).find("#graph0").attr("transform"));
-
-
-        setNewGraphCoordinates(newGraph, ease, transitionDuration);
-        animateNavGraphNodes(newGraph, ease, transitionDuration);
-
-        removeScrollbar();
-
-        if (orientation === "vertical") {
-            scrollObject.css("display", "inline")
-                        .animate({width: "80%"}, animationDuration);
-
-            $('#button-container').css('float', 'left').css('left', 15);
-            d3.select("#scroll-content").style("float", "right");
-
-            $("#HUD").animate({width: "15%"}, animationDuration)
-                     .animate({height: "100%"}, animationDuration);
-
-            // Set the mousewheel to scroll vertically
-            setScrollableContent("y");
-
-        } else {
-            scrollObject.css("display", "block")
-                        .animate({width: "100%"}, animationDuration);
-            $('#button-container').css('float', 'right').css('left', 0);
-
-            d3.select("#scroll-content")
-              .transition()
-              .duration(animationDuration)
-              .style("float", "");
-
-            $("#HUD")
-                .animate({height: "15%"}, animationDuration)
-                .animate({width: "100%"}, animationDuration);
-
-            // Set the mousewheel to scroll horizontally
-            setScrollableContent("x");
-        }
-
-        setTimeout(function () { window['graph-view'].reset(); }, transitionDuration);
-        window['map'].setSize();
+        window['graph'].changeOrientation(orientation);
     });
 }
 
