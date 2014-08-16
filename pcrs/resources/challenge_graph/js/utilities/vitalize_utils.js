@@ -81,3 +81,26 @@ function createRect(posX, posY, width, height, color) {
         height: height
     }));
 }
+
+
+/**
+ * Fades in/out the graphs doable nodes (opacity from 0.4 to 1,
+ * or from 0.4 to 1).
+ */
+function pulseTakeable() {
+    "use strict";
+    $(nodes).each(function (i, node) {
+        var nodeObject = '#' + node;
+        if (window[node].status === 'doable') {
+            if ($(nodeObject).css('opacity') > 0.9) {
+                $(nodeObject).fadeTo('slow', 0.4);
+            } else {
+                $(nodeObject).fadeTo('slow', 1);
+            }
+        } else if (window[node].status === 'active') {
+            $(nodeObject).fadeTo('fast', 1);
+        }
+    });
+}
+
+
