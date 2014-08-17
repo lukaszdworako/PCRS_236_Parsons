@@ -170,7 +170,7 @@ function appendCounterRect(parentRect, missingCounter) {
                                        "counter-text");
     
     counterRect.insertBefore(parentRect.children("text").first());
-    counterText.insertAfter(parentRect.children("text").first()); 
+    counterText.insertAfter(parentRect.children("text").last());
 }
 
 
