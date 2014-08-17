@@ -16,6 +16,7 @@
  */
 function processGraph() {
     "use strict";
+
     $("polygon[fill*=white]").attr("fill", "none");
 
     $("path").css("fill", "none")
@@ -25,7 +26,8 @@ function processGraph() {
 
 /**
  *
- * @param suffix The suffix of the generated graph file. Either 'horizontal' or 'vertical'.
+ * @param suffix The suffix of the generated graph file.
+ *        Either 'horizontal' or 'vertical'.
  * @returns {*}
  */
 function getGraph(suffix) {
@@ -33,11 +35,10 @@ function getGraph(suffix) {
     var graph = null;
 
     if (suffix === 'vertical' && verticalGraph !== null) {
-        console.log('cache');
         return verticalGraph;
-    } else if (suffix === 'horizontal' && horizontalGraph !== null) {
-        console.log('cache');
+    }
 
+    if (suffix === 'horizontal' && horizontalGraph !== null) {
         return horizontalGraph;
     }
 
@@ -70,7 +71,7 @@ function appendGraph(suffix) {
     var graph = getGraph(suffix);
     $(graph).insertBefore($("#scroll-background-bottom"));
     $("#map").append(graph);
-    window['graph'] = new Graph('graph');
+    window['graph'] = new Graph('graph', orientation);
 }
 
 
@@ -88,19 +89,25 @@ function addNodeDecorations() {
 /**
  * Updates the number of non-active parent nodes for each node.
  * @param rectNode The svg rect that contains the parent count number.
- * @param {Boolean} show Determines whether graph should display parent count or not.
+ * @param {Boolean} show Determines whether graph should display parent count
+ *                       or not.
  */
 function updateParentCount(rectNode, show) {
     "use strict";
+
     var node = window[rectNode.parent().attr("id")];
     rectNode.empty();
 
     if (show && node !== undefined) {
-        $(rectNode).parent().children(".missing-counter").css("visibility", "visible");
+        $(rectNode).parent()
+                   .children(".missing-counter")
+                   .css("visibility", "visible");
         var textNode = document.createTextNode(getNonActiveParentNames(node).length.toString());
         rectNode.append(textNode);
     } else {
-        $(rectNode).parent().children(".missing-counter").css("visibility", "hidden");
+        $(rectNode).parent()
+                   .children(".missing-counter")
+                   .css("visibility", "hidden");
     }
 }
 

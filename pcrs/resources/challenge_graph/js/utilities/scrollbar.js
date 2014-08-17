@@ -1,4 +1,5 @@
 /*global svgHeight, svgWidth*/
+/*global $ */
 
 /**
  * Sets the custom scroll bar of the graph.
@@ -17,7 +18,8 @@ function setScrollableContent(mousewheelAxis) {
         keyboard: { scrollAmount: 50 },
         callbacks: {
 
-            // This allows for the graph-view to move while the main graph div is being scrolled.
+            // This allows for the graph-view to move while the main graph div
+            // is being scrolled.
             whileScrolling: function () {
                 var graphViewObject = $("#graph-view");
                 graphViewObject.css("left",
@@ -34,8 +36,8 @@ function setScrollableContent(mousewheelAxis) {
 
 
 /**
- * Subtracts 1 from val if val is odd. The purpose of this function within this context is to improve the
- * smoothness of the graph map.
+ * Subtracts 1 from val if val is odd. The purpose of this function within
+ * this context is to improve the smoothness of the graph map.
  * @param {int} val The minuend.
  * @returns {*}
  */

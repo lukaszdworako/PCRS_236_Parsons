@@ -1,9 +1,12 @@
+/*global $*/
+
 /**
  *
  * @param id
  * @constructor
  */
 function GraphView(id) {
+    'use strict';
     this.id = id;
     this.obj = $('#' + id);
 }
@@ -12,7 +15,7 @@ function GraphView(id) {
 /**
  * Resets this GraphView's height, width, x position and y position.
  */
-GraphView.prototype.reset = function() {
+GraphView.prototype.reset = function () {
     "use strict";
 
     $('#scroll-background-top').css('height', 0);// scrollBackgroundHeight / 2 *
@@ -32,12 +35,13 @@ GraphView.prototype.reset = function() {
  */
 GraphView.prototype.resetWidth = function () {
     "use strict";
+
     var graphViewObject = $('#graph-view');
     var scrollContentObject = $("#scroll-content");
 
     if ((scrollContentObject.width() * 0.1 * 100 / zoom) < parseFloat(
-        $('#nav-graph').css('width')
-    )) {
+            $('#nav-graph').css('width')
+        )) {
         graphViewObject.css("width", scrollContentObject.width() * 0.1 * 100 /
             zoom);
     } else {
@@ -51,6 +55,7 @@ GraphView.prototype.resetWidth = function () {
  */
 GraphView.prototype.resetHeight = function () {
     "use strict";
+
     var graphViewObject = $('#graph-view');
     var mapObject = $('#map');
     var scrollContainerObject = $('.mCSB_container_wrapper');
@@ -70,6 +75,7 @@ GraphView.prototype.resetHeight = function () {
  */
 GraphView.prototype.resetYPostition = function () {
     "use strict";
+
     var graphViewObject = $('#graph-view');
     var scrollContentObject = $('#scroll-content');
     graphViewObject.css("top", ($('#nav-graph').height() *
@@ -83,6 +89,7 @@ GraphView.prototype.resetYPostition = function () {
  */
 GraphView.prototype.resetXPosition = function () {
     "use strict";
+
     var graphViewObject = $('#graph-view');
     var scrollContentObject = $('#scroll-content');
     graphViewObject.css("left", ($('#nav-graph').width() *
@@ -96,6 +103,7 @@ GraphView.prototype.resetXPosition = function () {
  */
 GraphView.prototype.setSizes = function () {
     "use strict";
+
     var scrollContentObject = $('#scroll-content');
     $('#graph-view').css('width', scrollContentObject.width() * 0.1)
         .css('height', scrollContentObject.height() * 0.1);
@@ -106,6 +114,8 @@ GraphView.prototype.setSizes = function () {
  *
  */
 GraphView.prototype.setDrag = function () {
+    'use strict';
+
     setMapDragNavigation();
 };
 
@@ -114,5 +124,7 @@ GraphView.prototype.setDrag = function () {
  *
  */
 GraphView.prototype.setClick = function () {
+    'use strict';
+
     setMapClickNavigation();
 };

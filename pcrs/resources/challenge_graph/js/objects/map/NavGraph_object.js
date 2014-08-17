@@ -1,9 +1,12 @@
+/*global $ */
 /**
  *
  * @param id
  * @constructor
  */
-function NavGraph (id) {
+function NavGraph(id) {
+    'use strict';
+
     this.name = id;
 }
 

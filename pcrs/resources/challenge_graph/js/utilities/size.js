@@ -1,10 +1,12 @@
+/*global $ */
+
 /**
  * When the window is re-sized, the map needs to be re-sized to reflect what
  * the user is currently viewing.
  * TODO: When the user has a browser zoomed in, the map will not resize
  * properly when the browser is re-sized.
  */
-$(window).resize(function() {
+$(window).resize(function () {
     "use strict";
     window['graph'].resetSize();
     window['graph-view'].reset();
@@ -34,8 +36,8 @@ function addScrollBackgroundHeight() {
     "use strict";
     scrollBackgroundHeight = ($('#mCSB_1_container_wrapper').height() -
                               $('#graph').height());
-    $('#scroll-background-top').css('height', scrollBackgroundHeight/2 *
-                                              zoom/100);
-    $('#scroll-background-bottom').css('height', scrollBackgroundHeight/2 *
-                                                 zoom/100);
+    $('#scroll-background-top').css('height', scrollBackgroundHeight / 2 *
+                                              zoom / 100);
+    $('#scroll-background-bottom').css('height', scrollBackgroundHeight / 2 *
+                                                 zoom / 100);
 }

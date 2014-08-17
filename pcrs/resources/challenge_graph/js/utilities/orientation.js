@@ -3,11 +3,15 @@
 
 
 /**
- * Sets the new coordinates of the rects, text, counter rects, and counter texts.
+ * Sets the new coordinates of the rects, text, counter rects, and counter
+ * texts.
  * // TODO: Find out why below helper functions don't work.
  * @param newGraph The SVG content of the new graph.
- * @param ease The ease attribute of the d3 transitions. (Ex: 'linear', 'elastic'...)
- *        Refer to http://blog.vctr.me/experiments/transition-tweens.html for good examples.
+ * @param ease The ease attribute of the d3 transitions.
+ *             (Ex: 'linear','elastic'...)
+ *             Refer to
+ *             http://blog.vctr.me/experiments/transition-tweens.html
+ *             for good examples.
  * @param transitionDuration The duration the d3 transitions take.
  */
 function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
@@ -181,8 +185,10 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
 /**
  * Animates the graph edges.
  * @param newGraph he SVG content of the new graph.
- * @param ease The ease attribute of the d3 transitions. (Ex: 'linear', 'elastic'...)
- *        Refer to http://blog.vctr.me/experiments/transition-tweens.html for good examples.
+ * @param ease The ease attribute of the d3 transitions.
+ *             (Ex: 'linear', 'elastic'...)
+ *             Refer to http://blog.vctr.me/experiments/transition-tweens.html
+ *             for good examples.
  * @param transitionDuration The duration the d3 transitions take.
  */
 function animateGraphEdges(newGraph, ease, transitionDuration) {
@@ -199,7 +205,7 @@ function animateGraphEdges(newGraph, ease, transitionDuration) {
           .selectAll("polygon")
           .transition()
           .duration(transitionDuration)
-            .ease(ease)
+          .ease(ease)
           .attr("points", $(this).find("polygon").attr("points"));
     });
 }
@@ -236,7 +242,8 @@ function resetScrollPosition() {
 
 /**
  * Gets the orientation of the new graph.
- * @param orientation The current orientation of the graph. Either 'vertical' or 'horizontal'.
+ * @param orientation The current orientation of the graph.
+ *                    Either 'vertical' or 'horizontal'.
  * @returns {string} The new orientation of the graph.
  */
 function getNewOrientation(orientation) {

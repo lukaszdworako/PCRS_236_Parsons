@@ -1,10 +1,14 @@
+/*global $ */
+
 /**
  * Creates a GraphMap object that allows the user to view an overview of
  * the main graph.
  * @param id The id of the HTML map element.
  * @constructor
  */
-function GraphMap (id) {
+function GraphMap(id) {
+    'use strict';
+
     this.name = id;
 }
 
@@ -14,6 +18,8 @@ function GraphMap (id) {
  * and size setting / resizing.
  */
 GraphMap.prototype.initialize = function () {
+    'use strict';
+
     var mapObject = $('#map');
 
     // TODO: Move all ID setting into processGraph().
@@ -39,11 +45,13 @@ GraphMap.prototype.initialize = function () {
  */
 GraphMap.prototype.setSize = function () {
     "use strict";
-    $('#map').css('height', Math.max($('#scroll-content').height(),
+    var mapObject = $('#map');
+
+    mapObject.css('height', Math.max($('#scroll-content').height(),
         $('#graph').height()) * 0.1)
              .css('width', svgWidth * 0.1);
 
-    $('#button-container').attr('left', $('#map').width() + $('#map')
+    $('#button-container').attr('left', mapObject.width() + mapObject
                           .attr('left'));
 };
 

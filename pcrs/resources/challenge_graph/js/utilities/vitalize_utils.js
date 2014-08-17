@@ -1,6 +1,8 @@
+/*global $ */
+
 /**
- * Returns whether px and py intersects with a rectangle starting at rx and ry, with corresponding widths and heights
- * to the parameters.
+ * Returns whether px and py intersects with a rectangle starting at rx and ry,
+ * with corresponding widths and heights to the parameters.
  * @param px The x position of the evaluated point.
  * @param py The y position of the evaluated point.
  * @param rx The x start point of the evaluated rectangle.
@@ -8,13 +10,17 @@
  * @param width The width of the evaluated rectangle.
  * @param height The height of the evaluated rectangle.
  * @param offset The offset of the intersection.
- * @returns {boolean} Whether the evaluated point intersects with the evaluated rectangle with the calculated offset.
+ * @returns {boolean} Whether the evaluated point intersects with the
+ *                    evaluated rectangle with the calculated offset.
  */
 function intersects(px, py, rx, ry, width, height, offset) {
-    "use strict";
+    'use strict';
     var dx = px - rx;
     var dy = py - ry;
-    return dx >= -1 * offset && dx <= width + offset && dy >= -1 * offset && dy <= height + offset;
+    return dx >= -1 * offset &&
+           dx <= width + offset &&
+           dy >= -1 * offset &&
+           dy <= height + offset;
 }
 
 
@@ -23,7 +29,7 @@ function intersects(px, py, rx, ry, width, height, offset) {
  * @param event
  */
 function hoverFocus(event) {
-    "use strict";
+    'use strict';
     var id = event.target.parentNode.id;
     window[id].focus();
 }
@@ -34,7 +40,7 @@ function hoverFocus(event) {
  * @param event
  */
 function hoverUnfocus(event) {
-    "use strict";
+    'use strict';
     var id = event.target.parentNode.id;
     window[id].unfocus();
 }
@@ -45,7 +51,7 @@ function hoverUnfocus(event) {
  * @returns {*} The JSON object of the current user's challenge data.
  */
 function getJSON() {
-    "use strict";
+    'use strict';
     var json = null;
     $.ajax({
         url: 'prereq_graph/for_user',
@@ -68,7 +74,7 @@ function getJSON() {
  * @param color The fill and stroke color of the rect.
  */
 function createRect(posX, posY, width, height, color) {
-    "use strict";
+    'use strict';
     $('#graph0').append($(document.createElementNS(
         'http://www.w3.org/2000/svg', 'rect')).attr({
         x: posX,
@@ -88,7 +94,7 @@ function createRect(posX, posY, width, height, color) {
  * or from 0.4 to 1).
  */
 function pulseTakeable() {
-    "use strict";
+    'use strict';
     $(nodes).each(function (i, node) {
         var nodeObject = '#' + node;
         if (window[node].status === 'doable') {
@@ -102,5 +108,3 @@ function pulseTakeable() {
         }
     });
 }
-
-

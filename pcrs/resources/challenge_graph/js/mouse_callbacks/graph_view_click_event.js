@@ -1,3 +1,6 @@
+/*global $ */
+
+
 /**
  * Sets the map's click navigation functionality (Users can point and click
  * to go where the want in the graph).

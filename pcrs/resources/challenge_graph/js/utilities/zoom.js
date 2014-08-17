@@ -1,3 +1,5 @@
+/*global $ */
+
 /**
  * Sets the button click events for zoom and scrolling.
  */

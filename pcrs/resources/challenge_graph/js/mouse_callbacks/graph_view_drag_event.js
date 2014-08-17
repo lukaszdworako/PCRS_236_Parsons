@@ -1,3 +1,6 @@
+/*global $ */
+
+
 /**
  * Sets the map drag functionality (Users can control the graph by dragging
  * the graph-view div).
