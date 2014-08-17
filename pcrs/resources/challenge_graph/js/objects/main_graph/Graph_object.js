@@ -160,7 +160,7 @@ Graph.prototype.initializeUserData = function () {
     });
 };
 
-Graph.prototype.changeOrientation = function (orientation) {
+Graph.prototype.changeOrientation = function () {
     var graphObject = $("#graph");
     var scrollObject = $("#scroll-content");
     var navGraphObject = $("#nav-graph");
@@ -169,8 +169,8 @@ Graph.prototype.changeOrientation = function (orientation) {
     var animationDuration = 2000;
     var ease = 'elastic';
 
-    orientation = getNewOrientation(orientation);
-    var newGraph = getGraph(orientation);
+    this.orientation = switchOrientation();
+    var newGraph = getGraph(this.orientation);
     resetScrollPosition();
     resetZoom();
     setViewBoxOfGraphs(newGraph);
@@ -200,7 +200,7 @@ Graph.prototype.changeOrientation = function (orientation) {
 
     removeScrollbar();
 
-    if (orientation === "vertical") {
+    if (this.orientation === "vertical") {
         scrollObject.css("display", "inline")
             .animate({width: "80%"}, animationDuration);
 

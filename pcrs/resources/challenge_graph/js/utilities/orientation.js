@@ -246,9 +246,9 @@ function resetScrollPosition() {
  *                    Either 'vertical' or 'horizontal'.
  * @returns {string} The new orientation of the graph.
  */
-function getNewOrientation(orientation) {
+function switchOrientation() {
     "use strict";
-    return orientation === "horizontal" ? "vertical" : "horizontal";
+    return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
 }
 
 

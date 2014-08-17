@@ -28,6 +28,7 @@ function getAbsoluteSizes() {
     graphViewHeight = graphViewObject.height();
 }
 
+
 /**
  * Adds the scroll-background height. This is necessary for consistency with
  * the map when the main graph is zoomed.
