@@ -1,6 +1,7 @@
 /*global $ */
 /**
  *
+ * @class NavGraph
  * @param id
  * @constructor
  */
@@ -8,8 +9,8 @@ function NavGraph(id) {
     'use strict';
 
     this.name = id;
+    this.obj = $('#' + id);
 }
-
 
 /**
  * Updates the nav-graphs nodes to reflect active nodes in the main graph.
@@ -18,6 +19,7 @@ function NavGraph(id) {
  */
 NavGraph.prototype.updateNode = function (node) {
     "use strict";
+
     var newId = '#' + node.attr('id') + '-map-node';
     $(newId).attr('data-active', 'display-selected');
 };
@@ -28,6 +30,7 @@ NavGraph.prototype.updateNode = function (node) {
  */
 NavGraph.prototype.removeArrowHeads = function () {
     "use strict";
+
     $('#nav-graph').find('polygon').remove();
 };
 
@@ -37,6 +40,7 @@ NavGraph.prototype.removeArrowHeads = function () {
  */
 NavGraph.prototype.setupIDs = function () {
     "use strict";
+
     $('#nav-graph').find('.node').each(function () {
         $(this).attr('id', $(this).attr('id') + '-map-node');
     });
@@ -48,5 +52,6 @@ NavGraph.prototype.setupIDs = function () {
  */
 NavGraph.prototype.removeText = function () {
     "use strict";
+console.log('rem');
     $('#nav-graph').find('text').remove();
 };

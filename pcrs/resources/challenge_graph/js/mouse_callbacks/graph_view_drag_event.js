@@ -3,15 +3,16 @@
 
 /**
  * Sets the map drag functionality (Users can control the graph by dragging
- * the graph-view div).
+ * the GraphView).
  * TODO: Known issue: #graph-view is contained inside of the map, and can't
- * make it close to the edges of the graph.
+ *       make it close to the edges of the graph.
  */
 function setMapDragNavigation() {
-    "use strict";
-    var graphViewObject = $("#graph-view");
-    var graphObject = $("#graph");
-    var mapObject = $("#map");
+    'use strict';
+
+    var graphViewObject = $('#graph-view');
+    var graphObject = $('#graph');
+    var mapObject = $('#map');
 
     graphViewObject.draggable({containment: '#map'});
     graphViewObject.on('drag', function () {

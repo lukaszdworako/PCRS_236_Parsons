@@ -2,7 +2,9 @@
 
 
 /**
+ * A Graph object. This represents the main SVG graph.
  *
+ * @class Graph
  * @param id
  * @param orientation
  * @constructor
@@ -38,7 +40,6 @@ Graph.prototype.setup = function () {
 Graph.prototype.vitalize = function () {
     "use strict";
 
-    window['graph-view'] = new GraphView('graph-view');
     window['map'] = new GraphMap('map');
     window['nav-graph'] = new NavGraph('nav-graph');
 

@@ -168,7 +168,7 @@ function appendCounterRect(parentRect, missingCounter) {
                                        parseInt(parentRect.children(".rect").attr("y")) +
                                        (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
                                        "counter-text");
-    
+
     counterRect.insertBefore(parentRect.children("text").first());
     counterText.insertAfter(parentRect.children("text").last());
 }

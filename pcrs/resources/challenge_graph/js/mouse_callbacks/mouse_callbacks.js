@@ -5,7 +5,8 @@
  * Sets the mouse callbacks for the nodes.
  */
 function setMouseCallbacks() {
-    "use strict";
+    'use strict';
+
     var nodeObjects = $('#graph').find('.node');
     nodeObjects.mouseenter(function (event) {
             updateParentCount($(this).children('.counter-text'), true);
@@ -15,15 +16,18 @@ function setMouseCallbacks() {
             updateParentCount($(this).children('.counter-text'), false);
             hoverUnfocus(event);
         });
+
     setKeydown();
     setChangeOrientationEvent();
 }
+
 
 /**
  * Sets the keydown events for zoom and scrolling.
  */
 function setKeydown() {
-    "use strict";
+    'use strict';
+
     $(document).keydown(function (e) {
         switch (e.keyCode) {
         case 187: // + Key
@@ -40,12 +44,14 @@ function setKeydown() {
 
 /**
  * Sets the #change-orientation button click event.
- * TODO: The code has been difficult to split up. d3 transitions haven't been working in separate functions.
+ * TODO: The code has been difficult to split up. d3 transitions haven't
+ *       been working in separate functions.
  */
 function setChangeOrientationEvent() {
-    "use strict";
+    'use strict';
+
     var orientation = 'horizontal';
-    $("#change-orientation").click(function () {
+    $('#change-orientation').click(function () {
         window['graph'].changeOrientation(orientation);
     });
 }

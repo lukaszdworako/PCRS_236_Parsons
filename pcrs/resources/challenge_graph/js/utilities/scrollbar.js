@@ -6,10 +6,10 @@
  * @param mousewheelAxis The axis that the mouse wheel acts on.
  */
 function setScrollableContent(mousewheelAxis) {
-    "use strict";
-    $("#scroll-content").mCustomScrollbar({
-        axis: "xy",
-        theme: "dark",
+    'use strict';
+    $('#scroll-content').mCustomScrollbar({
+        axis: 'xy',
+        theme: 'dark',
         mouseWheel: { enable: true,
                      axis: mousewheelAxis,
                      scrollAmount: 500
@@ -21,13 +21,13 @@ function setScrollableContent(mousewheelAxis) {
             // This allows for the graph-view to move while the main graph div
             // is being scrolled.
             whileScrolling: function () {
-                var graphViewObject = $("#graph-view");
-                graphViewObject.css("left",
-                    2 + fixVal(($("#nav-graph").width() * this.mcs.leftPct) / 100 -
+                var graphViewObject = $('#graph-view');
+                graphViewObject.css('left',
+                    2 + fixVal(($('#nav-graph').width() * this.mcs.leftPct) / 100 -
                         (graphViewObject.width() * this.mcs.leftPct) / 100));
 
-                graphViewObject.css("top",
-                    fixVal(($("#map").height() * this.mcs.topPct) / 100 -
+                graphViewObject.css('top',
+                    fixVal(($('#map').height() * this.mcs.topPct) / 100 -
                         (graphViewObject.height() * this.mcs.topPct) / 100));
             }
         }
@@ -42,7 +42,7 @@ function setScrollableContent(mousewheelAxis) {
  * @returns {*}
  */
 function fixVal(val) {
-    "use strict";
+    'use strict';
     if ((parseFloat(val) % 2) !== 0) {
         val = val - (val % 2);
     }

@@ -7,21 +7,27 @@
  *                        counterpart.
  */
 function makeNode(name) {
-    "use strict";
+    'use strict';
+
     window[name] = new Node(name);
     nodes.push(name);
 }
 
 
 /**
- * Represents an SVG graph node (with svg rects and svg texts).
+ * Creates a Node. This represents an SVG graph node (with svg rects and
+ * svg texts).
+ *
+ * @class Node
  * @constructor
  * @param {string} name - The name of the Node, also the id of the SVG
  *                        counterpart.
  */
 function Node(name) {
-    "use strict";
+    'use strict';
+
     this.name = name;
+    this.obj = $('#' + this.name);
     this.parents = [];
     this.children = [];
     this.outEdges = [];
@@ -33,7 +39,8 @@ function Node(name) {
  * Returns whether this Node is 'active' or 'overriden'.
  */
 Node.prototype.isSelected = function () {
-    "use strict";
+    'use strict';
+
     return this.status === 'active' || this.status === 'overridden';
 };
 
@@ -43,7 +50,8 @@ Node.prototype.isSelected = function () {
  * @returns {boolean} Whether the parent nodes of this Node are selected.
  */
 Node.prototype.arePrereqsSatisfied = function () {
-    "use strict";
+    'use strict';
+
     var sat = true;
 
     for (var i = 0; i < this.parents.length; i++) {
@@ -58,8 +66,9 @@ Node.prototype.arePrereqsSatisfied = function () {
  * Updates the data-active attribute of this Node.
  */
 Node.prototype.updateSVG = function () {
-    "use strict";
-    $('#' + this.name).attr('data-active', this.status);
+    'use strict';
+
+    this.obj.attr('data-active', this.status);
 };
 
 
@@ -67,11 +76,11 @@ Node.prototype.updateSVG = function () {
  * Displays ('lights up') this Node and all preceding parent nodes.
  */
 Node.prototype.focus = function () {
-    "use strict";
+    'use strict';
 
     if (this.status !== 'active') {
         if (this.status !== 'overridden') {
-            $('#' + this.name).attr('data-active', 'missing');
+            this.obj.attr('data-active', 'missing');
         }
 
         $.each(this.inEdges, function (i, edge) {
@@ -92,10 +101,10 @@ Node.prototype.focus = function () {
  * Reverses the 'light up' effect produced by Node.prototype.focus.
  */
 Node.prototype.unfocus = function () {
-    "use strict";
+    'use strict';
 
     if (!this.isSelected()) {
-        $('#' + this.name).attr('data-active', this.status);
+        this.obj.attr('data-active', this.status);
     }
 
     $.each(this.parents, function (i, node) {
@@ -112,7 +121,7 @@ Node.prototype.unfocus = function () {
  * Updates this Node's status based on its prerequisites and whether this Node is selected.
  */
 Node.prototype.updateStatus = function () {
-    "use strict";
+    'use strict';
 
     if (this.arePrereqsSatisfied()) {
         if (this.isSelected()) {
@@ -133,16 +142,17 @@ Node.prototype.updateStatus = function () {
 
 
 /**
- * Turns the node 'active' if the node is not active and if the parents of this Node are selected. 'Overriden' otherwise.
- * Note: Can also be implemented to reverse 'active' to 'inactive' (or 'overridden' to 'inactive').
+ * Turns the node 'active' if the node is not active and if the parents
+ * of this Node are selected. 'Overriden' otherwise.
+ * Note: Can also be implemented to reverse 'active' to 'inactive' -
+ * (or 'overridden' to 'inactive').
  */
 Node.prototype.turn = function () {
-    "use strict";
+    'use strict';
 
     this.status = 'active';
-    var nodObject = $('#' + this.name);
-    nodObject.children('.counter-text').remove();
-    nodObject.children('.missing-counter').remove();
+    this.obj.children('.counter-text').remove();
+    this.obj.children('.missing-counter').remove();
 
     this.updateStatus();
 
@@ -157,5 +167,5 @@ Node.prototype.turn = function () {
     });
 
     this.updateSVG();
-    window['nav-graph'].updateNode($("#" + this.name));
+    window['nav-graph'].updateNode(this.obj);
 };

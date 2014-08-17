@@ -1,7 +1,6 @@
 /*global $, d3*/
 
 
-
 /**
  * Sets the new coordinates of the rects, text, counter rects, and counter
  * texts.
@@ -137,8 +136,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
  * @param newGraph The SVG content of the new graph.
  */
 function setViewBoxOfGraphs(newGraph) {
-    "use strict";
-    var viewBox = getViewBox(newGraph);
+    "use strict"; var viewBox = getViewBox(newGraph);
     document.getElementsByTagName("svg")[0].setAttribute("viewBox", viewBox);
     document.getElementsByTagName("svg")[1].setAttribute("viewBox", viewBox);
 }
@@ -151,7 +149,8 @@ function setViewBoxOfGraphs(newGraph) {
  */
 function getViewBox(newGraph) {
     "use strict";
-    var index  = newGraph.indexOf("viewbox");
+
+   var index  = newGraph.indexOf("viewbox");
     var substr = newGraph.substring(index + 9);
     index = substr.indexOf("\"");
     return substr.substring(0, index);
@@ -167,7 +166,8 @@ function getViewBox(newGraph) {
  */
 function animateNavGraphNodes(newGraph, ease, transitionDuration) {
     "use strict";
-    $.each($(newGraph).find(".node"), function (i, node) {
+
+   $.each($(newGraph).find(".node"), function (i, node) {
         d3.select("#nav-graph")
           .select("#" + $(this)
           .attr("id") + "-map-node")
@@ -193,7 +193,8 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
  */
 function animateGraphEdges(newGraph, ease, transitionDuration) {
     "use strict";
-    $.each($(newGraph).find(".edge"), function () {
+
+   $.each($(newGraph).find(".edge"), function () {
         d3.select("#" + $(this).attr("id"))
           .select("path")
           .transition()
@@ -217,7 +218,8 @@ function animateGraphEdges(newGraph, ease, transitionDuration) {
  */
 function updateAbsoluteSizes(newGraph) {
     "use strict";
-    svgWidth = parseFloat($(newGraph).attr("width")) * 4 / 3;
+
+   svgWidth = parseFloat($(newGraph).attr("width")) * 4 / 3;
     svgHeight = parseFloat($(newGraph).attr("height")) * 4 / 3;
 }
 
@@ -227,7 +229,8 @@ function updateAbsoluteSizes(newGraph) {
  */
 function resetZoom() {
     "use strict";
-    zoom = 100;
+
+   zoom = 100;
 }
 
 
@@ -236,7 +239,8 @@ function resetZoom() {
  */
 function resetScrollPosition() {
     "use strict";
-    $("#scroll-content").mCustomScrollbar("scrollTo", "0");
+
+   $("#scroll-content").mCustomScrollbar("scrollTo", "0");
 }
 
 
@@ -248,7 +252,8 @@ function resetScrollPosition() {
  */
 function switchOrientation() {
     "use strict";
-    return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
+
+   return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
 }
 
 
@@ -257,5 +262,6 @@ function switchOrientation() {
  */
 function removeScrollbar() {
     "use strict";
-    $("#scroll-content").mCustomScrollbar("destroy");
+
+   $("#scroll-content").mCustomScrollbar("destroy");
 }

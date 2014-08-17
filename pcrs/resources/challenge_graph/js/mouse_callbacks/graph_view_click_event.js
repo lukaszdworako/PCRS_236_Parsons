@@ -6,7 +6,7 @@
  * to go where the want in the graph).
  */
 function setMapClickNavigation() {
-    "use strict";
+    'use strict';
 
     var graphView = $('#graph-view');
     var navGraph = $('#nav-graph');

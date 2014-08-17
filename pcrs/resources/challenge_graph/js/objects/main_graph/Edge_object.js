@@ -1,11 +1,12 @@
 /**
  * Makes an Edge with a parent Node parent and a child node child.
- * @param parent The parent Node that the new Edge points from.
- * @param child The child Node that the new Edge points to.
- * @param name The 'name' of the new Edge.
+ *
+ * @param {Node} parent The parent Node that the new Edge points from.
+ * @param {Node} child The child Node that the new Edge points to.
+ * @param {string} name The 'name' of the new Edge.
  */
 function makeEdge(parent, child, name) {
-    "use strict";
+    'use strict';
 
     if (parent !== undefined && child !== undefined) {
         window[name] = new Edge(parent, child, name);
@@ -18,15 +19,16 @@ function makeEdge(parent, child, name) {
 
 
 /**
- * Creates an Edge that represents an SVG path.
- * @constructor
+ * Creates an Edge. This represents an SVG path.
+ * @class Edge
  * @param {Node} parent The Node that this edge points from.
  * @param {Node} child  The Node that this Edge points to.
  * @param {string} name The name of the Edge, also the id of the SVG
  *                      counterpart.
  */
 function Edge(parent, child, name) {
-    "use strict";
+    'use strict';
+
     this.parent = parent;
     this.child = child;
     this.name = name;
@@ -39,7 +41,8 @@ function Edge(parent, child, name) {
  * (the parents only polygon child).
  */
 Edge.prototype.updateSVG = function () {
-    "use strict";
+    'use strict';
+
     $('#' + this.name).attr('data-active', this.status)
                       .parent()
                       .children('polygon')
@@ -53,7 +56,7 @@ Edge.prototype.updateSVG = function () {
  * and child Nodes.
  */
 Edge.prototype.updateStatus = function () {
-    "use strict";
+    'use strict';
 
     if (!this.parent.isSelected()) {
         this.status = 'inactive';

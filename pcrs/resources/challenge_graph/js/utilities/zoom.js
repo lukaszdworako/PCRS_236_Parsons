@@ -4,12 +4,12 @@
  * Sets the button click events for zoom and scrolling.
  */
 function setZoomInButtonFunctions() {
-    "use strict";
-    $("#zoomIn").click(function () {
+    'use strict';
+    $('#zoomIn').click(function () {
         zoomIn();
         $('#scroll-content').mCustomScrollbar('update');
     });
-    $("#zoomOut").click(function () {
+    $('#zoomOut').click(function () {
         zoomIn();
         $('#scroll-content').mCustomScrollbar('update');
     });
@@ -21,7 +21,7 @@ function setZoomInButtonFunctions() {
  * graph-view appear to zoom out (get bigger).
  */
 function zoomOut() {
-    "use strict";
+    'use strict';
     if (zoom > 10) {
         zoom = zoom - 10;
     }
@@ -36,7 +36,7 @@ function zoomOut() {
  * graph-view appear to zoom in (get smaller).
  */
 function zoomIn() {
-    "use strict";
+    'use strict';
 
     if (zoom < 200) {
         zoom = zoom + 10;

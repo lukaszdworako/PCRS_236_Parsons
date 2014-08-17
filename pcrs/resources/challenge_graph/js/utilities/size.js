@@ -7,7 +7,7 @@
  * properly when the browser is re-sized.
  */
 $(window).resize(function () {
-    "use strict";
+    'use strict';
     window['graph'].resetSize();
     window['graph-view'].reset();
     window['map'].setSize();
@@ -19,11 +19,14 @@ $(window).resize(function () {
  * resizing later on.
  */
 function getAbsoluteSizes() {
-    "use strict";
+    'use strict';
+
     var svgObject = $('svg');
     var graphViewObject = $('#graph-view');
+
     svgWidth = svgObject.width();
     svgHeight = svgObject.height();
+
     graphViewWidth = graphViewObject.width();
     graphViewHeight = graphViewObject.height();
 }
@@ -34,7 +37,8 @@ function getAbsoluteSizes() {
  * the map when the main graph is zoomed.
  */
 function addScrollBackgroundHeight() {
-    "use strict";
+    'use strict';
+
     scrollBackgroundHeight = ($('#mCSB_1_container_wrapper').height() -
                               $('#graph').height());
     $('#scroll-background-top').css('height', scrollBackgroundHeight / 2 *
