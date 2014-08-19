@@ -18,7 +18,7 @@ io.on('connection', function (socket) {
     });
 
     // updating problem status for user
-    socket.on('user-problems', function (data) {
+    socket.on('statusUpdate', function (data) {
         io.emit(data.userhash, data);
     });
 

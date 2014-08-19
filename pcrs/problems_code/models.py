@@ -5,12 +5,12 @@ from django.db.models.signals import post_delete
 
 from .pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
-from problems.models import (AbstractNamedProblem, AbstractSubmission,
+from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete, problem_delete)
 
 
-class Problem(AbstractNamedProblem):
+class Problem(AbstractProgrammingProblem):
     """
     A coding problem.
 
@@ -21,6 +21,21 @@ class Problem(AbstractNamedProblem):
     language = models.CharField(max_length=50, 
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='python')
+
+    def serialize(self):
+        return {
+            'id': self.get_uri_id(),
+            'pk': self.pk,
+            'name': self.name,
+            'description': self.description,
+            'is_visible': self.is_visible_to_students(),
+            'problem_type': 'code',
+            'content_type': 'problem',
+            'challenge': self.challenge_id,
+            'starter_code': self.starter_code,
+            'submit_url': self.get_submit_url(),
+            'max_score': self.max_score
+        }
 
 
 class Submission(AbstractSubmission):

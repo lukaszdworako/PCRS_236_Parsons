@@ -12,6 +12,7 @@ from problems_multiple_choice.forms import SubmissionForm, OptionForm
 
 from problems_multiple_choice.models import (Problem, Option, OptionSelection,
                                              Submission)
+from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
@@ -105,7 +106,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
             problem=problem, user=request.user, section=self.get_section())
 
         selected_options = Option.objects.filter(
-            pk__in=request.POST.getlist('options', None))
+            pk__in=request.POST.getlist('submission', None))
         all_options = problem.option_set.all()
         correct_options = all_options.filter(is_correct=True)
 
@@ -141,7 +142,7 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin, SectionViewMixin,  SingleObjectMixin, View):
     """
     Create a submission for a problem asynchronously.
     """
@@ -149,7 +150,7 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         results = self.record_submission(request)
 
         problem = self.get_problem()
-        user, section = self.request.user, self.request.user.section
+        user, section = self.request.user, self.get_section()
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
 

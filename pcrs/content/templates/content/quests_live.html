@@ -11,7 +11,7 @@
     {% compress js %}
         {% include "pcrs/node_includes.html" %}
         <script type="text/jsx"
-                src="{% static "content/js/quests_io.js" %}"></script>
+                src="{% static "content/js/socket_events.js" %}"></script>
         {% include "pcrs/react_includes.html" %}
     {% endcompress %}
 
@@ -30,5 +30,6 @@
 
 {% block content %}
     <div id="quests"></div>
+    <script type="text/jsx" src="{% static "content/js/components.js" %}"></script>
     <script type="text/jsx" src="{% static "content/js/quests.js" %}"></script>
 {% endblock %}

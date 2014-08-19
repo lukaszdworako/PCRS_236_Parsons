@@ -30,9 +30,9 @@ class BaseProblemForm(CrispyFormMixin):
                                 css_class='btn-group'),
                             Div(clone, self.save_button,
                                 css_class='btn-group pull-right'))
-        elif self.instance:
+        elif self.is_bound:
             # cloning
-            self.buttons = self.save_and_add,
+            self.buttons = self.save_button
         else:
             # creating a new one
             self.buttons = self.save_and_add,

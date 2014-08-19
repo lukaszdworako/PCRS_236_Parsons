@@ -13,7 +13,8 @@ from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
     ContentPage, ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
-from pcrs.models import get_problem_content_types, get_problem_labels
+from pcrs.models import get_problem_content_types, get_problem_labels, \
+    get_submission_content_types
 from pcrs.settings import INSTALLED_PROBLEM_APPS
 from users.models import Section
 from users.views import UserViewMixin
@@ -175,10 +176,10 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
             'quests':  [],
             'challenges': defaultdict(list),
             'pages':  defaultdict(list),
-            'problem_lists': defaultdict(list),
-            'problems': defaultdict(dict),
-            'problems_attempted': defaultdict(dict),
-            'problems_completed': defaultdict(dict),
+            'item_lists': defaultdict(list),
+            'items': {},
+            'watched': WatchedVideo.get_watched_uri_ids(user),
+            'scores': {}
         }
         # 1
         quests = SectionQuest.objects \
@@ -199,31 +200,28 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
 
         # 1
         for p in ContentPage.objects.all():
-            data['pages'][p.challenge_id].append({'pk': p.pk, 'order': p.order})
+            data['pages'][p.challenge_id].append(p.serialize())
 
         # 2
         for item in ContentSequenceItem.objects.prefetch_related('content_object').all():
-            ptype = item.content_type.model_class().get_problem_type_name()
-            pk = item.object_id
-            problem_id = '{ptype}-{pk}'.format(pk=pk, ptype=ptype)
-            data['problem_lists'][item.content_page_id].append(problem_id)
-            data['problems'][ptype][pk] = item.content_object.serialize()
+            if item.content_type.name == 'problem':
+                id = '{ptype}-{pk}'.format(
+                    pk=item.object_id,
+                    ptype=item.content_type.model_class().get_module_name()
+                )
+            elif item.content_type.name == 'video':
+                id = 'video-{}'.format(item.object_id)
+
+            data['item_lists'][item.content_page_id].append(id)
+            data['items'][id] = item.content_object.serialize()
 
         info = Challenge.get_challenge_problem_data(user, section)
         data['challenge_to_completed'] = info['challenge_to_completed']
         data['challenge_to_total'] = info['challenge_to_total']
 
-        for problem_type in get_problem_labels():
-            _, ptype = problem_type.split('problems_')
-
-            attempted = info['best'].get(problem_type, {})
-            data['problems_attempted'][ptype] = {}
-            for problem, score in attempted.items():
-                data['problems_attempted'][ptype][problem] = True
-
-            completed = info['problems_completed'].get(problem_type, {})
-            data['problems_completed'][ptype] = {}
-            for problem, status in completed.items():
-                data['problems_completed'][ptype][problem] = status
+        for content_type in get_submission_content_types():
+            best, _ = content_type.model_class()\
+                .get_best_attempts_before_deadlines(user, section)
+            data['scores'][content_type.app_label.replace('problems_', '')] = best
 
         return HttpResponse(json.dumps(data))

@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
-from django.utils.timezone import utc, now
+from django.utils.timezone import utc, now, localtime
 from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
@@ -27,6 +27,10 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
+    @property
+    def url(self):
+        return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+
     class Meta:
         ordering = ['name']
 
@@ -35,6 +39,20 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         if section:
             watched = watched.filter(user__section=section)
         return watched.count()
+
+    def get_uri_id(self):
+        return 'video-{}'.format(self.pk)
+
+    def serialize(self):
+        serialized = {}
+        serialized['id'] = 'video-{}'.format(self.pk),
+        serialized['content_type'] = 'video',
+        serialized['name'] = self.name,
+        serialized['url'] = self.url,
+        serialized['thumbnail'] = self.thumbnail,
+        serialized['download'] = self.download,
+        serialized['record_watched'] = '{}/watched'.format(self.get_absolute_url())
+        return serialized
 
 
 class WatchedVideo(models.Model):
@@ -51,6 +69,13 @@ class WatchedVideo(models.Model):
     def get_watched_pk_list(cls, user):
         return set(cls.objects.filter(user=user)
                               .values_list('video_id', flat=True))
+
+    @classmethod
+    def get_watched_uri_ids(cls, user):
+        return {
+            watched.video.get_uri_id(): True
+            for watched in cls.objects.select_related('video').filter(user=user)
+        }
 
 
 class TextBlock(models.Model):
@@ -111,9 +136,24 @@ class ContentPage(models.Model):
         return '{name}: page {order}'.format(name=self.challenge.name,
                                              order=self.order)
 
+    def serialize(self):
+        return {
+            'pk': self.pk,
+            'order': self.order,
+            'url': self.get_absolute_url()
+        }
+
     def get_absolute_url(self):
         return '{challenge}/{num}'.format(
             challenge=self.challenge.get_absolute_url(), num=self.order)
+
+    def get_next_url(self):
+        page = self.next()
+        return page.get_absolute_url() if page else None
+
+    def get_previous_url(self):
+        page = self.previous()
+        return page.get_absolute_url() if page else None
 
     def next(self):
         try:
@@ -123,12 +163,31 @@ class ContentPage(models.Model):
             return None
 
     def previous(self):
-        if self.order == 0:
+        if self.order == 1:
             return None
         else:
             return ContentPage.objects.get(challenge=self.challenge,
                                            order=self.order-1)
 
+    @classmethod
+    def get_visible_for_section(cls, section):
+        """
+        Return a queryset of ContentPages that are visible to the section.
+
+        A Content Page is visible if the following conditions are met:
+        1. the challenge this page is in is open
+        2. the challenge's quest is live
+        3. the quest is visible to the section
+        4. the quest has been released to the section
+        """
+        return cls.objects.select_related('challenge').filter(
+            challenge__visibility='open',
+            challenge__quest__sectionquest__section=section,
+            challenge__quest__mode='live',
+            challenge__quest__sectionquest__visibility='open',
+            challenge__quest__sectionquest__open_on__lt=localtime(now()),
+
+        )
 
 class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 AbstractLimitedVisibilityObject):

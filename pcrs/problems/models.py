@@ -44,6 +44,22 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     class Meta:
         abstract = True
 
+    def get_uri_id(self):
+        return '{0}-{1}'.format(self.get_problem_type_name(), self.pk,)
+
+    def serialize(self):
+        serialized = AbstractSelfAwareModel.serialize(self)
+        serialized.update((AbstractLimitedVisibilityObject).serialize(self))
+        serialized.update(
+            {
+                'problem_type': self.get_module_name(),
+                'submit_url': '{}/run'.format(self.get_absolute_url()),
+                'max_score': self.max_score,
+                'challenge': self.challenge_id
+            }
+        )
+        return serialized
+
     def __str__(self):
         description = self.description[:150]
         if len(self.description) > 150:
@@ -80,6 +96,12 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     def get_absolute_url(self):
         return '{base}/{pk}'.format(base=self.get_base_url(), pk=self.pk)
+
+    def get_submit_url(self):
+        return '{}/run'.format(self.get_absolute_url())
+
+    def get_history_url(self):
+        return '{}/history'.format(self.get_absolute_url())
 
     def get_monitoring_url(self):
         return '{}/monitor'.format(self.get_absolute_url())
@@ -154,13 +176,8 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         return self.get_submission_class()\
             .get_best_score_before_deadline(self, user)
 
-    def serialize(self):
-            return {'pk': self.pk, 'name': self.name,
-                    'is_visible': self.is_visible_to_students(),
-                    'challenge': self.challenge_id}
 
-
-class AbstractProgrammingProblem(AbstractProblem):
+class AbstractProgrammingProblem(AbstractProblem, AbstractNamedObject):
     """
     Base class for programming problems.
 
@@ -196,14 +213,6 @@ class AbstractProgrammingProblem(AbstractProblem):
                 res[1] = count
             results[opt_id] = res
         return results
-
-
-class AbstractNamedProblem(AbstractNamedObject, AbstractProgrammingProblem):
-    """
-    A problem extended to have a required name and description.
-    """
-    class Meta:
-        abstract = True
 
 
 class AbstractSubmission(AbstractSelfAwareModel):

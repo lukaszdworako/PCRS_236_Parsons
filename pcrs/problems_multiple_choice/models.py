@@ -51,9 +51,21 @@ class Problem(AbstractProblem):
         return results
 
     def serialize(self):
-        serialized = super().serialize()
-        serialized['name'] = serialized['name'] or 'Multiple Choice'
-        return serialized
+        return {
+            'id': self.get_uri_id(),
+            'pk': self.pk,
+            'name': self.name or 'Multiple Choice',
+            'description': self.description,
+            'is_visible': self.is_visible_to_students(),
+            'problem_type': 'multiple_choice',
+            'content_type': 'problem',
+            'challenge': self.challenge_id,
+            'answer_options': [option.serialize() for option in self.option_set.all()],
+            'submit_url': self.get_submit_url(),
+            'history_url': self.get_history_url(),
+            'max_score': self.max_score
+
+        }
 
 
 class Submission(AbstractSubmission):
@@ -85,6 +97,9 @@ class Option(AbstractSelfAwareModel):
 
     def __str__(self):
         return self.answer_text
+
+    def serialize(self):
+        return {'pk': self.pk, 'text': self.answer_text}
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)

@@ -43,6 +43,6 @@ class VideoRecordWatchView(ProtectedViewMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         video = self.get_object()
-        WatchedVideo.objects.create(video=video, user=self.request.user)
+        # WatchedVideo.objects.create(video=video, user=self.request.user)
         return HttpResponse(json.dumps({'status': 'ok'}),
                             mimetype='application/json')

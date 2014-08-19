@@ -49,6 +49,12 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<challenge>[0-9]+)/(?P<page>[0-9]+)$',
         ContentPageView.as_view(),
         name='challenge_page'),
+
+    url(r'^challenges/(?P<challenge>[0-9]+)/(?P<page>[0-9]+)/get_page_data$',
+        ContentPageData.as_view(),
+        name='challenge_page_data'),
+
+
     url(r'^challenges/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=Challenge),
         name='challenge_delete'),
