@@ -31,7 +31,7 @@ class SectionForm(CrispyFormMixin, forms.ModelForm):
         )
         manage_quests_href = settings.SITE_PREFIX + '/content/quests/section/{{object.pk}}'
         if self.instance.pk:
-            manage_quests = HTML('<a class="btn btn-success" role="button" '
+            manage_quests = HTML('<a class="green-button" role="button" '
                                'href="{}">Manage quests</a>'.format(
                 manage_quests_href))
             self.helper.layout.append(

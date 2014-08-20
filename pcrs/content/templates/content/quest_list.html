@@ -1,8 +1,14 @@
 {% extends "pcrs/item_list.html" %}
 
+    {% load static %}
+
+    {% block less %}
+        <link rel="stylesheet/less" type="text/css" href="{% static "less/quest_list.less" %}" />
+        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>
+    {% endblock %}
+
 {% block scripts %}
     {{ block.super }}
-    {% load static %}
     {% load compress %}
     {% compress js %}
         <script src="{% static "jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js" %}"
@@ -11,29 +17,37 @@
                 type="text/javascript"></script>
         <script src="{% static "content/js/quest_list.js" %}"
                 type="text/javascript"></script>
+        <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
+                type="text/javascript"></script>
+        <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/transition.js" %}"
+                type="text/javascript"></script>
     {% endcompress %}
 {% endblock %}
 
 {% block stylesheets %}
-    {{ block.super }}
-    {% load compress %}
-    {% compress css %}
-    <link rel="stylesheet" href="{% static "content/css/style.css" %}"
-          type="text/css">
-    {% endcompress %}
+{#    {{ block.super }}#}
+{#    {% load compress %}#}
+{#    {% compress css %}#}
+{#    <link rel="stylesheet" href="{% static "content/css/style.css" %}"#}
+{#          type="text/css">#}
+{#    {% endcompress %}#}
 {% endblock %}
 
 
 {% block content %}
 
-    <div class="row-fluid row-height">
-
-        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 available_challenges">
+{#    <div class="row-fluid row-height">#}
+        <span class="top-save">
+            <button id="save_top" class="green-button disabled pull-right">
+                Save
+            </button>
+        </span>
+        <div class="available_challenges">
             <h3 class="challenge_title">Challenges</h3>
 
-            <div id="challenges" class="well tab-content">
+            <div id="challenges" class="tab-content">
                 {% for challenge in challenges %}
-                    <div id="{{ challenge.pk }}" class="well challenge">
+                    <div id="{{ challenge.pk }}" class="challenge">
                         {{ challenge.name }}
                         <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                     </div>
@@ -41,35 +55,33 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 set_challenges">
+        <div class="set_challenges">
             <h3>Quest list</h3>
 
             <div id="all-quests">
                 {% for object in object_list %}
                     <div class="quest" id="{{ object.pk }}">
-                        <div class="btn-toolbar pull-left quest-controls">
-                            <div class="btn-group btn-group-xs btn-group-vertical">
-                                <button class="btn btn-default up-button"><i
-                                        class="glyphicon glyphicon-arrow-up"></i>
+                        <div class="quest-controls">
+                            <div class="vertical-button-position">
+                                <button class="up-button"><i
+                                        class="up-icon"></i>
                                     <span class="at"> Move quest Up</span>
                                 </button>
-                                <button class="btn btn-default down-button"><i
-                                        class="glyphicon glyphicon-arrow-down"></i>
+                                <button class="down-button"><i
+                                        class="down-icon"></i>
                                     <span class="at"> Move quest Down</span>
                                 </button>
                             </div>
                         </div>
-                        <div class="btn-toolbar pull-right">
-                            <div class="btn-group pull-right">
+                            <div class="pull-right">
                                 {% include 'pcrs/buttons/edit.html' %}
                             </div>
-                        </div>
                         {% if not object.is_live %}
-                            <div class="label label-danger pull-right">Under
+                            <div class="red-label pull-right">Under
                                 construction
                             </div>
                         {% else %}
-                                <div class="label label-success pull-right">LIVE</div>
+                                <div class="green-label pull-right">LIVE</div>
                         {% endif %}
                         <div class="quest-detail">
                             <h3 class="name">
@@ -78,11 +90,11 @@
                             <h5 class="description">{{ object.description }}</h5>
 
                         </div>
-                        <div class="well quest-box">
+                        <div class="quest-box">
                             {% for challenge in object.challenge_set.all %}
                                 <div id="{{ challenge.pk }}"
-                                     class="well challenge">
-                                    <i class="close glyphicon glyphicon-remove pull-right"
+                                     class="challenge">
+                                    <i class="close"
                                        title="Remove {{ challenge.name }} from {{ object.name }}">
                                     </i>
                                     {{ challenge.name }}
@@ -95,8 +107,10 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
-
+{#    </div>#}
+    <button id="save_bot" class="green-button disabled pull-right">
+        Save
+    </button>
     <div class="modal fade" id="page-entry-modal" tabindex="-1" role="dialog"
          aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -111,20 +125,15 @@
                     </select>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default"
+                    <button type="button" class="reg-button"
                             data-dismiss="modal">Close
                     </button>
                     <button type="button" data-dismiss="modal"
-                            class="btn btn-success" id="save-page-num" onclick="move_challenge()">Ok
+                            class="green-button" id="save-page-num" onclick="move_challenge()">Ok
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <button id="save" class="btn btn-success btn-large disabled pull-right">
-        Save
-        <i class=" icon-chevron-right icon-white"></i>
-    </button>
 {% endblock %}
 

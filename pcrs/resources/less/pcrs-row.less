@@ -1,0 +1,51 @@
+.pcrs-row{
+  .row;
+}
+
+.row-4-4-4-4{
+  .make-lg-column(4);
+  .make-md-column(4);
+  .make-sm-column(4);
+  .make-xs-column(4);
+  @media (min-width: @screen-lg-min) {
+    input{
+      width: 60%;
+    }
+  }
+  @media (max-width: @screen-md-max) {
+    input{
+      width: 70%;
+    }
+  }
+  @media (max-width: @screen-sm-max) {
+    input{
+      width: 80%;
+    }
+  }
+  @media (max-width: @screen-xs-max) {
+    input{
+      width: 90%;
+    }
+  }
+}
+
+.row-6-6-6-6 {
+  .make-lg-column(6);
+  .make-md-column(6);
+  .make-sm-column(6);
+  .make-xs-column(6);
+}
+
+.problem-tabs{
+  .nav;
+  .nav-tabs;
+}
+
+.problem-tab-content{
+  .tab-content;
+  .well;
+  overflow-y: scroll;
+  .xs-x-button-right{
+    display:None;
+  }
+}

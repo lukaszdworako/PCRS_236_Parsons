@@ -14,7 +14,7 @@
 
 {% block content %}
     {% if problem.submission_set.all and not object.pk %}
-        <div class="alert alert-danger">
+        <div class="red-alert">
             Submissions must be cleared before adding a testcase.
         </div>
     {% else %}

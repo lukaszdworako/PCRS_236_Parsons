@@ -39,13 +39,13 @@ class ChallengeForm(CrispyFormMixin, forms.ModelForm):
         if self.instance.pk:
             self.fields['prerequisites'].queryset = \
                 Challenge.objects.exclude(pk=self.instance.pk).order_by('name')
-            add_objects = HTML('<a class="btn btn-success" role="button" '
+            add_objects = HTML('<a class="green-button" role="button" '
                                'href="{{ object.get_absolute_url }}/objects">'
                                'Manage content</a>')
             self.helper.layout.append(
                 Div(ButtonHolder(self.delete_button,
                     Div(add_objects, self.save_button,
-                        css_class='btn-group pull-right'))
+                        css_class='button-group-right'))
                 )
             )
         else:

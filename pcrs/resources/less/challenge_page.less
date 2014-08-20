@@ -1,0 +1,102 @@
+@import "base";
+@import "problem_icons";
+
+@import "submission";
+
+@import "../bootstrap_less/bootstrap-3.2.0/less/tables";
+@import "../bootstrap_less/bootstrap-3.2.0/less/wells";
+@import "../bootstrap_less/bootstrap-3.2.0/less/modals";
+
+.alert{
+  margin-bottom:2px;
+}
+
+.pcrs-sidebar{
+  .well;
+  background-color: @sidebar-background-color;
+  .custom-border;
+  .hidden-print;
+  .affix;
+  @media (min-width: @screen-lg-min) {
+    left: 93.5%;
+    width: 5%;
+    top: 10%;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    left: 93%;
+    width: 6%;
+    top: 10%;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    left: 88.5%;
+    width: 9%;
+    top: 10.5%;
+  }
+  @media (min-width: 575px) and (max-width: @screen-xs-max){
+    left: 88%;
+    width: 11%;
+    top: 11%;
+  }
+  @media (max-width: 575px){
+    display:none;
+  }
+  .row{
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+}
+
+.pcrs-sidenav{
+  .nav;
+}
+
+.icon-next-active{
+  .chevron-right-icon;
+  color: @active-icon-color;
+}
+
+.icon-next-inactive{
+  .chevron-right-icon;
+  color: @inactive-icon-color;
+}
+
+.icon-prev-active{
+  .chevron-left-icon;
+  color: @active-icon-color;
+}
+
+.icon-prev-inactive{
+  .chevron-left-icon;
+  color: @inactive-icon-color;
+}
+
+.active_sb{
+  border-color: @sidebar-indicator-color !important;
+}
+
+.side-bar-el{
+  a{
+    border-right:solid;
+    padding-right: 5px;
+    border-color: @sidebar-background-color;
+  }
+}
+
+.video-js{
+  @media (min-width: @screen-lg-min) {
+    width: 450px !important;
+    height: 250px !important;
+  }
+  @media (max-width: @screen-md-max) {
+    width: 400px !important;
+    height: 200px !important;
+  }
+  @media (max-width: @screen-sm-max) {
+    width: 350px !important;
+    height: 175px !important;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 300px !important;
+    height: 150px !important;
+  }
+}

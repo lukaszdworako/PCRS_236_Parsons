@@ -11,7 +11,7 @@ class SchemaForm(CrispyFormMixin, forms.ModelForm):
     Form for entering the details of a Schema.
     """
     save_and_add_ds = Submit('submit', 'Save and add datasets',
-                             css_class='btn-success pull-right',
+                             css_class='green-button-right',
                              formaction='create_and_add_dataset')
 
     class Meta:

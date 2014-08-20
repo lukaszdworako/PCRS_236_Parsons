@@ -1,4 +1,5 @@
-var $save_button;
+var $save_button_top;
+var $save_button_bot;
 var selected_challenge;
 
 $(document).ready(function () {
@@ -8,8 +9,11 @@ $(document).ready(function () {
     affixWidth();
     $(window).resize(affixWidth);
 
-    $save_button = $('#save');
-    $save_button.click(saveQuests);
+    $save_button_top = $('#save_top');
+    $save_button_top.click(saveQuests);
+
+    $save_button_bot = $('#save_bot');
+    $save_button_bot.click(saveQuests);
 
     // enable moving quests up and down the list,
     // bind to existing buttons and those created later
@@ -27,18 +31,19 @@ $(document).ready(function () {
         connectWith: ".quest-box",
         receive: function (event, ui) {
             // list has changed - provide visual clue that some changes are not saved
-            $save_button.removeClass('disabled');
+            $save_button_top.removeClass('disabled');
+            $save_button_bot.removeClass('disabled');
             $(event.target).find(".challenge").each(function () {
                 if ($(this).find(".close").length == 0)
                     $(this).prepend(
                         $('<icon/>',
-                            { class: "close glyphicon glyphicon-remove pull-right",
+                            { class: "close",
                               title: "Remove this challenge form this quest"}));
             });
         },
         update: function (event, ui) {
-            $save_button.removeClass('disabled');
-//            resize_challenge();
+            $save_button_top.removeClass('disabled');
+            $save_button_bot.removeClass('disabled');
         }
     });
 
@@ -47,17 +52,24 @@ $(document).ready(function () {
         $challenge.find('.close').remove();
         $('#challenges').append($challenge);
         // list has changed - provide visual clue that some changes are not saved
-        $save_button.removeClass('disabled');
-//        resize_challenge();
+        $save_button_bot.removeClass('disabled');
+        $save_button_top.removeClass('disabled');
     });
 
-    var original_position = $('.tab-content').offset().top;
+    var original_position = $('.tab-content').offset().top - 30;
     $(window).scroll(function(e){
         $el = $('.tab-content');
+        var challenge_bottom = $('.set_challenges').position().top + $('.set_challenges').height();
+        var new_height = $(window).height();
+
+        if (challenge_bottom - $(window).scrollTop() < new_height){
+            new_height =  challenge_bottom - $(window).scrollTop();
+        }
+
         if ($(window).scrollTop() > original_position) {
             $el.css({
-                'margin-top':$(window).scrollTop()-original_position+40,
-                'height':$(window).height() - 60});
+                'margin-top':$(window).scrollTop()-original_position+10,
+                'height':new_height});
         }
         else{
             $el.css({
@@ -67,12 +79,16 @@ $(document).ready(function () {
 
     if ($(window).scrollTop() > original_position) {
             $('.tab-content').css({
-                'margin-top':$(window).scrollTop()-original_position+40,
+                'margin-top':$(window).scrollTop()-original_position+10,
                 'height':$(window).height() - 60});
     }
-    $('.tab-content').css({'height':$(window).height() - 60});
-//    resize_challenge();
 
+    new_height = $(window).height();
+    challenge_bottom = $('.set_challenges').position().top + $('.set_challenges').height();
+    if (challenge_bottom - $(window).scrollTop() < new_height){
+        new_height =  challenge_bottom - $(window).scrollTop();
+    }
+    $('.tab-content').css({'height':new_height});
 });
 
 function select_quest(challenge_pk){
@@ -93,29 +109,25 @@ function move_challenge(){
     var destination_location = $('#all-quests').find('.quest#'+quest_number).find('.quest-box');
     var moving_item = $(document).find('.challenge#'+selected_challenge);
     destination_location.append(moving_item.remove());
-    $save_button.removeClass('disabled');
-//    resize_challenge();
+    $save_button_top.removeClass('disabled');
+    $save_button_bot.removeClass('disabled');
 }
-
-//function resize_challenge(){
-//    $('#challenges').height($('.set_challenges').height()-$('.challenge_title').height()*5);
-//}
-
 
 function moveUp() {
     // move quest container up in the list of quests
     var $move_up = $(this).parents('.quest');
     $move_up.insertBefore($move_up.prev('.quest'));
-    $save_button.removeClass('disabled');
+    $save_button_top.removeClass('disabled');
+    $save_button_bot.removeClass('disabled');
 }
 
 function moveDown() {
     // move quest container down in the list of quests
     var $move_down = $(this).parents('.quest');
     $move_down.insertAfter($move_down.next('.quest'));
-    $save_button.removeClass('disabled');
+    $save_button_top.removeClass('disabled');
+    $save_button_bot.removeClass('disabled');
 }
-
 
 function encodeData() {
     // encode the information from quest lists:
@@ -140,10 +152,10 @@ function saveQuests() {
         csrftoken: csrftoken
     })
         .success(function () {
-            $save_button.addClass('disabled');
+            $save_button_top.addClass('disabled');
+            $save_button_bot.addClass('disabled');
         })
 }
-
 
 function affixWidth() {
     $('.affix-element').each(function () {
