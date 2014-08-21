@@ -1,0 +1,302 @@
+@import "pcrs-variables";
+@import "bootstrap_core";
+@import "pcrs-navbar";
+
+@import "../bootstrap_less/bootstrap-3.2.0/less/panels";
+@import "../bootstrap_less/bootstrap-3.2.0/less/badges";
+
+
+//can be separated further
+@import "../bootstrap_less/bootstrap-3.2.0/less/button-groups";
+@import "../bootstrap_less/bootstrap-3.2.0/less/buttons";
+@import "../bootstrap_less/bootstrap-3.2.0/less/badges";
+@import "../bootstrap_less/bootstrap-3.2.0/less/labels";
+@import "../bootstrap_less/bootstrap-3.2.0/less/alerts";
+@import "../bootstrap_less/bootstrap-3.2.0/less/wells";
+@import "../bootstrap_less/bootstrap-3.2.0/less/input-groups.less";
+
+
+
+@font-face {
+  font-family: 'Glyphicons Halflings';
+  src: url('../bootstrap_less/bootstrap-3.2.0/fonts/glyphicons-halflings-regular.eot');
+  src: url('../bootstrap_less/bootstrap-3.2.0/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
+       url('../bootstrap_less/bootstrap-3.2.0/fonts/glyphicons-halflings-regular.woff') format('woff'),
+       url('../bootstrap_less/bootstrap-3.2.0/fonts/glyphicons-halflings-regular.ttf') format('truetype'),
+       url('../bootstrap_less/bootstrap-3.2.0/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+}
+
+
+//base elements
+.custom-border{
+  box-shadow: 0px 0px 10px @custom-border-color;
+}
+
+.main-page{
+  .panel;
+  .make-md-column(10);
+  .make-md-column-offset(1);
+  .make-sm-column(10);
+  .make-sm-column-offset(1);
+  .make-xs-column(10);
+  .make-xs-column-offset(1);
+  .make-lg-column(10);
+  .make-lg-column-offset(1);
+  .custom-border;
+  @media (max-width: @screen-sm-max) {
+    padding:0.5in;
+    margin-left:20px;
+  }
+  @media (min-width: @screen-md-min) {
+    padding-left:1in;
+    padding-right:1in;
+    padding-bottom:1in;
+    padding-top:0.75in;
+  }
+  min-width:450px;
+}
+
+
+.main-page-wide{
+  .panel;
+  .make-md-column(11);
+  .make-md-column-offset(0.5);
+  .make-sm-column(11);
+  .make-sm-column-offset(0.5);
+  .make-xs-column(11);
+  .make-xs-column-offset(0.5);
+  .make-lg-column(11);
+  .make-lg-column-offset(0.5);
+  .custom-border;
+  padding-left:0.5in;
+  padding-right:0.5in;
+  padding-top:0.2in;
+  padding-bottom:0.5in;
+  min-width:450px;
+}
+
+.half-page{
+  .make-md-column(6);
+  .make-sm-column(6);
+  .make-xs-column(6);
+  .make-lg-column(6);
+}
+
+.body-bg{
+  background-color: @body-background-color;
+}
+
+.pcrs-fluid{
+  .container-fluid;
+  min-width:550px;
+  @media (max-width: 575px){
+    left: 20px;
+    width: 450px;
+  }
+}
+
+/*Access technology hidden text*/
+.at {
+   position: absolute;
+   clip: rect(1px,1px,1px,1px);
+   padding: 0;
+   border: 0;
+   height: 1px;
+   width: 1px;
+   overflow: hidden;
+   display: block;
+}
+
+
+//tags
+.blue-tag{
+  .badge;
+  background-color: @blue-tag-bg;
+}
+
+
+//buttons
+.button-block{
+  .btn-block;
+}
+
+.button-group{
+ .btn-group;
+  .small-button{
+    margin-left: -5px;
+  }
+}
+
+.button-group-right{
+  .button-group;
+  .pull-right;
+}
+
+.small-button{
+  .btn;
+  .btn-sm;
+  .btn-default;
+  .pretty-buttons(@reg-button-color, @reg-button-background-color);
+}
+
+.reg-button{
+  .btn;
+  .btn-default;
+  .pretty-buttons(@reg-button-color, @reg-button-background-color);
+}
+
+.x-button-right{
+  .btn;
+  .btn-sm;
+  .btn-default;
+  .pretty-buttons(@reg-button-color, @reg-button-background-color);
+  .glyphicon;
+  .glyphicon-remove;
+  .pull-right;
+//  margin-right: -10px;
+  margin-top: -30px;
+}
+
+.xs-x-button-right{
+  .btn;
+  .btn-xs;
+  .btn-default;
+  .pretty-buttons(@reg-button-color, @reg-button-background-color);
+  .glyphicon;
+  .glyphicon-remove;
+  .pull-right;
+  margin-right: -20px;
+  margin-top: -20px;
+}
+
+.green-button{
+  .btn;
+  .pretty-buttons(@green-button-color, @green-button-background-color);
+}
+
+.green-button-sm{
+  .btn;
+  .btn-success;
+  .btn-sm;
+  .pretty-buttons(@green-button-color, @green-button-background-color);
+}
+
+.green-button-lg{
+  .btn;
+  .btn-success;
+  .btn-lg;
+  .pretty-buttons(@green-button-color, @green-button-background-color);
+}
+
+.green-button-right{
+  .green-button;
+  .pull-right;
+}
+
+.red-button{
+  .btn;
+  .pretty-buttons(@red-button-color, @red-button-background-color);
+}
+
+.red-button-right{
+  .red-button;
+  .pull-right;
+}
+
+.up-button, .down-button{
+  .btn;
+  .btn-xs;
+  .btn-default;
+  .pretty-buttons(@reg-button-color,@reg-button-background-color);
+}
+
+
+//icons
+.plus-icon{
+  .glyphicon;
+  .glyphicon-plus;
+}
+
+.font-icon{
+  .glyphicon;
+  .glyphicon-font;
+}
+
+.pencil-icon{
+  .glyphicon;
+  .glyphicon-pencil;
+}
+
+.chevron-left-icon{
+  .glyphicon;
+  .glyphicon-chevron-left;
+}
+
+.chevron-right-icon{
+  .glyphicon;
+  .glyphicon-chevron-right;
+}
+
+.stats-icon{
+  .glyphicon;
+  .glyphicon-stats;
+}
+
+.ok-icon{
+  .glyphicon;
+  .glyphicon-ok;
+}
+
+.trash-icon-right{
+  .glyphicon;
+  .glyphicon-trash;
+  .pull-right;
+}
+
+.remove-icon{
+  .glyphicon;
+  .glyphicon-remove;
+}
+
+.green-checkmark-icon{
+  .ok-icon;
+  color: @green-checkmark-color;
+}
+
+.openfolder-icon{
+  .glyphicon;
+  .glyphicon-folder-open;
+}
+
+.edit-icon{
+  .glyphicon;
+  .glyphicon-edit;
+}
+
+.video-icon{
+  .glyphicon;
+  .glyphicon-facetime-video;
+}
+
+//labels
+.red-label{
+  .label;
+  .label-danger;
+}
+
+.green-label{
+  .label;
+  .label-success;
+}
+
+//alerts
+.red-alert{
+  .alert;
+  .alert-danger;
+}
+
+.green-alert{
+  .alert;
+  .alert-success;
+}
+

@@ -3378,14 +3378,14 @@ function renderData_ignoreID(obj, jDomElt) {
 function resizer(){
 
     if ($(".visualizer").width() > $("#myModal").width()){
-        $(".modal-content").width($(".visualizer").width() + 50);
+        $(".pcrs-modal-trace-content").width($(".visualizer").width() + 50);
     }
     else if ($(".visualizer").width() < $("#myModal").width()){
         if ($(window).width() > 1050){
-            $(".modal-content").width($(window).width() - ($(window).width()/100*11) );
+            $(".pcrs-modal-trace-content").width($(window).width() - ($(window).width()/100*11) );
         }
         else {
-            $(".modal-content").width(1050);
+            $(".pcrs-modal-trace-content").width(1050);
         }
     }
 }

@@ -1,27 +1,28 @@
-<nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
+<nav class="pcrs-navbar" role="navigation">
+    <div class="pcrs-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse"
+        <div class="pcrs-navbar-header">
+            <button type="button" class="pcrs-navbar-toggle"
+                    data-toggle="collapse"
                     data-target="#instructor-navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                <span class="at">Toggle navigation</span>
+                <span class="pcrs-dropdown-icon"></span>
             </button>
-            <a class="navbar-brand" href="#">PCRS</a>
+            <a class="pcrs-navbar-brand" href="#">PCRS</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="instructor-navbar">
-            <ul class="nav navbar-nav">
+            <ul class="pcrs-navbar-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Problems
                         <b class="caret"></b></a>
                     <ul class="dropdown-menu">
+                        {% if 'python' in languages %}
                         <li>
                             <a href="{{ site_prefix }}/problems/code/list">Code</a>
                         </li>
+                        {% endif %}
                         <li>
                             <a href="{{ site_prefix }}/problems/multiple_choice/list">Multiple
                                 Choice</a></li>
@@ -43,7 +44,7 @@
                     </ul>
                 </li>
             </ul>
-            <ul class="nav navbar-nav">
+            <ul class="pcrs-navbar-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Content
                         <b class="caret"></b></a>
@@ -67,12 +68,10 @@
                 </li>
             </ul>
 
-            <ul class="nav navbar-nav navbar-right">
-                {% include "pcrs/shared_navigation.html" %}
-                <li>
-                    <p class="navbar-text navbar-right"
-                       title="View as user">
-                        <a class="navbar-link"
+            <ul class="pcrs-navbar-nav-right">
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a class="pcrs-navbar-link"
                            href="{{ site_prefix }}/users/view_as">
                             Viewing as
                             {% if request.session.viewing_as %}
@@ -81,20 +80,22 @@
                                 {{ request.user }}
                             {% endif %}
                         </a>
-                    </p>
-                </li>
-                <li><p class="navbar-text navbar-right" title="Change Session">
-                    <a href="{{ site_prefix }}/sections/change"
-                       class="navbar-link">
-                        section:
-                        {% if request.session.viewing_as %}
-                            {{ request.session.viewing_as.section }}
-                        {% else %}
-                            {{ request.session.section }}
-                        {% endif %}
-                    </a>
-                </p>
-                </li>
+                    </li>
+                </ul>
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="{{ site_prefix }}/sections/change"
+                           class="pcrs-navbar-link">
+                            section:
+                            {% if request.session.viewing_as %}
+                                {{ request.session.viewing_as.section }}
+                            {% else %}
+                                {{ request.session.section }}
+                            {% endif %}
+                        </a>
+                    </li>
+                </ul>
+                {% include "pcrs/shared_navigation.html" %}
             </ul>
         </div>
     </div>

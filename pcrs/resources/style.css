@@ -151,8 +151,6 @@ a:not(.collapsed) > .quest-icon{
     color:black;
 }
 
-.problem
-
 .btn-object-visibility{
     width:20px;
     height:20px;
@@ -233,13 +231,13 @@ a:not(.collapsed) > .quest-icon{
 }
 
 .bs-docs-sidebar{
-    margin-left:85%;
+    margin-left:79%;
     position:fixed;
     margin-top:-75px;
 }
 
 .side-bar-arrow{
-    margin-left:-10px;
+    margin-left:5px;
 }
 
 .modal-content{
@@ -250,4 +248,32 @@ a:not(.collapsed) > .quest-icon{
 
 .widget_controls{
     margin-right:15px !important;
+}
+
+.True{
+    background-color: #C4FFBF !important;
+}
+
+.False{
+    background-color: #FFBFBF !important;
+}
+
+.table-striped{
+    width:100% !important;
+}
+
+.navbar .nav > li > a {
+    color:  white;
+}
+
+.navbar .nav > li > p > a {
+    color:  white;
+}
+
+.navbar-brand {
+    color: white;
+}
+
+.navbar-toggle{
+    color: white !important;
 }

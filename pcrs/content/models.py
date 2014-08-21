@@ -229,7 +229,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         super().save(force_insert, force_update, using, update_fields)
-        output_graph(self.get_challenge_graph_data())
+        # output_graph(self.get_challenge_graph_data())
 
     @classmethod
     def get_challenge_problem_data(cls, user, section):

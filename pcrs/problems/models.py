@@ -344,6 +344,7 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .filter(cls.deadline_constraint(), user=user,
                     problem__challenge__quest__sectionquest__section=user.section)\
             .values('user', 'problem').annotate(best=Max('score')).order_by()
+
     @classmethod
     def get_best_score_before_deadline(cls, problem, user):
         scores = cls.objects.filter(cls.deadline_constraint())\

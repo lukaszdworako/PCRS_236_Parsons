@@ -7,7 +7,6 @@ $(document).ready(function () {
     }
 });
 
-
 function find_item(){
 
     var searching_for = $('#searcher').val().toLowerCase().trim();

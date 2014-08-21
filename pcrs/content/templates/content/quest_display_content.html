@@ -6,27 +6,26 @@
         {% with item_type=item|classname|lower problem_type=item|module_name %}
             {% if item_type == "video" %}
                 {% if item.pk in watched %}
-                    <span class="complete">
+                    <span class="video-watched">
                 {% else %}
-                    <span class="incomplete">
+                    <span class="video-not-watched">
                 {% endif %}
-                <i class="glyphicon glyphicon-film"></i>
+                </span>
                 <a href="{{ page.get_absolute_url }}#video-{{ item.pk }}">
                     {{ item.name }}
                 </a>
-                </span>
             {% elif item_type == "problem" %}
                 {% if item.is_visible_to_students %}
                     {% with mark=best|get_item:problem_type|get_item:item.pk %}
                         {% if mark == None %}
-                            <span class="problem-idle">
+                            <span class="problem-not-attempted">
                         {% elif mark == item.max_score %}
                             <span class="problem-complete">
                         {% else %}
                             <span class="problem-attempted">
                         {% endif %}
+                        </span>
                     {% endwith %}
-                    <i class="glyphicon glyphicon-edit problem"></i>
                     <a href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}">
                         {% if item.name %}
                             {{ item.name }}
@@ -34,7 +33,6 @@
                             Multiple Choice
                         {% endif %}
                     </a>
-                    </span>
                 {% endif %}
             {% endif %}
         {% endwith %}

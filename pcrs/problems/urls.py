@@ -1,10 +1,14 @@
 from django.conf.urls import patterns, include, url
+from pcrs.settings import INSTALLED_PROBLEM_APPS
 
+pattern_options = {'problems_code': (r'^code/', 'problems_code.urls'),
+    'problems_multiple_choice': (r'^multiple_choice/', 'problems_multiple_choice.urls'),
+    'problems_rdb': (r'^rdb/', 'problems_rdb.urls'),
+    'problems_sql': (r'^sql/', 'problems_sql.urls'),
+    'problems_ra': (r'^ra/', 'problems_ra.urls'),
+}
 
-urlpatterns = patterns('',
-    url(r'^code/', include('problems_code.urls')),
-    url(r'^multiple_choice/', include('problems_multiple_choice.urls')),
-    url(r'^rdb/', include('problems_rdb.urls')),
-    url(r'^sql/', include('problems_sql.urls')),
-    url(r'^ra/', include('problems_ra.urls')),
-)
+pattern_list = [''] + [url(pattern_options[mod][0], include(pattern_options[mod][1])) for mod in INSTALLED_PROBLEM_APPS]
+
+urlpatterns = patterns(*pattern_list)
+

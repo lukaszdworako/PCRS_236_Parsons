@@ -128,7 +128,7 @@ class ContentPageData(ContentPageView, View):
 
 class ChallengeStatsView(CourseStaffViewMixin, DetailView):
     """
-    View the graph displaying the numbers of students who did not attemt,
+    View the graph displaying the numbers of students who did not attempt,
     attempted, or completed the Challenge.
     """
     model = Challenge
@@ -206,14 +206,27 @@ class ChallengeGraphView(ProtectedViewMixin, TemplateView):
     template_name = 'content/challenge_graph.html'
 
 
-class ChallengeGraphGenView(CourseStaffViewMixin, UserViewMixin, View):
+class ChallengeGraphGenViewHorizontal(CourseStaffViewMixin, UserViewMixin, View):
     """
-    Return the svg needed to display the dependency graph.
+    Return the svg needed to display the horizontal dependency graph.
     """
     model = Challenge
 
     def get(self, request, *args, **kwargs):
         svg = os.path.join(os.getcwd(),
-                           'resources/challenge_graph/ui/graph_gen.svg')
+                           'resources/challenge_graph/ui/graph_gen_horizontal.svg')
+        return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
+                            mimetype='text')
+
+
+class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
+    """
+    Return the svg needed to display the vertical dependency graph.
+    """
+    model = Challenge
+
+    def get(self, request, *args, **kwargs):
+        svg = os.path.join(os.getcwd(),
+                           'resources/challenge_graph/ui/graph_gen_vertical.svg')
         return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
                             mimetype='text')

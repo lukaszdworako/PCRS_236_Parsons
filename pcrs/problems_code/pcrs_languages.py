@@ -162,7 +162,7 @@ class PythonSpecifics(BaseLanguage):
             'exception' (only if exception occurs) -> exception message.
         '''
         
-        try: 
+        try:
             ret = {}          
             user_script = str(user_script)
             test_input = str(test_input)
@@ -187,8 +187,10 @@ class PythonSpecifics(BaseLanguage):
                         "\texpected_val = exp_output",
                         "passed_test = result == expected_val",
                         "test_val = pg_encoder.encode(result, True)",
+                        "exp_test_val = pg_encoder.encode(expected_val, True)",
                         "print(test_val)",
                         "print(passed_test)",
+                        "print(exp_test_val)",
                         "exit()"]
 
             p = self.run_subprocess(script)
@@ -202,12 +204,14 @@ class PythonSpecifics(BaseLanguage):
                 
             else: 
                 # ignore user print statements
-                output = p.stdout.readlines()[-2: ]
+                output = p.stdout.readlines()[-3: ]
                 test_val = output[0].decode().strip()
                 passed_test = output[1].decode().strip()
+                exp_test_val = output[2].decode().strip()
 
                 ret['test_val'] = eval(test_val)
                 ret['passed_test'] = eval(passed_test)
+                ret['exp_test_val'] = eval(exp_test_val)
 
             p.stdout.close()
             p.stderr.close()

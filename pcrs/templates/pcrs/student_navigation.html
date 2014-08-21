@@ -1,17 +1,15 @@
-<nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
+<nav class="pcrs-navbar" role="navigation">
+    <div class="pcrs-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#student-navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+        <div class="pcrs-navbar-header">
+            <button type="button" class="pcrs-navbar-toggle" data-toggle="collapse" data-target="#student-navbar">
+                <span class="at">Toggle navigation</span>
+                <span class="pcrs-dropdown-icon"></span>
             </button>
-            <a class="navbar-brand" href="#">PCRS</a>
+            <a class="pcrs-navbar-brand" href="#">PCRS</a>
         </div>
         {% if user %}
-            <ul class="nav navbar-nav">
+            <ul class="pcrs-navbar-nav">
                 <li>
                     <a href="{{ site_prefix }}/content/quests" title="Quests">
                         Quests
@@ -19,10 +17,8 @@
                 </li>
             </ul>
         {% endif %}
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="student-navbar">
+        <ul class="pcrs-navbar-nav-right">
             {% include "pcrs/shared_navigation.html" %}
-        </div>
+        </ul>
     </div>
 </nav>

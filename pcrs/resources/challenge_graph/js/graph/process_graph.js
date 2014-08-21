@@ -5,76 +5,13 @@
 /*global setScrollableContent */
 /*global setMainGraphID */
 /*global addNodeDecorations */
-/*global roundTo */
 /*global appendCounterRect */
 /*global window */
 /*global getNonActiveParentNames */
 /*global vitalizeGraph */
-var missingCounter = 0;
-var missingTextCounter = 0;
-var scrollLeft = 0;
-var scrollTop = 0;
-
-
-$(document).ready(function () {
-    "use strict";
-    appendGraph(); // Appends the graph to both the #scroll-content div and the map div.
-    processGraph(); // Cleans up the svg. TODO: Put into Beautiful Soup as a pre-processor.
-    setScrollableContent(); // Sets the custom scroll bars for the main graph.
-    setMainGraphID(); // Sets the main graph id.
-    vitalizeGraph(); // Builds the graph based on prerequisite structure.
-    addNodeDecorations(); // Adds each node's inner rects.
-    setZoomInButtonFunctions(); // Sets the click functino of the zoom in and zoom out buttons.
-});
-
-
-/**
- * Sets the custom scroll bar of the graph.
- */
-function setScrollableContent() {
-    "use strict";
-    $("#scroll-content").mCustomScrollbar({
-        axis: "xy",
-        theme: "dark",
-        mouseWheel: { enable: true,
-                     axis: "x",
-                     scrollAmount: 500
-                   },
-        advanced: { updateOnContentResize: true },
-        keyboard: { scrollAmount: 50 },
-        callbacks: {
-
-            // This allows for the graph-view to move while the main graph div is being scrolled.
-            whileScrolling: function () {
-                var graphViewObject = $("#graph-view");
-                graphViewObject.css("left",
-                    2 + roundTo(($("#nav-graph").width() * this.mcs.leftPct) / 100 -
-                        (graphViewObject.width() * this.mcs.leftPct) / 100));
-
-                graphViewObject.css("top",
-                    roundTo(($("#map").height() * this.mcs.topPct) / 100 -
-                        (graphViewObject.height() * this.mcs.topPct) / 100));
-            }
-        }
-    });
-}
-
-
-/**
- * Subtracts 1 from val if val is odd. The purpose of this function within this context is to improve the
- * smoothness of the graph map.
- * @param {int} val The minuend.
- * @returns {*}
- */
-function roundTo(val) {
-    "use strict";
-    // TODO: Take out parseFloat.
-    // TODO: Change name, it's not really rounding!
-    if ((parseFloat(val) % 2) !== 0) {
-        val = val - (val % 2);
-    }
-    return val;
-}
+var orientation;
+var horizontalGraph = null;
+var verticalGraph = null;
 
 
 /**
@@ -90,45 +27,53 @@ function processGraph() {
 
 
 /**
- * Finds the GraphViz svg output and appends it to the #scroll-content div.
+ *
+ * @param suffix The suffix of the generated graph file. Either 'horizontal' or 'vertical'.
+ * @returns {*}
  */
-function appendGraph() {
+function getGraph(suffix) {
     "use strict";
     var graph = null;
+
+    if (suffix === 'vertical' && verticalGraph !== null) {
+        console.log('cache');
+        return verticalGraph;
+    } else if (suffix === 'horizontal' && horizontalGraph !== null) {
+        console.log('cache');
+
+        return horizontalGraph;
+    }
+
+    orientation = suffix;
     $.ajax({
-        url: root + "/content/challenges/prereq_graph/generate",
+        url: root + "/content/challenges/prereq_graph/generate_" + suffix,
         dataType: "text",
         async: false,
         success: function (data) {
             graph = data;
         }
     });
-    if (graph !== null) {
-        $(graph).insertBefore($("#scroll-background-bottom"));
-        $("#map").append(graph);
+
+    if (suffix === 'vertical') {
+        verticalGraph = graph;
+    } else if (suffix === 'horizontal') {
+        horizontalGraph = graph;
     }
+
+    return graph;
 }
 
 
-///**
-// * Creates an svg rect.
-// * @param
-// * @param
-// * @param
-// * @param
-// */
-//function createRect(posX, posY, width, height) {
-//    return $(document.createElementNS("http://www.w3.org/2000/svg", "rect")).attr({
-//        x: posX,
-//        y: posY,
-//        rx: 20,
-//        ry: 20,
-//        fill:"black",
-//        stroke: "blue",
-//        width: width,
-//        height: height
-//    });
-//}
+/**
+ * Finds the GraphViz svg output and appends it to the #scroll-content div.
+ */
+function appendGraph(suffix) {
+    "use strict";
+    orientation = suffix;
+    var graph = getGraph(suffix);
+    $(graph).insertBefore($("#scroll-background-bottom"));
+    $("#map").append(graph);
+}
 
 
 /**
@@ -136,8 +81,8 @@ function appendGraph() {
  */
 function addNodeDecorations() {
     "use strict";
-    $("#graph").find(".node").each(function () {
-        appendCounterRect($(this));
+    $("#graph").find(".node").each(function (i) {
+        appendCounterRect($(this), i);
     });
 }
 
@@ -195,10 +140,11 @@ function getNonActiveParentNames(node) {
 
 
 /**
- * Creates small video icon on the Node rectangle.
+ * Creates small icon on the Node rectangle.
  * @param parentRect The parent of the newly created svg rect/text/
+ * @param missingCounter TODO: Define.
  */
-function appendCounterRect(parentRect) {
+function appendCounterRect(parentRect, missingCounter) {
     "use strict";
     var counterRect = createOptionRect("counter-rect-",
                                        missingCounter,
@@ -211,17 +157,15 @@ function appendCounterRect(parentRect) {
                                        "missing-counter");
 
     var counterText = createOptionText("counter-text-",
-                                       missingTextCounter,
+                                       missingCounter,
                                        parseInt(parentRect.children(".rect").attr("x")) +
                                        parseInt(parentRect.children(".rect").attr("width")) - 15,
                                        parseInt(parentRect.children(".rect").attr("y")) +
-                                       parseInt(parentRect.children(".rect").attr("height") - (-10))/2,
+                                       (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
                                        "counter-text");
     
     counterRect.insertBefore(parentRect.children("text").first());
     counterText.insertAfter(parentRect.children("text").first()); 
-    missingCounter++;
-    missingTextCounter++;
 }
 
 

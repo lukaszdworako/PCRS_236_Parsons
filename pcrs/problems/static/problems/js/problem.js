@@ -2,6 +2,7 @@
  * global variables
 */
 var testcases = null;
+var error_msg = null;
 var code_problem_id = -1;
 var myCodeMirrors = {};
 var cmh_list = {};
@@ -14,7 +15,7 @@ function bindDebugButton(buttonId) {
     */
 
     $('#'+ buttonId).bind('click', function() {
-        var testcaseCode = $('#tcase_' + buttonId + ' td.testInputCell').html();
+        var testcaseCode = $('#tcase_' + buttonId + ' td.expression').html();
         setTimeout(function(){
             prepareVisualizer("debug", testcaseCode, buttonId)}, 250
         );
@@ -89,29 +90,28 @@ function add_history_entry(data, div_id, flag){
      */
 
     var sub_time = new Date(data['sub_time']);
-    var panel_class = "panel panel-default";
+    var panel_class = "pcrs-panel-default";
     var star_text = "";
 
     sub_time = create_timestamp(sub_time);
 
     if (data['past_dead_line']){
-        panel_class = "panel panel-warning";
+        panel_class = "pcrs-panel-warning";
         sub_time = sub_time + " Submitted after the deadline";
     }
 
     if (data['best'] && !data['past_dead_line']){
-        panel_class = "panel panel-primary";
-        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star" ' +
-                    'title="Latest Best Submission"> </icon>';
+        panel_class = "pcrs-panel-star";
+        star_text = '<icon style="font-size:1.2em" class="star-icon" title="Latest Best Submission"> </icon>';
 
-        $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
-        $('#'+div_id).find('#history_accordion').find(".panel-primary")
-            .addClass("panel-default").removeClass("panel-primary");
+        $('#'+div_id).find('#history_accordion').find(".star-icon").remove();
+        $('#'+div_id).find('#history_accordion').find(".pcrs-panel-star")
+            .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
     }
 
     var entry = $('<div/>',{class:panel_class});
-    var header1 = $('<div/>',{class:"panel-heading"});
-    var header2 = $('<h4/>', {class:"panel-title"});
+    var header1 = $('<div/>',{class:"pcrs-panel-heading"});
+    var header2 = $('<h4/>', {class:"pcrs-panel-title"});
     var header4 = $('<td/>', {html:"<span class='pull-right'> " + star_text + " "
                                       + "<sup class='h_score'>" + data['score'] + "</sup>"
                                       + " / "
@@ -128,7 +128,7 @@ function add_history_entry(data, div_id, flag){
                                 + "')",
                               html:sub_time + header4.html()});
 
-    var cont1 = $('<div/>', {class:"panel-collapse collapse",
+    var cont1 = $('<div/>', {class:"pcrs-panel-collapse collapse",
                                   id:"collapse_" + data['sub_pk']});
 
     var cont2 = $('<div/>', {id:"history_mirror_"
@@ -137,7 +137,7 @@ function add_history_entry(data, div_id, flag){
                                       + data['sub_pk'],
                                   html:data['submission']});
 
-    var cont3 = $('<ul/>', {class:"list-group"});
+    var cont3 = $('<ul/>', {class:"pcrs-list-group"});
 
 
     for (var num = 0; num < data['tests'].length; num++){
@@ -146,12 +146,12 @@ function add_history_entry(data, div_id, flag){
         var ic = "";
         var test_msg = "";
         if (data['tests'][num]['passed']){
-            lc = "list-group-item list-group-item-success";
-            ic = "<icon class='glyphicon glyphicon-ok'> </icon>";
+            lc = "testcase-success";
+            ic = "<icon class='ok-icon'> </icon>";
         }
         else{
-            lc = "list-group-item list-group-item-danger";
-            ic = "<icon class='glyphicon glyphicon-remove'> </icon>";
+            lc = "testcase-fail";
+            ic = "<icon class='remove-icon'> </icon>";
         }
 
         if (data['tests'][num]['visible']){
@@ -247,9 +247,12 @@ function getTestcases(div_id) {
                     $('#'+div_id).find('#deadline_msg').remove();
                     $('#'+div_id)
                         .find('#alert')
-                        .after('<div id="deadline_msg" class="alert alert-danger">Submitted after the deadline!<div>');
+                        .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
+                if ((language == 'sql' || language == 'ra') && data['results'][1] != null ){
+                    error_msg = data['results'][1];
+                }
                 $("#"+div_id).find("#grade-code").show();
 
                 var score = data['score'];
@@ -257,18 +260,18 @@ function getTestcases(div_id) {
                 var desider = score == max_score;
 
                 $('#'+div_id).find('#alert')
-                    .toggleClass("alert-danger", !desider);
+                    .toggleClass("red-alert", !desider);
 
                 $('#'+div_id).find('#alert')
-                    .toggleClass("alert-success", desider);
-
-                $('#'+div_id).find('#alert')
-                    .children('icon')
-                    .toggleClass("glyphicon-remove", !desider);
+                    .toggleClass("green-alert", desider);
 
                 $('#'+div_id).find('#alert')
                     .children('icon')
-                    .toggleClass("glyphicon-ok", desider);
+                    .toggleClass("remove-icon", !desider);
+
+                $('#'+div_id).find('#alert')
+                    .children('icon')
+                    .toggleClass("ok-icon", desider);
 
                 if (desider){
                     $('#'+div_id).find('#alert')
@@ -325,88 +328,95 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
     var tests = [];
     var table_location = $('#'+div_id).find('#table_location');
     table_location.empty();
+    //error ra
+    if (error_msg != null){
+        table_location.append("<div class='red-alert'>"+error_msg+"</div>");
+        error_msg = null;
+    }
+    else{
+        for (var i = 0; i < testcases.length; i++) {
+            var current_testcase = testcases[i];
+            var main_table = $('<table/>', {id:"gradeMatrix"+current_testcase['testcase'],
+                                            class:"pcrs-table"});
 
-    for (var i = 0; i < testcases.length; i++) {
-        var current_testcase = testcases[i];
-        var main_table = $('<table/>', {id:"gradeMatrix"+current_testcase['testcase'],
-                                        class:"table span12"});
+            var expected_td = $('<td/>', {class:"table-left"}).append("Expected");
+            var actual_td = $('<td/>', {class:"table-right"}).append("Actual");
 
-        var expected_td = $('<td/>', {class:"gradeMatrixRow table-left"}).append("Expected");
-        var actual_td = $('<td/>', {class:"gradeMatrixRow table-right "}).append("Actual");
+            var expected_table = $('<table/>', {class:"pcrs-table"});
+            var actual_table = $('<table/>', {class:"pcrs-table"});
 
-        var expected_table = $('<table/>', {class:"table span6"});
-        var actual_table = $('<table/>', {class:"table span6"});
+            var expected_entry = $('<tr/>', {class:"pcrs-table-head-row"});
+            var actual_entry = $('<tr/>', {class:"pcrs-table-head-row"});
 
-        var expected_entry = $('<tr/>', {class:"gradeMatrixRow"});
-        var actual_entry = $('<tr/>', {class:"gradeMatrixRow"});
-
-        if (current_testcase['passed']){
-            table_location.append("<div class='alert alert-success'><icon class='glyphicon glyphicon-ok'>" +
-                                  "</icon><span> Test Case Passed</span></div>");
-            score++;
-        }
-        else{
-            table_location.append("<div class='alert alert-danger'><icon class='glyphicon glyphicon-remove'>" +
-                                  "</icon><span> Test Case Failed</span></div>");
-        }
-
-        for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-            expected_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
-                                  "'><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
-        }
-
-        for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
-            actual_entry.append("<td colspan='"+ 6/current_testcase['expected_attrs'].length +
-                                "'><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
-        }
-
-        expected_table.append(expected_entry);
-        actual_table.append(actual_entry);
-
-        for (var entry = 0; entry < current_testcase['expected'].length; entry++){
-            var entry_class = 'gradeMatrixRow';
-            var test_entry = current_testcase['expected'][entry];
-            if (test_entry['missing']){
-                entry_class = "gradeMatrixRow sql-missing";
+            if (current_testcase['passed']){
+                table_location.append("<div class='green-alert'><icon class='ok-icon'>" +
+                                      "</icon><span> Test Case Passed</span></div>");
+                score++;
             }
-            var expected_entry = $('<tr/>', {class:entry_class});
-            for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-                expected_entry.append("<td colspan='" +
-                                     6/current_testcase['expected_attrs'].length +
-                                     "'>" +
-                                     test_entry[current_testcase['expected_attrs'][header]] +
-                                     "</td>");
+            else{
+                table_location.append("<div class='red-alert'><icon class='remove-icon'>" +
+                                      "</icon><span> Test Case Failed</span></div>");
             }
-            expected_table.append(expected_entry);
+
+            if (current_testcase['error'] != null){
+                table_location.append("<div class='red-alert'>"+current_testcase['error']+"</div>");
+            }
+            else{
+                for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                    expected_entry.append("<td><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+                }
+
+                for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+                    actual_entry.append("<td><b>"+ current_testcase['actual_attrs'][header] +"</b></td>");
+                }
+
+                expected_table.append(expected_entry);
+                actual_table.append(actual_entry);
+                expected_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
+                actual_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
+
+                for (var entry = 0; entry < current_testcase['expected'].length; entry++){
+                    var entry_class = 'pcrs-table-row';
+                    var test_entry = current_testcase['expected'][entry];
+                    if (test_entry['missing']){
+                        entry_class = "pcrs-table-row-missing";
+                    }
+                    var expected_entry = $('<tr/>', {class:entry_class});
+                    for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                        expected_entry.append("<td>" +
+                                             test_entry[current_testcase['expected_attrs'][header]] +
+                                             "</td>");
+                    }
+                    expected_table.append(expected_entry);
+                }
+
+                for (var entry = 0; entry < current_testcase['actual'].length; entry++){
+                    var entry_class = 'pcrs-table-row';
+                    var test_entry = current_testcase['actual'][entry];
+                    if (test_entry['extra']){
+                        entry_class = 'pcrs-table-row-extra';
+                    }
+                    else if (test_entry['out_of_order']){
+                        entry_class = 'pcrs-table-row-order';
+                    }
+                    var actual_entry = $('<tr/>', {class:entry_class});
+                    for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
+
+                       actual_entry.append("<td>" +
+                                           test_entry[current_testcase['actual_attrs'][header]] +
+                                           "</td>");
+                    }
+                    actual_table.append(actual_entry);
+                }
+
+                expected_td.append(expected_table);
+                actual_td.append(actual_table);
+
+                main_table.append(expected_td);
+                main_table.append(actual_td);
+                table_location.append(main_table);
+            }
         }
-
-        for (var entry = 0; entry < current_testcase['actual'].length; entry++){
-            var entry_class = 'gradeMatrixRow';
-            var test_entry = current_testcase['actual'][entry];
-            if (test_entry['extra']){
-                entry_class = 'gradeMatrixRow sql-extra';
-            }
-            else if (test_entry['out_of_order']){
-                entry_class = 'gradeMatrixRow sql-order';
-            }
-            var actual_entry = $('<tr/>', {class:entry_class});
-            for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
-
-               actual_entry.append("<td colspan='" +
-                                   6/current_testcase['actual_attrs'].length +
-                                   "'>" +
-                                   test_entry[current_testcase['actual_attrs'][header]] +
-                                   "</td>");
-            }
-            actual_table.append(actual_entry);
-        }
-
-        expected_td.append(expected_table);
-        actual_td.append(actual_table);
-
-        main_table.append(expected_td);
-        main_table.append(actual_td);
-        table_location.append(main_table);
     }
     var data = {'sub_time':new Date(),
             'submission':myCodeMirrors[div_id].getValue(),
@@ -457,36 +467,45 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             cleaner.remove();
         }
 
-        var newRow = $('<tr class="gradeMatrixRow" id="tcase_'+div_id+'_'+i + '"></tr>');
+        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
         gradingTable.append(newRow);
 
         if ("exception" in current_testcase){
-            newRow.append('<th class="alert alert-danger" colspan="6">' +
-                          current_testcase.exception + '<th>');
+            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
+                          current_testcase.exception + '</th>');
         }
         else{
             if (testcaseInput != null) {
-                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' +
-                               testcaseInput + '</td>');
-
-                newRow.append('<td class="testDescription col-lg-3 visible-lg">' +
+                newRow.append('<td class="description">' +
                                description + '</td>');
 
-                newRow.append('<td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
-                               testcaseOutput + '</td>');
+                newRow.append('<td class="expression">' +
+                               testcaseInput + '</td>');
+
+                newRow.append('<td><div id="exp_test_val" class="expected ExecutionVisualizer"></div></td>');
+
             }
             else {
-                newRow.append('<td class="testInputCell col-lg-3 col-md-4 visible-lg visible-md">' +
+                newRow.append('<td class="description">' + description + '</td>');
+
+                newRow.append('<td class="expression">' +
                               "Hidden Test" +'</td>');
-                newRow.append('<td class="testDescription col-lg-3 visible-lg">' + description + '</td>');
-                newRow.append('<td <td class="expectedCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
+
+                newRow.append('<td class="expected">' +
                               "Hidden Result" +'</td>');
             }
 
-            newRow.append('<td class="testOutputCell col-lg-2 col-md-3 col-sm-4 col-xs-4">' +
-                           result +'</td>');
+            newRow.append('<td class="passed"></td>');
 
-            newRow.append('<td class="statusCell col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>');
+            newRow.append('<td><div id="current_testcase'+i+'" class="result ExecutionVisualizer">' +
+                           ''+'</div></td>');
+
+            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+            $('#current_testcase'+i).attr('id', "");
+
+            renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
+            $('#exp_test_val').attr('id',"");
+
 
             var pass_status = "";
 
@@ -500,16 +519,16 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                 pass_status = "failed";
             }
 
-            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.statusCell').html(smFace.clone());
+            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
             if (testcaseInput != null){
-                newRow.append('<td class="debugCell col-lg-1 col-md-1 col-sm-2 col-xs-2"><button id="' +
-                               div_id +"_"+i + '" class="debugBtn btn btn-info btn-mini" type="button"' +
+                newRow.append('<td class="debug"><button id="' +
+                               div_id +"_"+i + '" class="debugBtn" type="button"' +
                               ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
                 bindDebugButton(div_id+"_"+i);
             }
             else{
-                newRow.append('<td class="col-lg-1 col-md-1 col-sm-2 col-xs-2"></td>')
+                newRow.append('<td class="debug"></td>')
             }
             newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
                            testcaseOutput+'. Result: '+result+'</a>');
