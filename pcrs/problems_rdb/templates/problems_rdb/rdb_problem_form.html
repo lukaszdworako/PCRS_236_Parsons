@@ -11,16 +11,16 @@
                 <span>
                 {% block item_controls %}
                     <a href="{{ object.get_absolute_url }}/delete">
-                        <i class="glyphicon glyphicon-trash pull-right"></i>
+                        <i class="trash-icon-right"></i>
                     </a>
                 {% endblock %}
             </span>
             </div>
         {% endfor %}
         <br>
-        <a type="button" class="btn btn-sm btn-default" aria-label="add"
+        <a type="button" class="small-button" aria-label="add"
            href="{{ object.get_absolute_url }}/testcase">
-            <i class="glyphicon glyphicon-plus"></i>
+            <i class="plus-icon"></i>
         </a>
         <hr>
     </div>

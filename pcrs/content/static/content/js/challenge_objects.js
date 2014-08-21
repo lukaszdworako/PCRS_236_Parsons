@@ -52,13 +52,19 @@ $(document).ready(function () {
             }
         });
 
-    var original_position = $('.tab-content').offset().top;
+    var original_position = $('.problem-tab-content').offset().top;
     $(window).scroll(function(e){
-        $el = $('.tab-content');
+        $el = $('.problem-tab-content');
+        var challenge_bottom = $('#challenge').position().top + $('#challenge').height();
+        var new_height = $(window).height();
+
+        if (challenge_bottom - $(window).scrollTop() < new_height){
+            new_height =  challenge_bottom - $(window).scrollTop();
+        }
         if ($(window).scrollTop() > original_position) {
             $el.css({
                 'margin-top':$(window).scrollTop()-original_position+10,
-                'height':$(window).height() - 60});
+                'height':new_height});
         }
         else{
             $el.css({
@@ -67,11 +73,17 @@ $(document).ready(function () {
     });
 
     if ($(window).scrollTop() > original_position) {
-            $('.tab-content').css({
+            $('.problem-tab-content').css({
                 'margin-top':$(window).scrollTop()-original_position+10,
                 'height':$(window).height() - 60});
     }
-    $('.tab-content').css({'height':$(window).height() - 60});
+
+    var new_height = $(window).height();
+    var challenge_bottom = $('#challenge').position().top + $('#challenge').height();
+    if (challenge_bottom - $(window).scrollTop() < new_height){
+        new_height =  challenge_bottom - $(window).scrollTop() - 60;
+    }
+    $('.problem-tab-content').css({'height':new_height});
 
 //    resize_problems();
 });
@@ -121,7 +133,7 @@ function add_text_enter(event){
         event.preventDefault();
         source_button = this;
         var number_of_pages = $('#challenge').children().length;
-        $('#page-entry-modal').find('.modal-title').text("There are "+number_of_pages+" pages. To which page and in what position you want to add the element to?");
+            $('#page-entry-modal').find('.pcrs-modal-title').text("There are "+number_of_pages+" pages. To which page and in what position you want to add the element to?");
         $('#page_num').empty();
         for (var page_num = 1; page_num < number_of_pages+1; page_num++){
             $('#page_num').append("<option value="+page_num+">"+page_num+"</option>");
@@ -144,14 +156,6 @@ function update_page_location(){
     }
 }
 
-//function resize_problems(){
-//    /**
-//     * Resize the problem window
-//     */
-//
-//    $('.available_problems').height($('.ui-selectable').height()-$('.available_problems').find('.nav-tabs').height());
-//}
-
 function select(event) {
     /**
      * Allows to select a ui element
@@ -172,11 +176,11 @@ function addPage() {
     $.post(document.URL + '/page/create', {csrftoken: csrftoken})
         .success(function (data) {
             $new_item = $("<div/>", {
-                class: "page well",
+                class: "page",
                 id: "page-" + data['pk']
             });
             $delete = $("<i/>", {
-                class: "delete-page glyphicon glyphicon-remove pull-right"
+                class: "delete-page xs-x-button-right"
             });
             $new_item.prepend($delete);
             $('#challenge').append($new_item);
@@ -236,11 +240,11 @@ function saveText(event) {
         .success(function (data) {
             var $new_item = $("<div/>", {
                 html: "<div><p class='ui-selectee'>" + $('#text-entry').val() + "</p></div>",
-                class: "textblock item well ui-selectee",
+                class: "textblock item ui-selectee",
                 id: "textblock-" + data['pk']
             });
             $new_item.prepend($("<button/>",{
-                class: "btn btn-object-close btn-xs glyphicon glyphicon-remove remove_item ui-selectee pull-right",
+                class: "remove_item ui-selectee xs-x-button-right",
                 title: "Delete Item",
                 html:"<span class='at'>Delete Text Block "+$('#text-entry').val()+"</span>"
             }))
@@ -322,29 +326,20 @@ function change_problem_visibility(){
                 secret_key: secret_key});
 
             if (old_visibility == 'open'){
-                $(this_button).removeClass('visibility-open glyphicon-eye-open');
-                $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
+                $(this_button).removeClass('visibility-open');
+                $(this_button).addClass('visibility-'+new_visibility);
                 $(this_button).find('.at').text(
                     $(this_button).parent().find('.searchable_content').text() +
                     " Visibility is " +
                     new_visibility);
             }
             else{
-                $(this_button).removeClass('visibility-'+old_visibility+' glyphicon-eye-close glyphicon-eye-open');
-                if (new_visibility == "open"){
-                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-open');
+                $(this_button).removeClass('visibility-'+old_visibility);
+                    $(this_button).addClass('visibility-'+new_visibility);
                     $(this_button).find('.at').text(
                         $(this_button).parent().find('.searchable_content').text() +
                         " Visibility is " +
                         new_visibility);
-                }
-                else{
-                    $(this_button).addClass('visibility-'+new_visibility+' glyphicon-eye-close');
-                    $(this_button).find('.at').text(
-                        $(this_button).parent().find('.searchable_content').text() +
-                        " Visibility is " +
-                        new_visibility);
-                }
             }
 
             $(this_button).prop('title', "Visibility "+new_visibility);

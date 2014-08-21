@@ -368,14 +368,14 @@ class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
         conditions = {}
         problem = self.get_object()
         starttime = form.cleaned_data['starttime']
-        endtime = form.cleaned_data['stoptime']
 
         for key, value in form.cleaned_data.items():
             if key.startswith('testcase'):
                 _, pk = key.split('-')
                 conditions[int(pk)] = None if value == 'any' else value == 'pass'
+        self.stoptime_ = form.cleaned_data['stoptime']
         submissions = problem.get_submissions_for_conditions(
-            conditions=conditions, starttime=starttime, endtime=endtime)
+            conditions=conditions, starttime=starttime, endtime=self.stoptime_)
 
         return render(self.request, 'problems/submission_list.html',
             {

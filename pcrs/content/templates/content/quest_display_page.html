@@ -1,14 +1,14 @@
 {% load filters %}
 
 <div id="holder_{{ challenge.pk }}_{{page.order}}"
-     class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-    <div class="panel panel-default">
-        <div class="panel-heading">
+     class="challenge-page">
+    <div class="pcrs-panel">
+        <div class="pcrs-panel-heading">
             <a href="{{ page.get_absolute_url }}">
                 Go to Part {{ page.order }}
             </a>
         </div>
-        <div class="panel-body">
+        <div class="pcrs-panel-body">
                 {% for content_object in items|get_item:page.pk %}
                     {% include "content/quest_display_content.html" %}
                 {% endfor %}

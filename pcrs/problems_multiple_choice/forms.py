@@ -14,7 +14,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
         self.save_and_add = Submit('submit', 'Save and add options',
-                                   css_class='btn-success pull-right',
+                                   css_class='green-button-right',
                                    formaction='create_and_add_option')
         BaseProblemForm.__init__(self)
 
