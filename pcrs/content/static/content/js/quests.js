@@ -56,7 +56,7 @@ var ChallengeList = React.createClass({
 });
 
 var Challenge = React.createClass({
-    mixins: [Problem],
+    mixins: [ProblemMixin],
 
     getInitialState: function () {
         return {
@@ -171,7 +171,7 @@ var Page = React.createClass({
                     <a href={this.props.page.url} target="_blank">Go to Part {this.props.order}</a>
                 </div>
                 <div className="panel-body">
-                    <ItemList page={this.props.page} />
+                    <ItemList key={this.props.page.url} page={this.props.page} />
                 </div>
             </div>
             );
@@ -186,7 +186,7 @@ var ItemList = React.createClass({
                 var item = data.items[id];
                 if (item.content_type == 'problem') {
                     return (
-                        <Problem key={item.id} problem={item} pageUrl={component.props.page.url}/>
+                        <Problem key={item.id} item={item} pageUrl={component.props.page.url}/>
                         );
                 }
                 if (item.content_type == 'video') {
@@ -200,23 +200,40 @@ var ItemList = React.createClass({
 });
 
 var Problem = React.createClass({
+    getInitialState: function() {
+       return {isVisible: this.props.item.is_visible};
+    },
+
+    mixins: [Listener],
+    listenTo: [onVisibilityUpdate],
+
+    handleUpdate: function(event) {
+        var isVisible = event.detail.item.properties.is_visible;
+        data.items[event.detail.item.id].is_visible = isVisible;
+        console.log(isVisible);
+        this.setState({isVisible: isVisible});
+    },
+
     render: function () {
-        var url = this.props.pageUrl + "#" + this.props.problem.id;
-        return (
-            <div>
-                <a href={url} target="_blank">
-                    <ProblemStatusIndicator item={this.props.problem}/>
-                    {this.props.problem.name}
-                </a>
-            </div>
-            );
+        if (this.state.isVisible) {
+            var url = this.props.pageUrl + "#" + this.props.item.id;
+            return (
+                <div>
+                    <a href={url} target="_blank">
+                        <ProblemStatusIndicator item={this.props.item}/>
+                        {this.props.item.name}
+                    </a>
+                </div>
+                );
+        }
+        else {
+            return null;
+        }
     }
 
 });
 
 var Video = React.createClass({
-
-
     render: function () {
         console.log('Video');
 

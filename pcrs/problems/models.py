@@ -45,7 +45,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         abstract = True
 
     def get_uri_id(self):
-        return '{0}-{1}'.format(self.get_problem_type_name(), self.pk,)
+        return '{0}-{1}'.format(self.get_module_name(), self.pk,)
 
     def serialize(self):
         serialized = AbstractSelfAwareModel.serialize(self)

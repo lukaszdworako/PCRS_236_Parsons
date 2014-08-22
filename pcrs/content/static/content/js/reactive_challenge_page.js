@@ -17,7 +17,7 @@ var ItemList = React.createClass({
 
 var Problem = React.createClass({
 
-    getProblemForm: function(problem) {
+    getProblemForm: function (problem) {
         if (problem.problem_type == 'multiple_choice') {
             return (
                 <MultipleChoiceProblemForm item={problem} />
@@ -35,8 +35,10 @@ var Problem = React.createClass({
         return (
             <div id={problem.id}>
                 <div>
-                    <span dangerouslySetInnerHTML={{__html: problem.name}} />
-                    <ProblemScore item={problem} />
+                    <h3>
+                        <span dangerouslySetInnerHTML={{__html: problem.name}} />
+                        <ProblemScore item={problem} />
+                    </h3>
                 </div>
                 <p dangerouslySetInnerHTML={{__html: problem.description}} />
 
@@ -50,9 +52,9 @@ var Problem = React.createClass({
 });
 
 var ProblemScore = React.createClass({
-    mixins: [Listener],
+    mixins: [Listener, ProblemMixin],
 
-    listenTo: [onStatusUpdate],
+    listenTo: [onGradingUpdate],
 
     getProblemScore: function (problem) {
         var pType = problem.problem_type;
@@ -70,37 +72,38 @@ var ProblemScore = React.createClass({
         }
     },
 
-    shouldComponentUpdate: function (nextProps, nextState) {
-        console.log('Is update needed score?');
-        console.log(this.state.score !== nextState.score);
-        return ((this.state.score == null ||
-            (this.state.score < nextState.score)
-            ));
+
+    handleUpdate: function (event) {
+        this.setState({score: event.detail.data.score});
     },
 
     render: function () {
         var maxScore = this.props.item.max_score;
         console.log('Score rendering.');
 
-        var classes = React.addons.classSet({
-            'widget_not_attempted': this.state.score == null,
-            'widget_incomplete': this.state.score < maxScore,
-            'widget_complete': this.state.score == maxScore
-        });
+        var score;
+        if (this.state.score != null && this.state.score == maxScore) {
+            score = <span className="green-checkmark-icon" />;
+        }
 
-        return (
-            <span title="Progress so far" className={classes}>
-                <sup>{this.state.score != null ? this.state.score : '-'}</sup>
-            /
-                <sub>{maxScore}</sub>
-            </span>
-            );
+        else {
+            score = (
+                <span>
+                    <sup>{this.state.score != null ? this.state.score : '-'}</sup>
+                /
+                    <sub>{maxScore}</sub>
+                </span>);
+        }
+
+        return (<span title="Progress so far" className="align-right">
+            {score}
+        </span>);
     }
 });
 
 
 var ProblemForm = {
-    disableButton: function() {
+    disableButton: function () {
         console.log('PROCESSING');
         var button = this.refs.submitButton.getDOMNode();
         console.log(button.textContent || button.innerText);
@@ -110,10 +113,10 @@ var ProblemForm = {
         button.innerText = "Processing...";
     },
 
-    enableButton: function() {
+    enableButton: function () {
         console.log('DONE');
 
-                var button = this.refs.submitButton.getDOMNode();
+        var button = this.refs.submitButton.getDOMNode();
         console.log(button.textContent || button.innerText);
 
         button.disabled = false;
@@ -171,7 +174,10 @@ var ProgrammingProblemForm = React.createClass({
                 <div>
                     <textarea defaultValue={this.props.item.starter_code}
                     ref="submission" className="code-mirror" />
-                    <button ref="submitButton" onClick={this.handleSubmit}>Submit</button>
+                    <button ref="submitButton" className="green-button"
+                    onClick={this.handleSubmit}>
+                    Submit
+                    </button>
                 </div>
 
                 <ProgrammingProblemGrading item={this.props.item} postRender={this.enableButton}/>
@@ -182,7 +188,7 @@ var ProgrammingProblemForm = React.createClass({
 });
 
 var MultipleChoiceProblemForm = React.createClass({
-        mixins: [StatusUpdateDispatcher, GradingUpdateDispatcher, ProblemForm],
+    mixins: [StatusUpdateDispatcher, GradingUpdateDispatcher, ProblemForm],
 
 
     getInitialState: function () {
@@ -227,11 +233,13 @@ var MultipleChoiceProblemForm = React.createClass({
 
         return (
             <div>
-                <div>{options}</div>
-                <button ref="submitButton" onClick={this.handleSubmit}>Submit</button>
+                <div>{options}
+                    <button ref="submitButton" className="submitBtn"
+                    onClick={this.handleSubmit}>Submit</button>
+                </div>
 
                 <MultipleChoiceGrading item={this.props.item} postRender={this.enableButton} />
-                <MultipleChoiceSubmissionHistory key={"history-"+this.props.item.id} item={this.props.item} />
+                <MultipleChoiceSubmissionHistory key={"history-" + this.props.item.id} item={this.props.item} />
             </div>
 
             );
@@ -244,7 +252,7 @@ var Grading = {
         return {data: null}
     },
 
-    componentDidUpdate: function() {
+    componentDidUpdate: function () {
         this.props.postRender();
     }
 };
@@ -254,37 +262,51 @@ var MultipleChoiceGrading = React.createClass({
     listenTo: [onGradingUpdate],
 
     render: function () {
-        var status;
+        var correctness;
         if (this.state.data) {
             var score = this.state.data.score;
             var maxScore = this.props.item.max_score;
             console.log(score, maxScore);
-            var message = score == maxScore ?
-                'Your solution is correct!' :
-                'Your solution is not entirely correct.';
-            status = <ProblemStatus message={message} />;
+
+            correctness = (
+                    score == maxScore ?
+                <SubmissionCorrectMessage /> :
+                <SubmissionIncorrectMessage
+                message="This solution is not entirely correct." />);
         }
         return (
             <div>
-                {status}
+                {correctness}
             </div>
             );
     }
 });
 
 var ProgrammingProblemGrading = React.createClass({
-       mixins: [Listener, Grading],
-        listenTo: [onGradingUpdate],
+    mixins: [Listener, Grading],
+    listenTo: [onGradingUpdate],
 
 
     getStatusMessage: function () {
-        if (this.state.data) {
-            var message = this.state.data.score == this.props.item.max_score ?
-                "Your solution is correct!" :
-                "Your solution passed x out y testcases. ";
+        var correctness;
+        var error;
 
-            var error = this.state.data.results[1] || "";
-            return <ProblemStatus message={message} error={error}/>
+        if (this.state.data) {
+            correctness = this.state.data.score == this.props.item.max_score ?
+                <SubmissionCorrectMessage /> :
+                <SubmissionIncorrectMessage
+                message="This solution has passed x out of y testcases." />;
+
+            var errorMessage = this.state.data.results[1] || "";
+            if (errorMessage) {
+                error = <SubmissionErrorMessage error={errorMessage} />
+            }
+            return (
+                <div>
+                    {correctness}
+                    {error}
+                </div>
+                );
         }
     },
 
@@ -292,7 +314,7 @@ var ProgrammingProblemGrading = React.createClass({
 
         if (this.state.data) {
             var error = this.state.data.results[1];
-            var testruns =  this.state.data.results[0];
+            var testruns = this.state.data.results[0];
             if (!error && this.props.item.problem_type == 'code') {
                 return <CodeProblemTestcaseTable testruns={testruns} />;
             }
@@ -319,30 +341,63 @@ var CodeProblemTestcaseTable = React.createClass({
     render: function () {
         var tableRows = this.props.testruns.map(function (testrun) {
             return (
-                <tr className="gradeMatrixRow">
-                    <td>{testrun.test_desc}</td>
-                    <td className="testInputCell">{testrun.test_input || 'secret'}</td>
-                    <td className="expectedCell">{testrun.expected_output || 'secret'}</td>
-                    <td className="testOutputCell">{testrun.test_val}</td>
-                    <td>{testrun.passed_test ? 'Passed' : 'Failed'}</td>
+                <tr className="pcrs-table-row">
+                    <td className="description">{testrun.test_desc}</td>
+                    <td className="expression">{testrun.test_input || "Hidden Test"}
+                        <div className="expression_div"></div>
+
+                    </td>
+
+                    <td className="expected">{testrun.expected_output || "Hidden Result"}
+                        <div className="ptd">
+                            <div className="ExecutionVizualizer" />
+                        </div>
+                    </td>
+                    <td className="result">{testrun.test_val}</td>
+                    <div className="ptd">
+                        <div className="ExecutionVizualizer" />
+                    </div>
+                    <td className="passed">
+                    {
+                        testrun.test_passed ?
+                            <img id="dynamic" src={happyFaceURL} alt='Happy Face'
+                            height="36" width="36" /> :
+                            <img id="dynamic" src={sadFaceURL} alt='Sad Face'
+                            height="36" width="36" />
+                        }
+
+                    </td>
+                    <td className="debug">Debug</td>
+
+                    <a className="at">This testcase has __ (if failed, expected and result)</a>
                 </tr>
                 );
+//            TODO: fix me
         });
 
-        return (<table className={this.props.testruns ? "" : "hidden"}>
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Test Input</th>
-                    <th>Expected Output</th>
-                    <th>Actual</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-            <tbody>
+        var classes = React.addons.classSet({
+            "hidden": !this.props.testruns,
+            "pcrs-table": true
+        });
+
+        return (
+            <div>
+                <table className={classes}>
+                    <thead>
+                        <tr className="pcrs-table-head-row">
+                            <th className="description">Description</th>
+                            <th className="expression">Test Expression</th>
+                            <th className="expected">Expected</th>
+                            <th className="result">Result</th>
+                            <th className="passed">Passed</th>
+                            <th className="debug">Debug</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     {tableRows}
-            </tbody>
-        </table>
+                    </tbody>
+                </table>
+            </div>
             );
     }
 });
@@ -377,16 +432,16 @@ var RDBProblemTestcaseTable = React.createClass({
 });
 
 
-var ProblemStatus = React.createClass({
+var ProblemStatusMessage = React.createClass({
     render: function () {
         console.log('ProblemStatus');
         var error;
         if (this.props.error) {
-            error = <ErrorMessage error={this.props.error} />;
+            error = <SubmissionErrorMessage error={this.props.error} />;
         }
         return (
             <div>
-                <div className="problemStatus">{this.props.message}</div>
+                <div className="ProblemStatusMessage">{this.props.message}</div>
                 {error}
             </div>
             );
@@ -394,9 +449,25 @@ var ProblemStatus = React.createClass({
 
 });
 
-var ErrorMessage = React.createClass({
+var SubmissionErrorMessage = React.createClass({
     render: function () {
-        return <div className="submissionError">{this.props.error}</div>;
+        return <div className="red-alert">{this.props.error}</div>;
+    }
+});
+
+var SubmissionCorrectMessage = React.createClass({
+    render: function () {
+        return (<div className="green-alert">
+        Correct!
+        </div>);
+    }
+});
+
+var SubmissionIncorrectMessage = React.createClass({
+    render: function () {
+        return (<div className="red-alert">
+            {this.props.message}
+        </div>);
     }
 });
 
@@ -514,17 +585,15 @@ var Video = React.createClass({
 var NavigationBar = React.createClass({
     render: function () {
         console.log('NavigationBar');
-        // TODO: remove bootstrap classes
-        var divClasses = React.addons.classSet({
-            "hidden-print": true,
-            "bs-docs-sidebar": true,
-            "affix": true
+
+        var prevClass = React.addons.classSet({
+            "icon-prev-active": data.prev_url,
+            "icon-prev-inactive": !data.prev_url
         });
 
-        // TODO: remove bootstrap classes
-        var ulClasses = React.addons.classSet({
-            "nav": true,
-            "bs-docs-sidenav": true
+        var nextClass = React.addons.classSet({
+            "icon-next-active": data.next_url,
+            "icon-next-inactive": !data.next_url
         });
 
 
@@ -532,16 +601,15 @@ var NavigationBar = React.createClass({
             return <NavigationBarItem key={item.id} item={item} />;
         });
 
-        // TODO: fix the navigation
         return (
-            <div className={divClasses} role="complementary">
-                <ul className={ulClasses}>{items}</ul>
-                <ul className={ulClasses}>
+            <div className="pcrs-sidebar" role="complementary">
+                <ul className="pcrs-sidenav">
+                    {items}
                     <a className="side-bar-arrow" href={data.prev_url}>
-                        <span className="">prev</span>
+                        <span className={prevClass}></span>
                     </a>
                     <a className="side-bar-arrow" href={data.next_url}>
-                        <span className="">next</span>
+                        <span className={nextClass}></span>
                     </a>
                 </ul>
             </div>
@@ -562,7 +630,7 @@ var NavigationBarItem = React.createClass({
             component = <ProblemStatusIndicator item={this.props.item} />
         }
         return(
-            <div>
+            <div className="side-bar-el">
                 <a href={"#" + this.props.item.id}>
                 {component}
                 </a>
@@ -575,38 +643,85 @@ var MultipleChoiceSubmissionHistory = React.createClass({
     mixins: [Listener],
     listenTo: [onGradingUpdate],
 
-    getInitialState: function() {
+    getInitialState: function () {
         return {submissions: []};
     },
 
-    render: function() {
+    render: function () {
         var rows = this.state.submissions.map(function (submission) {
-                return (
-                        <MultipleChoiceSubmissionHistoryItem key={"mc-history-" + submission.sub_pk} submission={submission} />
-                    );
-            });
-        return (<div>
-                    {rows}
-                    <button ref="historyButton" onClick={this.loadHistory}>
-                    View entire history
-                    </button>
-                </div>);
+            return (
+                <MultipleChoiceSubmissionHistoryItem key={"mc-history-" + submission.sub_pk} submission={submission} />
+                );
+        });
+
+        var modalID = "history_window_" + this.props.item.id;
+        return (
+            <div>
+                <div className="pcrs-modal-history" id={modalID}
+                tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div className="pcrs-modal-content">
+
+                        <div className="pcrs-modal-header">
+                            <h4 className="pcrs-modal-title" title="problem History">Submission History</h4>
+                            <button type="button" className="close" data-dismiss="modal" aria-hidden="false" title="Close History"></button>
+                        </div>
+
+                        <div className="pcrs-modal-body">
+                            <div className="pcrs-panel-group" id="history_accordion">
+                            {rows}
+                            </div>
+                        </div>
+                        <div className="pcrs-modal-footer">
+                            <button type="button" className="reg-button" data-dismiss="modal">Close
+                                <span className="at"> Close History </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button ref="historyButton" dataToggle="modal" dataTarget={"#" + modalID} className="reg-button">
+                History
+                </button>
+
+            </div>);
     },
 
-    handleUpdate: function(event) {
+    handleUpdate: function (event) {
         var newState = [event.detail.data].concat(this.state.submissions);
         this.setState({submissions: newState});
     }
 });
 
 var MultipleChoiceSubmissionHistoryItem = React.createClass({
-    render: function() {
+    render: function () {
         var submission = this.props.submission;
-        return <div>{submission.sub_pk}: {submission.score} </div>
+        var classes = React.addons.classSet({
+            "pcrs-panel-warning": submission.past_dead_line,
+            "pcrs-panel-default": !submission.past_dead_line && !submission.best,
+            "pcrs-panel-star": !submission.past_dead_line && submission.best
+        });
+
+               var collapseClasses = React.addons.classSet({
+            "pcrs-panel-collapse": true,
+            "collapse": true
+        });
+
+        return (<div className={classes}>
+                    <div className="pcrs-panel-heading">
+                        <h4 className="pcrs-panel-title">
+
+                        <a className="collapsed" data-toggle="collapse" data-parent="#history_accordion" href={"#history-"+submission.sub_pk}>
+                            Submission title
+                            </a>
+                        </h4>
+                    </div>
+                    <div className={collapseClasses} id={"history-"+submission.sub_pk}>
+                        submission stuff
+                    </div>
+               </div>);
     }
 
 });
-
 
 
 $.ajax({
@@ -618,7 +733,7 @@ $.ajax({
         data = problemData;
         React.renderComponent(
             <ItemList items={data.items} />,
-            document.getElementById("problems")
+            document.getElementById("content_items")
         );
         // TODO initialize codemirror
         // Initialize code mirror instances.

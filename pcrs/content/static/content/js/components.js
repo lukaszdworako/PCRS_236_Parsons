@@ -6,6 +6,7 @@ var Listener = {
     componentDidMount: function () {
         var component = this;
         component.listenTo.forEach(function (listener) {
+            console.log('listen to', listener.onUpdate(component));
             window.addEventListener(listener.onUpdate(component),
                 function (event) {
                     console.log("Listener received message");
@@ -40,6 +41,16 @@ var onGradingUpdate = {
         else {
             component.setState({data: event.detail.data});
         }
+    }
+};
+
+var onVisibilityUpdate = {
+    onUpdate: function (component) {
+        return "itemUpdate" + component.props.item.id;
+    },
+
+    handleUpdate: function (component, event) {
+        component.handleUpdate(event)
     }
 };
 
@@ -96,7 +107,7 @@ var GradingUpdateDispatcher = {
 
 
 
-var Problem = {
+var ProblemMixin = {
     isProblemAttempted: function (problem) {
         var pType = problem.problem_type;
         var pID = problem.pk;
@@ -112,11 +123,19 @@ var Problem = {
             data.scores[pType].hasOwnProperty(pID) &&
             data.scores[pType][pID] == problem.max_score
             );
+    },
+
+    shouldComponentUpdate: function (nextProps, nextState) {
+        console.log('Is update needed score?');
+        console.log(this.state.score !== nextState.score);
+        return ((this.state.score == null ||
+            (this.state.score < nextState.score)
+            ));
     }
 };
 
 var ProblemStatusIndicator = React.createClass({
-    mixins: [Listener, Problem],
+    mixins: [Listener, ProblemMixin],
 
         listenTo: [onStatusUpdate],
 
@@ -139,15 +158,13 @@ var ProblemStatusIndicator = React.createClass({
 
     },
 
+
+
     render: function () {
-        // TODO: remove bootstrap classes
         var problemClasses = React.addons.classSet({
-            "glyphicon": true,
-            "glyphicon-check": this.state.completed,
-            "glyphicon-edit": !this.state.completed,
-            "problem-idle": !this.state.attempted,
+            "problem-not-attempted": !this.state.attempted,
             "problem-attempted": this.state.attempted && !this.state.completed,
-            "problem-complete": this.state.completed
+            "problem-completed": this.state.completed
         });
 
         return(
@@ -180,17 +197,14 @@ var Video = {
 
 var VideoStatusIndicator = React.createClass({
     mixins: [Listener, Video],
-
-        listenTo: [onStatusUpdate],
+    listenTo: [onStatusUpdate],
 
     render: function () {
         console.log('VideoStatusIndicator');
 
-        // TODO: remove bootstrap classes
         var problemClasses = React.addons.classSet({
-            "glyphicon": true,
-            "glyphicon-film": true,
-            "ok-icon-green": this.state.completed
+            "video-watched": this.state.completed,
+            "video-not-watched": !this.state.completed,
         });
 
         return(
@@ -200,3 +214,10 @@ var VideoStatusIndicator = React.createClass({
             );
     }
 });
+
+var SubmitButton = React.createClass({
+    render: function () {
+        return (<button ref="submitButton" className="green-button"
+                        onClick={this.props.onClick} >Submit</button>);
+    }}
+);

@@ -6,11 +6,11 @@ var secret_key = '007';
 io.on('connection', function (socket) {
 
     // updating problem info such as visibility
-    socket.on('problems', function (data) {
+    socket.on('itemUpdate', function (data) {
         console.log('I received ', data);
         // broadcast iff the message is signed with the secret key
         if (data['secret_key'] == secret_key) {
-            io.emit('problems', data);
+            io.emit('itemUpdate', data);
         }
         else {
             console.log('permission denied');

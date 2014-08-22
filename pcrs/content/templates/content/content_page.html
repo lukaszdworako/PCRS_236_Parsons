@@ -13,12 +13,8 @@
 
 {% block scripts %}
     {{ block.super }}
-{#<<<<<<< Updated upstream#}
     {% load staticfiles %}
     {% include "problems/code_problem_scripts.html" %}
-{#=======#}
-{#    {% include "problems_code/code_problem_scripts.html" %}#}
-{#>>>>>>> Stashed changes#}
     {% load compress %}
     {% compress js %}
         <script src="{% static "csrf_protection.js" %}"

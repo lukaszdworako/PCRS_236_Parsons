@@ -1,7 +1,7 @@
-socket.on('problems', function (data) {
+socket.on('itemUpdate', function (data) {
     console.log('dispatching update');
     window.dispatchEvent(
-        new CustomEvent('problemUpdate', {detail: data})
+        new CustomEvent('itemUpdate', {detail: data})
     );
 });
 
@@ -20,6 +20,15 @@ window.addEventListener('statusUpdate', function (event) {
     console.log("Update from socket received.");
 
     var receiver = 'statusUpdate' + event.detail.item.id;
+    window.dispatchEvent(
+        new CustomEvent(receiver, {detail: event.detail})
+    );
+}, false);
+
+window.addEventListener('itemUpdate', function (event) {
+    console.log("Update from socket received.");
+    console.log("DISPATCH", event.detail.item.id);
+    var receiver = 'itemUpdate' + event.detail.item.id;
     window.dispatchEvent(
         new CustomEvent(receiver, {detail: event.detail})
     );

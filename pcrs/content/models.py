@@ -91,6 +91,9 @@ class TextBlock(models.Model):
     def __str__(self):
         return self.text[:150]
 
+    def serialize(self):
+        return {'text': self.text}
+
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     """
