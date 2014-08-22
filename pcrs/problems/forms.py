@@ -9,30 +9,30 @@ from users.models import Section
 
 
 class BaseProblemForm(CrispyFormMixin):
-    clear_button = HTML('<a class="btn btn-danger" role="button" '
+    clear_button = HTML('<a class="red-button" role="button" '
                         'href="{{ object.get_absolute_url }}/clear">'
                         'Clear submissions</a>')
-    save_button = Submit('submit', 'Save', css_class='btn-success pull-right')
+    save_button = Submit('submit', 'Save', css_class='green-button-right')
 
     save_and_add = Submit('submit', 'Save and add testcases',
-                           css_class='btn-success pull-right',
+                           css_class='green-button-right',
                            formaction='create_and_add_testcase')
 
     buttons = None
 
     def __init__(self, *args, **kwargs):
         if self.instance.pk:
-            clone = Submit('clone', 'Clone', css_class='btn-success',
+            clone = Submit('clone', 'Clone', css_class='green-button',
                            formaction='{}/clone'.format(
                                self.instance.get_absolute_url()))
             self.buttons = (Div(CrispyFormMixin.delete_button,
                                 self.clear_button,
-                                css_class='btn-group'),
+                                css_class='button-group'),
                             Div(clone, self.save_button,
-                                css_class='btn-group pull-right'))
+                                css_class='button-group-right'))
         elif self.instance:
             # cloning
-            self.buttons = self.save_and_add,
+            self.buttons = self.save_button,
         else:
             # creating a new one
             self.buttons = self.save_and_add,
@@ -48,13 +48,13 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
-                                    css_class='btn-success')
+                                    css_class='green-button')
         self.history_button = StrictButton('History', name='history',
                                            data_toggle="modal",
                                            data_target="#history_window_"+
                                             problem.get_problem_type_name()+
                                                        "-{}".format(problem.pk),
-                                           css_class='btn-default')
+                                           css_class='reg-button')
 
 
 
@@ -78,7 +78,7 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
     final = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        go = Button('Go', value='Go', css_class='btn-success')
+        go = Button('Go', value='Go', css_class='green-button')
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(Fieldset('', 'time', 'section', 'final',
                                     ButtonHolder(go)))
@@ -93,7 +93,7 @@ class BrowseSubmissionsForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.submit_button = Submit('Browse', value='Browse',
-                                    css_class='btn-success')
+                                    css_class='green-button')
         problem = kwargs.pop('problem')
         super().__init__(*args, **kwargs)
 

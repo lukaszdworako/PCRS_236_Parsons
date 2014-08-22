@@ -1,0 +1,62 @@
+//common classes
+  .quest_border{
+    border-style:solid !important;
+    border-width:1px !important;
+  }
+
+  .quest_page_common{
+    .quest_border;
+    .panel-heading;
+  }
+
+//arrow indicating opened and closed panels
+  .collapse-indicator{
+    .glyphicon;
+    .glyphicon-chevron-right;
+  }
+
+  a.collapsed > .collapse-indicator{
+    .collapse-indicator
+  }
+
+  a:not(.collapsed) > .collapse-indicator{
+      transform: rotate(90deg);
+  }
+
+
+.pcrs-panel-group{
+  .panel-group;
+  .pcrs-panel{
+    .panel;
+  }
+  .pcrs-panel-heading{
+    .panel-group > .panel-heading;
+  }
+  .pcrs-panel-footer{
+    .panel-footer;
+  }
+}
+
+.pcrs-panel{
+  .panel;
+  .panel-default;
+  .pcrs-panel-heading{
+    .panel-heading;
+  }
+  .pcrs-panel-body{
+    .panel-body;
+  }
+}
+
+.pcrs-panel-title{
+  .panel-title;
+}
+
+.pcrs-panel-body{
+  .panel-group;
+  .panel-body;
+}
+
+.pcrs-panel-heading{
+  .panel-heading;
+}

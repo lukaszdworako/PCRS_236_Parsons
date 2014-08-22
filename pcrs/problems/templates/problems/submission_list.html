@@ -17,7 +17,7 @@
 
 {% block stylesheets %}
     {{ block.super }}
-    {% include "problems_code/code_problem_stylesheets.html" %}
+    {% include "problems/code_problem_stylesheets.html" %}
 {% endblock %}
 
 {% load filters %}
@@ -29,14 +29,15 @@
 {% block content %}
     {% for submission in submissions %}
         <div>
-            <h5>{{ submission.timestamp }}</h5>
+            <h4><b>{{ submission.timestamp }}</b></h4>
             <div>
                 <div class="code" id="{{ submission.problem.language }}_{{ submission.pk }}">{{ submission.submission }}</div>
                 <table class="table">
                     {% for testrun in submission.testrun_set.all %}
                         {% with testcase=testcases|get_item:testrun.testcase.pk %}
-                            <tr>
-                            <td>{{ testcase.display|default:'Hidden' }}</td><td>{{testrun.test_passed}}</td>
+                            <tr class="row">
+                                <td class="col-lg-11 col-md-11 col-sm-11 col-xs-11 {{testrun.test_passed}}">{{ testcase.display|default:'Hidden' }}</td>
+                                <td class="col-lg-1 col-md-1 col-sm-1 col-xs-1 {{testrun.test_passed}}"><b>{{testrun.test_passed}}</b></td>
                             </tr>
                         {% endwith %}
                     {% endfor %}

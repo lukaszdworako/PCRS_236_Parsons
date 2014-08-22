@@ -1,50 +1,35 @@
 {% load filters %}
 
-<div class="panel-group" id="quest_accordion_{{ quest.quest.pk }}">
-    <div class="panel panel-default">
+<div class="pcrs-panel-group" id="quest_accordion_{{ quest.quest.pk }}">
+    <div class="pcrs-panel">
         {% if quest.is_past_due %}
-            <div class="panel-heading panel-quest-past-due">
+            <div class="quest-expired">
         {% else %}
-            <div class="panel-heading panel-quest-not-past-due">
+            <div class="quest-live">
         {% endif %}
-                <h4 class="panel-title">
+                <h4 class="pcrs-panel-title">
                     <a href="#quest_collapse_{{ quest.quest.pk }}"
                        data-parent="quest_accordion_{{ quest.quest.pk }}"
                        class="collapsed"
                        data-toggle="collapse">
-                        <i class="glyphicon glyphicon-chevron-right quest-icon"></i>
+                        <i class="collapse-indicator"></i>
                         {{ quest.quest.name }}
-                        <div class="visible-xs">
-                            &nbsp;
-                            <span class="pull-right">
+                        <div class="info">
                                 {% if quest.is_past_due %}
                                     Submission closed :
                                 {% else %}
                                     Due date :
                                 {% endif %}
-                            </span>
-                        </div>
-                        <div class="visible-xs">
-                            &nbsp;
-                            <span class="pull-right">
+                                <br class="info-sm">
                                 {{ quest.due_on|default:'' }}
-                            </span>
                         </div>
-                        <span class="pull-right visible-lg visible-md visible-sm">
-                            {% if quest.is_past_due %}
-                                Submission closed :
-                            {% else %}
-                                Due date :
-                            {% endif %}
-                            {{ quest.due_on|default:'' }}
-                        </span>
                     </a>
                 </h4>
             </div>
         {% if quest.quest.is_live %}
             <div id="quest_collapse_{{ quest.quest.pk }}"
                  class="panel-collapse collapse">
-                <div class="panel-group panel-body quest_internal"
+                <div class="quest-body"
                      id="challenge_accordion_{{ challenge.pk }}">
                     <h4> {{ quest.quest.description }} </h4>
 
@@ -55,7 +40,7 @@
                 </div>
             </div>
         {% else %}
-            <div class="label label-danger">
+            <div class="red-label">
                 The questmasters are still working on a few minor details.
             </div>
         {% endif %}

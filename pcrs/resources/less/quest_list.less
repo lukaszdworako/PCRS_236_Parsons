@@ -1,0 +1,76 @@
+@import "base";
+
+@import "problem_icons";
+@import "fontello";
+@import "pcrs_panel";
+
+
+@import "../bootstrap_less/bootstrap-3.2.0/less/wells";
+@import "../bootstrap_less/bootstrap-3.2.0/less/modals";
+
+//overwrite main page
+.main-page{
+  .main-page-wide;
+}
+
+.top-save{
+  .pull-right;
+  margin-top: -75px;
+}
+
+.challenge{
+  .well;
+  background-color: @quest-page-challenge-background-color;
+  color: @quest-page-challenge-color;
+}
+
+.available_challenges, .set_challenges{
+  .half-page;
+  min-height: 150px;
+}
+
+.tab-content{
+  .well;
+  overflow-y: scroll;
+  min-height: 150px;
+}
+
+.quest-controls{
+  .btn-toolbar;
+  .pull-left;
+}
+
+.vertical-button-position{
+  .btn-group-vertical;
+  & > .up-button, .down-button{
+    .btn;
+  }
+}
+
+.up-icon{
+  .glyphicon;
+  .glyphicon-arrow-up;
+}
+
+.down-icon{
+  .glyphicon;
+  .glyphicon-arrow-down;
+}
+
+.quest-detail{
+  margin:5px;
+  margin-left:30px;
+}
+
+.quest-box{
+  .well;
+}
+
+.close{
+  .glyphicon;
+  .glyphicon-remove;
+  .pull-right;
+  right: -16px;
+  top: -16px;
+}
+
