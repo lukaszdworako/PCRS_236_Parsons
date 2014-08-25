@@ -2,7 +2,7 @@
 
 {% block item_title %}
     <a href="{{ object.get_stats_page_url }}">
-        <i class="glyphicon glyphicon-stats"></i>
+        <i class="stats-icon"></i>
         <span class="at">Statistics for {{ object.name }}</span>
     </a>
     {% if object.get_first_page_url %}
@@ -12,10 +12,10 @@
             </a>
         {% else %}
             {{ object.name }} | {{ object.quest }}
-            <div class="label label-warning">Invisible to this section.</div>
+            <div class="red-label">Invisible to this section.</div>
         {% endif %}
     {% else %}
         {{ object.name }} | {{ object.quest }}
-        <div class="label label-danger">No challenge pages.</div>
+        <div class="red-label">No challenge pages.</div>
     {% endif %}
 {% endblock %}

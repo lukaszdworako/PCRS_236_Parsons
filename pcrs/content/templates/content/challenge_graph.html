@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    {% load static %}
+
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+
+    <link rel="stylesheet"
+          href="{% static "bootstrap-3.1.1/css/bootstrap.min.css" %}"
+          type="text/css">
+    <link rel="stylesheet"
+          href="{% static "extra_icons/css/fontello.css" %}"
+          type="text/css">
+    <link rel="stylesheet"
+          href="{% static "style.css" %}"
+          type="text/css">
+    <link rel="stylesheet"
+          href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet"
+          href="{% static "challenge_graph/ui/malihu-custom-scrollbar-plugin-master/jquery.mCustomScrollbar.css" %}"/>
+    <link rel="stylesheet"
+          href="{% static "challenge_graph/ui/graph_styles.css" %}"/>
+
+    <script type="text/javascript">
+        var root = '{{ site_prefix }}';
+    </script>
+
+    <script src="{% static "jquery-2.1.1.min.js" %}"
+            type="text/javascript"></script>
+    <script src="{% static "d3/d3.min.js" %}"></script>
+
+    <script src="{% static "bootstrap-3.1.1/js/bootstrap.min.js" %}"></script>
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/map/map.js" %}"></script>
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/build_graph.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/initialize_graph.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/initialize_user_data.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/mouse_callbacks.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/orientation.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/process_graph.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/scrollbar.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/setup_graph.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/size.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/zoom.js" %}"></script>
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/objects/edge_object.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/objects/node_object.js" %}"></script>
+
+    <script type="text/javascript"
+    src="{% static "challenge_graph/js/map/graph_view_drag_event.js" %}"></script>
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/map/graph_view_click_event.js" %}"></script>
+
+
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js//utilities/jquery.mousewheel.min.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/initialize_user_data.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/vitalize_graph.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/utilities/vitalize_utils.js" %}"></script>
+    <script type="text/javascript"
+            src="{% static "challenge_graph/js/graph/process_graph.js" %}"></script>
+    <script src="{% static "challenge_graph/ui/malihu-custom-scrollbar-plugin-master/js/minified/jquery.mCustomScrollbar.min.js" %}"></script>
+    <script src="{% static "jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js" %}"></script>
+
+</head>
+
+
+<body onload="location.hash = 'graph';">
+{% if user.is_instructor or user.is_ta %}
+    {% include "pcrs/instructor_navigation.html" %}
+{% else %}
+    {% include "pcrs/student_navigation.html" %}
+{% endif %}
+
+{#<div class="container-fluid">#}
+{#    <div id="content" class="row">#}
+{#        <div class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1 col-xs-10 col-xs-offset-1 col-lg-10 col-lg-offset-1">#}
+<div id="master-layout">
+    <div id="scroll-pane">
+        <div id="scroll-content" tabindex="0">
+            <div id="scroll-background-top">
+            </div>
+            <div id="scroll-background-bottom">
+            </div>
+        </div>
+        <div id="HUD">
+            <div id="map">
+            </div>
+            <div id="button-container">
+                <button id="change-orientation" class="btn">
+                    Change Orientation
+                </button>
+                <br/>
+                <button class="zoom btn" onclick="zoomIn()">+</button>
+                <button class="zoom btn" onclick="zoomOut()">-</button>
+            </div>
+            <!--<div id="slider-container">-->
+                <!--<span id="week">Quest N</span>-->
+                <!--<span id="video-title">The Name of a Challenge!</span>-->
+            <!--</div>-->
+        </div>
+    </div>
+</div>
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+</body>
+</html>

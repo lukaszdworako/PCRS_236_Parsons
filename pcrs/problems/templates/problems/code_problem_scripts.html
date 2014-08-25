@@ -1,0 +1,59 @@
+{% load staticfiles %}
+
+{% load compress %}
+{% compress js %}
+    <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/sql/sql.js" %}"></script>
+    <script src="{% static "codemirror-4.1/mode/ra/ra.js" %}"></script>
+    <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
+        type="text/javascript"></script>
+{% endcompress %}
+{% include "problems/visualizer_python_includes.html" %}
+{% load compress %}
+{% compress js %}
+{#  add other langauges here  #}
+
+{# When another language is added modify code_mirror.js #}
+<script src="{% static "code_mirror.js" %}"></script>
+
+<script type="text/javascript">
+    var cmh_list = {};
+
+    var language = "{{ problem.language }}";
+    var problem_id = "{{ problem.pk }}";
+    var visualizer = null;
+
+    var happyFace = $('<img id="dynamic">').attr({
+        src: '{% static "problems/img/yellow-happy-face.png" %}',
+        alt: 'Smiley Face',
+        height: "36",
+        width: "36"
+    });
+    var sadFace = $('<img id="dynamic">').attr({
+        src: '{% static "problems/img/red-sad-face.jpg" %}',
+        alt: 'Sad Face',
+        height: "36",
+        width: "36"
+    });
+    var dURL = "{% static "problems/img/download-icon.png" %}";
+
+    //Delay to allow the window to change
+    function delay_refresh_cm(key) {
+        setTimeout(function () {
+                    refresh_cm(key)
+                }, 1
+        );
+    }
+    //Refresh the code mirrors to fit the newly sized window
+    function refresh_cm(key) {
+        cmh_list[key].refresh();
+    }
+</script>
+<script src="{% static "problems/js/problems_helper.js" %}"
+        type="text/javascript"></script>
+<script src="{% static "problems/js/problem.js" %}"
+        type="text/javascript"></script>
+<script src="{% static "problems/js/visualizer.js" %}"
+        type="text/javascript"></script>
+{% endcompress %}

@@ -1,7 +1,9 @@
 from collections import defaultdict
 import json
+import os
+
 from django.http import HttpResponse
-from django.views.generic import ListView, DetailView, View
+from django.views.generic import ListView, DetailView, View, TemplateView
 from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
@@ -136,7 +138,7 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
 
 class ChallengeStatsView(CourseStaffViewMixin, DetailView):
     """
-    View the graph displaying the numbers of students who did not attemt,
+    View the graph displaying the numbers of students who did not attempt,
     attempted, or completed the Challenge.
     """
     model = Challenge
@@ -205,3 +207,36 @@ class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
             )
             for challenge in self.model.objects.all()
         }),  mimetype='application/json')
+
+
+class ChallengeGraphView(ProtectedViewMixin, TemplateView):
+    """
+    View the challenge dependency graph.
+    """
+    template_name = 'content/challenge_graph.html'
+
+
+class ChallengeGraphGenViewHorizontal(CourseStaffViewMixin, UserViewMixin, View):
+    """
+    Return the svg needed to display the horizontal dependency graph.
+    """
+    model = Challenge
+
+    def get(self, request, *args, **kwargs):
+        svg = os.path.join(os.getcwd(),
+                           'resources/challenge_graph/ui/graph_gen_horizontal.svg')
+        return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
+                            mimetype='text')
+
+
+class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
+    """
+    Return the svg needed to display the vertical dependency graph.
+    """
+    model = Challenge
+
+    def get(self, request, *args, **kwargs):
+        svg = os.path.join(os.getcwd(),
+                           'resources/challenge_graph/ui/graph_gen_vertical.svg')
+        return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
+                            mimetype='text')

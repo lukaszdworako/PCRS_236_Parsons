@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, url
+from content.api import InclassProblems, InclassProblemsView
 
 from content.challenge_content_views import (TextCreateView, PageCreateView,
                                              ChallengeObjectsView,
@@ -8,7 +9,8 @@ from content.challenge_content_views import (TextCreateView, PageCreateView,
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
-                                 QuestsView)
+                                 QuestsView, QuestsViewLive,
+                                 QuestsViewLiveQuestData)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -58,7 +60,10 @@ urlpatterns = patterns('',
         name='challenge_stats_data'),
 
     # prerequisites graph
-    url(r'^challenges/prerequisites/for_user$',
+    url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
+    url(r'^challenges/prereq_graph/generate_horizontal$', ChallengeGraphGenViewHorizontal.as_view()),
+    url(r'^challenges/prereq_graph/generate_vertical$', ChallengeGraphGenViewVertical.as_view()),
+    url(r'^challenges/prereq_graph/for_user$',
         ChallengeCompletionForUserView.as_view(),
         name='challenge_prerequisite_data_for_user'),
 
@@ -78,6 +83,7 @@ urlpatterns = patterns('',
         ChangeProblemVisibilityView.as_view(model=TextBlock)),
 
     url(r'^quests$', QuestsView.as_view(), name='quests'),
+    url(r'^quests_live$', QuestsViewLive.as_view(), name='quests_live'),
 
     url(r'^quests/list$', QuestListView.as_view(),
         name='quest_list'),
@@ -93,4 +99,16 @@ urlpatterns = patterns('',
 
     url(r'^quests/section/(?P<section>[\w-]+)$', QuestSectionListView.as_view(),
         name='section_quests_setup'),
+
+
+    url(r'^inclass$', InclassProblemsView.as_view(),
+        name='inclass_problems_page'),
+
+    url(r'^inclass/list$', InclassProblems.as_view(),
+        name='inclass_problems'),
+
+    url(r'^get_quest_list$', QuestsViewLiveQuestData.as_view(),
+        name='live_quest_list'),
+
+
 )

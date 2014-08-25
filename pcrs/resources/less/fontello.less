@@ -1,0 +1,30 @@
+// Import the fonts
+@font-face {
+  font-family: 'fontello';
+  src: url('../extra_icons/font/fontello.eot');
+  src: url('../extra_icons/font/fontello.eot?#iefix') format('embedded-opentype'),
+       url('../extra_icons/font/fontello.woff') format('woff'),
+       url('../extra_icons/font/fontello.ttf') format('truetype'),
+       url('../extra_icons/font/fontello.svg#fontello') format('svg');
+}
+
+// Catchall baseclass
+.fontello() {
+  position: relative;
+  top: 1px;
+  font-size: 1.25em;
+  display: inline-block;
+  font-family: 'Fontello';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  margin:2px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Individual icons
+
+.fontello-bullhorn           { &:before { content: "\e800"; } }
+.fontello-cinema            { &:before { content: "\e801"; } }
+.fontello-library           { &:before { content: "\e802"; } }

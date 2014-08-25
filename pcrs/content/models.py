@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
 from django.utils.timezone import utc, now
+from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
 
@@ -145,6 +146,12 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     class Meta:
         ordering = ['quest', 'order']
 
+    def serialize(self):
+        return {
+            'pk': self.pk, 'name': self.name, 'graded': self.is_graded,
+            'url': self.get_absolute_url()
+        }
+
     def get_first_page_url(self):
         try:
             page = self.contentpage_set.get(order=1)
@@ -160,6 +167,11 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         return {challenge.pk for challenge in Challenge.objects.all()
                 if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+        # output_graph(self.get_challenge_graph_data())
+
     @classmethod
     def get_challenge_problem_data(cls, user, section):
         def sum_dict_values(*args):
@@ -174,6 +186,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         data = {}
         challenge_to_total, challenge_to_completed = [], []
         best = {}
+        problems_completed = {}
 
         for content_type in get_problem_content_types():  # 1 query
             problem_class = content_type.model_class()
@@ -182,10 +195,13 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
             challenge_to_completed.append(
                 submission_class.get_completed_for_challenge_before_deadline(user, section))
 
-            best[content_type.app_label], _ = submission_class\
+            best[content_type.app_label], \
+            problems_completed[content_type.app_label] = submission_class\
                 .get_best_attempts_before_deadlines(user, section)
 
+
         data['best'] = best
+        data['problems_completed'] = problems_completed
         # number of problems completed by a student in this challenge
         data['challenge_to_completed'] = sum_dict_values(*challenge_to_completed)
         # total number of problems in this challenge
@@ -207,7 +223,8 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 'name': challenge.name,
                 'prerequisites': list(challenge.prerequisites.all()
                                                .values_list('id', flat=True)),
-                'quest': challenge.quest_id
+                'quest': challenge.quest_id,
+                'url': challenge.get_first_page_url()
             }
             for challenge in cls.objects.prefetch_related('prerequisites').all()
         }

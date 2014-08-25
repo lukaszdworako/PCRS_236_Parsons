@@ -7,12 +7,10 @@ from django.db.models.signals import post_delete
 
 from pyparsing import ParseException
 from problems_rdb.db_wrapper import StudentWrapper
-from rapt.translation_error import TranslationError
-from rapt.translator import Translator
+from rapt.treebrd.errors import TreeBRDError as TranslationError
+from rapt.rapt import Rapt
 
-from rapt.grammars import GRAMMARS
-from rapt.constants import SET_SEMANTICS, BAG_SEMANTICS
-
+from rapt.treebrd.grammars import GRAMMARS as RAPT_GRAMMARS
 
 from problems.models import (AbstractTestRun, AbstractSubmission,
                              testcase_delete, problem_delete)
@@ -31,8 +29,8 @@ class Problem(RDBProblem):
     When a RAProblem is deleted, any associated RATestCases are also deleted.
     """
     language = 'ra'
-    GRAMMARS = [(name, name) for name, cls in GRAMMARS.items()]
-    SEMANTICS = ((SET_SEMANTICS, 'Set'), (BAG_SEMANTICS, 'Bag'),)
+    GRAMMARS = [(name, name) for name, cls in RAPT_GRAMMARS.items()]
+    SEMANTICS = (('set', 'Set'), ('bag', 'Bag'),)
     grammar = models.TextField(blank=False, null=False, choices=GRAMMARS)
     semantics = models.TextField(blank=False, null=False, choices=SEMANTICS)
 
@@ -49,11 +47,13 @@ class Problem(RDBProblem):
         """
 
         if self.grammar and self.schema:
-            translator = Translator(grammar=GRAMMARS[self.grammar])
+            translator = Rapt(grammar=self.grammar)
             schema = loads(self.schema.tables)
             try:
-                sql = translator.translate(schema, self.semantics, self.solution)
-                self._run_solution(' '.join(sql.sql))
+                sql = translator.to_sql(instring=self.solution,
+                                        schema=schema,
+                                        use_bag_semantics=self.semantics=='bag')
+                self._run_solution('; '.join(sql))
             except ParseException as e:
                 error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
                     .format(lineno=e.lineno, col=e.col, line=e.line)
@@ -81,19 +81,21 @@ class Submission(AbstractSubmission):
         results, error = [], None
 
         schema = loads(self.problem.schema.tables)
-        translator = Translator(grammar=GRAMMARS[self.problem.grammar])
+        use_bag = self.problem.semantics == 'bag'
+        translator = translator = Rapt(grammar=self.problem.grammar)
 
         try:
-            t_sub = translator.translate(schema, self.problem.semantics,
-                                         self.submission)
-            t_ans = translator.translate(schema, self.problem.semantics,
-                                         self.problem.solution)
+            t_sub = translator.to_sql(instring=self.submission,
+                                      schema=schema, use_bag_semantics=use_bag)
+            t_ans = translator.to_sql(instring=self.problem.solution,
+                                      schema=schema, use_bag_semantics=use_bag)
+
             with StudentWrapper(database=settings.RDB_DATABASE,
                                 user=request.user.username) as db:
                 for testcase in testcases:
                     dataset = testcase.dataset
-                    result = db.run_testcase(' '.join(t_ans.sql),
-                                             ' '.join(t_sub.sql),
+                    result = db.run_testcase('; '.join(t_ans),
+                                             '; '.join(t_sub),
                                              dataset.namespace)
                     TestRun(submission=self, testcase=testcase,
                             test_passed=result['passed']).save()

@@ -100,26 +100,26 @@ function add_mc_history_entry(data, div_id, flag){
     var sub_time = new Date(data['sub_time']);
     sub_time = create_mc_timestamp(sub_time);
 
-    var panel_class = "panel panel-default";
+    var panel_class = "pcrs-panel-default";
 
     if (data['past_dead_line']){
-        panel_class = "panel panel-warning";
+        panel_class = "pcrs-panel-warning";
         sub_time = sub_time + " Submitted after the deadline";
     }
 
     star_text = "";
 
     if (data['best'] && !data['past_dead_line']){
-        panel_class = "panel panel-primary";
-        star_text = '<icon style="font-size:1.2em" class="glyphicon glyphicon-star"> </icon>';
-        $('#'+div_id).find('#history_accordion').find(".glyphicon-star").remove();
-        $('#'+div_id).find('#history_accordion').find(".panel-primary")
-            .addClass("panel-default").removeClass("panel-primary");
+        panel_class = "pcrs-panel-star";
+        star_text = '<icon style="font-size:1.2em" class="star-icon"> </icon>';
+        $('#'+div_id).find('#history_accordion').find("star-icon").removeClass("star-icon");
+        $('#'+div_id).find('#history_accordion').find(".panel-star")
+            .addClass("panel-default").removeClass("panel-star");
     }
 
     var entry = $('<div/>',{class:panel_class});
-    var header1 = $('<div/>',{class:"panel-heading"});
-    var header2 = $('<h4/>', {class:"panel-title"});
+    var header1 = $('<div/>',{class:"pcrs-panel-heading"});
+    var header2 = $('<h4/>', {class:"pcrs-panel-title"});
     var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
                                       + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
                                       + " / "
@@ -131,7 +131,7 @@ function add_mc_history_entry(data, div_id, flag){
                               href:"#collapse_"+data['sub_pk'],
                               html:sub_time + header4.html()});
 
-    var cont1 = $('<div/>', {class:"panel-collapse collapse",
+    var cont1 = $('<div/>', {class:"pcrs-panel-collapse collapse",
                                   id:"collapse_" + data['sub_pk']});
 
     var cont2 = $('<div/>', {id:"MC_answer_"
@@ -140,18 +140,18 @@ function add_mc_history_entry(data, div_id, flag){
                                       + data['sub_pk'],
                                   html:data['submission']});
 
-    var cont3 = $('<ul/>', {class:"list-group"});
+    var cont3 = $('<ul/>', {class:"pcrs-list-group"});
 
     for (var num = 0; num < data['options'].length; num++){
 
-        var ic = "<icon class='glyphicon glyphicon-unchecked'> </icon>";
+        var ic = "<icon class='unchecked-icon'> </icon>";
         var test_msg = "";
         if (data['options'][num]['selected']){
-            ic = "<icon class='glyphicon glyphicon-check'> </icon>";
+            ic = "<icon class='checked-icon'> </icon>";
         }
 
-        var cont4 = $('<li/>', {
-            class: "list-group-item",
+        var cont4 = $('<div/>', {
+            class: "pcrs-list-group-item",
             html:ic + " " + data['options'][num]['option']
         });
 
@@ -189,7 +189,7 @@ function submit_mc(submission, problem_pk, div_id) {
                     $('#'+div_id).find('#deadline_msg').remove();
                     $('#'+div_id)
                         .find('#alert')
-                        .after('<div id="deadline_msg" class="alert alert-danger">Submitted after the deadline!<div>');
+                        .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
                 }
                 var display_element = $('#multiple_choice-'+problem_pk)
                     .find("#alert");
@@ -199,15 +199,15 @@ function submit_mc(submission, problem_pk, div_id) {
 
                 var desider = score == max_score;
                 $(display_element)
-                    .toggleClass("alert-danger", !desider);
+                    .toggleClass("red-alert", !desider);
                 $(display_element)
-                    .toggleClass("alert-success", desider);
-                $(display_element)
-                    .children('icon')
-                    .toggleClass("glyphicon-remove", !desider);
+                    .toggleClass("green-alert", desider);
                 $(display_element)
                     .children('icon')
-                    .toggleClass("glyphicon-ok", desider);
+                    .toggleClass("remove-icon", !desider);
+                $(display_element)
+                    .children('icon')
+                    .toggleClass("ok-icon", desider);
                 if (desider){
                     $(display_element)
                         .children('span')
@@ -243,23 +243,7 @@ function submit_mc(submission, problem_pk, div_id) {
                     'options': options_list
                 }
                 if (data['best'] && !data['past_dead_line']){
-                    var side_bar = $('.nav.bs-docs-sidenav').find('#sb_'+div_id);
-                    var new_title = $('#'+div_id).find(".widget_title")[0].firstChild.data.trim();
-                    if (score == max_score){
-                        $('#'+div_id).find(".widget_title").siblings('span').empty();
-                        $('#'+div_id).find(".widget_title").siblings('span').append($('<i/>', {class:"glyphicon glyphicon-ok ok-icon-green"}));
-                        side_bar.removeClass();
-                        side_bar.addClass("glyphicon glyphicon-check problem-complete");
-                        new_title += " : Complete"
-                    }
-                    else{
-                        $('#'+div_id).find(".widget_title").siblings('span').find('sup').text(score);
-                        $('#'+div_id).find(".widget_title").siblings('span').find('sub').text(max_score);
-                        new_title += " : " + score + " / " + max_score;
-                        side_bar.removeClass("problem-idle")
-                        side_bar.addClass("problem-attempted");
-                    }
-                    side_bar.prop('title', new_title);
+                    update_marks(div_id, score, max_score);
                 }
 
                 if ($('#'+div_id).find('#history_accordion').children().length != 0){

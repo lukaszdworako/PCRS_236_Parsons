@@ -50,6 +50,11 @@ class Problem(AbstractProblem):
             results[opt_id] = res
         return results
 
+    def serialize(self):
+        serialized = super().serialize()
+        serialized['name'] = serialized['name'] or 'Multiple Choice'
+        return serialized
+
 
 class Submission(AbstractSubmission):
     """

@@ -1,0 +1,34 @@
+{% extends "pcrs/base.html" %}
+
+{% load compress %}
+{% load feedback %}
+{% load filters %}
+{% load static %}
+
+
+{% block scripts %}
+    {{ block.super }}
+    {% compress js %}
+        {% include "pcrs/node_includes.html" %}
+        <script type="text/jsx"
+                src="{% static "content/js/quests_io.js" %}"></script>
+        {% include "pcrs/react_includes.html" %}
+    {% endcompress %}
+
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+     <link rel="stylesheet"
+                  href="{% static "content/css/style.css" %}"
+                  type="text/css">
+{% endblock %}
+
+{% block page_title %}
+    Quests LIVE
+{% endblock %}
+
+{% block content %}
+    <div id="quests"></div>
+    <script type="text/jsx" src="{% static "content/js/quests.js" %}"></script>
+{% endblock %}

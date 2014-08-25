@@ -1,0 +1,118 @@
+@import "../bootstrap_less/bootstrap-3.2.0/less/tables";
+@import "../bootstrap_less/bootstrap-3.2.0/less/list-group.less";
+
+
+.pcrs-table{
+  .table;
+//  .table-striped;
+  background-color: @uft-white;
+}
+
+//back up for applying style to the top row in a table
+.pcrs-table-head-row{
+}
+
+.vcenter {
+  vertical-align: middle !important;
+  float: none !important;
+}
+
+.pcrs-table-row-extra{
+  .pcrs-table-row;
+  background-color:@sql-extra-background-color !important;
+}
+.pcrs-table-row-order{
+  .pcrs-table-row;
+  background-color:@sql-order-background-color !important;
+}
+.pcrs-table-row-missing{
+  .pcrs-table-row-extra;
+}
+
+.pcrs-table-row{
+  .vcenter;
+}
+
+.table-left, .table-right{
+  padding: 10px;
+}
+
+.expression{
+  @media (min-width: @screen-lg-min) {
+    width: 25%;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width:33.33%;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    display:none;
+  }
+  @media (max-width: @screen-xs-max) {
+    display:none;
+  }
+  padding:10px;
+  .vcenter;
+}
+
+.description{
+  @media (min-width: @screen-lg-min) {
+    width: 25%;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    display:none;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    display:none;
+  }
+  @media (max-width: @screen-xs-max){
+    display:none;
+  }
+  padding:10px;
+  .vcenter;
+}
+
+.expected, .result{
+  @media (min-width: @screen-lg-min) {
+    width: 16.66%;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width: 25%;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    width: 33.33%;
+  }
+  @media (max-width: @screen-xs-max){
+    width: 33.33%;
+  }
+  padding:10px;
+  .vcenter;
+}
+
+.passed, .debug{
+  @media (min-width: @screen-lg-min) {
+    width: 8.33%;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width: 8.33%;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    width: 16.66%;
+  }
+  @media (max-width: @screen-xs-max){
+    width: 16.66%;
+  }
+  padding:10px;
+  .vcenter;
+}
+
+.listTbl{
+  border-style: solid !important;
+  border-width: 1px !important;
+  > tbody > tr > .listElt{
+    margin-top: -20px !important;
+  }
+}
+
+.tupleElt{
+  padding-bottom:0px !important;
+}
