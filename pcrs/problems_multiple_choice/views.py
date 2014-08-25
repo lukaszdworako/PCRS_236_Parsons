@@ -141,7 +141,8 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View, 
+                          UserViewMixin):
     """
     Create a submission for a problem asynchronously.
     """
@@ -149,7 +150,7 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         results = self.record_submission(request)
 
         problem = self.get_problem()
-        user, section = self.request.user, self.request.user.section
+        user, section = self.get_user(), self.get_section()
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
 
