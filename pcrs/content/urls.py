@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import patterns, url
 from content.api import InclassProblems, InclassProblemsView
 
@@ -9,13 +10,21 @@ from content.challenge_content_views import (TextCreateView, PageCreateView,
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
-                                 QuestsView, QuestsViewLive,
-                                 QuestsViewLiveQuestData)
+                                 QuestsView, ReactiveQuestsView,
+                                 ReactiveQuestsDataView)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
 
 
+challenge_page_view = ContentPageView
+quests_page_view = QuestsView
+
+if settings.REACT:
+    challenge_page_view = ReactiveContentPageView
+
+if settings.QUESTS_LIVE:
+    quests_page_view = ReactiveQuestsView
 
 urlpatterns = patterns('',
     url(r'^tags/list$', TagListView.as_view(),
@@ -47,11 +56,11 @@ urlpatterns = patterns('',
     url(r'^challenges/list$', ChallengeListView.as_view(),
         name='challenge_list'),
     url(r'^challenges/(?P<challenge>[0-9]+)/(?P<page>[0-9]+)$',
-        ContentPageView.as_view(),
+        challenge_page_view.as_view(),
         name='challenge_page'),
 
     url(r'^challenges/(?P<challenge>[0-9]+)/(?P<page>[0-9]+)/get_page_data$',
-        ContentPageData.as_view(),
+        ReactiveContentPageData.as_view(),
         name='challenge_page_data'),
 
 
@@ -88,8 +97,7 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/change_status',
         ChangeProblemVisibilityView.as_view(model=TextBlock)),
 
-    url(r'^quests$', QuestsView.as_view(), name='quests'),
-    url(r'^quests_live$', QuestsViewLive.as_view(), name='quests_live'),
+    url(r'^quests$', quests_page_view.as_view(), name='quests'),
 
     url(r'^quests/list$', QuestListView.as_view(),
         name='quest_list'),
@@ -113,7 +121,7 @@ urlpatterns = patterns('',
     url(r'^inclass/list$', InclassProblems.as_view(),
         name='inclass_problems'),
 
-    url(r'^get_quest_list$', QuestsViewLiveQuestData.as_view(),
+    url(r'^get_quest_list$', ReactiveQuestsDataView.as_view(),
         name='live_quest_list'),
 
 

@@ -4,7 +4,6 @@ import os
 
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView, View, TemplateView
-from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
 from content.models import *
@@ -68,36 +67,99 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
     """
 
 
-class ContentPageView(ProtectedViewMixin, UserViewMixin, TemplateView):
+class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
     """
     View a ContentPage.
     """
-    template_name = "content/reactive_challenge_page.html"
-    model = ContentPage
+    template_name = "content/content_page.html"
+    model = ContentSequenceItem
+    page = None
+    queryset = None
 
     def get_page(self):
-        page_order = self.kwargs.get('page')
-        challenge_id = self.kwargs.get('challenge')
-        section = self.get_section()
+        if self.page is None:
+            section = self.get_section()
+            if section.is_master():
+                page_set = ContentPage.objects.select_related('challenge')\
 
-        page_set = self.model.objects
-        if not section.is_master():
-            page_set = self.model.get_visible_for_section(section)
+            else:
+                page_set = ContentPage.objects.select_related('challenge')\
+                    .filter(challenge__visibility='open',
+                            challenge__quest__sectionquest__section=section,
+                            challenge__quest__sectionquest__open_on__lt=localtime(now()),
+                            challenge__quest__sectionquest__visibility='open',
+                            challenge__quest__mode='live')
+            self.page = page_set.get(
+                order=self.kwargs.get('page', None),
+                challenge_id=self.kwargs.get('challenge', None))
+        return self.page
 
-        return page_set.get(order=page_order, challenge_id=challenge_id)
+    def get_queryset(self):
+        if self.queryset is None:
+            self.queryset = self.model.objects\
+                .filter(content_page=self.get_page())\
+                .prefetch_related('content_object').all()
+        return self.queryset
+
+    def _get_forms(self):
+        forms = defaultdict(dict)
+        for item in self.get_queryset():
+            classname = item.content_object.__class__.__name__
+            if classname == 'Problem':
+                problem = item.content_object
+                # generate a submission form for this problem
+                # based on the problem class
+                module, _ = item.content_object.__module__.split('.')
+                f = SubmissionForm(problem=problem) \
+                    if module.endswith('multiple_choice') \
+                    else ProgrammingSubmissionForm(problem=problem)
+                forms[module][problem.pk] = f
+        return forms
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        page = self.get_page()
-        context['content_page'] = page
-        context['next_url'] = page.get_next_url()
-        context['prev_url'] = page.get_previous_url()
-        context['num_pages'] = page.challenge.contentpage_set.count()
+        user, section = self.get_user(), self.get_section()
 
+        context['content_page'] = self.page
+        context['best'] = {}
+
+        for content_type in get_submission_content_types():
+            best, _ = content_type.model_class()\
+                .get_best_attempts_before_deadlines(user, section)
+            context['best'][content_type.app_label] = best
+
+        context['next'] = self.page.next()
+        context['num_pages'] = self.page.challenge.contentpage_set.count()
+        context['forms'] = self._get_forms()
+        context['watched'] = WatchedVideo.get_watched_pk_list(user)
         return context
 
 
-class ContentPageData(ContentPageView, View):
+class ReactiveContentPageView(ContentPageView):
+    """
+    View a ContentPage, in a mostly reactive way.
+    """
+    template_name = "content/reactive_content_page.html"
+    model = ContentSequenceItem
+    page = None
+    queryset = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['content_page'] = self.page
+        context['best'] = {}
+
+        context['next'] = self.page.next()
+        context['num_pages'] = self.page.challenge.contentpage_set.count()
+        context['forms'] = self._get_forms()
+        return context
+
+
+class ReactiveContentPageData(ContentPageView, View):
+    """
+    Return a JSON object with the data for a reactive content page.
+    """
     def get(self, request, *args, **kwargs):
         user, section = self.get_user(), self.get_section()
         page = self.get_page()
@@ -120,6 +182,7 @@ class ContentPageData(ContentPageView, View):
                     'items': items,
                     'scores': scores,
                     'watched': WatchedVideo.get_watched_uri_ids(user),
+                    'page': {'pk': page.pk, 'challenge': page.challenge_id},
                     'next_page_url': page.get_next_url(),
                     'previous_page_url': page.get_previous_url()
                 }

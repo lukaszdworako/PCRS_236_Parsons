@@ -1,15 +1,15 @@
+socket.on('itemUpdate', function (data) {
+    console.log('dispatching update');
+    window.dispatchEvent(
+        new CustomEvent('itemUpdate', {detail: data})
+    );
+});
+
 socket.on(userhash, function (data) {
     console.log("Socket dispatching update.");
 
     window.dispatchEvent(
         new CustomEvent('statusUpdate', {detail: data})
-    );
-});
-
-socket.on('itemUpdate', function (data) {
-    console.log('dispatching update');
-    window.dispatchEvent(
-        new CustomEvent('itemUpdate', {detail: data})
     );
 });
 
@@ -19,15 +19,9 @@ socket.on('itemUpdate', function (data) {
 window.addEventListener('statusUpdate', function (event) {
     console.log("Update from socket received.");
 
-    // Update the Problem status.
-    var receiver = 'statusUpdate' + event.detail.id;
+    var receiver = 'statusUpdate' + event.detail.item.id;
     window.dispatchEvent(
         new CustomEvent(receiver, {detail: event.detail})
-    );
-
-    // Update the Challenge status.
-    window.dispatchEvent(
-        new CustomEvent('challengeUpdate', {detail: event.detail})
     );
 }, false);
 

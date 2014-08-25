@@ -94,6 +94,9 @@ class TextBlock(models.Model):
     def serialize(self):
         return {'text': self.text}
 
+    def get_uri_id(self):
+        return 'textblock-{}'.format(self.pk)
+
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     """
@@ -210,9 +213,16 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
 
     def serialize(self):
         return {
-            'pk': self.pk, 'name': self.name, 'graded': self.is_graded,
+            'id': self.get_uri_id(),
+            'pk': self.pk,
+            'name': self.name,
+            'description': self.description,
+            'graded': self.is_graded,
             'url': self.get_absolute_url()
         }
+
+    def get_uri_id(self):
+        return 'challenge-{}'.format(self.pk)
 
     def get_first_page_url(self):
         try:

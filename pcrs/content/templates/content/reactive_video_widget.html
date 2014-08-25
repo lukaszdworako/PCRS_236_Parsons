@@ -1,11 +1,6 @@
 {% autoescape off %}
 <h3 class="widget_title"> {{ item.name }}
-
-{% if item.pk in watched %}
-    <span class="widget_mark">
-        {% include "pcrs/checkmark_complete.html" %}
-    </span>
-{% endif %}
+<span class="video-status align-right" id="watched-{{ item.get_uri_id }}"></span>
 </h3>
 <div> {{ item.description|linebreaks }} </div>
 {% endautoescape  %}

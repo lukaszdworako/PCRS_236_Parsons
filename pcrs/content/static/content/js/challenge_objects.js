@@ -321,7 +321,8 @@ function change_problem_visibility(){
             var old_visibility = data['old_visibility'];
             socket.emit('itemUpdate', {
                 item: {
-                        id: current_problem_type + "-" + current_problem_pk,
+                        id: current_problem_type.replace('problems_', '')
+                            + "-" + current_problem_pk,
                         problem_type: current_problem_type,
                         pk: current_problem_pk,
                         properties: {is_visible: new_visibility == 'open'}},

@@ -165,11 +165,19 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
             .select_related('quest')
 
 
-class QuestsViewLive(ProtectedViewMixin, TemplateView):
+class ReactiveQuestsView(ProtectedViewMixin, TemplateView):
+    """
+    List all available Quests and their Challenges for the user in the section.
+
+    Do live updates.
+    """
     template_name = "content/quests_live.html"
 
 
-class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
+class ReactiveQuestsDataView(ProtectedViewMixin, View, UserViewMixin):
+    """
+    Return the data required to generate a live-updated quests page.
+    """
     def get(self, request, *args, **kwargs):
         user, section = self.get_user(), self.get_section()
         data = {
@@ -190,7 +198,9 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
             {
                 'pk': quest.quest.pk,
                 'name': quest.quest.name,
-                'deadline': str(localtime(quest.due_on)) if quest.due_on else None
+                'deadline': localtime(quest.due_on).strftime('%c')
+                            if quest.due_on else None,
+                'deadline_passed': localtime(quest.due_on) < localtime(now())
             }
             for quest in quests]
 
@@ -204,14 +214,7 @@ class QuestsViewLiveQuestData(ProtectedViewMixin, View, UserViewMixin):
 
         # 2
         for item in ContentSequenceItem.objects.prefetch_related('content_object').all():
-            if item.content_type.name == 'problem':
-                id = '{ptype}-{pk}'.format(
-                    pk=item.object_id,
-                    ptype=item.content_type.model_class().get_module_name()
-                )
-            elif item.content_type.name == 'video':
-                id = 'video-{}'.format(item.object_id)
-
+            id = item.content_object.get_uri_id()
             data['item_lists'][item.content_page_id].append(id)
             data['items'][id] = item.content_object.serialize()
 

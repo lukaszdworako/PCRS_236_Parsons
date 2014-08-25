@@ -179,7 +179,7 @@ function submit_mc(submission, problem_pk, div_id) {
      * Submits the students solution to a MC problem
      */
 
-    var postParams = { csrftoken: csrftoken, options : submission  };
+    var postParams = { csrftoken: csrftoken, submission : submission  };
 
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,

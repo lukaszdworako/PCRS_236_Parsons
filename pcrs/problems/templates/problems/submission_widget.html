@@ -9,8 +9,23 @@
         {% endautoescape %}
 
 
-        {% block problem_score %}
-{#            {% if user.is_student or request.session.viewing_as.is_student %}#}
+        <span class="align-right">
+
+        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+            {% block instructor_options %}
+                <span class="widget_controls">
+                    <a href="{{ problem.get_browse_submissions_url }}"><i
+                            class="openfolder-icon"></i><span
+                            class="at">Submissions for {{ problem.name }}</span></a>
+
+                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
+                            class="stats-icon"></i><span
+                            class="at">Statistics for {{ problem.name }}</span></a>
+                    </span>
+            {% endblock %}
+        {% endif %}
+
+            <span class="problem-score" id="score-{{ item.get_uri_id }}">
                 {% if mark|default_if_none:'-' == problem.max_score %}
                     <span class="widget_complete widget_mark"
                           title="Progress so far">
@@ -21,28 +36,16 @@
                               title="Progress so far">
                     {% else %}
                         <span class="widget_not_attempted widget_mark"
-                              title="Progress so far">
+                              title="Progress so far"></span>
                     {% endif %}
                     <sup> {{ mark|default_if_none:'-' }} </sup>
                     /
                     <sub> {{ problem.max_score }} </sub>
+                </span>
                 {% endif %}
-{#            {% endif %}#}
-        </span>
-        {% if user.is_instructor and not request.session.viewing_as.is_student %}
-                {% block instructor_options %}
-                    <span class="widget_controls">
-                    <a href="{{ problem.get_browse_submissions_url }}"><i
-                            class="openfolder-icon"></i><span
-                            class="at">Submissions for {{ problem.name }}</span></a>
+            </span>
 
-                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
-                            class="stats-icon"></i><span
-                            class="at">Statistics for {{ problem.name }}</span></a>
-                    </span>
-                {% endblock %}
-            {% endif %}
-        {% endblock %}
+        </span>
     </h3>
 {% endblock %}
 

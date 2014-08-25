@@ -24,6 +24,9 @@ var onStatusUpdate = {
 
     handleUpdate: function (component, event) {
         console.log('Handling status update');
+        if (component.handleUpdate) {
+            component.handleUpdate(event)
+        }
         component.setState(event.detail.status);
     }
 };
@@ -123,21 +126,12 @@ var ProblemMixin = {
             data.scores[pType].hasOwnProperty(pID) &&
             data.scores[pType][pID] == problem.max_score
             );
-    },
-
-    shouldComponentUpdate: function (nextProps, nextState) {
-        console.log('Is update needed score?');
-        console.log(this.state.score !== nextState.score);
-        return ((this.state.score == null ||
-            (this.state.score < nextState.score)
-            ));
     }
 };
 
 var ProblemStatusIndicator = React.createClass({
     mixins: [Listener, ProblemMixin],
-
-        listenTo: [onStatusUpdate],
+    listenTo: [onStatusUpdate],
 
     getInitialState: function () {
         return {
@@ -158,6 +152,16 @@ var ProblemStatusIndicator = React.createClass({
 
     },
 
+    shouldComponentUpdate: function (nextProps, nextState) {
+        console.log('Is update needed score?');
+        return ((this.state.attempted !== nextState.attempted ||
+                (this.state.completed !== nextState.completed)
+            ));
+    },
+
+    componentDidUpdate: function() {
+       this.props.problemDidUpdate(this.state.completed);
+    },
 
 
     render: function () {
@@ -191,7 +195,13 @@ var Video = {
     getItemStatusRepresentation: function () {
         return this.props.name +
             this.state.completed ? " : watched" : " : unwatched ";
+    },
+
+    handleUpdate: function(event) {
+         this.setState(event.detail.status);
+
     }
+
 };
 
 
@@ -212,6 +222,10 @@ var VideoStatusIndicator = React.createClass({
             title={this.getItemStatusRepresentation()}>
             </span>
             );
+    },
+
+    componentDidUpdate: function() {
+       this.props.videoDidUpdate();
     }
 });
 
