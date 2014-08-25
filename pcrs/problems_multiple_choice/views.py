@@ -21,11 +21,11 @@ from django.utils.timezone import localtime
 #
 
 
-
-class ProblemCloneView(CourseStaffViewMixin, CreateView):
+class ProblemCloneView(problems.views.ProblemCloneView):
     """
     Clone an existing problem, with its options.
     """
+    template_name = "problems_multiple_choice/problem_form.html"
 
     def form_valid(self, form):
         new_problem = form.save()
