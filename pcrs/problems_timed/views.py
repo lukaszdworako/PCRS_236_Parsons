@@ -9,6 +9,8 @@ from problems_timed.forms import PageForm, SubmissionForm
 
 from problems.views import ProblemListView, TestCaseView, SubmissionView, SubmissionViewMixin
 from pcrs.generic_views import GenericItemCreateView
+
+from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from users.section_views import SectionViewMixin
 
@@ -71,7 +73,7 @@ class SubmissionViewMixinTimed(SubmissionViewMixin, FormView):
         return []
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
-                     SingleObjectMixin):
+                     SingleObjectMixin, UserViewMixin):
     form_class = SubmissionForm
     object = None
 
