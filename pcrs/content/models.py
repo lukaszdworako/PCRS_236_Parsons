@@ -146,6 +146,9 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     class Meta:
         ordering = ['quest', 'order']
 
+    def __str__(self):
+        return '{name} | {quest}'.format(name=self.name, quest=self.quest)
+
     def serialize(self):
         return {
             'pk': self.pk, 'name': self.name, 'graded': self.is_graded,
