@@ -56,9 +56,10 @@
     var scrollTop    = this.$target.scrollTop()
     var position     = this.$element.offset()
     var offset       = this.options.offset
-    var offsetTop    = offset.top
+//    var offsetTop    = offset.top
+      //custom change for PCRS to modify side-bar affix height based on pcrs-navbar height
+    var offsetTop    = $(".pcrs-navbar").height();
     var offsetBottom = offset.bottom
-
     if (typeof offset != 'object')         offsetBottom = offsetTop = offset
     if (typeof offsetTop == 'function')    offsetTop    = offset.top(this.$element)
     if (typeof offsetBottom == 'function') offsetBottom = offset.bottom(this.$element)

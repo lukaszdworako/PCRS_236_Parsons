@@ -33,6 +33,7 @@
 }
 
 .main-page{
+  min-height: 600px !important;
   .panel;
   .make-md-column(10);
   .make-md-column-offset(1);
@@ -45,13 +46,16 @@
   .custom-border;
   @media (max-width: @screen-sm-max) {
     padding:0.5in;
+    padding-top:0.12in;
     margin-left:20px;
   }
   @media (min-width: @screen-md-min) {
-    padding-left:1in;
-    padding-right:1in;
+//    padding-left:1in;
+//    padding-right:1in;
+    padding-left:5%;
+    padding-right:5%;
     padding-bottom:1in;
-    padding-top:0.75in;
+    padding-top:0.25in;
   }
   min-width:450px;
 }
@@ -84,6 +88,7 @@
 
 .body-bg{
   background-color: @body-background-color;
+  min-width: 575px;
 }
 
 .pcrs-fluid{
@@ -92,6 +97,9 @@
   @media (max-width: 575px){
     left: 20px;
     width: 450px;
+  }
+  .affix{
+    top: 20px;
   }
 }
 
@@ -123,8 +131,14 @@
 .button-group{
  .btn-group;
   .small-button{
-    margin-left: -5px;
+//    margin-left: -5px;
   }
+  a, input, button{
+    margin-left:2px;
+  }
+//  input{
+//    margin-left:2px;
+//  }
 }
 
 .button-group-right{
@@ -261,6 +275,7 @@
 .green-checkmark-icon{
   .ok-icon;
   color: @green-checkmark-color;
+  .pull-right;
 }
 
 .openfolder-icon{
@@ -300,7 +315,3 @@
   .alert-success;
 }
 
-// alignment
-.align-right{
-  .pull-right;
-}

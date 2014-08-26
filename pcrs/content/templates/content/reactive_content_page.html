@@ -41,6 +41,8 @@
             src="{% static "content/js/future/components.js" %}"></script>
         <script type="text/jsx"
             src="{% static "content/js/reactive_content_page.js" %}"></script>
+        <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/affix.js" %}"
+                type="text/javascript"></script>
 
 {#    {% endcompress %}#}
 {% endblock %}
@@ -61,10 +63,13 @@
 
 
 {% load filters %}
+{% block side-bar %}
+    <div id="sidebar" class="pcrs-sidebar" role="complementary"
+                 data-spy="affix" data-offset-top="60"></div>
+{% endblock %}
+
 {% block content %}
     {{ block.super }}
-
-    <div id="sidebar"></div>
 
     {% for object in object_list %}
         {% with item=object.content_object %}

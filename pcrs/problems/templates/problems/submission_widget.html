@@ -3,13 +3,13 @@
         {% autoescape off %}
             {% block problem_title %}
                 <p class="widget_title">
-                    {{ problem.name|default_if_none:"Multiple Choice Question" }}
+                    {{ problem.name|default:"Multiple Choice Question" }}
                 </p>
             {% endblock %}
         {% endautoescape %}
 
 
-        <span class="align-right">
+{#        <span class="align-right">#}
 
         {% if user.is_instructor and not request.session.viewing_as.is_student %}
             {% block instructor_options %}
@@ -45,7 +45,7 @@
                 {% endif %}
             </span>
 
-        </span>
+{#        </span>#}
     </h3>
 {% endblock %}
 

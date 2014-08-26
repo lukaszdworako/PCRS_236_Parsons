@@ -11,38 +11,98 @@
   margin-bottom:2px;
 }
 
+.pcrs-sidebar.affix {
+  .custom-border !important;
+  .pcrs-sidebar;
+}
+.pcrs-sidebar.affix-top{
+  .custom-border !important;
+  .pcrs-sidebar;
+  margin-right: 1%;
+}
+
+.problem-score{
+  .pull-right;
+  margin-top: -35px;
+}
+
 .pcrs-sidebar{
+  .pull-right;
   .well;
   background-color: @sidebar-background-color;
-  .custom-border;
-  .hidden-print;
-  .affix;
+  .row{
+    margin-top: 10px;
+  }
   @media (min-width: @screen-lg-min) {
-    left: 93.5%;
+    left: 93%;
     width: 5%;
-    top: 10%;
+    padding-left: 1.5%;
+    padding-right: 1.5%;
+    .pcrs-sidenav{
+      padding-left: 15%;
+      span{
+        font-size: 1.25vw;
+      }
+      .row{
+        display :inline-block;
+        width: 200%;
+        margin-left: -50%;
+      }
+    }
   }
   @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
     left: 93%;
-    width: 6%;
-    top: 10%;
+    width: 5%;
+    padding-left: 1.5%;
+    padding-right: 1.5%;
+    .pcrs-sidenav{
+      padding-left: 7.5%;
+      span{
+        font-size: 1.5vw;
+      }
+      .row{
+        display :inline-block;
+        width: 250%;
+        margin-left: -55%;
+      }
+    }
   }
   @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
-    left: 88.5%;
-    width: 9%;
-    top: 10.5%;
+    left: 87.25%;
+    width: 10%;
+    padding-left: 3.5%;
+    padding-right: 3.5%;
+    .pcrs-sidenav{
+      padding-left: 7.5%;
+      span{
+        font-size: 2vw;
+      }
+      .row{
+        display :inline-block;
+        width: 250%;
+        margin-left: -55%;
+      }
+    }
   }
   @media (min-width: 575px) and (max-width: @screen-xs-max){
-    left: 88%;
-    width: 11%;
-    top: 11%;
+    left: 87.25%;
+    width: 10%;
+    padding-left: 3.5%;
+    padding-right: 3.5%;
+    .pcrs-sidenav{
+      padding-left: 7.5%;
+      span{
+        font-size: 2.25vw;
+      }
+      .row{
+        display :inline-block;
+        width: 250%;
+        margin-left: -55%;
+      }
+    }
   }
   @media (max-width: 575px){
     display:none;
-  }
-  .row{
-    margin-left: -10px;
-    margin-right: -10px;
   }
 }
 
@@ -76,8 +136,11 @@
 
 .side-bar-el{
   a{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 20px;
     border-right:solid;
-    padding-right: 5px;
     border-color: @sidebar-background-color;
   }
 }

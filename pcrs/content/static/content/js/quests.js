@@ -33,7 +33,7 @@ var Quest = React.createClass({
         if (deadline) {
             if (this.props.quest.deadline_passed) {
                 divInfo = (<div className="info">
-                Submission closed on
+                Submission closed on&nbsp;
                     <br className="info-sm"> {deadline}</br>
                 </div>);
 
@@ -41,7 +41,7 @@ var Quest = React.createClass({
 
             else {
                 divInfo = (<div className="info">
-                Due on
+                Due on&nbsp;
                     <br className="info-sm"> {deadline}</br>
                 </div>);
             }
@@ -200,14 +200,16 @@ var Challenge = React.createClass({
             "challenge-attempted": this.state.attempted &&
                                    !(this.state.completed == this.state.total),
             "challenge-completed": this.state.total != 0 &&
-                                   this.state.completed == this.state.total
+                                   this.state.completed == this.state.total,
+            "challenge-empty": this.state.total == 0
         });
 
         var challengeMarkClass = React.addons.classSet({
             "challenge-mark-unknown": this.state.total == 0,
             "challenge-mark-incomplete": this.state.total != 0 &&
                                          this.state.completed != this.state.total,
-            "challenge-mark-complete": this.state.completed == this.state.total
+            "challenge-mark-complete": this.state.completed == this.state.total &&
+                                        this.state.total != 0
         });
 
         var panelClasses = React.addons.classSet({
@@ -224,14 +226,14 @@ var Challenge = React.createClass({
                             <i className="collapse-indicator"></i>
                             <span>
                                 <i className={this.props.challenge.graded ? "practice-challenge" : "credit-challenge" }
-                                title={(this.props.challenge.graded ? "Graded" : "Practice" ) + " Challenge"}>
+                                title={(this.props.challenge.graded ? "Practice" : "Graded" ) + " Challenge"}>
                                 </i>
                             </span>
                             <span dangerouslySetInnerHTML={{__html: this.props.challenge.name}} />
                             <div className={challengeMarkClass}>
                                 <br className="info-sm" />
                                     {this.props.challenge.graded ? "Graded" : "Practice"}
-                                <i class="complete-icon"></i>
+                                <i className="complete-icon"></i>
                                 <span className="challenge-mark">
                                     {this.state.completed} / {this.state.total}
                                 </span>

@@ -15,7 +15,7 @@ function bindDebugButton(buttonId) {
     */
 
     $('#'+ buttonId).bind('click', function() {
-        var testcaseCode = $('#tcase_' + buttonId + ' td.expression').html();
+        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
             prepareVisualizer("debug", testcaseCode, buttonId)}, 250
         );
@@ -342,6 +342,9 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             var expected_td = $('<td/>', {class:"table-left"}).append("Expected");
             var actual_td = $('<td/>', {class:"table-right"}).append("Actual");
 
+            var left_wrapper = $('<div/>', {class:"sql_table_control"});
+            var right_wrapper = $('<div/>',{class:"sql_table_control"});
+
             var expected_table = $('<table/>', {class:"pcrs-table"});
             var actual_table = $('<table/>', {class:"pcrs-table"});
 
@@ -409,8 +412,11 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                     actual_table.append(actual_entry);
                 }
 
-                expected_td.append(expected_table);
-                actual_td.append(actual_table);
+                left_wrapper.append(expected_table);
+                right_wrapper.append(actual_table);
+
+                expected_td.append(left_wrapper);
+                actual_td.append(right_wrapper);
 
                 main_table.append(expected_td);
                 main_table.append(actual_td);
@@ -479,10 +485,10 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                 newRow.append('<td class="description">' +
                                description + '</td>');
 
-                newRow.append('<td class="expression">' +
-                               testcaseInput + '</td>');
+                newRow.append('<td class="expression"><div class="expression_div">' +
+                               testcaseInput + '</div></td>');
 
-                newRow.append('<td><div id="exp_test_val" class="expected ExecutionVisualizer"></div></td>');
+                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
 
             }
             else {
@@ -495,10 +501,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                               "Hidden Result" +'</td>');
             }
 
-            newRow.append('<td class="passed"></td>');
-
-            newRow.append('<td><div id="current_testcase'+i+'" class="result ExecutionVisualizer">' +
-                           ''+'</div></td>');
+            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
+                           ''+'</div></div></td>');
 
             renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
             $('#current_testcase'+i).attr('id', "");
@@ -506,6 +510,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
             $('#exp_test_val').attr('id',"");
 
+            newRow.append('<td class="passed"></td>');
 
             var pass_status = "";
 
@@ -558,6 +563,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         add_history_entry(data, div_id, 1);
     }
 }
+
 
 function create_timestamp(datetime){
     /**

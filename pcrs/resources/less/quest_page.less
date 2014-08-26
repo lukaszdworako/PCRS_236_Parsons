@@ -7,10 +7,11 @@
 
 .info{
   @media (max-width: @screen-sm-max) {
-    margin-left: 20px;
+    margin-left: 25px;
   }
 
   @media (min-width: @screen-md-min) {
+    display: flex;
     .pull-right;
     .info-sm{
       display: None;
@@ -18,11 +19,14 @@
   }
 }
 
+
 .challenge-mark-complete{
+  margin-top:4px;
   .info;
   .complete-icon{
     .glyphicon;
     .glyphicon-ok;
+    margin-left:30px;
   }
   .challenge-mark{
     display: None;
@@ -30,13 +34,18 @@
 }
 
 .challenge-mark-incomplete{
+  margin-top:4px;
   .info;
   .complete-icon{
     display: None;
   }
+  .challenge-mark{
+    margin-left: 15px;
+  }
 }
 
 .challenge-mark-unknown{
+  margin-top:4px;
   .info;
   .complete-icon{
     display: None;
@@ -44,11 +53,18 @@
   .challenge-mark{
     display: None;
   }
+  margin-right: 45px;
 }
 
 .quest-body{
   .pcrs-panel-body;
-  padding-left:5%;
+  padding-left:2.5%;
+  padding-right:2.5%;
+}
+
+
+.pcrs-panel{
+  margin-bottom: 10px !important;
 }
 
 //challenge page level
@@ -57,24 +73,39 @@
   .make-sm-column(6);
   .make-md-column(4);
   .make-lg-column(3);
+  padding-left:0;
+  padding-top: 15px;
 }
 
 
 //challenge level
+.challenge-icon-padding{
+  margin-left:5px;
+  margin-right: 10px;
+}
+
 .credit-challenge{
   .fontello;
-  .fontello-cinema;
+  .fontello-graduation-cap;
+  .challenge-icon-padding;
 }
 
 .practice-challenge{
   .fontello;
   .fontello-library;
+  .challenge-icon-padding;
+}
+
+.challenge-empty{
+  .quest_page_common;
+  background-color: white;
+  border-color: darken(white, 6.5%);
 }
 
 .challenge-completed{
   .quest_page_common;
-  background-color: @challenge-complete-bg;
-  border-color: darken(@challenge-complete-bg, 6.5%);
+  background-color: @challenge-completed-bg;
+  border-color: darken(@challenge-completed-bg, 6.5%);
 }
 
 .challenge-attempted{

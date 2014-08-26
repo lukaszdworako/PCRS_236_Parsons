@@ -95,17 +95,17 @@ var NavigationBar = React.createClass({
         });
 
         return (
-            <div className="pcrs-sidebar" role="complementary">
                 <ul className="pcrs-sidenav">
                     {items}
-                    <a className="side-bar-arrow" href={data.prev_url}>
-                        <span className={prevClass}></span>
-                    </a>
-                    <a className="side-bar-arrow" href={data.next_url}>
-                        <span className={nextClass}></span>
-                    </a>
+                    <div className="row">
+                        <a className="side-bar-arrow" href={data.prev_url}>
+                            <span className={prevClass}></span>
+                        </a>
+                        <a className="side-bar-arrow" href={data.next_url}>
+                            <span className={nextClass}></span>
+                        </a>
+                    </div>
                 </ul>
-            </div>
             );
 
     }
