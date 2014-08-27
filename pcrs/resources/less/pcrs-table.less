@@ -1,22 +1,8 @@
 @import "../bootstrap_less/bootstrap-3.2.0/less/tables";
 @import "../bootstrap_less/bootstrap-3.2.0/less/list-group.less";
 
-//.sql_table_control{
-//  display: block;
-//  max-width:35%;
-//  overflow-x: auto;
-//  float:left;
-//}
-//
-//.sql_table_control_right{
-//  .sql_table_control;
-//  .pull-right;
-//}
-
 .ptd{
   overflow-x: auto;
-//  max-width: 200px;
-//  height: max;
   @media (min-width: @screen-lg-min) {
     max-width: 160px;
   }
@@ -30,7 +16,6 @@
     max-width: 120px;
   }
   padding:10px;
-//  .vcenter;
 }
 
 .expression_div{
@@ -44,7 +29,6 @@
 
 .pcrs-table{
   .table;
-//  .table-striped;
   background-color: @uft-white;
 }
 
@@ -78,7 +62,6 @@
 }
 
 .sql_table_control{
-//  width: 34vw;
   @media (min-width: @screen-lg-min) {
     width: 34vw;
   }
@@ -92,6 +75,23 @@
     width: 28vw;
   }
   max-width: 34vw;
+  display: block;
+  overflow-x: auto;
+}
+
+.sql_table_control_full{
+  @media (min-width: @screen-lg-min) {
+    width: 69vw;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width: 69vw;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    width: 66vw;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 60vw;
+  }
   display: block;
   overflow-x: auto;
 }

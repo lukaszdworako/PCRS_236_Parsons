@@ -225,7 +225,7 @@ var Challenge = React.createClass({
                         <a className="collapsed" data-toggle="collapse" href={"#" + challengeID}>
                             <i className="collapse-indicator"></i>
                             <span>
-                                <i className={this.props.challenge.graded ? "practice-challenge" : "credit-challenge" }
+                                <i className={this.props.challenge.graded ? "credit-challenge" : "practice-challenge" }
                                 title={(this.props.challenge.graded ? "Practice" : "Graded" ) + " Challenge"}>
                                 </i>
                             </span>
