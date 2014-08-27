@@ -20,8 +20,10 @@ function setMapClickNavigation() {
         var x = e.clientX - offset.left;
         var y = e.clientY - offset.top;
 
+        // Checks if the newly calculated x position would be within the map
+        // and if not, it sets it to the greatest possible value.
         if (x + parseFloat(graphView.width()) / 2 <
-            parseFloat(navGraph.width())) {
+                parseFloat(navGraph.width())) {
 
             if ((x - parseFloat(graphView.width()) / 2) > 0) {
                 xCenter = x - parseFloat(graphView.width()) / 2;
@@ -34,8 +36,10 @@ function setMapClickNavigation() {
                 parseFloat(graphView.width());
         }
 
+        // Checks if the newly calculated y position would be within the map
+        // and if not, it sets it to the greatest possible value.
         if (y + parseFloat(graphView.height()) / 2 <
-            parseFloat(map.height())) {
+                parseFloat(map.height())) {
 
             if ((y - parseFloat(graphView.height()) / 2) > 0) {
                 yCenter = y - parseFloat(graphView.height()) / 2;
@@ -51,6 +55,7 @@ function setMapClickNavigation() {
         graphView.animate({left: xCenter});
         graphView.css({top: yCenter});
 
+        // Sets the location to scroll to.
         var axisArray = [(yCenter /
             parseFloat(navGraph.height()) *
             parseFloat(graph.height())), (xCenter /

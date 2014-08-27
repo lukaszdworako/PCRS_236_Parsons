@@ -44,10 +44,10 @@ Edge.prototype.updateSVG = function () {
     'use strict';
 
     $('#' + this.name).attr('data-active', this.status)
-                      .parent()
-                      .children('polygon')
-                      .first()
-                      .attr('data-active', this.status);
+        .parent()
+        .children('polygon')
+        .first()
+        .attr('data-active', this.status);
 };
 
 

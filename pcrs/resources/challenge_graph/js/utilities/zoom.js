@@ -5,10 +5,12 @@
  */
 function setZoomInButtonFunctions() {
     'use strict';
+    
     $('#zoomIn').click(function () {
         zoomIn();
         $('#scroll-content').mCustomScrollbar('update');
     });
+
     $('#zoomOut').click(function () {
         zoomIn();
         $('#scroll-content').mCustomScrollbar('update');

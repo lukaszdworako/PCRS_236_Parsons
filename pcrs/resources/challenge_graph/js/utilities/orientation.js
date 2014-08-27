@@ -31,7 +31,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
             .duration(transitionDuration)
             .ease(ease)
             .attr({x: $(node).find('rect').attr("x"),
-                   y: $(node).find('rect').attr("y")});
+                y: $(node).find('rect').attr("y")});
 
         $(texts).each(function (j) {
             var text = $(node).find('text').get(j);
@@ -42,7 +42,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
                 .duration(transitionDuration)
                 .ease(ease)
                 .attr({x: $(text).attr("x"),
-                       y: $(text).attr("y")});
+                    y: $(text).attr("y")});
         });
 
         d3.select("#graph")
@@ -66,8 +66,6 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
                       parseFloat($(node).find('.rect').attr('width'))  - 15,
                    y: parseFloat($(node).find('.rect').attr("y")) +
                      (parseFloat($(node).find('.rect').attr("height")) + 10) / 2});
-
-
     });
 }
 
@@ -150,7 +148,7 @@ function setViewBoxOfGraphs(newGraph) {
 function getViewBox(newGraph) {
     "use strict";
 
-   var index  = newGraph.indexOf("viewbox");
+    var index  = newGraph.indexOf("viewbox");
     var substr = newGraph.substring(index + 9);
     index = substr.indexOf("\"");
     return substr.substring(0, index);
@@ -167,17 +165,17 @@ function getViewBox(newGraph) {
 function animateNavGraphNodes(newGraph, ease, transitionDuration) {
     "use strict";
 
-   $.each($(newGraph).find(".node"), function (i, node) {
+    $.each($(newGraph).find(".node"), function (i, node) {
         d3.select("#nav-graph")
-          .select("#" + $(this)
-          .attr("id") + "-map-node")
-          .select("rect")
-          .transition()
-          .duration(transitionDuration)
-          .ease(ease)
-          .attr({x: $(node).find('rect').attr("x"),
-                 y: $(node).find('rect').attr("y")})
-          .attr('end', function () { window['graph-view'].reset(); });
+            .select("#" + $(this)
+                .attr("id") + "-map-node")
+            .select("rect")
+            .transition()
+            .duration(transitionDuration)
+            .ease(ease)
+            .attr({x: $(node).find('rect').attr("x"),
+                y: $(node).find('rect').attr("y")})
+            .attr('end', function () { window['graph-view'].reset(); });
     });
 }
 
@@ -194,20 +192,20 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
 function animateGraphEdges(newGraph, ease, transitionDuration) {
     "use strict";
 
-   $.each($(newGraph).find(".edge"), function () {
+    $.each($(newGraph).find(".edge"), function () {
         d3.select("#" + $(this).attr("id"))
-          .select("path")
-          .transition()
-          .duration(transitionDuration)
-          .ease(ease)
-          .attr("d", $(this).find("path").attr("d"));
+            .select("path")
+            .transition()
+            .duration(transitionDuration)
+            .ease(ease)
+            .attr("d", $(this).find("path").attr("d"));
 
         d3.select("#" + $(this).attr("id"))
-          .selectAll("polygon")
-          .transition()
-          .duration(transitionDuration)
-          .ease(ease)
-          .attr("points", $(this).find("polygon").attr("points"));
+            .selectAll("polygon")
+            .transition()
+            .duration(transitionDuration)
+            .ease(ease)
+            .attr("points", $(this).find("polygon").attr("points"));
     });
 }
 
@@ -219,7 +217,7 @@ function animateGraphEdges(newGraph, ease, transitionDuration) {
 function updateAbsoluteSizes(newGraph) {
     "use strict";
 
-   svgWidth = parseFloat($(newGraph).attr("width")) * 4 / 3;
+    svgWidth = parseFloat($(newGraph).attr("width")) * 4 / 3;
     svgHeight = parseFloat($(newGraph).attr("height")) * 4 / 3;
 }
 
@@ -230,7 +228,7 @@ function updateAbsoluteSizes(newGraph) {
 function resetZoom() {
     "use strict";
 
-   zoom = 100;
+    zoom = 100;
 }
 
 
@@ -240,20 +238,18 @@ function resetZoom() {
 function resetScrollPosition() {
     "use strict";
 
-   $("#scroll-content").mCustomScrollbar("scrollTo", "0");
+    $("#scroll-content").mCustomScrollbar("scrollTo", "0");
 }
 
 
 /**
  * Gets the orientation of the new graph.
- * @param orientation The current orientation of the graph.
- *                    Either 'vertical' or 'horizontal'.
  * @returns {string} The new orientation of the graph.
  */
 function switchOrientation() {
     "use strict";
 
-   return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
+    return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
 }
 
 
@@ -263,5 +259,5 @@ function switchOrientation() {
 function removeScrollbar() {
     "use strict";
 
-   $("#scroll-content").mCustomScrollbar("destroy");
+    $("#scroll-content").mCustomScrollbar("destroy");
 }

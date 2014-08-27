@@ -40,8 +40,8 @@ GraphView.prototype.resetWidth = function () {
     var scrollContentObject = $('#scroll-content');
 
     if ((scrollContentObject.width() * 0.1 * 100 / zoom) < parseFloat(
-            $('#nav-graph').css('width')
-        )) {
+        $('#nav-graph').css('width')
+    )) {
         this.obj.css('width', scrollContentObject.width() * 0.1 * 100 /
             zoom);
     } else {

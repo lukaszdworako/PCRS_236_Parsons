@@ -24,13 +24,13 @@ GraphMap.prototype.initialize = function () {
     'use strict';
 
     this.obj.find('svg')
-            .attr('id', 'nav-graph')
-            .attr('height', svgHeight * 0.1)
-            .attr('width', svgWidth * 0.1);
+        .attr('id', 'nav-graph')
+        .attr('height', svgHeight * 0.1)
+        .attr('width', svgWidth * 0.1);
     this.obj.find('.node')
-            .attr('data-active', 'display');
+        .attr('data-active', 'display');
     this.obj.find('path')
-            .attr('data-active', 'inactive');
+        .attr('data-active', 'inactive');
     this.obj.append('<div id="graph-view"></div>');
     window['graph-view'] = new GraphView('graph-view');
 
@@ -54,9 +54,9 @@ GraphMap.prototype.setSize = function () {
 
     this.obj.css('height', Math.max($('#scroll-content').height(),
         $('#graph').height()) * 0.1)
-             .css('width', svgWidth * 0.1);
+        .css('width', svgWidth * 0.1);
 
     $('#button-container').attr('left', this.obj.width() + this.obj
-                                                               .attr('left'));
+        .attr('left'));
 };
 

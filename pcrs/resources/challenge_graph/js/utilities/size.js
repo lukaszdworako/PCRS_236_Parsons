@@ -40,9 +40,9 @@ function addScrollBackgroundHeight() {
     'use strict';
 
     scrollBackgroundHeight = ($('#mCSB_1_container_wrapper').height() -
-                              $('#graph').height());
+        $('#graph').height());
     $('#scroll-background-top').css('height', scrollBackgroundHeight / 2 *
-                                              zoom / 100);
+        zoom / 100);
     $('#scroll-background-bottom').css('height', scrollBackgroundHeight / 2 *
-                                                 zoom / 100);
+        zoom / 100);
 }

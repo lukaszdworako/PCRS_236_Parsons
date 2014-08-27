@@ -20,7 +20,7 @@ function processGraph() {
     $("polygon[fill*=white]").attr("fill", "none");
 
     $("path").css("fill", "none")
-           .attr("id", function (i) { return "p" + i; });
+        .attr("id", function (i) { return "p" + i; });
 }
 
 
@@ -100,14 +100,15 @@ function updateParentCount(rectNode, show) {
 
     if (show && node !== undefined) {
         $(rectNode).parent()
-                   .children(".missing-counter")
-                   .css("visibility", "visible");
-        var textNode = document.createTextNode(getNonActiveParentNames(node).length.toString());
+            .children(".missing-counter")
+            .css("visibility", "visible");
+        var textNode = document.createTextNode(
+            getNonActiveParentNames(node).length.toString());
         rectNode.append(textNode);
     } else {
         $(rectNode).parent()
-                   .children(".missing-counter")
-                   .css("visibility", "hidden");
+            .children(".missing-counter")
+            .css("visibility", "hidden");
     }
 }
 
@@ -115,7 +116,8 @@ function updateParentCount(rectNode, show) {
 /**
  * Gets node's non-active parent names.
  * @param {Node} node The node that is being evaluated.
- * @returns {Array} An array of the names of non-active/overridden parents of node.
+ * @returns {Array} An array of the names of non-active/overridden
+ *                  parents of node.
  */
 function getNonActiveParentNames(node) {
     "use strict";
@@ -134,7 +136,7 @@ function getNonActiveParentNames(node) {
 
             for (var j = 0; j < parentArray.length; j++) {
                 if ($.inArray(parentArray[j], parentNames) === -1) {
-                  parentNames.push(parentArray[j]);
+                    parentNames.push(parentArray[j]);
                 }
             }
         }
@@ -152,22 +154,22 @@ function getNonActiveParentNames(node) {
 function appendCounterRect(parentRect, missingCounter) {
     "use strict";
     var counterRect = createOptionRect("counter-rect-",
-                                       missingCounter,
-                                       parseInt(parentRect.children(".rect").attr("x")) +
-                                       parseInt(parentRect.children(".rect").attr("width")) - 25,
-                                       parseInt(parentRect.children(".rect").attr("y")) +
-                                       parseInt(parentRect.children(".rect").attr("height") - 20)/2,
-                                       "none",
-                                       "#3399FF",
-                                       "missing-counter");
+        missingCounter,
+            parseInt(parentRect.children(".rect").attr("x")) +
+            parseInt(parentRect.children(".rect").attr("width")) - 25,
+            parseInt(parentRect.children(".rect").attr("y")) +
+            parseInt(parentRect.children(".rect").attr("height") - 20)/2,
+        "none",
+        "#3399FF",
+        "missing-counter");
 
     var counterText = createOptionText("counter-text-",
-                                       missingCounter,
-                                       parseInt(parentRect.children(".rect").attr("x")) +
-                                       parseInt(parentRect.children(".rect").attr("width")) - 15,
-                                       parseInt(parentRect.children(".rect").attr("y")) +
-                                       (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
-                                       "counter-text");
+        missingCounter,
+            parseInt(parentRect.children(".rect").attr("x")) +
+            parseInt(parentRect.children(".rect").attr("width")) - 15,
+            parseInt(parentRect.children(".rect").attr("y")) +
+            (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
+        "counter-text");
 
     counterRect.insertBefore(parentRect.children("text").first());
     counterText.insertAfter(parentRect.children("text").last());

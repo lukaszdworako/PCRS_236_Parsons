@@ -11,9 +11,9 @@ function setScrollableContent(mousewheelAxis) {
         axis: 'xy',
         theme: 'dark',
         mouseWheel: { enable: true,
-                     axis: mousewheelAxis,
-                     scrollAmount: 500
-                   },
+            axis: mousewheelAxis,
+            scrollAmount: 500
+        },
         advanced: { updateOnContentResize: true },
         keyboard: { scrollAmount: 50 },
         callbacks: {
@@ -23,7 +23,7 @@ function setScrollableContent(mousewheelAxis) {
             whileScrolling: function () {
                 var graphViewObject = $('#graph-view');
                 graphViewObject.css('left',
-                    2 + fixVal(($('#nav-graph').width() * this.mcs.leftPct) / 100 -
+                        2 + fixVal(($('#nav-graph').width() * this.mcs.leftPct) / 100 -
                         (graphViewObject.width() * this.mcs.leftPct) / 100));
 
                 graphViewObject.css('top',

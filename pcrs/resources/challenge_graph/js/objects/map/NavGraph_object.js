@@ -52,6 +52,6 @@ NavGraph.prototype.setupIDs = function () {
  */
 NavGraph.prototype.removeText = function () {
     "use strict";
-console.log('rem');
+    console.log('rem');
     $('#nav-graph').find('text').remove();
 };

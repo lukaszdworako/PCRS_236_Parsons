@@ -86,7 +86,7 @@ Node.prototype.focus = function () {
         $.each(this.inEdges, function (i, edge) {
             if (edge.parent.status !== 'active') {
                 $('#' + edge.name).attr('data-active', 'missing')
-                                  .parent().children('polygon').first().attr('data-active', 'missing');
+                    .parent().children('polygon').first().attr('data-active', 'missing');
             }
         });
 

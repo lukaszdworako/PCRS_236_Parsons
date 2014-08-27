@@ -162,6 +162,8 @@ Graph.prototype.initializeUserData = function () {
 };
 
 Graph.prototype.changeOrientation = function () {
+    'use strict';
+
     var graphObject = $("#graph");
     var scrollObject = $("#scroll-content");
     var navGraphObject = $("#nav-graph");
