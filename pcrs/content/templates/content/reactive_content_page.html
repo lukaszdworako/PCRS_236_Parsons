@@ -1,15 +1,15 @@
 {% extends "pcrs/base.html" %}
 {% load staticfiles %}
 
-{% block less %}
-    <link rel="stylesheet/less"
-          type="text/css"
-          href="{% static "less/challenge_page.less" %}" />
-
-    <script src="{% static "less/less-1.7.3.min.js" %}"
-            type="text/javascript">
-    </script>
-{% endblock %}
+{#{% block less %}#}
+{#    <link rel="stylesheet/less"#}
+{#          type="text/css"#}
+{#          href="{% static "less/challenge_page.less" %}" />#}
+{##}
+{#    <script src="{% static "less/less-1.7.3.min.js" %}"#}
+{#            type="text/javascript">#}
+{#    </script>#}
+{#{% endblock %}#}
 
 {% block scripts %}
     {{ block.super }}
@@ -53,6 +53,7 @@
     {% load compress %}
     {% compress css %}
         <link rel="stylesheet" href="{% static "video_js/video-js.css" %}">
+        <link rel="stylesheet" href="{% static "less/challenge_page.css" %}">
     {% endcompress %}
 {% endblock %}
 

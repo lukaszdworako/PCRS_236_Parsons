@@ -2,10 +2,10 @@
 
     {% load static %}
 
-    {% block less %}
-        <link rel="stylesheet/less" type="text/css" href="{% static "less/quest_list.less" %}" />
-        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>
-    {% endblock %}
+{#    {% block less %}#}
+{#        <link rel="stylesheet/less" type="text/css" href="{% static "less/quest_list.less" %}" />#}
+{#        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>#}
+{#    {% endblock %}#}
 
 {% block scripts %}
     {{ block.super }}
@@ -25,12 +25,11 @@
 {% endblock %}
 
 {% block stylesheets %}
-{#    {{ block.super }}#}
-{#    {% load compress %}#}
-{#    {% compress css %}#}
-{#    <link rel="stylesheet" href="{% static "content/css/style.css" %}"#}
-{#          type="text/css">#}
-{#    {% endcompress %}#}
+    {{ block.super }}
+    {% load compress %}
+    {% compress css %}
+    <link rel="stylesheet" href="{% static "less/quest_list.css" %}">
+    {% endcompress %}
 {% endblock %}
 
 
