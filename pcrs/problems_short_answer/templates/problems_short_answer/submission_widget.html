@@ -1,0 +1,18 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_score %}
+{% endblock %}
+
+{% block history %}
+{% endblock %}
+
+{% block submission_form %}
+<br>
+    {% load crispy_forms_tags %}
+    {% crispy form %}
+    {% load filters %}
+
+{% endblock %}
+
+{% block problem_specific %}
+{% endblock %}

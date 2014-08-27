@@ -1,0 +1,35 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_score %}
+{% endblock %}
+
+{% block history %}
+{% endblock %}
+
+{% block submission_form %}
+<br>
+<form id="submission_form" method="post">
+    {% csrf_token %}
+    
+    <fieldset><div id="div_id_submission" class="form-group"><div class="controls">
+    <div style="width: auto;text-align: center">
+        
+        {% if problem.scale_type == "LIK" %}
+            {% include "problems_rating/submission_scales/likert.html" %}
+        {% elif problem.scale_type == "SLI" %}
+            {% include "problems_rating/submission_scales/slider.html" %}
+        {% elif problem.scale_type == "STA" %}
+            {% include "problems_rating/submission_scales/star.html" %}
+        {% endif %}
+        
+    </div>
+    </div></div></fieldset>
+    <br>
+    <div class="buttonHolder pull-right">
+        <input value="Submit" class="btn btn-primary btn-success" id="submit-id-submit" type="submit">
+    </div>
+</form>
+{% endblock %}
+
+{% block problem_specific %}
+{% endblock %}

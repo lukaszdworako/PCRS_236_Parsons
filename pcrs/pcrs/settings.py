@@ -97,7 +97,7 @@ COMPRESS_ENABLED = "True"
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    '/home/nick/Documents/repos/main/pcrs/pcrs/resources',
+    '/home/nick/Documents/repos/main/test/pcrs/pcrs/resources',
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -157,7 +157,7 @@ INSTALLED_PROBLEM_APPS = (
     'problems_code',
     'problems_multiple_choice',
     'problems_rdb', 'problems_sql', 'problems_ra',
-    'problems_timed',
+    'problems_timed', 'problems_rating', 'problems_short_answer',
 )
 
 INSTALLED_APPS = (

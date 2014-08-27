@@ -1,0 +1,12 @@
+{% for option in problem.get_options %}
+    <div style="display: inline-block;margin:10px;text-align:center;">
+        {{ option }}<br>
+        {% if previous_rating and option == previous_rating_value %}
+            <input type="radio" name="rating" value="{{ option }}" checked/>
+        {% else %}
+            <input type="radio" name="rating" value="{{ option }}"/>
+        {% endif %}
+    </div>
+{% empty %}
+    <div class="alert alert-danger" role="alert">There are no options yet for this problem.</div>
+{% endfor %}
