@@ -112,9 +112,10 @@ function add_mc_history_entry(data, div_id, flag){
     if (data['best'] && !data['past_dead_line']){
         panel_class = "pcrs-panel-star";
         star_text = '<icon style="font-size:1.2em" class="star-icon"> </icon>';
-        $('#'+div_id).find('#history_accordion').find("star-icon").removeClass("star-icon");
-        $('#'+div_id).find('#history_accordion').find(".panel-star")
-            .addClass("panel-default").removeClass("panel-star");
+        console.log($('#'+div_id).find('#history_accordion').find(".star-icon"));
+        $('#'+div_id).find('#history_accordion').find(".star-icon").removeClass("star-icon");
+        $('#'+div_id).find('#history_accordion').find(".pcrs-panel-star")
+            .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
     }
 
     var entry = $('<div/>',{class:panel_class});
