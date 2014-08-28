@@ -1,0 +1,95 @@
+@import "base";
+@import "pcrs-table";
+@import "pcrs-modal";
+@import "pcrs_panel";
+@import "problem_icons";
+
+@import "../bootstrap_less/bootstrap-3.2.0/less/modals";
+@import "../bootstrap_less/bootstrap-3.2.0/less/alerts";
+
+.widget_mark{
+  .pull-right;
+  margin-top: -29px;
+}
+
+.widget_title{
+  .widget_mark{
+    margin-top:0;
+  }
+}
+
+.widget_controls{
+  margin-top: -30px;
+  .pull-right;
+  margin-right: 45px;
+}
+
+.debugBtn{
+  .btn;
+  .btn-info;
+}
+
+.controls{
+  margin-top: -30px;
+  margin-left: 25px;
+}
+
+fieldset{
+  margin-bottom:15px;
+}
+
+.pcrs-panel{
+  margin-bottom:2px;
+}
+
+.pcrs-panel-default{
+  .pcrs-panel;
+}
+
+.pcrs-panel-warning{
+  .pcrs-panel;
+  .pcrs-panel-heading{
+    background-color: darkgrey;
+  }
+}
+
+.pcrs-panel-star{
+  .pcrs-panel;
+  .pcrs-panel-heading{
+    background-color:@history-best-background-color;
+//    background-color:@brand-info;
+    color: @history-best-color;
+  }
+}
+
+.star-icon{
+  .glyphicon;
+  .glyphicon-star;
+}
+
+.pcrs-list-group{
+  .list-group;
+  margin-bottom:0;
+}
+
+.testcase-success{
+  .list-group-item;
+  background-color: @state-success-bg;
+  color: @state-success-text;
+}
+
+.testcase-fail{
+  .list-group-item;
+  background-color: @state-danger-bg;
+  color: @state-danger-text;
+}
+
+.unchecked-icon{
+  .glyphicon;
+  .glyphicon-unchecked;
+}
+
+.checked-icon{
+  .glyphicon;
+  .glyphicon-check;
+}

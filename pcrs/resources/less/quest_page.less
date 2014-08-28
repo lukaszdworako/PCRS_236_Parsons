@@ -1,0 +1,104 @@
+@import "base";
+
+@import "problem_icons";
+@import "fontello";
+@import "pcrs_panel";
+
+
+.info{
+  @media (max-width: @screen-sm-max) {
+    margin-left: 20px;
+  }
+
+  @media (min-width: @screen-md-min) {
+    .pull-right;
+    .info-sm{
+      display: None;
+    }
+  }
+}
+
+.challenge-mark-complete{
+  .info;
+  .complete-icon{
+    .glyphicon;
+    .glyphicon-ok;
+  }
+  .challenge-mark{
+    display: None;
+  }
+}
+
+.challenge-mark-incomplete{
+  .info;
+  .complete-icon{
+    display: None;
+  }
+}
+
+.challenge-mark-unknown{
+  .info;
+  .complete-icon{
+    display: None;
+  }
+  .challenge-mark{
+    display: None;
+  }
+}
+
+.quest-body{
+  .pcrs-panel-body;
+  padding-left:5%;
+}
+
+//challenge page level
+.challenge-page{
+  .make-xs-column(12);
+  .make-sm-column(6);
+  .make-md-column(4);
+  .make-lg-column(3);
+}
+
+
+//challenge level
+.credit-challenge{
+  .fontello;
+  .fontello-cinema;
+}
+
+.practice-challenge{
+  .fontello;
+  .fontello-library;
+}
+
+.challenge-complete{
+  .quest_page_common;
+  background-color: @challenge-complete-bg;
+  border-color: darken(@challenge-complete-bg, 6.5%);
+}
+
+.challenge-attempted{
+  .quest_page_common;
+  background-color: @challenge-attempted-bg;
+  border-color: darken(@challenge-attempted-bg, 6.5%);
+}
+
+.challenge-not-attempted{
+  .quest_page_common;
+  background-color: @challenge-not-attempted-bg;
+  border-color: darken(@challenge-not-attempted-bg, 6.5%);
+}
+
+//quest level
+.quest-expired{
+  .quest_page_common;
+  background-color:@quest-expired-bg;
+  border-color: darken(@quest-expired-bg, 6.5%);
+}
+
+.quest-live{
+  .quest_page_common;
+  background-color:@quest-live-bg;
+  border-color: darken(@quest-live-bg, 6.5%);
+}
+

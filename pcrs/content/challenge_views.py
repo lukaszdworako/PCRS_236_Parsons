@@ -38,14 +38,14 @@ class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
 
     def get_visible_challenges(self):
         section = self.get_section()
-        if section.is_master():
-            return Challenge.objects.all()
-        else:
-            return Challenge.objects.filter(
+        challenges = Challenge.objects.select_related('quest').all()
+        if not section.is_master():
+            challenges = challenges.filter(
                 visibility='open',
                 quest__sectionquest__section=section,
                 quest__sectionquest__open_on__lt=localtime(now()),
                 quest__sectionquest__visibility='open')
+        return challenges
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -6,9 +6,9 @@ from django import forms
 
 class CrispyFormMixin:
     save_button = Submit('submit', 'Save',
-                              css_class='btn-success pull-right')
+                              css_class='green-button-right')
 
-    delete_button = HTML('<a class="btn btn-danger" role="button" '
+    delete_button = HTML('<a class="red-button" role="button" '
                                   'href="{{object.get_absolute_url}}/delete">'
                                   'Delete</a>')
 

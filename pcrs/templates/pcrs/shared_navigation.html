@@ -1,15 +1,17 @@
 {% if user %}
-    <ul class="nav navbar-nav navbar-right">
+    <ul class="pcrs-navbar-nav">
         <li>
             <a href="{{ site_prefix }}/settings">
-                <i class="glyphicon glyphicon-cog"></i>
-                Settings
-            </a>
-        </li>
-        <li>
-            <a href="{{ site_prefix }}/logout">
-                <i class="glyphicon glyphicon-log-out" title="Log Out"></i>
+                <i class="pcrs-settings-icon" title="Settings"></i>
             </a>
         </li>
     </ul>
+    <ul class="pcrs-navbar-nav">
+        <li>
+            <a href="{{ site_prefix }}/logout">
+                <i class="pcrs-logout-icon" title="Log Out"></i>
+            </a>
+        </li>
+    </ul>
+
 {% endif %}

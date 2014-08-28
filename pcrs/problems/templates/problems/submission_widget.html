@@ -12,15 +12,15 @@
         {% block problem_score %}
 {#            {% if user.is_student or request.session.viewing_as.is_student %}#}
                 {% if mark|default_if_none:'-' == problem.max_score %}
-                    <span class="pull-right widget_complete widget_mark"
+                    <span class="widget_complete widget_mark"
                           title="Progress so far">
                     {% include "pcrs/checkmark_complete.html" %}
                 {% else %}
                     {% if mark|length > 0 %}
-                        <span class="pull-right widget_incomplete widget_mark"
+                        <span class="widget_incomplete widget_mark"
                               title="Progress so far">
                     {% else %}
-                        <span class="pull-right widget_not_attempted widget_mark"
+                        <span class="widget_not_attempted widget_mark"
                               title="Progress so far">
                     {% endif %}
                     <sup> {{ mark|default_if_none:'-' }} </sup>
@@ -31,13 +31,13 @@
         </span>
         {% if user.is_instructor and not request.session.viewing_as.is_student %}
                 {% block instructor_options %}
-                    <span class="pull-right widget_controls">
+                    <span class="widget_controls">
                     <a href="{{ problem.get_browse_submissions_url }}"><i
-                            class="glyphicon glyphicon-folder-open"></i><span
+                            class="openfolder-icon"></i><span
                             class="at">Submissions for {{ problem.name }}</span></a>
 
                     <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
-                            class="glyphicon glyphicon-stats"></i><span
+                            class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
                     </span>
                 {% endblock %}
@@ -69,8 +69,8 @@
 
     {% block alert %}
         <br>
-        <div class="alert" id="alert">
-            <icon class="glyphicon"></icon>
+        <div class="" id="alert">
+            <icon class=""></icon>
             <span></span>
             <a class="at screen-reader-text" href=''></a>
         </div>
