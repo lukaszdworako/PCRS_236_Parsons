@@ -91,7 +91,9 @@ var NavigationBar = React.createClass({
 
 
         var items = this.props.items.map(function (item) {
-            return <NavigationBarItem key={item.id} item={item} />;
+            if (item.content_type == "video" || item.content_type == "problem"){
+                return <NavigationBarItem key={item.id} item={item} />;
+            }
         });
 
         return (
@@ -107,7 +109,6 @@ var NavigationBar = React.createClass({
                     </div>
                 </ul>
             );
-
     }
 });
 
@@ -128,7 +129,7 @@ var NavigationBarItem = React.createClass({
                 {component}
                 </a>
             </div>
-            );
+        );
     }
 });
 
