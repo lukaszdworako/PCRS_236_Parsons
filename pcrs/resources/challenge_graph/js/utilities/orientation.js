@@ -2,96 +2,15 @@
 
 
 /**
- * Sets the #change-orientation button click event.
- * TODO: The code has been difficult to split up. d3 transitions haven't been working in separate functions.
- * TODO: (cont) This is something that needs to be worked on, but no time before test instance roll out.
- */
-function setChangeOrientationEvent() {
-    "use strict";
-    var orientation = 'horizontal';
-    $("#change-orientation").click(function () {
-        var graphObject = $("#graph");
-        var scrollObject = $("#scroll-content");
-        var navGraphObject = $("#nav-graph");
-
-        var transitionDuration = 5000;
-        var animationDuration = 2000;
-        var ease = 'elastic';
-
-        orientation = getNewOrientation(orientation);
-        var newGraph = getGraph(orientation);
-        resetScrollPosition();
-        resetZoom();
-        setViewBoxOfGraphs(newGraph);
-        $("#map").width(parseFloat($(newGraph).attr("width")) * 0.1);
-        updateAbsoluteSizes(newGraph);
-        animateGraphEdges(newGraph, ease, transitionDuration);
-
-        graphObject.attr("width", $(newGraph).attr("width"))
-                   .attr("height", $(newGraph).attr("height"));
-
-        navGraphObject
-            .attr("width", parseFloat($(newGraph).attr("width")) * 0.1)
-            .attr("height", parseFloat($(newGraph).attr("height")) * 0.1);
-
-        navGraphObject
-            .find("#graph0")
-            .attr("transform", $(newGraph).find("#graph0").attr("transform"));
-
-        d3.select("#graph0")
-          .transition()
-          .duration(transitionDuration)
-          .attr("transform", $(newGraph).find("#graph0").attr("transform"));
-
-
-        setNewGraphCoordinates(newGraph, ease, transitionDuration);
-        animateNavGraphNodes(newGraph, ease, transitionDuration);
-
-        removeScrollbar();
-
-        if (orientation === "vertical") {
-            scrollObject.css("display", "inline")
-                        .animate({width: "80%"}, animationDuration);
-
-            $('#button-container').css('float', 'left').css('left', 15);
-            d3.select("#scroll-content").style("float", "right");
-
-            $("#HUD").animate({width: "15%"}, animationDuration)
-                     .animate({height: "100%"}, animationDuration);
-
-            // Set the mousewheel to scroll vertically
-            setScrollableContent("y");
-
-        } else {
-            scrollObject.css("display", "block")
-                        .animate({width: "100%"}, animationDuration);
-            $('#button-container').css('float', 'right').css('left', 0);
-
-            d3.select("#scroll-content")
-              .transition()
-              .duration(animationDuration)
-              .style("float", "");
-
-            $("#HUD")
-                .animate({height: "15%"}, animationDuration)
-                .animate({width: "100%"}, animationDuration);
-
-            // Set the mousewheel to scroll horizontally
-            setScrollableContent("x");
-        }
-
-        setTimeout(function () { resetGraphView(); }, transitionDuration);
-        setMapSize();
-    });
-}
-
-
-/**
- * Sets the new coordinates of the rects, text, counter rects, and counter texts.
+ * Sets the new coordinates of the rects, text, counter rects, and counter
+ * texts.
  * // TODO: Find out why below helper functions don't work.
  * @param newGraph The SVG content of the new graph.
- * @param ease The ease attribute of the d3 transitions. (Ex: 'linear', 'elastic'...)
- *        Refer to http://blog.vctr.me/experiments/transition-tweens.html for good examples.
+ * @param ease The ease attribute of the d3 transitions.
+ *             (Ex: 'linear','elastic'...)
+ *             Refer to
+ *             http://blog.vctr.me/experiments/transition-tweens.html
+ *             for good examples.
  * @param transitionDuration The duration the d3 transitions take.
  */
 function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
@@ -112,7 +31,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
             .duration(transitionDuration)
             .ease(ease)
             .attr({x: $(node).find('rect').attr("x"),
-                   y: $(node).find('rect').attr("y")});
+                y: $(node).find('rect').attr("y")});
 
         $(texts).each(function (j) {
             var text = $(node).find('text').get(j);
@@ -123,7 +42,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
                 .duration(transitionDuration)
                 .ease(ease)
                 .attr({x: $(text).attr("x"),
-                       y: $(text).attr("y")});
+                    y: $(text).attr("y")});
         });
 
         d3.select("#graph")
@@ -147,8 +66,6 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
                       parseFloat($(node).find('.rect').attr('width'))  - 15,
                    y: parseFloat($(node).find('.rect').attr("y")) +
                      (parseFloat($(node).find('.rect').attr("height")) + 10) / 2});
-
-
     });
 }
 
@@ -217,8 +134,7 @@ function setNewGraphCoordinates(newGraph, ease, transitionDuration) {
  * @param newGraph The SVG content of the new graph.
  */
 function setViewBoxOfGraphs(newGraph) {
-    "use strict";
-    var viewBox = getViewBox(newGraph);
+    "use strict"; var viewBox = getViewBox(newGraph);
     document.getElementsByTagName("svg")[0].setAttribute("viewBox", viewBox);
     document.getElementsByTagName("svg")[1].setAttribute("viewBox", viewBox);
 }
@@ -231,6 +147,7 @@ function setViewBoxOfGraphs(newGraph) {
  */
 function getViewBox(newGraph) {
     "use strict";
+
     var index  = newGraph.indexOf("viewbox");
     var substr = newGraph.substring(index + 9);
     index = substr.indexOf("\"");
@@ -247,17 +164,18 @@ function getViewBox(newGraph) {
  */
 function animateNavGraphNodes(newGraph, ease, transitionDuration) {
     "use strict";
+
     $.each($(newGraph).find(".node"), function (i, node) {
         d3.select("#nav-graph")
-          .select("#" + $(this)
-          .attr("id") + "-map-node")
-          .select("rect")
-          .transition()
-          .duration(transitionDuration)
-          .ease(ease)
-          .attr({x: $(node).find('rect').attr("x"),
-                 y: $(node).find('rect').attr("y")})
-          .attr('end', function () { resetGraphView(); });
+            .select("#" + $(this)
+                .attr("id") + "-map-node")
+            .select("rect")
+            .transition()
+            .duration(transitionDuration)
+            .ease(ease)
+            .attr({x: $(node).find('rect').attr("x"),
+                y: $(node).find('rect').attr("y")})
+            .attr('end', function () { window['graph-view'].reset(); });
     });
 }
 
@@ -265,26 +183,29 @@ function animateNavGraphNodes(newGraph, ease, transitionDuration) {
 /**
  * Animates the graph edges.
  * @param newGraph he SVG content of the new graph.
- * @param ease The ease attribute of the d3 transitions. (Ex: 'linear', 'elastic'...)
- *        Refer to http://blog.vctr.me/experiments/transition-tweens.html for good examples.
+ * @param ease The ease attribute of the d3 transitions.
+ *             (Ex: 'linear', 'elastic'...)
+ *             Refer to http://blog.vctr.me/experiments/transition-tweens.html
+ *             for good examples.
  * @param transitionDuration The duration the d3 transitions take.
  */
 function animateGraphEdges(newGraph, ease, transitionDuration) {
     "use strict";
+
     $.each($(newGraph).find(".edge"), function () {
         d3.select("#" + $(this).attr("id"))
-          .select("path")
-          .transition()
-          .duration(transitionDuration)
-          .ease(ease)
-          .attr("d", $(this).find("path").attr("d"));
+            .select("path")
+            .transition()
+            .duration(transitionDuration)
+            .ease(ease)
+            .attr("d", $(this).find("path").attr("d"));
 
         d3.select("#" + $(this).attr("id"))
-          .selectAll("polygon")
-          .transition()
-          .duration(transitionDuration)
+            .selectAll("polygon")
+            .transition()
+            .duration(transitionDuration)
             .ease(ease)
-          .attr("points", $(this).find("polygon").attr("points"));
+            .attr("points", $(this).find("polygon").attr("points"));
     });
 }
 
@@ -295,6 +216,7 @@ function animateGraphEdges(newGraph, ease, transitionDuration) {
  */
 function updateAbsoluteSizes(newGraph) {
     "use strict";
+
     svgWidth = parseFloat($(newGraph).attr("width")) * 4 / 3;
     svgHeight = parseFloat($(newGraph).attr("height")) * 4 / 3;
 }
@@ -305,6 +227,7 @@ function updateAbsoluteSizes(newGraph) {
  */
 function resetZoom() {
     "use strict";
+
     zoom = 100;
 }
 
@@ -314,18 +237,19 @@ function resetZoom() {
  */
 function resetScrollPosition() {
     "use strict";
+
     $("#scroll-content").mCustomScrollbar("scrollTo", "0");
 }
 
 
 /**
  * Gets the orientation of the new graph.
- * @param orientation The current orientation of the graph. Either 'vertical' or 'horizontal'.
  * @returns {string} The new orientation of the graph.
  */
-function getNewOrientation(orientation) {
+function switchOrientation() {
     "use strict";
-    return orientation === "horizontal" ? "vertical" : "horizontal";
+
+    return window['graph'].orientation === "horizontal" ? "vertical" : "horizontal";
 }
 
 
@@ -334,5 +258,6 @@ function getNewOrientation(orientation) {
  */
 function removeScrollbar() {
     "use strict";
+
     $("#scroll-content").mCustomScrollbar("destroy");
 }
