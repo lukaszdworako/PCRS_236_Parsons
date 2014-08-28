@@ -34,6 +34,8 @@
                         {% endif %}
                     </a>
                 {% endif %}
+            {% elif item_type == "textblock" %}
+                <a class="text-icon" href="{{ page.get_absolute_url }}#{{ problem_type|get_div_class }}-{{ item.pk }}"></a>
             {% endif %}
         {% endwith %}
     </div>
