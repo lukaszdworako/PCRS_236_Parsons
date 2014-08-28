@@ -22,21 +22,6 @@ class Problem(AbstractProgrammingProblem):
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='python')
 
-    def serialize(self):
-        return {
-            'id': self.get_uri_id(),
-            'pk': self.pk,
-            'name': self.name,
-            'description': self.description,
-            'is_visible': self.is_visible_to_students(),
-            'problem_type': 'code',
-            'content_type': 'problem',
-            'challenge': self.challenge_id,
-            'starter_code': self.starter_code,
-            'submit_url': self.get_submit_url(),
-            'max_score': self.max_score
-        }
-
 
 class Submission(AbstractSubmission):
     """

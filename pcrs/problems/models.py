@@ -47,9 +47,14 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_uri_id(self):
         return '{0}-{1}'.format(self.get_problem_type_name(), self.pk,)
 
+    def get_content_type_name(self):
+        return 'problem'
+
     def serialize(self):
-        serialized = AbstractSelfAwareModel.serialize(self)
-        serialized.update((AbstractLimitedVisibilityObject).serialize(self))
+        serialized = {}
+        for base in [AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
+                     AbstractTaggedObject]:
+            serialized.update(base.serialize(self))
         serialized.update(
             {
                 'problem_type': self.get_module_name(),
@@ -213,6 +218,12 @@ class AbstractProgrammingProblem(AbstractProblem, AbstractNamedObject):
                 res[1] = count
             results[opt_id] = res
         return results
+
+    def serialize(self):
+        serialized = {}
+        for base in [AbstractNamedObject, AbstractProblem]:
+            serialized.update(base.serialize(self))
+        return serialized
 
 
 class AbstractSubmission(AbstractSelfAwareModel):

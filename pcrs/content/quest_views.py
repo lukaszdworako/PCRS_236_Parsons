@@ -194,15 +194,7 @@ class ReactiveQuestsDataView(ProtectedViewMixin, View, UserViewMixin):
             .filter(section=self.get_section()) \
             .filter(visibility='open', open_on__lt=now()) \
             .select_related('quest')
-        data['quests'] = [
-            {
-                'pk': quest.quest.pk,
-                'name': quest.quest.name,
-                'deadline': localtime(quest.due_on).strftime('%c')
-                            if quest.due_on else None,
-                'deadline_passed': localtime(quest.due_on) < localtime(now())
-            }
-            for quest in quests]
+        data['quests'] = [quest.serialize() for quest in quests]
 
         # 1
         for c in Challenge.objects.all():
