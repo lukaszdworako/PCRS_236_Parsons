@@ -217,8 +217,8 @@ function submit_mc(submission, problem_pk, div_id) {
                 else{
                     $(display_element)
                         .children('span')
-                        .text("Your solution is incorrect!");
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is incorrect!");
+                        .text("Your solution is either incorrect or incomplete!");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is either incorrect or incomplete!");
                 }
 
                 mc_options = $('#'+div_id).find('[id^="id_options_"]');
