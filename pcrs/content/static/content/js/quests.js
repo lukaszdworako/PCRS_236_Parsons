@@ -296,12 +296,13 @@ var Page = React.createClass({
                     challengeItemsUpdate={component.props.challengeItemsUpdate}
                     />)
                 }
-            });
-        console.log('LENGTH',items.length, items);
-        if (items.length == 0) {
 
-            items = "This part has no action items."
-        }
+                 if (item.content_type == 'textblock') {
+                    items.push(
+                    <TextIcon key={item.id} item={item} pageUrl={component.props.page.url} />)
+                }
+            });
+
 
         return (
             <div className="challenge-page">
@@ -378,6 +379,20 @@ var Video = React.createClass({
         console.log(' video update');
         data.watched[this.props.item.id] = true;
         this.props.challengeScoreUpdate();
+    }
+});
+
+var TextIcon = React.createClass({
+    render: function () {
+        var url = this.props.pageUrl + "#" + this.props.item.id;
+        return (
+            <div>
+                <a href={url} target="_blank">
+                    <span className="text-icon" />
+                    {this.props.item.name}
+                </a>
+            </div>
+            );
     }
 });
 

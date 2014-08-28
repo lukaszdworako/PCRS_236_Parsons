@@ -92,7 +92,11 @@ class TextBlock(models.Model):
         return self.text[:150]
 
     def serialize(self):
-        return {'text': self.text}
+        return {
+            'text': self.text,
+            'content_type': 'textblock',
+            'id': self.get_uri_id()
+        }
 
     def get_uri_id(self):
         return 'textblock-{}'.format(self.pk)
