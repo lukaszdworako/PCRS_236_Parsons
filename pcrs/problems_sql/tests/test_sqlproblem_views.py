@@ -5,7 +5,7 @@ from django.test.utils import override_settings
 from problems_rdb.models import Dataset, Schema
 
 from problems_sql.models import Problem, Submission, TestCase, TestRun
-from tests.ViewTestMixins import CourseStaffViewTestMixin, ProtectedViewTestMixin
+from ViewTestMixins import ProtectedViewTestMixin, CourseStaffViewTestMixin
 
 
 class TestProblemListView(ProtectedViewTestMixin, test.TestCase):
@@ -171,7 +171,7 @@ class TestSQLProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
 class TestSQLProblemUpdateViewWithNoSubmissions(CourseStaffViewTestMixin,
                                                 test.TestCase):
     url = reverse('sql_problem_update', kwargs={'pk': 1})
-    successful_redirect_url = reverse('sql_problem_list')
+    successful_redirect_url = url
 
     template = 'problem_form'
 
@@ -302,7 +302,7 @@ class TestSQLProblemUpdateViewWithSubmissions(CourseStaffViewTestMixin,
                                               test.TestCase):
     url = reverse('sql_problem_update', kwargs={'pk': 1})
     template = 'problem_form'
-    successful_redirect_url = reverse('sql_problem_list')
+    successful_redirect_url = url
 
     def setUp(self):
         TestSQLProblemUpdateViewWithNoSubmissions.setUp(self)
@@ -448,125 +448,3 @@ class TestSQLProblemUpdateViewWithSubmissions(CourseStaffViewTestMixin,
         self.assertEqual(self.valid_solution, problem.solution)
         self.assertEqual(1, problem.schema.pk)
         self.assertFalse(problem.order_matters)
-
-
-@override_settings(RDB_DATABASE='crs_data_test')
-class TestSQLProblemSubmitView(ProtectedViewTestMixin, test.TestCase):
-    url = reverse('sql_problem_submit', kwargs={'problem': 1})
-    template = 'problems_rdb/submission.html'
-
-    def setUp(self):
-        self.valid_schema = 'CREATE TABLE WEATHER(sunny bool, temperature int);'
-        self.valid_data = 'INSERT INTO WEATHER VALUES(true, 10);'
-
-        self.schema = Schema.objects.create(name='test_schema',
-                                            definition=self.valid_schema)
-
-        self.dataset1 = Dataset.objects.create(pk=1, name='test_ds1',
-                                definition=self.valid_data, schema=self.schema)
-        self.dataset2 = Dataset.objects.create(pk=2, name='test_ds2',
-                                definition=self.valid_data, schema=self.schema)
-        self.dataset3 = Dataset.objects.create(pk=3, name='test_ds3',
-                                definition=self.valid_data, schema=self.schema)
-
-        self.problem = Problem.objects.create(
-            pk=1, name='test_sql_problem', description='test_sql_problem_desc',
-            solution='SELECT * FROM WEATHER;', schema=self.schema,
-            visibility='open')
-
-        self.t1 = TestCase.objects.create(problem=self.problem,
-                                             dataset=self.dataset1)
-        self.t2 = TestCase.objects.create(problem=self.problem,
-                                             dataset=self.dataset2)
-        ProtectedViewTestMixin.setUp(self)
-
-    def tearDown(self):
-        self.dataset1.delete()
-        self.dataset2.delete()
-        self.dataset3.delete()
-
-    def submissions_recorded(self, submission_code):
-        self.assertEqual(1, Submission.objects.count())
-        submission = Submission.objects.all()[0]
-        self.assertEqual(submission_code, submission.submission)
-        self.assertEqual(self.problem, submission.problem)
-
-        self.assertEqual(2, TestRun.objects.count())
-        tr1, tr2 = TestRun.objects.all()
-        self.assertEqual(self.t1, tr1.testcase)
-        self.assertEqual(self.t2, tr2.testcase)
-
-    def test_page_visibility(self):
-        """
-        Test submission page access to students when problem is invisible.
-        """
-        self.problem.visibility = 'closed'
-        self.problem.save()
-        self.client.logout()
-        self.client.login(username='student')
-        response = self.client.get(self.url)
-        self.assertEqual(404, response.status_code)
-
-    def test_correct_solution(self):
-        """
-        Test submitting a correct solution.
-        """
-        post_data = {
-            'submission': self.problem.solution
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.submissions_recorded(post_data['submission'])
-        self.assertContains(response, 'Your solution is correct!')
-        submission = Submission.objects.all()[0]
-        self.assertEqual(2, submission.score)
-
-    def test_incorrect_solution(self):
-        """
-        Test submitting an incorrect solution.
-        """
-        post_data = {
-            'submission': 'SELECT temp FROM weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'Your solution is incorrect!')
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)
-
-    def test_solution_with_syntax_error(self):
-        """
-        Test submitting a correct solution.
-        """
-        post_data = {
-            'submission': 'SELECT FROM weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'Your solution is incorrect!')
-        self.assertContains(response, 'syntax error')
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)
-
-    def test_solution_with_drop_table(self):
-        """
-        Test submitting an attempt at destroying a table.
-        """
-        post_data = {
-            'submission': 'DROP table weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'Your solution is incorrect!')
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)
-        with Schema.get_db() as db:
-            results = db.run_query(sql='SELECT * FROM weather;',
-                                   schema_name='test_schema_test_ds1')
-            self.assertEqual(1, len(results))

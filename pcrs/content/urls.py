@@ -6,7 +6,8 @@ from content.challenge_content_views import (TextCreateView, PageCreateView,
                                              ChallengeObjectsView,
                                              ItemDeleteView,
                                              ChallengePagesObjectsView,
-                                             ChangeProblemVisibilityView,)
+                                             ChangeProblemVisibilityView,
+                                             PageDeleteView)
 from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
@@ -89,7 +90,7 @@ urlpatterns = patterns('',
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page/create$',
         PageCreateView.as_view(), name='page_create'),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<pk>[0-9]+)/delete',
-        ItemDeleteView.as_view(model=ContentPage), name='page_delete'),
+        PageDeleteView.as_view(model=ContentPage), name='page_delete'),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<page>[0-9]+)/text/create$',
         TextCreateView.as_view()),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',

@@ -3,7 +3,8 @@ from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
 from problems_rdb.models import Dataset, Schema
-from tests.ViewTestMixins import CourseStaffViewTestMixin
+from ViewTestMixins import ProtectedViewTestMixin, \
+    CourseStaffViewTestMixin, UsersMixin
 
 
 @override_settings(RDB_DATABASE='crs_data_test')
