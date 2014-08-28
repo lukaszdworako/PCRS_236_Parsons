@@ -88,17 +88,14 @@ $(document).ready(function () {
 function onScroll(){
     var scrollPos = $(document).scrollTop();
     $('.pcrs-sidenav .side-bar-el a').each(function () {
-        if ($(this).find('span').size() != 0){
-            var currLink = $(this);
-            var refElement = $(currLink.attr("href"));
-            console.log(refElement.position().top);
-            if (refElement.position().top <= scrollPos && refElement.position().top + refElement.height() > scrollPos) {
-                $('.pcrs-sidenav div a').removeClass("active_sb");
-                currLink.addClass("active_sb");
-            }
-            else{
-                currLink.removeClass("active_sb");
-            }
+        var currLink = $(this);
+        var refElement = $(currLink.attr("href"));
+        if (refElement.position().top <= scrollPos && refElement.position().top + refElement.height() > scrollPos) {
+            $('.pcrs-sidenav div a').removeClass("active_sb");
+            currLink.addClass("active_sb");
+        }
+        else{
+            currLink.removeClass("active_sb");
         }
     });
 }
