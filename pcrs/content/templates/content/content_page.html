@@ -57,7 +57,9 @@
     {% for object in object_list %}
         {% with item=object.content_object %}
             {% if item|classname|lower == "textblock" %}
-                {% include "content/textblock.html" %}
+                <div id="textblock-{{ item.pk }}">
+                    {% include "content/textblock.html" %}
+                </div>
             {% elif item|classname|lower == "video" %}
                 <div id="video-{{ item.pk }}">
                     {% include 'content/video_widget.html' %}
