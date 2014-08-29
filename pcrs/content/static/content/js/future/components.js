@@ -6,10 +6,8 @@ var Listener = {
     componentDidMount: function () {
         var component = this;
         component.listenTo.forEach(function (listener) {
-            console.log('listen to', listener.onUpdate(component));
             window.addEventListener(listener.onUpdate(component),
                 function (event) {
-                    console.log("Listener received message");
                     listener.handleUpdate(component, event);
                 }, false);
         });
@@ -23,7 +21,6 @@ var onStatusUpdate = {
     },
 
     handleUpdate: function (component, event) {
-        console.log('Handling status update');
         if (component.handleUpdate) {
             component.handleUpdate(event)
         }
@@ -37,7 +34,6 @@ var onGradingUpdate = {
     },
 
     handleUpdate: function (component, event) {
-        console.log('Handling grading update');
         if (component.handleUpdate) {
             component.handleUpdate(event)
         }
@@ -64,7 +60,6 @@ var StatusUpdateDispatcher = {
     },
 
     reportStatusUpdate: function (status) {
-        console.log("StatusUpdate dispatching message");
         window.dispatchEvent(
             new CustomEvent(this.onStatusUpdate(),
                 {
@@ -79,7 +74,6 @@ var StatusUpdateDispatcher = {
     },
 
     notifySocket: function (status) {
-        console.log("StatusUpdate notified socket");
         socket.emit('statusUpdate',
             {
                 item: this.props.item,
@@ -95,7 +89,6 @@ var GradingUpdateDispatcher = {
     },
 
     reportGradingUpdate: function (data) {
-        console.log("GradingUpdate dispatching message");
         window.dispatchEvent(
             new CustomEvent(this.onGradingUpdate(),
                 {
@@ -153,14 +146,14 @@ var ProblemStatusIndicator = React.createClass({
     },
 
     shouldComponentUpdate: function (nextProps, nextState) {
-        console.log('Is update needed score?');
         return ((this.state.attempted !== nextState.attempted ||
                 (this.state.completed !== nextState.completed)
             ));
     },
 
     componentDidUpdate: function() {
-       this.props.problemDidUpdate(this.state.completed);
+        if (this.props.problemDidUpdate)
+            this.props.problemDidUpdate(this.state.completed);
     },
 
 
@@ -181,8 +174,6 @@ var ProblemStatusIndicator = React.createClass({
 
 var Video = {
     shouldComponentUpdate: function (nextProps, nextState) {
-        console.log('Is update needed?');
-        console.log(this.state.completed !== nextState.completed);
         return (this.state.completed !== nextState.completed);
     },
 
@@ -210,11 +201,9 @@ var VideoStatusIndicator = React.createClass({
     listenTo: [onStatusUpdate],
 
     render: function () {
-        console.log('VideoStatusIndicator');
-
         var problemClasses = React.addons.classSet({
             "video-watched": this.state.completed,
-            "video-not-watched": !this.state.completed,
+            "video-not-watched": !this.state.completed
         });
 
         return(
@@ -224,8 +213,9 @@ var VideoStatusIndicator = React.createClass({
             );
     },
 
-    componentDidUpdate: function() {
-       this.props.videoDidUpdate();
+    componentDidUpdate: function(prevProps, prevState) {
+        if (prevProps.hasOwnProperty('videoDidUpdate'))
+            prevProps.videoDidUpdate();
     }
 });
 

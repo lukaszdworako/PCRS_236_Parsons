@@ -9,9 +9,8 @@
 {% block scripts %}
     {{ block.super }}
 {#    {% compress js %}#}
-        {% include "pcrs/node_includes.html" %}
-        <script type="text/jsx"
-                src="{% static "content/js/socket_events.js" %}"></script>
+        {% include "pcrs/node_socket_io_includes.html" %}
+        <script src="{% static "content/js/socket_events.js" %}"></script>
         {% include "pcrs/react_includes.html" %}
 {#    {% endcompress %}#}
 
@@ -19,6 +18,6 @@
 
 {% block content %}
     <div id="quests"></div>
-    <script type="text/jsx" src="{% static "content/js/future/components.js" %}"></script>
-    <script type="text/jsx" src="{% static "content/js/quests.js" %}"></script>
+    <script src="{% static "content/build/future/components.js" %}"></script>
+    <script src="{% static "content/build/quests.js" %}"></script>
 {% endblock %}

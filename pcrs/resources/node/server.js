@@ -1,7 +1,7 @@
 var io = require('socket.io')(8888);
 
 // the secret key to identify instructors
-var secret_key = '007';
+var secret_key = '3919766206359598592';
 
 io.on('connection', function (socket) {
 

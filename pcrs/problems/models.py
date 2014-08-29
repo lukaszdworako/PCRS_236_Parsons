@@ -57,7 +57,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
             serialized.update(base.serialize(self))
         serialized.update(
             {
-                'problem_type': self.get_module_name(),
+                'problem_type': self.get_problem_type_name(),
                 'submit_url': '{}/run'.format(self.get_absolute_url()),
                 'max_score': self.max_score,
                 'challenge': self.challenge_id

@@ -1,8 +1,8 @@
 {% load static %}
+{% load filters %}
 
 <script src="{% static "node/node_modules/socket.io/node_modules/socket.io-client/socket.io.js" %}"></script>
 <script>
-    var userhash = "{{ request.user }}";
+    var userhash = "{{ request.user.username|hash_username }}";
 </script>
-<script type="text/jsx"
-        src="{% static "content/js/io_connection.js" %}"></script>
+<script src="{% static "content/js/io_connection.js" %}"></script>

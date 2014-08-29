@@ -122,7 +122,6 @@ var Challenge = React.createClass({
     },
 
     countCompleted: function (challengeID) {
-        console.log('Counting completed');
         return this.countCondition(challengeID, function (id) {
                 return (
                     (data.items[id].content_type == 'video' &&
@@ -152,7 +151,6 @@ var Challenge = React.createClass({
     },
 
     countTotal: function (challengeID) {
-        console.log("counting total");
         return this.countCondition(challengeID, function (id) {
                 return (data.items[id].content_type == 'video' ||
                     (data.items[id].content_type == 'problem' &&
@@ -181,7 +179,6 @@ var Challenge = React.createClass({
 
         var event = 'challengeUpdate' + this.props.challenge.pk;
         window.addEventListener(event, function (event) {
-            console.log('Challenge received update', event);
             component.challengeScoreUpdate()
         }, false);
 
@@ -331,7 +328,6 @@ var Problem = React.createClass({
     handleUpdate: function (event) {
         var isVisible = event.detail.item.properties.is_visible;
         data.items[event.detail.item.id].is_visible = isVisible;
-        console.log(isVisible);
         this.setState({isVisible: isVisible});
         this.props.challengeItemsUpdate()
     },
@@ -376,7 +372,6 @@ var Video = React.createClass({
     },
 
     videoStatusDidUpdate: function () {
-        console.log(' video update');
         data.watched[this.props.item.id] = true;
         this.props.challengeScoreUpdate();
     }
@@ -400,7 +395,6 @@ $.ajax({
     url: 'get_quest_list',
     dataType: 'json',
     success: function (newData) {
-        console.log('loaded data', newData);
         data = newData;
         React.renderComponent(
             <QuestList />,

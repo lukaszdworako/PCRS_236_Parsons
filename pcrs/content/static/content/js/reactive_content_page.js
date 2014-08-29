@@ -28,8 +28,6 @@ var ProblemScore = React.createClass({
     },
 
     shouldComponentUpdate: function (nextProps, nextState) {
-        console.log('Is update needed score?');
-        console.log(this.state.score !== nextState.score);
         return ((this.state.score == null ||
             (this.state.score < nextState.score)
             ));
@@ -37,7 +35,6 @@ var ProblemScore = React.createClass({
 
     render: function () {
         var maxScore = this.props.item.max_score;
-        console.log('Score rendering.');
 
         var score;
         if (this.state.score != null && this.state.score == maxScore) {
@@ -65,7 +62,6 @@ var VideoWatched = React.createClass({
     listenTo: [onStatusUpdate],
 
     render: function () {
-        console.log('Video');
         var videoWatched;
         if (this.state.completed) {
             videoWatched = <span className="green-checkmark-icon" />;
@@ -77,8 +73,6 @@ var VideoWatched = React.createClass({
 
 var NavigationBar = React.createClass({
     render: function () {
-        console.log('NavigationBar');
-
         var prevClass = React.addons.classSet({
             "icon-prev-active": data.prev_url,
             "icon-prev-inactive": !data.prev_url
@@ -114,8 +108,6 @@ var NavigationBar = React.createClass({
 
 var NavigationBarItem = React.createClass({
     render: function () {
-        console.log('NavigationBarItem', this.props.item);
-
         var component;
         if (this.props.item.content_type == "video") {
             component = <VideoStatusIndicator item={this.props.item} />
@@ -136,13 +128,11 @@ var NavigationBarItem = React.createClass({
 
 $(function() {
     var url = document.URL.match('[^#]*')[0] + "/get_page_data";
-    console.log(url);
     $.ajax({
         url: url,
         dataType: "json",
         async: false,
         success: function (problemData) {
-            console.log("loaded data", problemData);
             data = problemData;
             data.items.forEach(function (item) {
                 if (item.content_type == "problem") {
