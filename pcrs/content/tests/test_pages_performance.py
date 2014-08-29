@@ -175,7 +175,7 @@ class TestContentPageDatabaseHits(UsersMixin, TransactionTestCase):
 
     Should be kept constant.
     """
-    db_hits = 17
+    db_hits = 19
     template = 'content/content_page.html'
 
     def test_quests_challenges_objects(self):

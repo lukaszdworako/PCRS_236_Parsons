@@ -41,10 +41,10 @@ class BaseRelatedObjectForm(CrispyFormMixin, forms.ModelForm):
                                    formaction=formaction)
         if self.instance.pk:
             self.buttons = Div(self.delete_button, Div(self.save_and_back,
-                                css_class='btn-group pull-right'))
+                                css_class='button-group-right'))
         else:
             self.buttons = Div(Div(self.save_and_add, self.save_and_back,
-                                   css_class='btn-group pull-right'))
+                                   css_class='button-group-right'))
 
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
                                     ButtonHolder(*self.buttons))

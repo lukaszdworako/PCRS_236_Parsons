@@ -37,7 +37,7 @@ class SectionForm(CrispyFormMixin, forms.ModelForm):
             self.helper.layout.append(
                 Div(ButtonHolder(self.delete_button,
                     Div(manage_quests, self.save_button,
-                        css_class='btn-group pull-right'))
+                        css_class='button-group-right'))
                 )
             )
         else:

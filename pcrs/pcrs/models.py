@@ -31,6 +31,17 @@ class AbstractSelfAwareModel(models.Model):
     class Meta:
         abstract = True
 
+    def get_uri_id(self):
+        return '{content_type}-{pk}'\
+            .format(content_type=self.get_content_type_name(), pk=self.pk)
+
+    def serialize(self):
+        return {
+            'id': self.get_uri_id(),
+            'pk': self.pk,
+            'content_type': self.get_content_type_name()
+        }
+
     @classmethod
     def get_content_type(cls):
         """
@@ -102,6 +113,12 @@ class AbstractNamedObject(models.Model):
 
     def __str__(self):
         return self.name
+
+    def serialize(self):
+        return {
+            'name': self.name,
+            'description': self.description
+        }
 
 
 class AbstractGenericObjectForeignKey(models.Model):

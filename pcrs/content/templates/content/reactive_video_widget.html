@@ -1,0 +1,31 @@
+{% autoescape off %}
+<h3 class="widget_title"> {{ item.name }}
+<span class="video-status align-right" id="watched-{{ item.get_uri_id }}"></span>
+</h3>
+<div> {{ item.description|linebreaks }} </div>
+{% endautoescape  %}
+<br>
+
+<video id="my_video_{{ item.pk }}"
+       class="video-js vjs-default-skin"
+       controls
+       preload="auto"
+
+       data-setup='{"customControlsOnMobile": true }'
+       poster="{{ item.thumbnail }}">
+      <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
+{#      <source src="{{ item.link }}" type="rtmp/mp4">#}
+</video>
+
+{% if item.download %}
+    <br>
+    <div>
+        <a href="{{ item.download }}">
+            Download Video
+        </a>
+    </div>
+    <br>
+{% endif %}
+
+
+

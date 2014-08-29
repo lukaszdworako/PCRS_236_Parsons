@@ -267,6 +267,11 @@ class AbstractLimitedVisibilityObject(models.Model):
     class Meta:
         abstract = True
 
+    def serialize(self):
+        return {
+            'is_visible': self.is_visible_to_students(),
+        }
+
     @classmethod
     def get_visible_for_user(cls, user):
         """

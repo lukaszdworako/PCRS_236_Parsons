@@ -6,14 +6,13 @@
 @import "../bootstrap_less/bootstrap-3.2.0/less/badges";
 
 
-//can be separated further
 @import "../bootstrap_less/bootstrap-3.2.0/less/button-groups";
 @import "../bootstrap_less/bootstrap-3.2.0/less/buttons";
 @import "../bootstrap_less/bootstrap-3.2.0/less/badges";
 @import "../bootstrap_less/bootstrap-3.2.0/less/labels";
 @import "../bootstrap_less/bootstrap-3.2.0/less/alerts";
 @import "../bootstrap_less/bootstrap-3.2.0/less/wells";
-@import "../bootstrap_less/bootstrap-3.2.0/less/input-groups.less";
+@import "../bootstrap_less/bootstrap-3.2.0/less/input-groups";
 
 
 
@@ -33,6 +32,7 @@
 }
 
 .main-page{
+  min-height: 600px !important;
   .panel;
   .make-md-column(10);
   .make-md-column-offset(1);
@@ -43,15 +43,20 @@
   .make-lg-column(10);
   .make-lg-column-offset(1);
   .custom-border;
-  @media (max-width: @screen-sm-max) {
-    padding:0.5in;
+  @media (max-width: @screen-sm-max) and (min-width: 575px) {
+    padding:5%;
+    padding-top:0.12in;
     margin-left:20px;
   }
   @media (min-width: @screen-md-min) {
-    padding-left:1in;
-    padding-right:1in;
+    padding-left:5%;
+    padding-right:5%;
     padding-bottom:1in;
-    padding-top:0.75in;
+    padding-top:0.25in;
+  }
+  @media (max-width: 575px){
+    width: 510px;
+    margin-left: 5px;
   }
   min-width:450px;
 }
@@ -84,6 +89,7 @@
 
 .body-bg{
   background-color: @body-background-color;
+  min-width: 550px;
 }
 
 .pcrs-fluid{
@@ -92,6 +98,9 @@
   @media (max-width: 575px){
     left: 20px;
     width: 450px;
+  }
+  .affix{
+    top: 20px;
   }
 }
 
@@ -121,9 +130,11 @@
 }
 
 .button-group{
- .btn-group;
+.btn-group;
   .small-button{
-    margin-left: -5px;
+  }
+  a, input, button{
+    margin-left:5px !important;
   }
 }
 
@@ -153,7 +164,6 @@
   .glyphicon;
   .glyphicon-remove;
   .pull-right;
-//  margin-right: -10px;
   margin-top: -30px;
 }
 
@@ -261,6 +271,7 @@
 .green-checkmark-icon{
   .ok-icon;
   color: @green-checkmark-color;
+  .pull-right;
 }
 
 .openfolder-icon{
@@ -276,6 +287,11 @@
 .video-icon{
   .glyphicon;
   .glyphicon-facetime-video;
+}
+
+.text-icon{
+  .glyphicon;
+  .glyphicon-align-left;
 }
 
 //labels
@@ -298,5 +314,10 @@
 .green-alert{
   .alert;
   .alert-success;
+}
+
+.blue-alert{
+  .alert;
+  .alert-info;
 }
 

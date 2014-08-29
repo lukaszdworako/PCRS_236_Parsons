@@ -15,7 +15,7 @@ function bindDebugButton(buttonId) {
     */
 
     $('#'+ buttonId).bind('click', function() {
-        var testcaseCode = $('#tcase_' + buttonId + ' td.expression').html();
+        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
             prepareVisualizer("debug", testcaseCode, buttonId)}, 250
         );
@@ -342,6 +342,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             var expected_td = $('<td/>', {class:"table-left"}).append("Expected");
             var actual_td = $('<td/>', {class:"table-right"}).append("Actual");
 
+            var left_wrapper = $('<div/>', {class:"sql_table_control"});
+            var right_wrapper;
+            if (current_testcase['visible'])
+                right_wrapper = $('<div/>',{class:"sql_table_control"});
+            else{
+                right_wrapper = $('<div/>',{class:"sql_table_control_full"});
+            }
+
             var expected_table = $('<table/>', {class:"pcrs-table"});
             var actual_table = $('<table/>', {class:"pcrs-table"});
 
@@ -362,8 +370,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                 table_location.append("<div class='red-alert'>"+current_testcase['error']+"</div>");
             }
             else{
-                for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-                    expected_entry.append("<td><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+                if (current_testcase['visible']){
+                    for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                        expected_entry.append("<td><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
+                    }
+                }
+                else{
+                    table_location.append("<div class='blue-alert'>" +
+                                      "</icon><span> Expected Result is Hidden </span></div>");
                 }
 
                 for (var header = 0; header < current_testcase['actual_attrs'].length; header++){
@@ -375,19 +389,21 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                 expected_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
                 actual_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
 
-                for (var entry = 0; entry < current_testcase['expected'].length; entry++){
-                    var entry_class = 'pcrs-table-row';
-                    var test_entry = current_testcase['expected'][entry];
-                    if (test_entry['missing']){
-                        entry_class = "pcrs-table-row-missing";
+                if (current_testcase['visible']){
+                    for (var entry = 0; entry < current_testcase['expected'].length; entry++){
+                        var entry_class = 'pcrs-table-row';
+                        var test_entry = current_testcase['expected'][entry];
+                        if (test_entry['missing']){
+                            entry_class = "pcrs-table-row-missing";
+                        }
+                        var expected_entry = $('<tr/>', {class:entry_class});
+                        for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
+                            expected_entry.append("<td>" +
+                                                 test_entry[current_testcase['expected_attrs'][header]] +
+                                                 "</td>");
+                        }
+                        expected_table.append(expected_entry);
                     }
-                    var expected_entry = $('<tr/>', {class:entry_class});
-                    for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
-                        expected_entry.append("<td>" +
-                                             test_entry[current_testcase['expected_attrs'][header]] +
-                                             "</td>");
-                    }
-                    expected_table.append(expected_entry);
                 }
 
                 for (var entry = 0; entry < current_testcase['actual'].length; entry++){
@@ -409,11 +425,16 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                     actual_table.append(actual_entry);
                 }
 
-                expected_td.append(expected_table);
-                actual_td.append(actual_table);
+                if (current_testcase['visible']){
+                    left_wrapper.append(expected_table);
+                    expected_td.append(left_wrapper);
+                    main_table.append(expected_td);
+                }
 
-                main_table.append(expected_td);
+                right_wrapper.append(actual_table);
+                actual_td.append(right_wrapper);
                 main_table.append(actual_td);
+
                 table_location.append(main_table);
             }
         }
@@ -479,10 +500,10 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                 newRow.append('<td class="description">' +
                                description + '</td>');
 
-                newRow.append('<td class="expression">' +
-                               testcaseInput + '</td>');
+                newRow.append('<td class="expression"><div class="expression_div">' +
+                               testcaseInput + '</div></td>');
 
-                newRow.append('<td><div id="exp_test_val" class="expected ExecutionVisualizer"></div></td>');
+                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
 
             }
             else {
@@ -495,10 +516,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                               "Hidden Result" +'</td>');
             }
 
-            newRow.append('<td class="passed"></td>');
-
-            newRow.append('<td><div id="current_testcase'+i+'" class="result ExecutionVisualizer">' +
-                           ''+'</div></td>');
+            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
+                           ''+'</div></div></td>');
 
             renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
             $('#current_testcase'+i).attr('id', "");
@@ -506,6 +525,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
             renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
             $('#exp_test_val').attr('id',"");
 
+            newRow.append('<td class="passed"></td>');
 
             var pass_status = "";
 
@@ -558,6 +578,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
         add_history_entry(data, div_id, 1);
     }
 }
+
 
 function create_timestamp(datetime){
     /**

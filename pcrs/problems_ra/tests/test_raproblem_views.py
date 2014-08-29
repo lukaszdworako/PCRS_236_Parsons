@@ -6,8 +6,7 @@ from django.test.utils import override_settings
 from problems_ra.models import Problem, Submission, TestCase, TestRun
 
 from problems_rdb.models import Dataset, Schema
-from tests.ViewTestMixins import (ProtectedViewTestMixin, 
-                                  CourseStaffViewTestMixin)
+from ViewTestMixins import ProtectedViewTestMixin, CourseStaffViewTestMixin
 
 
 class TestProblemListView(ProtectedViewTestMixin, test.TestCase):
@@ -18,7 +17,6 @@ class TestProblemListView(ProtectedViewTestMixin, test.TestCase):
 @override_settings(RDB_DATABASE='crs_data_test')
 class TestProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
     url = reverse('ra_problem_create')
-    successful_redirect_url = reverse('ra_problem_list')
     template = 'problems/problem_form.html'
 
     def setUp(self):
@@ -50,9 +48,7 @@ class TestProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
         Creating a new RA problem with correct details.
         """
 
-        print(self.schema.tables)
         response = self.client.post(self.url, self.post_data)
-        self.assertRedirects(response, self.successful_redirect_url)
 
         # problem was added with correct details
         problems = Problem.objects.all()
@@ -182,7 +178,7 @@ class TestProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
 class TestProblemUpdateViewWithNoSubmissions(CourseStaffViewTestMixin,
                                                test.TestCase):
     url = reverse('ra_problem_update', kwargs={'pk': 1})
-    successful_redirect_url = reverse('ra_problem_list')
+    successful_redirect_url = url
     template = 'problems/problem_form.html'
 
     def setUp(self):
@@ -318,7 +314,7 @@ class TestProblemUpdateViewWithSubmissions(CourseStaffViewTestMixin,
                                               test.TestCase):
     url = reverse('ra_problem_update', kwargs={'pk': 1})
     template = 'problem_form'
-    successful_redirect_url = reverse('ra_problem_list')
+    successful_redirect_url = url
 
     def setUp(self):
         TestProblemUpdateViewWithNoSubmissions.setUp(self)
@@ -452,120 +448,3 @@ class TestProblemUpdateViewWithSubmissions(CourseStaffViewTestMixin,
         self.assertEqual(1, problem.schema.pk)
         self.assertEqual(Problem.GRAMMARS[0][0], problem.grammar)
         self.assertEqual(Problem.SEMANTICS[0][0], problem.semantics)
-
-
-@override_settings(RDB_DATABASE='crs_data_test')
-class TestProblemSubmitView(ProtectedViewTestMixin, test.TestCase):
-    url = reverse('ra_problem_submit', kwargs={'problem': 1})
-    template = 'problems_rdb/submission.html'
-
-    def setUp(self):
-        self.valid_schema = 'CREATE TABLE WEATHER(sunny bool, temp int);'
-        self.valid_data = 'INSERT INTO WEATHER VALUES(true, 10);'
-
-        self.schema = Schema.objects.create(name='test_schema',
-                definition=self.valid_schema,
-                tables=dumps({'weather': ['sunny', 'temp']}))
-
-        self.dataset1 = Dataset.objects.create(pk=1, name='test_ds1',
-                                definition=self.valid_data, schema=self.schema)
-        self.dataset2 = Dataset.objects.create(pk=2, name='test_ds2',
-                                definition=self.valid_data, schema=self.schema)
-        self.dataset3 = Dataset.objects.create(pk=3, name='test_ds3',
-                                definition=self.valid_data, schema=self.schema)
-
-        self.problem = Problem.objects.create(
-            pk=1, name='test_ra_problem', description='test_ra_problem_desc',
-            solution='weather;', schema=self.schema,
-            grammar=Problem.GRAMMARS[0][0], visibility='open')
-
-        self.t1 = TestCase.objects.create(problem=self.problem,
-                                             dataset=self.dataset1)
-        self.t2 = TestCase.objects.create(problem=self.problem,
-                                             dataset=self.dataset2)
-        ProtectedViewTestMixin.setUp(self)
-
-    def tearDown(self):
-        self.dataset1.delete()
-        self.dataset2.delete()
-        self.dataset3.delete()
-
-    def submissions_recorded(self, submission_code):
-        self.assertEqual(1, Submission.objects.count())
-        submission = Submission.objects.all()[0]
-        self.assertEqual(submission_code, submission.submission)
-        self.assertEqual(self.problem, submission.problem)
-
-        self.assertEqual(2, TestRun.objects.count())
-        tr1, tr2 = TestRun.objects.all()
-        self.assertEqual(self.t1, tr1.testcase)
-        self.assertEqual(self.t2, tr2.testcase)
-
-    def test_page_visibility(self):
-        """
-        Test submission page access to students when problem is invisible.
-        """
-        self.problem.visibility = False
-        self.problem.save()
-        self.client.login(username='student')
-        response = self.client.get(self.url)
-        self.assertEqual(404, response.status_code)
-
-    def test_correct_solution(self):
-        """
-        Test submitting a correct solution.
-        """
-        post_data = {
-            'submission': self.problem.solution
-        }
-        response = self.client.post(self.url, post_data)
-        print(response.content)
-        self.assertEqual(200, response.status_code)
-        self.submissions_recorded(post_data['submission'])
-        self.assertContains(response, 'Your solution is correct!')
-        submission = Submission.objects.all()[0]
-        self.assertEqual(2, submission.score)
-
-    def test_incorrect_solution(self):
-        """
-        Test submitting an incorrect solution.
-        """
-        post_data = {
-            'submission': '\project_{sunny} weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'Your solution is incorrect!')
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)
-
-    def test_solution_with_syntax_error(self):
-        """
-        Test submitting a correct solution.
-        """
-        post_data = {
-            'submission': '\project_{sunny weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, 'Syntax error')
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)
-
-    def test_solution_with_attribute_error(self):
-        """
-        Test submitting a solution with attribute error.
-        """
-        post_data = {
-            'submission': '\project_{wind} weather;'
-        }
-        response = self.client.post(self.url, post_data)
-        self.assertEqual(200, response.status_code)
-
-        self.submissions_recorded(post_data['submission'])
-        submission = Submission.objects.all()[0]
-        self.assertEqual(0, submission.score)

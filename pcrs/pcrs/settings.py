@@ -6,6 +6,14 @@ LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'),)
 
 PRODUCTION = False
 
+# controls if a reactive content page should be used
+# reactive content page is live updated and updates content pages in other tabs
+REACT = True
+
+# controls if live-updated quests page should be used
+# live page receives updates from socket.io to update when items are completed
+QUESTS_LIVE = True
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -18,7 +26,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dev',
+        'NAME': 'pcrs_dev',
         'USER': 'dev',
         'PASSWORD': 'dev',
         'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
@@ -97,7 +105,7 @@ COMPRESS_ENABLED = "True"
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    '/home/zollar/pcrs_git/pcrs/pcrs/resources',
+    '/Users/olessia/Projects/fresh/pcrs/resources',
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.

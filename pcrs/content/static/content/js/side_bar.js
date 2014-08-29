@@ -111,6 +111,13 @@ function video_watched(video_id){
             {csrftoken:csrftoken})
             .success(function (data) {
                 $(document).find("#sb_video-"+video_id).addClass("video-watched");
+
+                socket.emit('statusUpdate',
+                    {
+                        id: "video-" + video_id,
+                        status: {completed: true},
+                        userhash: userhash
+                    });
             });
     }
 }

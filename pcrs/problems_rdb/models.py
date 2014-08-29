@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 
 from pcrs.model_helpers import has_changed, get_stored_value
-from problems.models import (AbstractSelfAwareModel, AbstractNamedProblem,
+from problems.models import (AbstractSelfAwareModel, AbstractProgrammingProblem,
                              AbstractTestCase)
 from problems_rdb.db_wrapper import InstructorWrapper
 
@@ -171,7 +171,7 @@ class Dataset(AbstractSelfAwareModel):
                                  .format(db_error=e.pgerror))
 
 
-class RDBProblem(AbstractNamedProblem):
+class RDBProblem(AbstractProgrammingProblem):
     """
     A Relational DataBase problem.
 

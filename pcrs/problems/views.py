@@ -329,7 +329,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                 'submission': sub.submission,
                 'score': sub.score,
                 'out_of': problem.max_score,
-                'best': sub.score == best_score and \
+                'best': sub.has_best_score and \
                         ((not deadline) or sub.timestamp < deadline),
                 'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,

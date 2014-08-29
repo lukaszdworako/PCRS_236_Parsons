@@ -1,10 +1,34 @@
 @import "../bootstrap_less/bootstrap-3.2.0/less/tables";
 @import "../bootstrap_less/bootstrap-3.2.0/less/list-group.less";
 
+.ptd{
+  overflow-x: auto;
+  @media (min-width: @screen-lg-min) {
+    max-width: 160px;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    max-width: 150px;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    max-width: 140px;
+  }
+  @media (max-width: @screen-xs-max){
+    max-width: 120px;
+  }
+  padding:10px;
+}
+
+.expression_div{
+  max-width:160px;
+  overflow-x: auto;
+}
+
+.main-sql-table{
+  display:block;
+}
 
 .pcrs-table{
   .table;
-//  .table-striped;
   background-color: @uft-white;
 }
 
@@ -37,7 +61,43 @@
   padding: 10px;
 }
 
+.sql_table_control{
+  @media (min-width: @screen-lg-min) {
+    width: 34vw;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width: 34vw;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    width: 32vw;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 28vw;
+  }
+  max-width: 34vw;
+  display: block;
+  overflow-x: auto;
+}
+
+.sql_table_control_full{
+  @media (min-width: @screen-lg-min) {
+    width: 69vw;
+  }
+  @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+    width: 69vw;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    width: 66vw;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 60vw;
+  }
+  display: block;
+  overflow-x: auto;
+}
+
 .expression{
+  vertical-align:middle;
   @media (min-width: @screen-lg-min) {
     width: 25%;
   }
@@ -71,7 +131,7 @@
   .vcenter;
 }
 
-.expected, .result{
+.expected{
   @media (min-width: @screen-lg-min) {
     width: 16.66%;
   }
@@ -88,7 +148,11 @@
   .vcenter;
 }
 
-.passed, .debug{
+.result{
+  .expected;
+}
+
+.passed{
   @media (min-width: @screen-lg-min) {
     width: 8.33%;
   }
@@ -103,6 +167,10 @@
   }
   padding:10px;
   .vcenter;
+}
+
+.debug{
+  .passed;
 }
 
 .listTbl{

@@ -1,54 +1,18 @@
 /** @jsx React.DOM */
 
 var data;
-
-// Listen for updates to problems.
-// These events are dispatched by the socket listener.
-window.addEventListener('problemUpdate', function (event) {
-    var receiver = 'problemUpdate-' +
-        event.detail.problem.problem_type + event.detail.problem.pk;
-    window.dispatchEvent(
-        new CustomEvent(receiver, {detail: event.detail})
-    );
-}, false);
-
-window.addEventListener('problemStatusUpdate', function (event) {
-    var receiver = 'problemStatusUpdate-' +
-        event.detail.problem.problem_type + event.detail.problem.pk;
-    console.log('propagating', receiver);
-    window.dispatchEvent(
-        new CustomEvent(receiver, {detail: event.detail})
-    );
-}, false);
-
-function isProblemAttempted(pType, pID) {
-    return (data.problems_attempted.hasOwnProperty(pType) &&
-        data.problems_attempted[pType].hasOwnProperty(pID) &&
-        data.problems_attempted[pType][pID]);
-}
-
-function isProblemCompleted(pType, pID) {
-    return (data.problems_completed.hasOwnProperty(pType) &&
-        data.problems_completed[pType].hasOwnProperty(pID) &&
-        data.problems_completed[pType][pID]);
-}
-
-function isProblemVisible(pType, pID) {
-    return data.problems[pType][pID].is_visible;
-}
+var problemsCompleted = {};
 
 var QuestList = React.createClass({
     render: function () {
-        var questNodes = data.quests.map(function (quest) {
+        var quests = data.quests.map(function (quest) {
             return (
-                <Quest id={quest.pk} name={quest.name}
-                deadline={quest.deadline}>
-                </Quest>
+                <Quest quest={quest} />
                 );
         });
         return (
             <div className="QuestList">
-                   {questNodes}
+                   {quests}
             </div>
             );
     }
@@ -57,15 +21,53 @@ var QuestList = React.createClass({
 
 var Quest = React.createClass({
     render: function () {
+        var questID = 'Quest-' + this.props.quest.pk;
+        var divInfo;
+        var deadline = this.props.quest.deadline;
+
+        var panelClasses = React.addons.classSet({
+            "panel-collapse": true,
+            "collapse": true
+        });
+
+        if (deadline) {
+            if (this.props.quest.deadline_passed) {
+                divInfo = (<div className="info">
+                Submission closed on&nbsp;
+                    <br className="info-sm"> {deadline}</br>
+                </div>);
+
+            }
+
+            else {
+                divInfo = (<div className="info">
+                Due on&nbsp;
+                    <br className="info-sm"> {deadline}</br>
+                </div>);
+            }
+        }
+
         return (
-            <div id={'Quest-' + this.props.id}>
-                <h3>
-                    <a>{this.props.name}
-                        <span className="pull-right">{this.props.deadline}</span>
-                    </a>
-                </h3>
-                <div id={this.props.id}>
-                    <ChallengeList questID={this.props.id} />
+            <div className="pcrs-panel-group">
+                <div className="pcrs-panel">
+                    <div className={this.props.quest.deadline_passed ? "quest-expired" : "quest-live"}>
+
+                        <h4 className="pcrs-panel-title">
+                            <a href={"#" + questID} className="collapsed" data-toggle="collapse">
+
+                                <i className="collapse-indicator"></i>
+                                {this.props.quest.name}
+                                {divInfo}
+                            </a>
+                        </h4>
+                    </div>
+                    <div id={questID} className={panelClasses}>
+                        <div className="quest-body" >
+                            <h4>{this.props.quest.description}</h4>
+                            <h3> Challenges </h3>
+                            <ChallengeList questID={this.props.quest.pk} />
+                        </div>
+                    </div>
                 </div>
             </div>
             );
@@ -79,9 +81,7 @@ var ChallengeList = React.createClass({
         var challengeNodes = (data.challenges[this.props.questID] || []).map(
             function (challenge) {
                 return (
-                    <Challenge id={challenge.pk} name={challenge.name}
-                    graded={challenge.graded} url={challenge.url}>
-                    </Challenge>
+                    <Challenge challenge={challenge} />
                     );
             });
         return (
@@ -93,27 +93,25 @@ var ChallengeList = React.createClass({
 var Challenge = React.createClass({
     getInitialState: function () {
         return {
-            completed: this.countCompleted(this.props.id),
-            total: this.countTotal(this.props.id)
+            attempted: this.countAttempted(this.props.challenge.pk) > 0,
+            completed: this.countCompleted(this.props.challenge.pk),
+            total: this.countTotal(this.props.challenge.pk)
         }
     },
 
     countCondition: function (challengeID, condition) {
         var count = 0;
-        console.log('challengepk', challengeID);
 
         // iterate over pages in challenge
         if (data.pages.hasOwnProperty(challengeID)) {
             for (var i = 0; i < data.pages[challengeID].length; i++) {
                 var page = data.pages[challengeID][i];
                 // iterate over problems on the page
-                if (data.problem_lists.hasOwnProperty(page.pk)) {
+                if (data.item_lists.hasOwnProperty(page.pk)) {
 
-                    for (var j = 0; j < data.problem_lists[page.pk].length; j++) {
-                        var ID = data.problem_lists[page.pk][j];
-                        var pType = ID.split('-')[0];
-                        var pID = ID.split('-')[1];
-                        if (condition(pType, pID)) {
+                    for (var j = 0; j < data.item_lists[page.pk].length; j++) {
+                        var id = data.item_lists[page.pk][j];
+                        if (condition(id)) {
                             count += 1;
                         }
                     }
@@ -124,51 +122,132 @@ var Challenge = React.createClass({
     },
 
     countCompleted: function (challengeID) {
-        return this.countCondition(challengeID, function (pType, pID) {
-                return isProblemVisible(pType, pID) &&
-                       isProblemCompleted(pType, pID);
+        console.log('Counting completed');
+        return this.countCondition(challengeID, function (id) {
+                return (
+                    (data.items[id].content_type == 'video' &&
+                        data.watched.hasOwnProperty(id)) ||
+                    (data.items[id].content_type == 'problem' &&
+                        (problemsCompleted.hasOwnProperty(id) ||
+                            ProblemMixin.isProblemCompleted(data.items[id]
+                            ))
+                        )
+                    );
+            }
+        );
+    },
+
+    countAttempted: function (challengeID) {
+        return this.countCondition(challengeID, function (id) {
+                return (
+                    (data.items[id].content_type == 'video' &&
+                        data.watched.hasOwnProperty(id)) ||
+                    (data.items[id].content_type == 'problem' &&
+                        ProblemMixin.isProblemAttempted(data.items[id]
+                            )
+                        )
+                    );
             }
         );
     },
 
     countTotal: function (challengeID) {
-        return this.countCondition(challengeID, function (pType, pID) {
-                return isProblemVisible(pType, pID);
+        console.log("counting total");
+        return this.countCondition(challengeID, function (id) {
+                return (data.items[id].content_type == 'video' ||
+                    (data.items[id].content_type == 'problem' &&
+                        data.items[id].is_visible));
+            }
+        );
+    },
+
+    challengeScoreUpdate: function () {
+        this.setState({
+                attempted: true,
+                completed: this.countCompleted(this.props.challenge.pk)
+            }
+        );
+    },
+
+    challengeItemsUpdate: function () {
+        this.setState({
+                total: this.countTotal(this.props.challenge.pk)
             }
         );
     },
 
     componentDidMount: function () {
         var component = this;
-        var event = 'challengeUpdated-' + this.props.id;
+
+        var event = 'challengeUpdate' + this.props.challenge.pk;
         window.addEventListener(event, function (event) {
-            component.setState({
-                    completed: component.countCompleted(component.props.id),
-                    total: component.countTotal(component.props.id)
-                }
-            );
+            console.log('Challenge received update', event);
+            component.challengeScoreUpdate()
+        }, false);
+
+        event = 'challengeItemsUpdate' + this.props.challenge.pk;
+        window.addEventListener(event, function (event) {
+            component.challengeItemsUpdate()
         }, false);
 
     },
 
     render: function () {
-        var classes = React.addons.classSet({
-            'challenge-not-attempted': this.state.completed == 0,
-            'challenge-attempted': this.state.completed > 0,
-            'challenge-completed': this.state.completed == this.state.total
+        var challengeID = this.props.challenge.id;
+
+        var challengeStatusClass = React.addons.classSet({
+            "challenge-not-attempted": !this.state.attempted && this.state.total != 0,
+            "challenge-attempted": this.state.attempted &&
+                                   !(this.state.completed == this.state.total),
+            "challenge-completed": this.state.total != 0 &&
+                                   this.state.completed == this.state.total,
+            "challenge-empty": this.state.total == 0
+        });
+
+        var challengeMarkClass = React.addons.classSet({
+            "challenge-mark-unknown": this.state.total == 0,
+            "challenge-mark-incomplete": this.state.total != 0 &&
+                                         this.state.completed != this.state.total,
+            "challenge-mark-complete": this.state.completed == this.state.total &&
+                                        this.state.total != 0
+        });
+
+        var panelClasses = React.addons.classSet({
+            "pcrs-panel-body": true,
+            "panel-collapse": true,
+            "collapse": true
         });
 
         return (
-            <div onClick={this.toggle}>
-                <h3 className={classes}>{this.props.name}
-                    <span className="pull-right">
-                    {this.props.graded ? 'Graded' : 'Practice'}:
-                    {this.state.completed}/{this.state.total}
-                    </span>
-                </h3>
-                <div>
-                    <PageList challengeID={this.props.id}
-                    challengeUrl={this.props.url} />
+            <div className="pcrs-panel">
+                <div className={challengeStatusClass}>
+                    <h4 className="pcrs-panel-title">
+                        <a className="collapsed" data-toggle="collapse" href={"#" + challengeID}>
+                            <i className="collapse-indicator"></i>
+                            <span>
+                                <i className={this.props.challenge.graded ? "credit-challenge" : "practice-challenge" }
+                                title={(this.props.challenge.graded ? "Practice" : "Graded" ) + " Challenge"}>
+                                </i>
+                            </span>
+                            <span dangerouslySetInnerHTML={{__html: this.props.challenge.name}} />
+                            <div className={challengeMarkClass}>
+                                <br className="info-sm" />
+                                    {this.props.challenge.graded ? "Graded" : "Practice"}
+                                <i className="complete-icon"></i>
+                                <span className="challenge-mark">
+                                    {this.state.completed} / {this.state.total}
+                                </span>
+                            </div>
+                        </a>
+                    </h4>
+                </div>
+                <div id={challengeID} className={panelClasses}>
+                    <span dangerouslySetInnerHTML={{__html: this.props.challenge.description}} />
+                    <PageList challengeID={this.props.challenge.pk}
+                    challengeUrl={this.props.challenge.url}
+                    challengeScoreUpdate={this.challengeScoreUpdate}
+                    challengeItemsUpdate={this.challengeItemsUpdate}
+                    />
                 </div>
             </div>
             );
@@ -177,14 +256,14 @@ var Challenge = React.createClass({
 
 var PageList = React.createClass({
     render: function () {
-        var url = this.props.challengeUrl;
+        var component = this;
         var total = (data.pages[this.props.challengeID] || []).length;
         var pageNodes = (data.pages[this.props.challengeID] || []).map(
             function (page) {
                 return (
-                    <Page id={page.pk} order={page.order} total={total}
-                    url={url + '/' + page.order}>
-                    </Page>
+                    <Page page={page} total={total}
+                    challengeScoreUpdate={component.props.challengeScoreUpdate}
+                    challengeItemsUpdate={component.props.challengeItemsUpdate} />
                     );
             });
         return (
@@ -195,156 +274,125 @@ var PageList = React.createClass({
 
 var Page = React.createClass({
     render: function () {
-        var classes = React.addons.classSet({
-            'panel': true,
-            'panel-default': true,
-            'problem-page': true
-        });
+        var component = this;
+        var items = [];
+        (data.item_lists[this.props.page.pk] || []).forEach(
+            function (id) {
+                var item = data.items[id];
+                if (item.content_type == 'problem') {
+                    items.push(
+                        <Problem key={item.id} item={item}
+                        pageUrl={component.props.page.url}
+                        challengeScoreUpdate={component.props.challengeScoreUpdate}
+                        challengeItemsUpdate={component.props.challengeItemsUpdate}
+                        />
+                        );
+                }
+                if (item.content_type == 'video') {
+                    items.push(
+                    <Video key={item.id} item={item}
+                    pageUrl={component.props.page.url}
+                    challengeScoreUpdate={component.props.challengeScoreUpdate}
+                    challengeItemsUpdate={component.props.challengeItemsUpdate}
+                    />)
+                }
+
+                 if (item.content_type == 'textblock') {
+                    items.push(
+                    <TextIcon key={item.id} item={item} pageUrl={component.props.page.url} />)
+                }
+            });
+
+
         return (
-            <div className={classes}>
-                <div className="panel-heading">
-                    <a href={this.props.url} target="_blank">Go to Part {this.props.order}</a>
-                </div>
-                <div className="panel-body">
-                    <ProblemList pageID={this.props.id} pageUrl={this.props.url}/>
+            <div className="challenge-page">
+                <div className="pcrs-panel">
+                    <div className="pcrs-panel-heading">
+                        <a href={this.props.page.url} target="_blank">Go to Part {this.props.page.order}</a>
+                    </div>
+                    <div className="pcrs-panel-body">
+                    {items}
+                    </div>
                 </div>
             </div>
             );
     }
 });
 
-var ProblemList = React.createClass({
-    render: function () {
-        var pageUrl = this.props.pageUrl;
-
-        var problemNodes = (data.problem_lists[this.props.pageID] || []).map(
-            function (problemID) {
-                problemID = problemID.split('-');
-                var pType = problemID[0];
-                var pID = problemID[1];
-                var problem = data.problems[pType][pID];
-
-                return (
-                    <Problem pType={pType} id={pID}
-                    challengeID={problem.challenge}
-                    name={problem.name}
-                    url={pageUrl + '#' + pType + '-' + pID}/>
-                    );
-            });
-        return (
-            <div>{problemNodes}</div>
-            );
-    }
-});
 
 var Problem = React.createClass({
-
     getInitialState: function () {
-        var pType = this.props.pType;
-        var pID = this.props.id;
-        return {
-            attempted: isProblemAttempted(pType, pID),
-            completed: isProblemCompleted(pType, pID),
-            isVisible: isProblemVisible(pType, pID)
+        return {isVisible: this.props.item.is_visible};
+    },
+
+    mixins: [Listener],
+    listenTo: [onVisibilityUpdate],
+
+    handleUpdate: function (event) {
+        var isVisible = event.detail.item.properties.is_visible;
+        data.items[event.detail.item.id].is_visible = isVisible;
+        console.log(isVisible);
+        this.setState({isVisible: isVisible});
+        this.props.challengeItemsUpdate()
+    },
+
+    render: function () {
+        if (this.state.isVisible) {
+            var url = this.props.pageUrl + "#" + this.props.item.id;
+            return (
+                <div>
+                    <a href={url} target="_blank">
+                        <ProblemStatusIndicator item={this.props.item} problemDidUpdate={this.problemDidUpdate}/>
+                        {this.props.item.name}
+                    </a>
+                </div>
+                );
+        }
+        else {
+            return null;
         }
     },
 
-    componentDidMount: function () {
-        var component = this;
+    problemDidUpdate: function (problemCompleted) {
+        if (problemCompleted) {
+            problemsCompleted[this.props.item.id] = true;
+        }
+        this.props.challengeScoreUpdate();
+    }
 
-        // Listen for problem updates.
-        var update = 'problemUpdate-' + this.props.pType + this.props.id;
-        window.addEventListener(update, function (event) {
-            // Update problem properties
-            component.updateProblem(event);
-        }, false);
+});
 
-        update = 'problemStatusUpdate-' + this.props.pType + this.props.id;
-
-        window.addEventListener(update, function (event) {
-            // Update problem attempted / completed state.
-            console.log('captured');
-            component.updateProblemStatus(event);
-        }, false);
-    },
-
+var Video = React.createClass({
     render: function () {
-        var problemVisibilityClass = React.addons.classSet({
-            'hidden': !this.state.isVisible
-        });
-
-        console.log('bla', !this.state.attempted);
-        var problemClasses = React.addons.classSet({
-            'glyphicon': true,
-            'glyphicon-edit': true,
-            'problem-idle': !this.state.attempted,
-            'problem-attempted': this.state.attempted && !this.state.completed,
-            'problem-complete': this.state.completed
-        });
-
+        var url = this.props.pageUrl + "#" + this.props.item.id;
         return (
-            <div className={problemVisibilityClass}>
-                <a href={this.props.url} target="_blank">
-                    <i className={problemClasses}></i>{this.props.name}
+            <div>
+                <a href={url} target="_blank">
+                    <VideoStatusIndicator item={this.props.item} videoDidUpdate={this.videoStatusDidUpdate} />
+                    {this.props.item.name}
                 </a>
             </div>
             );
     },
 
-    updateProblemStatus: function (event) {
-        console.log('updating');
-        console.log(event.detail);
+    videoStatusDidUpdate: function () {
+        console.log(' video update');
+        data.watched[this.props.item.id] = true;
+        this.props.challengeScoreUpdate();
+    }
+});
 
-        var problem = event.detail.problem;
-        var status = event.detail.status;
-
-        var attempted = status.attempted || this.state.attempted || this.state.completed;
-        var completed = status.completed || this.state.completed;
-
-        data.problems_attempted[problem.problem_type][problem.pk] = attempted;
-
-        if (status.hasOwnProperty('completed')) {
-            var currentStatus = data.problems_completed[problem.problem_type][problem.pk];
-            data.problems_completed[problem.problem_type][problem.pk] = status.completed;
-
-            if (currentStatus != status.completed) {
-                // Problem completion status has changed.
-                // Challenge needs to update.
-                window.dispatchEvent(
-                    new CustomEvent('challengeUpdated-' + this.props.challengeID)
-                );
-            }
-        }
-        this.replaceState({
-            attempted: attempted,
-            completed: completed,
-            isVisible: this.state.isVisible
-        });
-    },
-
-    updateProblem: function (event) {
-        var problem = event.detail.problem;
-        var problemToUpdate = data.problems[problem.problem_type][problem.pk];
-
-        var previousVisibility = problemToUpdate.is_visible;
-
-        for (var property in problem.properties) {
-            if (problemToUpdate.hasOwnProperty(property)) {
-                problemToUpdate[property] = problem.properties[property];
-            }
-        }
-        if (previousVisibility != problemToUpdate.is_visible) {
-            // Problem visibility has changed. Challenge needs to update.
-            window.dispatchEvent(
-                new CustomEvent('challengeUpdated-' + this.props.challengeID)
+var TextIcon = React.createClass({
+    render: function () {
+        var url = this.props.pageUrl + "#" + this.props.item.id;
+        return (
+            <div>
+                <a href={url} target="_blank">
+                    <span className="text-icon" />
+                    {this.props.item.name}
+                </a>
+            </div>
             );
-        }
-
-        this.setState({
-            isVisible: problemToUpdate.is_visible
-        });
-
-
     }
 });
 

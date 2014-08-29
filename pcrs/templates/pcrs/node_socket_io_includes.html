@@ -1,7 +1,6 @@
 {% load static %}
 
-<script type="text/jsx"
-        src="{% static "node/node_modules/socket.io/node_modules/socket.io-client/socket.io.js" %}"></script>
+<script src="{% static "node/node_modules/socket.io/node_modules/socket.io-client/socket.io.js" %}"></script>
 <script>
     var userhash = "{{ request.user }}";
 </script>
