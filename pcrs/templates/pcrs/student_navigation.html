@@ -8,17 +8,19 @@
             </button>
             <a class="pcrs-navbar-brand" href="#">PCRS</a>
         </div>
-        {% if user %}
-            <ul class="pcrs-navbar-nav">
-                <li>
-                    <a href="{{ site_prefix }}/content/quests" title="Quests">
-                        Quests
-                    </a>
-                </li>
+        <div class="collapse navbar-collapse" id="student-navbar">
+            {% if user %}
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="{{ site_prefix }}/content/quests" title="Quests">
+                            Quests
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+            <ul class="pcrs-navbar-nav-right">
+                {% include "pcrs/shared_navigation.html" %}
             </ul>
-        {% endif %}
-        <ul class="pcrs-navbar-nav-right">
-            {% include "pcrs/shared_navigation.html" %}
-        </ul>
+        </div>
     </div>
 </nav>

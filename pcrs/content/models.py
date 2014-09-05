@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
-from django.utils.timezone import utc, now
+from django.utils.timezone import utc, now, localtime
 from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
@@ -27,6 +27,10 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
+    @property
+    def url(self):
+        return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+
     class Meta:
         ordering = ['name']
 
@@ -35,6 +39,20 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         if section:
             watched = watched.filter(user__section=section)
         return watched.count()
+
+    def get_content_type_name(cls):
+        return 'video'
+
+    def serialize(self):
+        serialized = {}
+        for base in self.__class__.__bases__:
+            serialized.update(base.serialize(self))
+        serialized['url'] = self.url,
+        serialized['thumbnail'] = self.thumbnail,
+        serialized['download'] = self.download,
+        serialized['record_watched'] = '{}/watched'\
+            .format(self.get_absolute_url())
+        return serialized
 
 
 class WatchedVideo(models.Model):
@@ -52,8 +70,15 @@ class WatchedVideo(models.Model):
         return set(cls.objects.filter(user=user)
                               .values_list('video_id', flat=True))
 
+    @classmethod
+    def get_watched_uri_ids(cls, user):
+        return {
+            watched.video.get_uri_id(): True
+            for watched in cls.objects.select_related('video').filter(user=user)
+        }
 
-class TextBlock(models.Model):
+
+class TextBlock(AbstractSelfAwareModel):
     """
     A text object has a single attribute - the text to be displayed.
     """
@@ -65,6 +90,16 @@ class TextBlock(models.Model):
 
     def __str__(self):
         return self.text[:150]
+
+    def serialize(self):
+        serialized = super().serialize()
+        serialized.update({
+            'text': self.text,
+        })
+        return serialized
+
+    def get_content_type_name(cls):
+        return 'textblock'
 
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
@@ -97,7 +132,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
                     self.content_type, self.object_id)
 
 
-class ContentPage(models.Model):
+class ContentPage(AbstractSelfAwareModel):
     """
     A page displaying a sequence of ContentSequenceItems.
     """
@@ -110,10 +145,48 @@ class ContentPage(models.Model):
     def __str__(self):
         return '{name}: page {order}'.format(name=self.challenge.name,
                                              order=self.order)
+    @classmethod
+    def get_content_type_name(cls):
+        return 'content_page'
+
+    @classmethod
+    def get_visible_for_section(cls, section):
+        """
+        Return a queryset of ContentPages that are visible to the section.
+
+        A Content Page is visible if the following conditions are met:
+        1. the challenge this page is in is open
+        2. the challenge's quest is live
+        3. the quest is visible to the section
+        4. the quest has been released to the section
+        """
+        return cls.objects.select_related('challenge').filter(
+            challenge__visibility='open',
+            challenge__quest__sectionquest__section=section,
+            challenge__quest__mode='live',
+            challenge__quest__sectionquest__visibility='open',
+            challenge__quest__sectionquest__open_on__lt=localtime(now())
+        )
+
+    def serialize(self):
+        serialized = super().serialize()
+        serialized.update({
+            'order': self.order,
+            'url': self.get_absolute_url()
+        })
+        return serialized
 
     def get_absolute_url(self):
         return '{challenge}/{num}'.format(
             challenge=self.challenge.get_absolute_url(), num=self.order)
+
+    def get_next_url(self):
+        page = self.next()
+        return page.get_absolute_url() if page else None
+
+    def get_previous_url(self):
+        page = self.previous()
+        return page.get_absolute_url() if page else None
 
     def next(self):
         try:
@@ -123,7 +196,7 @@ class ContentPage(models.Model):
             return None
 
     def previous(self):
-        if self.order == 0:
+        if self.order == 1:
             return None
         else:
             return ContentPage.objects.get(challenge=self.challenge,
@@ -146,31 +219,17 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     class Meta:
         ordering = ['quest', 'order']
 
-    def serialize(self):
-        return {
-            'pk': self.pk, 'name': self.name, 'graded': self.is_graded,
-            'url': self.get_absolute_url()
-        }
-
-    def get_first_page_url(self):
-        try:
-            page = self.contentpage_set.get(order=1)
-            return page.get_absolute_url()
-        except ContentPage.DoesNotExist:
-            return None
-
-    def get_stats_page_url(self):
-        return '{}/stats'.format(self.get_absolute_url())
-
+    @classmethod
+    def get_content_type_name(cls):
+        return 'challenge'
+    
+    def __str__(self):
+        return '{name} | {quest}'.format(name=self.name, quest=self.quest)
+    
     @staticmethod
     def _get_completed_challenges(completed, total):
         return {challenge.pk for challenge in Challenge.objects.all()
                 if completed.get(challenge.pk, None) == total.get(challenge.pk, 0)}
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        super().save(force_insert, force_update, using, update_fields)
-        # output_graph(self.get_challenge_graph_data())
 
     @classmethod
     def get_challenge_problem_data(cls, user, section):
@@ -229,6 +288,32 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
             for challenge in cls.objects.prefetch_related('prerequisites').all()
         }
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+        # output_graph(self.get_challenge_graph_data())
+
+    def serialize(self):
+        serialized = {}
+        for base in self.__class__.__bases__:
+            serialized.update(base.serialize(self))
+        serialized.update({
+            'order': self.order,
+            'graded': self.is_graded,
+            'url': self.get_absolute_url()
+        })
+        return serialized
+
+    def get_first_page_url(self):
+        try:
+            page = self.contentpage_set.get(order=1)
+            return page.get_absolute_url()
+        except ContentPage.DoesNotExist:
+            return None
+
+    def get_stats_page_url(self):
+        return '{}/stats'.format(self.get_absolute_url())
+
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
@@ -255,6 +340,18 @@ class Quest(AbstractNamedObject, AbstractSelfAwareModel):
         else:
             super().save(force_insert, force_update, using, update_fields)
 
+    @classmethod
+    def get_content_type_name(cls):
+        return 'quest'
+
+    def serialize(self):
+        serialized = {}
+        for base in self.__class__.__bases__:
+            serialized.update(base.serialize(self))
+        serialized['order'] = self.order
+        serialized['mode'] = self.mode
+        return serialized
+
 
 class SectionQuest(AbstractLimitedVisibilityObject):
     """
@@ -274,6 +371,18 @@ class SectionQuest(AbstractLimitedVisibilityObject):
 
     def __str__(self):
         return '{section} {quest}'.format(section=self.section, quest=self.quest)
+
+    def serialize(self):
+        serialized = {}
+        for base in self.__class__.__bases__:
+            serialized.update(base.serialize(self))
+        serialized.update({
+            'deadline': localtime(self.due_on).strftime('%c')
+                        if self.due_on else None,
+            'deadline_passed': localtime(self.due_on) < localtime(now())
+        })
+        serialized.update(self.quest.serialize())
+        return serialized
 
 
 def page_delete(sender, instance, **kwargs):

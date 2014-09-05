@@ -4,7 +4,6 @@ import os
 
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView, View, TemplateView
-from django.utils.timezone import localtime, now
 
 from content.forms import ChallengeForm
 from content.models import *
@@ -38,14 +37,14 @@ class ChallengeListView(CourseStaffViewMixin, SectionViewMixin,
 
     def get_visible_challenges(self):
         section = self.get_section()
-        if section.is_master():
-            return Challenge.objects.all()
-        else:
-            return Challenge.objects.filter(
+        challenges = Challenge.objects.select_related('quest').all()
+        if not section.is_master():
+            challenges = challenges.filter(
                 visibility='open',
                 quest__sectionquest__section=section,
                 quest__sectionquest__open_on__lt=localtime(now()),
                 quest__sectionquest__visibility='open')
+        return challenges
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -134,6 +133,60 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
         context['forms'] = self._get_forms()
         context['watched'] = WatchedVideo.get_watched_pk_list(user)
         return context
+
+
+class ReactiveContentPageView(ContentPageView):
+    """
+    View a ContentPage, in a mostly reactive way.
+    """
+    template_name = "content/reactive_content_page.html"
+    model = ContentSequenceItem
+    page = None
+    queryset = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['content_page'] = self.page
+        context['best'] = {}
+
+        context['next'] = self.page.next()
+        context['num_pages'] = self.page.challenge.contentpage_set.count()
+        context['forms'] = self._get_forms()
+        return context
+
+
+class ReactiveContentPageData(ContentPageView, View):
+    """
+    Return a JSON object with the data for a reactive content page.
+    """
+    def get(self, request, *args, **kwargs):
+        user, section = self.get_user(), self.get_section()
+        page = self.get_page()
+
+        items = [
+            item.content_object.serialize()
+            for item in ContentSequenceItem.objects.filter(content_page=page)
+                        .prefetch_related('content_object').all()
+        ]
+
+        scores = {}
+        for content_type in get_submission_content_types():
+            best, _ = content_type.model_class()\
+                .get_best_attempts_before_deadlines(user, section)
+            scores[content_type.app_label.replace('problems_', '')] = best
+
+        return HttpResponse(
+            json.dumps(
+                {
+                    'items': items,
+                    'scores': scores,
+                    'watched': WatchedVideo.get_watched_uri_ids(user),
+                    'page': {'pk': page.pk, 'challenge': page.challenge_id},
+                    'next_page_url': page.get_next_url(),
+                    'previous_page_url': page.get_previous_url()
+                }
+            ), mimetype='application/json')
 
 
 class ChallengeStatsView(CourseStaffViewMixin, DetailView):

@@ -9,9 +9,6 @@
 /*global window */
 /*global getNonActiveParentNames */
 /*global vitalizeGraph */
-var orientation;
-var horizontalGraph = null;
-var verticalGraph = null;
 
 
 /**
@@ -19,16 +16,18 @@ var verticalGraph = null;
  */
 function processGraph() {
     "use strict";
+
     $("polygon[fill*=white]").attr("fill", "none");
 
     $("path").css("fill", "none")
-           .attr("id", function (i) { return "p" + i; });
+        .attr("id", function (i) { return "p" + i; });
 }
 
 
 /**
  *
- * @param suffix The suffix of the generated graph file. Either 'horizontal' or 'vertical'.
+ * @param suffix The suffix of the generated graph file.
+ *        Either 'horizontal' or 'vertical'.
  * @returns {*}
  */
 function getGraph(suffix) {
@@ -36,11 +35,10 @@ function getGraph(suffix) {
     var graph = null;
 
     if (suffix === 'vertical' && verticalGraph !== null) {
-        console.log('cache');
         return verticalGraph;
-    } else if (suffix === 'horizontal' && horizontalGraph !== null) {
-        console.log('cache');
+    }
 
+    if (suffix === 'horizontal' && horizontalGraph !== null) {
         return horizontalGraph;
     }
 
@@ -73,6 +71,7 @@ function appendGraph(suffix) {
     var graph = getGraph(suffix);
     $(graph).insertBefore($("#scroll-background-bottom"));
     $("#map").append(graph);
+    window['graph'] = new Graph('graph', orientation);
 }
 
 
@@ -90,19 +89,26 @@ function addNodeDecorations() {
 /**
  * Updates the number of non-active parent nodes for each node.
  * @param rectNode The svg rect that contains the parent count number.
- * @param {Boolean} show Determines whether graph should display parent count or not.
+ * @param {Boolean} show Determines whether graph should display parent count
+ *                       or not.
  */
 function updateParentCount(rectNode, show) {
     "use strict";
+
     var node = window[rectNode.parent().attr("id")];
     rectNode.empty();
 
     if (show && node !== undefined) {
-        $(rectNode).parent().children(".missing-counter").css("visibility", "visible");
-        var textNode = document.createTextNode(getNonActiveParentNames(node).length.toString());
+        $(rectNode).parent()
+            .children(".missing-counter")
+            .css("visibility", "visible");
+        var textNode = document.createTextNode(
+            getNonActiveParentNames(node).length.toString());
         rectNode.append(textNode);
     } else {
-        $(rectNode).parent().children(".missing-counter").css("visibility", "hidden");
+        $(rectNode).parent()
+            .children(".missing-counter")
+            .css("visibility", "hidden");
     }
 }
 
@@ -110,7 +116,8 @@ function updateParentCount(rectNode, show) {
 /**
  * Gets node's non-active parent names.
  * @param {Node} node The node that is being evaluated.
- * @returns {Array} An array of the names of non-active/overridden parents of node.
+ * @returns {Array} An array of the names of non-active/overridden
+ *                  parents of node.
  */
 function getNonActiveParentNames(node) {
     "use strict";
@@ -129,7 +136,7 @@ function getNonActiveParentNames(node) {
 
             for (var j = 0; j < parentArray.length; j++) {
                 if ($.inArray(parentArray[j], parentNames) === -1) {
-                  parentNames.push(parentArray[j]);
+                    parentNames.push(parentArray[j]);
                 }
             }
         }
@@ -147,25 +154,25 @@ function getNonActiveParentNames(node) {
 function appendCounterRect(parentRect, missingCounter) {
     "use strict";
     var counterRect = createOptionRect("counter-rect-",
-                                       missingCounter,
-                                       parseInt(parentRect.children(".rect").attr("x")) +
-                                       parseInt(parentRect.children(".rect").attr("width")) - 25,
-                                       parseInt(parentRect.children(".rect").attr("y")) +
-                                       parseInt(parentRect.children(".rect").attr("height") - 20)/2,
-                                       "none",
-                                       "#3399FF",
-                                       "missing-counter");
+        missingCounter,
+            parseInt(parentRect.children(".rect").attr("x")) +
+            parseInt(parentRect.children(".rect").attr("width")) - 25,
+            parseInt(parentRect.children(".rect").attr("y")) +
+            parseInt(parentRect.children(".rect").attr("height") - 20)/2,
+        "none",
+        "#3399FF",
+        "missing-counter");
 
     var counterText = createOptionText("counter-text-",
-                                       missingCounter,
-                                       parseInt(parentRect.children(".rect").attr("x")) +
-                                       parseInt(parentRect.children(".rect").attr("width")) - 15,
-                                       parseInt(parentRect.children(".rect").attr("y")) +
-                                       (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
-                                       "counter-text");
-    
+        missingCounter,
+            parseInt(parentRect.children(".rect").attr("x")) +
+            parseInt(parentRect.children(".rect").attr("width")) - 15,
+            parseInt(parentRect.children(".rect").attr("y")) +
+            (parseInt(parentRect.children(".rect").attr("height")) + 10)/2,
+        "counter-text");
+
     counterRect.insertBefore(parentRect.children("text").first());
-    counterText.insertAfter(parentRect.children("text").first()); 
+    counterText.insertAfter(parentRect.children("text").last());
 }
 
 

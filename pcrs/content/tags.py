@@ -24,3 +24,8 @@ class AbstractTaggedObject(models.Model):
 
     class Meta:
         abstract = True
+
+    def serialize(self):
+        return {
+            'tags': [tag.name for tag in self.tags.all()]
+        }

@@ -1,16 +1,16 @@
 var io = require('socket.io')(8888);
 
 // the secret key to identify instructors
-var secret_key = '007';
+var secret_key = '3919766206359598592';
 
 io.on('connection', function (socket) {
 
     // updating problem info such as visibility
-    socket.on('problems', function (data) {
+    socket.on('itemUpdate', function (data) {
         console.log('I received ', data);
         // broadcast iff the message is signed with the secret key
         if (data['secret_key'] == secret_key) {
-            io.emit('problems', data);
+            io.emit('itemUpdate', data);
         }
         else {
             console.log('permission denied');
@@ -18,7 +18,7 @@ io.on('connection', function (socket) {
     });
 
     // updating problem status for user
-    socket.on('user-problems', function (data) {
+    socket.on('statusUpdate', function (data) {
         io.emit(data.userhash, data);
     });
 

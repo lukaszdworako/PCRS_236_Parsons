@@ -46,6 +46,7 @@ class Submission(AbstractSubmission):
                 TestRun(submission=self, testcase=testcase,
                         test_passed=result['passed']).save()
                 result['testcase'] = testcase.id
+                result['visible'] = testcase.is_visible
                 results.append(result)
         return results, None
 

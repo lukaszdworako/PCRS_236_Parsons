@@ -1,0 +1,7 @@
+{% extends "pcrs/item_list.html" %}
+
+{% load filters %}
+
+{% block item_title %}
+    {{ object }} | {{ video_to_challenge|get_item:object.pk }}
+{% endblock %}

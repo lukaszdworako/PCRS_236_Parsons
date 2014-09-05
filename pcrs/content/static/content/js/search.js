@@ -34,7 +34,7 @@ function find_item(){
                         word_counter++;
                     }
 
-                    var current_tags = $(problem_list[index]).find('.badge.tag');
+                    var current_tags = $(problem_list[index]).find('.tags');
                     var tag_flag = false;
                     for (var tag_index = 0; tag_index < current_tags.length; tag_index++){
                         if ($(current_tags[tag_index]).text().toLowerCase().indexOf(word) != -1){

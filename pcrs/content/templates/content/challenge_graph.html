@@ -7,17 +7,17 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
 
-    <link rel="stylesheet"
-          href="{% static "bootstrap-3.1.1/css/bootstrap.min.css" %}"
-          type="text/css">
-    <link rel="stylesheet"
-          href="{% static "extra_icons/css/fontello.css" %}"
-          type="text/css">
-    <link rel="stylesheet"
-          href="{% static "style.css" %}"
-          type="text/css">
-    <link rel="stylesheet"
-          href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+{#    When merged with node, uncomment this#}
+{#    <link rel="stylesheet"#}
+{#          href="{% static "less/base.css" %}"#}
+{#          type="text/css">#}
+{#    <link rel="stylesheet"#}
+{#          href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">#}
+
+{#    When merged with node, comment this#}
+    <link rel="stylesheet/less" type="text/css" href="{%  static "less/base.less" %}" />
+    <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>
+
     <link rel="stylesheet"
           href="{% static "challenge_graph/ui/malihu-custom-scrollbar-plugin-master/jquery.mCustomScrollbar.css" %}"/>
     <link rel="stylesheet"
@@ -31,56 +31,14 @@
             type="text/javascript"></script>
     <script src="{% static "d3/d3.min.js" %}"></script>
 
-    <script src="{% static "bootstrap-3.1.1/js/bootstrap.min.js" %}"></script>
-
     <script type="text/javascript"
-            src="{% static "challenge_graph/js/map/map.js" %}"></script>
-
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/build_graph.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/initialize_graph.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/initialize_user_data.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/mouse_callbacks.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/orientation.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/process_graph.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/scrollbar.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/setup_graph.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/size.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/zoom.js" %}"></script>
-
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/objects/edge_object.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/objects/node_object.js" %}"></script>
-
-    <script type="text/javascript"
-    src="{% static "challenge_graph/js/map/graph_view_drag_event.js" %}"></script>
-
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/map/graph_view_click_event.js" %}"></script>
-
-
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js//utilities/jquery.mousewheel.min.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/initialize_user_data.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/vitalize_graph.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/utilities/vitalize_utils.js" %}"></script>
-    <script type="text/javascript"
-            src="{% static "challenge_graph/js/graph/process_graph.js" %}"></script>
+    src="{% static "challenge_graph/graph.min.js" %}"></script>
     <script src="{% static "challenge_graph/ui/malihu-custom-scrollbar-plugin-master/js/minified/jquery.mCustomScrollbar.min.js" %}"></script>
     <script src="{% static "jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js" %}"></script>
+
+    <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/collapse.js" %}" type="text/javascript"></script>
+    <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/dropdown.js.js" %}" type="text/javascript"></script>
+    <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/transition.js.js" %}" type="text/javascript"></script>
 
 </head>
 

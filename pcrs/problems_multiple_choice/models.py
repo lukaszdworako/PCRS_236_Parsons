@@ -52,7 +52,9 @@ class Problem(AbstractProblem):
 
     def serialize(self):
         serialized = super().serialize()
-        serialized['name'] = serialized['name'] or 'Multiple Choice'
+        serialized['name'] = self.name or 'Multiple Choice'
+        serialized['answer_options'] = [option.serialize()
+                                        for option in self.option_set.all()]
         return serialized
 
 
@@ -83,8 +85,17 @@ class Option(AbstractSelfAwareModel):
     class Meta:
         ordering = ['pk']
 
+    @classmethod
+    def get_content_type_name(cls):
+        return 'option'
+
     def __str__(self):
         return self.answer_text
+
+    def serialize(self):
+        serialized = super().serialize()
+        serialized['text'] = self.answer_text
+        return serialized
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)

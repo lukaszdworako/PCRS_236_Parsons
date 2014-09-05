@@ -103,6 +103,7 @@ class ChallengePagesObjectsView(CourseStaffViewMixin, CreateView):
         ContentSequenceItem.objects.filter(content_type=text_block_ctype,
             object_id__in=(current_text_objects-new_text_objects))\
             .delete()
+        TextBlock.objects.filter(pk__in=current_text_objects-new_text_objects).delete()
 
 
         return HttpResponse(json.dumps({'status': 'ok'}))
@@ -142,10 +143,26 @@ class PageCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
 
 class ItemDeleteView(CourseStaffViewMixin, DeleteView):
     """
-    Delete a ContentObject or ContentPage.
+    Delete a ContentObject from a page.
     """
     def post(self, *args, **kwargs):
         get_object_or_404(self.model, pk=self.kwargs.get('pk', None)).delete()
+        return HttpResponse(json.dumps({'status': 'ok'}),
+                            mimetype='application/json')
+
+
+class PageDeleteView(CourseStaffViewMixin, DeleteView):
+    """
+    Delete a ContentPage.
+    """
+    def post(self, *args, **kwargs):
+        page = get_object_or_404(self.model, pk=self.kwargs.get('pk', None))
+        text_ids = ContentSequenceItem.objects\
+                .filter(content_type=ContentType.objects.get(model='textblock'),
+                        content_page=page)\
+                .values_list('object_id', flat=True)
+        TextBlock.objects.filter(pk__in=text_ids).delete()
+        page.delete()
         return HttpResponse(json.dumps({'status': 'ok'}),
                             mimetype='application/json')
 

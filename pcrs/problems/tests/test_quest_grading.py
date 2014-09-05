@@ -299,7 +299,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         problem1 = self.problem_class.objects.create(pk=1, name='test',
             description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c1, visibility='open')
+            description='test2', challenge=self.c1, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -364,7 +364,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         problem1 = self.problem_class.objects.create(pk=1, name='test',
             description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c2, visibility='open')
+            description='test2', challenge=self.c2, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -462,7 +462,7 @@ class TestQuestGrading(GradesTestWithDeadlineMixin, test.TestCase):
         problem1 = self.problem_class.objects.create(pk=1, name='test',
             description='test', challenge=self.c1, visibility='open')
         problem2 = self.problem_class.objects.create(pk=2, name='test2',
-            description='test', challenge=self.c2, visibility='open')
+            description='test2', challenge=self.c2, visibility='open')
 
         for score in [2, 1, 0, 1]:
             for student in [self.student1, self.student2]:
@@ -603,7 +603,7 @@ class TestGradeReports(GradesTestWithDeadlineMixin, test.TestCase):
             pk=1, name='test', description='test', challenge=self.c1,
             visibility='open')
         problem2 = Problem.objects.create(
-            pk=2, name='test2', description='test', challenge=self.c1,
+            pk=2, name='test2', description='test2', challenge=self.c1,
             visibility='open')
 
         self.client.login(username=self.instructor)

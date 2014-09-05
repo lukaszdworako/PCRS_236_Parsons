@@ -112,9 +112,10 @@ function add_mc_history_entry(data, div_id, flag){
     if (data['best'] && !data['past_dead_line']){
         panel_class = "pcrs-panel-star";
         star_text = '<icon style="font-size:1.2em" class="star-icon"> </icon>';
-        $('#'+div_id).find('#history_accordion').find("star-icon").removeClass("star-icon");
-        $('#'+div_id).find('#history_accordion').find(".panel-star")
-            .addClass("panel-default").removeClass("panel-star");
+        console.log($('#'+div_id).find('#history_accordion').find(".star-icon"));
+        $('#'+div_id).find('#history_accordion').find(".star-icon").removeClass("star-icon");
+        $('#'+div_id).find('#history_accordion').find(".pcrs-panel-star")
+            .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
     }
 
     var entry = $('<div/>',{class:panel_class});
@@ -179,7 +180,7 @@ function submit_mc(submission, problem_pk, div_id) {
      * Submits the students solution to a MC problem
      */
 
-    var postParams = { csrftoken: csrftoken, options : submission  };
+    var postParams = { csrftoken: csrftoken, submission : submission  };
 
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,
@@ -217,8 +218,8 @@ function submit_mc(submission, problem_pk, div_id) {
                 else{
                     $(display_element)
                         .children('span')
-                        .text("Your solution is incorrect!");
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is incorrect!");
+                        .text("Your solution is either incorrect or incomplete!");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is either incorrect or incomplete!");
                 }
 
                 mc_options = $('#'+div_id).find('[id^="id_options_"]');

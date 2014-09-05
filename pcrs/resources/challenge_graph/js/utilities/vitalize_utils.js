@@ -1,6 +1,8 @@
+/*global $ */
+
 /**
- * Returns whether px and py intersects with a rectangle starting at rx and ry, with corresponding widths and heights
- * to the parameters.
+ * Returns whether px and py intersects with a rectangle starting at rx and ry,
+ * with corresponding widths and heights to the parameters.
  * @param px The x position of the evaluated point.
  * @param py The y position of the evaluated point.
  * @param rx The x start point of the evaluated rectangle.
@@ -8,13 +10,17 @@
  * @param width The width of the evaluated rectangle.
  * @param height The height of the evaluated rectangle.
  * @param offset The offset of the intersection.
- * @returns {boolean} Whether the evaluated point intersects with the evaluated rectangle with the calculated offset.
+ * @returns {boolean} Whether the evaluated point intersects with the
+ *                    evaluated rectangle with the calculated offset.
  */
 function intersects(px, py, rx, ry, width, height, offset) {
-    "use strict";
+    'use strict';
     var dx = px - rx;
     var dy = py - ry;
-    return dx >= -1 * offset && dx <= width + offset && dy >= -1 * offset && dy <= height + offset;
+    return dx >= -1 * offset &&
+        dx <= width + offset &&
+        dy >= -1 * offset &&
+        dy <= height + offset;
 }
 
 
@@ -23,7 +29,7 @@ function intersects(px, py, rx, ry, width, height, offset) {
  * @param event
  */
 function hoverFocus(event) {
-    "use strict";
+    'use strict';
     var id = event.target.parentNode.id;
     window[id].focus();
 }
@@ -34,29 +40,47 @@ function hoverFocus(event) {
  * @param event
  */
 function hoverUnfocus(event) {
-    "use strict";
+    'use strict';
     var id = event.target.parentNode.id;
     window[id].unfocus();
 }
 
 
 /**
- * The click function for a Node.
- * @param event
+ * Gets the JSON object produced for the current user.
+ * @returns {*} The JSON object of the current user's challenge data.
  */
-function turnNode(event) {
-    "use strict";
-    var id = event.target.parentNode.id;
-    window[id].turn();
+function getJSON() {
+    'use strict';
+    var json = null;
+    $.ajax({
+        url: 'prereq_graph/for_user',
+        dataType: 'text',
+        async: false,
+        success: function (data) {
+            json = data;
+        }
+    });
+    return $.parseJSON(json);
 }
 
 
 /**
- * Sets the main svg graph id.
- * Note: This is necessary in the JavaScript. It cannot be put into Beautiful
- * Soup because the generated svg is duplicated in the HTML.
+ * Fades in/out the graphs doable nodes (opacity from 0.4 to 1,
+ * or from 0.4 to 1).
  */
-function setMainGraphID() {
-    "use strict";
-    $('svg:first').attr('id', 'graph');
+function pulseTakeable() {
+    'use strict';
+    $(nodes).each(function (i, node) {
+        var nodeObject = '#' + node;
+        if (window[node].status === 'doable') {
+            if ($(nodeObject).css('opacity') > 0.9) {
+                $(nodeObject).fadeTo('slow', 0.4);
+            } else {
+                $(nodeObject).fadeTo('slow', 1);
+            }
+        } else if (window[node].status === 'active') {
+            $(nodeObject).fadeTo('fast', 1);
+        }
+    });
 }

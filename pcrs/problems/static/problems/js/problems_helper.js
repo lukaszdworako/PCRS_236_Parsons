@@ -20,9 +20,11 @@ function update_marks(div_id, score, max_score){
         new_title += " : Complete";
 
         // send message that this user completed the problem
-        socket.emit('user-problems',
-            {problem: {problem_type: problem.type, pk: problem.pk},
-             status:{completed: true},
+        socket.emit('statusUpdate',
+            {id: problem.type + "-" + problem.pk,
+             problem: {problem_type: problem.type, pk: problem.pk},
+             status: {completed: true},
+             score: score,
              userhash: userhash
             });
     }
@@ -34,9 +36,11 @@ function update_marks(div_id, score, max_score){
         side_bar.addClass("problem-attempted");
 
         // send message that this user attempted the problem
-         socket.emit('user-problems',
-            {problem: {problem_type: problem.type, pk: problem.pk},
+         socket.emit('statusUpdate',
+            {id: problem.type + "-" + problem.pk,
+             problem: {problem_type: problem.type, pk: problem.pk},
              status:{ attempted: true },
+             score: score,
              userhash: userhash
             });
     }

@@ -27,7 +27,6 @@ class TestProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
     Test adding a problem.
     """
     url = reverse('mc_problem_create')
-    successful_redirect_url = reverse('mc_problem_list')
     template = 'problem'
     model = Problem
 
@@ -40,7 +39,6 @@ class TestProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
 
     def test_create_problem(self):
         response = self.client.post(self.url, self.post_data)
-        self.assertRedirects(response, self.successful_redirect_url)
 
         self.assertEqual(1, self.model.objects.count())
         object = self.model.objects.all()[0]
@@ -60,7 +58,7 @@ class TestProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
     Test editing a problem with no submissions.
     """
     url = reverse('mc_problem_update', kwargs={'pk': 1})
-    successful_redirect_url = reverse('mc_problem_list')
+    successful_redirect_url = url
     template = 'problem'
     model = Problem
 
@@ -690,7 +688,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'user': self.student.username,
-            'options': ['1', '2']
+            'submission': ['1', '2']
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -713,7 +711,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'user': self.student.username,
-            'options': ['2']
+            'submission': ['2']
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -736,7 +734,7 @@ class TestProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         post_data = {
             'problem': '1',
             'user': self.student.username,
-            'options': ['1']
+            'submission': ['1']
         }
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)

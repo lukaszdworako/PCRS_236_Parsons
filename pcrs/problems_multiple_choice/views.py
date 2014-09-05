@@ -12,6 +12,7 @@ from problems_multiple_choice.forms import SubmissionForm, OptionForm
 
 from problems_multiple_choice.models import (Problem, Option, OptionSelection,
                                              Submission)
+from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
@@ -21,11 +22,11 @@ from django.utils.timezone import localtime
 #
 
 
-
-class ProblemCloneView(CourseStaffViewMixin, CreateView):
+class ProblemCloneView(problems.views.ProblemCloneView):
     """
     Clone an existing problem, with its options.
     """
+    template_name = "problems_multiple_choice/problem_form.html"
 
     def form_valid(self, form):
         new_problem = form.save()
@@ -105,7 +106,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
             problem=problem, user=request.user, section=self.get_section())
 
         selected_options = Option.objects.filter(
-            pk__in=request.POST.getlist('options', None))
+            pk__in=request.POST.getlist('submission', None))
         all_options = problem.option_set.all()
         correct_options = all_options.filter(is_correct=True)
 
@@ -141,7 +142,8 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
+class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View,
+                          UserViewMixin):
     """
     Create a submission for a problem asynchronously.
     """
@@ -149,7 +151,7 @@ class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View):
         results = self.record_submission(request)
 
         problem = self.get_problem()
-        user, section = self.request.user, self.request.user.section
+        user, section = self.get_user(), self.get_section()
         deadline = problem.challenge.quest.sectionquest_set\
             .get(section=section).due_on
 
@@ -201,7 +203,7 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
                 'sub_time': sub.timestamp.isoformat(),
                 'score': sub.score,
                 'out_of': problem.max_score,
-                'best': sub.score == best_score and \
+                'best': sub.has_best_score and \
                         ((not deadline) or sub.timestamp < deadline),
                 'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,

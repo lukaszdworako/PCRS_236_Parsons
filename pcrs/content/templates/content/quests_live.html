@@ -1,4 +1,4 @@
-{% extends "pcrs/base.html" %}
+{% extends "content/quests.html" %}
 
 {% load compress %}
 {% load feedback %}
@@ -8,27 +8,16 @@
 
 {% block scripts %}
     {{ block.super }}
-    {% compress js %}
-        {% include "pcrs/node_includes.html" %}
-        <script type="text/jsx"
-                src="{% static "content/js/quests_io.js" %}"></script>
+{#    {% compress js %}#}
+        {% include "pcrs/node_socket_io_includes.html" %}
+        <script src="{% static "content/js/socket_events.js" %}"></script>
         {% include "pcrs/react_includes.html" %}
-    {% endcompress %}
+{#    {% endcompress %}#}
 
-{% endblock %}
-
-{% block stylesheets %}
-    {{ block.super }}
-     <link rel="stylesheet"
-                  href="{% static "content/css/style.css" %}"
-                  type="text/css">
-{% endblock %}
-
-{% block page_title %}
-    Quests LIVE
 {% endblock %}
 
 {% block content %}
     <div id="quests"></div>
-    <script type="text/jsx" src="{% static "content/js/quests.js" %}"></script>
+    <script src="{% static "content/build/future/components.js" %}"></script>
+    <script src="{% static "content/build/quests.js" %}"></script>
 {% endblock %}

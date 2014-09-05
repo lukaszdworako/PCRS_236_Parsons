@@ -38,7 +38,6 @@ class TestCodingProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
 
     def test_create_problem(self):
         response = self.client.post(self.url, self.post_data)
-        self.assertRedirects(response, self.successful_redirect_url)
 
         self.assertEqual(1, self.model.objects.count())
         object = self.model.objects.all()[0]
@@ -61,7 +60,7 @@ class TestCodingProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
     Test editing a problem with no submissions.
     """
     url = reverse('coding_problem_update', kwargs={'pk': 1})
-    successful_redirect_url = reverse('coding_problem_list')
+    successful_redirect_url = url
     template = 'problem'
     model = Problem
 

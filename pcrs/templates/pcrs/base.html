@@ -8,24 +8,16 @@
     <meta content='width=device-width, initial-scale=1' name='viewport'/>
     {% load staticfiles %}
 
-    {% block less %}
-        <link rel="stylesheet/less" type="text/css" href="{% static "less/base.less" %}" />
-        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>
-    {% endblock %}
+{#    {% block less %}#}
+{#        <link rel="stylesheet/less" type="text/css" href="{% static "less/base.less" %}" />#}
+{#        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>#}
+{#    {% endblock %}#}
 
     {% block stylesheets %}
-{#        {% load compress %}#}
-{#        {% compress css %}#}
-{#            <link rel="stylesheet"#}
-{#                  href="{% static "bootstrap-3.1.1/css/bootstrap.min.css" %}"#}
-{#                  type="text/css">#}
-{#            <link rel="stylesheet"#}
-{#                  href="{% static "extra_icons/css/fontello.css" %}"#}
-{#                  type="text/css">#}
-{#            <link rel="stylesheet"#}
-{#                  href="{% static "style.css" %}"#}
-{#                  type="text/css">#}
-{#        {% endcompress %}#}
+        {% load compress %}
+        {% compress css %}
+            <link rel="stylesheet" href="{% static "less/base.css" %}">
+        {% endcompress %}
     {% endblock %}
 
     {% block scripts %}
@@ -58,6 +50,8 @@
 
 <div class="pcrs-fluid">
 {#    <div id="content" class="row">#}
+        {% block side-bar %}
+        {% endblock %}
         <div class="main-page">
 
                 <h1>

@@ -58,7 +58,7 @@ class InstructorViewTestMixin(UsersMixin):
 class CourseStaffViewTestMixin(UsersMixin):
     def setUp(self):
         UsersMixin.setUp(self)
-        self.client.login(username='ta')
+        self.client.login(username='instructor')
 
     def test_not_logged_in(self):
         self.client.logout()
