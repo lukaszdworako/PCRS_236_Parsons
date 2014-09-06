@@ -2,7 +2,7 @@
 
 
 /**
- * Makes a Node.
+ * Creates a Node.
  * @param {string} name - The name of the Node, also the id of the SVG
  *                        counterpart.
  */

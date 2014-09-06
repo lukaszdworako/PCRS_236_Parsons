@@ -1,5 +1,5 @@
 /**
- * Makes an Edge with a parent Node parent and a child node child.
+ * Creates an Edge with a parent Node parent and a child node child.
  *
  * @param {Node} parent The parent Node that the new Edge points from.
  * @param {Node} child The child Node that the new Edge points to.
