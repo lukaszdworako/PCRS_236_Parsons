@@ -2,7 +2,7 @@
 
 
 /**
- * A Graph object. This represents the main SVG graph.
+ * Creates a Graph object. This represents the main SVG graph.
  *
  * @class Graph
  * @param id
@@ -19,7 +19,9 @@ function Graph(id, orientation) {
     $('svg:first').attr('id', id);
 }
 
-
+/**
+ * Sets up this Graph. Adds interactive component, cleans SVG, cleans SVG.
+ */
 Graph.prototype.setup = function () {
     'use strict';
 

@@ -25,7 +25,9 @@ function processGraph() {
 
 
 /**
- *
+ * Gets and caches a graph file, and returns the file contents.
+ * The graph file is determined by the suffix.
+ * If the graph file was already requested, getGraph returns the cached output.
  * @param suffix The suffix of the generated graph file.
  *        Either 'horizontal' or 'vertical'.
  * @returns {*}

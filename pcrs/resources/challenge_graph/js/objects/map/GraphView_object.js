@@ -96,7 +96,7 @@ GraphView.prototype.resetXPosition = function () {
 
 
 /**
- *
+ * Sets the sizes of this GraphView.
  */
 GraphView.prototype.setSizes = function () {
     'use strict';
@@ -108,7 +108,7 @@ GraphView.prototype.setSizes = function () {
 
 
 /**
- *
+ * Sets the drag functionality of this GraphView.
  */
 GraphView.prototype.setDrag = function () {
     'use strict';
@@ -118,7 +118,9 @@ GraphView.prototype.setDrag = function () {
 
 
 /**
- *
+ * Sets the click functionality of this GraphView.
+ * (The user can click on the map, and the GraphView will reposition to the
+ * clicked area.
  */
 GraphView.prototype.setClick = function () {
     'use strict';

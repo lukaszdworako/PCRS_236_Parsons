@@ -1,6 +1,6 @@
 /*global $ */
 /**
- *
+ * creates a NavGraph object.
  * @class NavGraph
  * @param id
  * @constructor
@@ -48,7 +48,7 @@ NavGraph.prototype.setupIDs = function () {
 
 
 /**
- *
+ * Removes all of the SVG text elements from the graph.
  */
 NavGraph.prototype.removeText = function () {
     "use strict";
