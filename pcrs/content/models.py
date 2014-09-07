@@ -10,6 +10,8 @@ from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
 
+from pcrs.settings import MYMEDIA_VIDEOS
+
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence,
                          get_problem_content_types)
@@ -29,7 +31,10 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
 
     @property
     def url(self):
-        return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+        if MYMEDIA_VIDEOS:
+            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+        else:
+            return self.link
 
     class Meta:
         ordering = ['name']

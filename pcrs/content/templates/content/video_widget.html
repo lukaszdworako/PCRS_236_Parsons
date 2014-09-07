@@ -18,8 +18,14 @@
 
        data-setup='{"customControlsOnMobile": true }'
        poster="{{ item.thumbnail }}">
-      <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
-{#      <source src="{{ item.link }}" type="rtmp/mp4">#}
+       {% if mymedia_videos %}
+           <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
+{#         <source src="{{ item.link }}" type="rtmp/mp4">#}
+       {% else %}
+           <source src="{{ item.link }}" type='video/mp4'>
+{#         <source src="{{ item.link }}" type="video/mp4">#}
+       {% endif %}
+
 </video>
 
 {% if item.download %}

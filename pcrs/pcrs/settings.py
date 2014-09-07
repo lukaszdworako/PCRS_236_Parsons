@@ -14,6 +14,9 @@ REACT = True
 # live page receives updates from socket.io to update when items are completed
 QUESTS_LIVE = True
 
+# hack to fix video links that come from U of T's mymedia system
+MYMEDIA_VIDEOS = True
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
