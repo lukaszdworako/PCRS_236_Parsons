@@ -7,7 +7,7 @@ quest_page
 submission
 base"
 
-cd ../resources/less
+cd ../pcrs/resources/less
 
 if hash lessc 2>/dev/null; then
         echo "lessc detected"
