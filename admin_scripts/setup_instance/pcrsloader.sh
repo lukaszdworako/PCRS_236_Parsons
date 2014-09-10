@@ -48,6 +48,12 @@ find ${FILEPATH}/$2/pcrs -type f -exec chmod 640 {} \;
 find ${FILEPATH}/$2/static -type d -exec chmod 775 {} \;
 find ${FILEPATH}/$2/static -type f -exec chmod 664 {} \;
 
+# Hack to fix fonts issue
+ln -s ${FILEPATH}/$2/bootstrap-3.1.1/fonts ${FILEPATH}/$2/fonts
+
+# Set up node server for your application
+# TODO
+
 # Create the apache config text to copy paste into /etc/apache2/httpd.conf
 echo "========================================================================="
 echo "The following is the apache configuration for this instance of pcrs:"
