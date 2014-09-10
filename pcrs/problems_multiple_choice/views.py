@@ -183,7 +183,7 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
             .get(section=section).due_on
         try:
             best_score = self.model.objects\
-                .get(user=user, problem=problem, has_best_score=True).score
+                .filter(user=user, problem=problem, has_best_score=True).latest("id").score
         except self.model.DoesNotExist:
             best_score = -1
 
