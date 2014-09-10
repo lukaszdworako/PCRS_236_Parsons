@@ -278,8 +278,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
         is marked with has_best_score.
         """
         try:
-            current_best = self.__class__.objects.get(
-                user=self.user, problem=self.problem, has_best_score=True)
+            current_best = self.__class__.objects.filter(
+                user=self.user, problem=self.problem, has_best_score=True).latest('id')
             if self.score >= current_best.score and self.pk != current_best.pk:
                 current_best.has_best_score = False
                 current_best.save()
