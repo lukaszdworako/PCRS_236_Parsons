@@ -75,6 +75,16 @@ class WatchedVideo(models.Model):
         return set(cls.objects.filter(user=user)
                               .values_list('video_id', flat=True))
 
+
+    @classmethod
+    def watched(cls, user, video):
+        try:
+            cls.objects.get(user=user, video=video)
+            return True
+        except cls.DoesNotExist:
+            return False
+
+
     @classmethod
     def get_watched_uri_ids(cls, user):
         return {
