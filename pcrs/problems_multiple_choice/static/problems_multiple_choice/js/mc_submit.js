@@ -247,9 +247,8 @@ function submit_mc(submission, problem_pk, div_id) {
                     update_marks(div_id, score, max_score);
                 }
 
-                if ($('#'+div_id).find('#history_accordion').children().length != 0){
-                    add_mc_history_entry(returnable, div_id, 1)
-                }
+                var flag = ($('#'+div_id).find('#history_accordion').children().length != 0);
+                add_mc_history_entry(returnable, div_id, flag)
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
