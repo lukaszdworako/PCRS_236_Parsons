@@ -23,9 +23,11 @@
         <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/affix.js" %}"
                 type="text/javascript"></script>
 
-        {% include "pcrs/node_socket_io_includes.html" %}
+        <script src="{% static "content/js/events.js" %}"></script>
 
-        <script src="{% static "content/js/socket_events.js" %}"></script>
+{#  Socket turned off for now  #}
+{#        {% include "pcrs/node_socket_io_includes.html" %}#}
+{#        <script src="{% static "content/js/socket_events.js" %}"></script>#}
 
         {% include "pcrs/react_includes.html" %}
         <script src="{% static "content/build/future/components.js" %}"></script>
