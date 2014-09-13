@@ -183,8 +183,8 @@ class ReactiveContentPageData(ContentPageView, View):
                     'scores': scores,
                     'watched': WatchedVideo.get_watched_uri_ids(user),
                     'page': {'pk': page.pk, 'challenge': page.challenge_id},
-                    'next_page_url': page.get_next_url(),
-                    'previous_page_url': page.get_previous_url()
+                    'next_url': page.get_next_url(),
+                    'prev_url': page.get_previous_url()
                 }
             ), mimetype='application/json')
 
