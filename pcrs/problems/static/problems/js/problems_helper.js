@@ -19,14 +19,6 @@ function update_marks(div_id, score, max_score){
         side_bar.addClass("problem-complete");
         new_title += " : Complete";
 
-        // send message that this user completed the problem
-        socket.emit('statusUpdate',
-            {id: problem.type + "-" + problem.pk,
-             problem: {problem_type: problem.type, pk: problem.pk},
-             status: {completed: true},
-             score: score,
-             userhash: userhash
-            });
     }
     else{
         $('#'+div_id).find(".widget_mark").find('sup').text(score);
@@ -34,18 +26,29 @@ function update_marks(div_id, score, max_score){
         new_title += " : " + score + " / " + max_score;
         side_bar.removeClass("problem-not-attempted")
         side_bar.addClass("problem-attempted");
-
-        // send message that this user attempted the problem
-         socket.emit('statusUpdate',
-            {id: problem.type + "-" + problem.pk,
-             problem: {problem_type: problem.type, pk: problem.pk},
-             status:{ attempted: true },
-             score: score,
-             userhash: userhash
-            });
     }
-            console.log(problem.type, problem.pk);
 
+    window.dispatchEvent(
+        new CustomEvent('statusUpdate',
+            {
+                detail: {
+                    id: problem.type + "-" + problem.pk,
+                    problem: {problem_type: problem.type, pk: problem.pk},
+                    status: { attempted: true, completed: score==max_score },
+                    score: score
+                 }
+            })
+    );
+
+// Socket updates. Turned off for now.
+            // send message that this user attempted the problem
+//         socket.emit('statusUpdate',
+//            {id: problem.type + "-" + problem.pk,
+//             problem: {problem_type: problem.type, pk: problem.pk},
+//             status:{ attempted: true, completed: score==max_score },
+//             score: score,
+//             userhash: userhash
+//            });
 
     side_bar.prop('title', new_title);
 }

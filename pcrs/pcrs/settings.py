@@ -12,7 +12,7 @@ REACT = True
 
 # controls if live-updated quests page should be used
 # live page receives updates from socket.io to update when items are completed
-QUESTS_LIVE = True
+QUESTS_LIVE = False
 
 # hack to fix video links that come from U of T's mymedia system
 MYMEDIA_VIDEOS = True

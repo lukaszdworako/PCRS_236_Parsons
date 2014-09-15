@@ -451,9 +451,9 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
     if (best && !data['past_dead_line']){
         update_marks(div_id, score, max_score);
     }
-    if ($('#'+div_id).find('#history_accordion').children().length != 0){
-        add_history_entry(data, div_id, 1);
-    }
+
+    var flag = ($('#'+div_id).find('#history_accordion').children().length != 0);
+    add_history_entry(data, div_id, flag);
 }
 
 
@@ -574,9 +574,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     if (best && !data['past_dead_line']){
         update_marks(div_id, score, max_score);
     }
-    if ($('#'+div_id).find('#history_accordion').children().length != 0){
-        add_history_entry(data, div_id, 1);
-    }
+    var flag = ($('#'+div_id).find('#history_accordion').children().length != 0);
+    add_history_entry(data, div_id, flag);
 }
 
 
