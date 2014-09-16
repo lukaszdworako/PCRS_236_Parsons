@@ -7,6 +7,8 @@ pattern_options = {'problems_code': (r'^code/', 'problems_code.urls'),
     'problems_sql': (r'^sql/', 'problems_sql.urls'),
     'problems_ra': (r'^ra/', 'problems_ra.urls'),
     'problems_timed': (r'^timed/', 'problems_timed.urls'),
+    'problems_rating': (r'^rating/', 'problems_rating.urls'),
+    'problems_short_answer': (r'^short_answer/', 'problems_short_answer.urls'),
 }
 
 pattern_list = [''] + [url(pattern_options[mod][0], include(pattern_options[mod][1])) for mod in INSTALLED_PROBLEM_APPS]

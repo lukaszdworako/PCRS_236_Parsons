@@ -9,6 +9,8 @@ from problems_timed.forms import PageForm, SubmissionForm
 
 from problems.views import ProblemListView, TestCaseView, SubmissionView, SubmissionViewMixin
 from pcrs.generic_views import GenericItemCreateView
+
+from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from users.section_views import SectionViewMixin
 
@@ -71,7 +73,7 @@ class SubmissionViewMixinTimed(SubmissionViewMixin, FormView):
         return []
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
-                     SingleObjectMixin):
+                     SingleObjectMixin, UserViewMixin):
     form_class = SubmissionForm
     object = None
 
@@ -100,10 +102,11 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
     def post(self, request, *args, **kwargs):
         form = self.get_form(self.get_form_class())
         info = self.get_request_info(request)
-        self.submission = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem']).order_by('-pk')[:1][0]
+        submission = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem']).order_by('-pk')[:1][0]
         
-        if self.submission.timestamp_complete:
+        if submission.timestamp_complete:
             return HttpResponseForbidden()
         
-        self.submission.set_score(request.REQUEST['submission'])
-        return HttpResponseRedirect('/problems/timed/list')
+        submission.set_score(request.REQUEST['submission'])
+        
+        return HttpResponseRedirect('/content/quests')

@@ -1,0 +1,12 @@
+{% extends "problems/submission.html" %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="short_answer-{{ problem.pk }}">
+        {% include "problems_short_answer/submission_widget.html" %}
+    </div>
+
+{% endblock %}

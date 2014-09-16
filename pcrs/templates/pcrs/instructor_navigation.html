@@ -32,6 +32,16 @@
                             <a href="{{ site_prefix }}/problems/timed/list">Timed</a>
                         </li>
                         {% endif %}
+                        {% if 'problems_rating' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/rating/list">Rating</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_short_answer' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/short_answer/list">Short Answer</a>
+                        </li>
+                        {% endif %}
                         {% if 'sql' in languages or 'ra' in languages %}
                             <li class="divider"></li>
                             <li>

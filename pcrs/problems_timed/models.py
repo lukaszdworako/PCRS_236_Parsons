@@ -111,7 +111,8 @@ class Submission(AbstractSubmission):
         self.submission = submission_text
         self.score_max = total
         self.score = count
-
+        
+        self.percent = 0
         if total != 0:
             self.percent = count/total
         
