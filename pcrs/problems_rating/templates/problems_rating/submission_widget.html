@@ -1,10 +1,35 @@
 {% extends "problems/submission_widget.html" %}
 
-{% block problem_score %}
-{% endblock %}
-
 {% block history %}
 {% endblock %}
+
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    {{ problem.name|default:"Rating" }}
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+
+        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+            {% block instructor_options %}
+            <!--    <span class="widget_controls">
+                    <a href="{{ problem.get_browse_submissions_url }}"><i
+                            class="openfolder-icon"></i><span
+                            class="at">Submissions for {{ problem.name }}</span></a>
+
+                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
+                            class="stats-icon"></i><span
+                            class="at">Statistics for {{ problem.name }}</span></a>
+                    </span>-->
+            {% endblock %}
+        {% endif %}
+
+    </h3>
+{% endblock %}
+
 
 {% block submission_form %}
 <br>

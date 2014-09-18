@@ -15,7 +15,8 @@ from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
-from problems_multiple_choice.forms import SubmissionForm
+from problems_multiple_choice.forms import SubmissionForm as MCSubmissionForm
+from problems_rating.forms import SubmissionForm as RatingSubmissionForm
 
 
 class ChallengeView():
@@ -110,9 +111,12 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 # generate a submission form for this problem
                 # based on the problem class
                 module, _ = item.content_object.__module__.split('.')
-                f = SubmissionForm(problem=problem) \
-                    if module.endswith('multiple_choice') \
-                    else ProgrammingSubmissionForm(problem=problem)
+                if module.endswith('multiple_choice'):
+                    f = MCSubmissionForm(problem=problem)
+                elif module.endswith('rating'):
+                    f = RatingSubmissionForm(problem=problem)
+                else:
+                    f = ProgrammingSubmissionForm(problem=problem)
                 forms[module][problem.pk] = f
         return forms
 

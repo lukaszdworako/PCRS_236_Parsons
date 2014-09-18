@@ -3,9 +3,9 @@ from django.conf.urls import patterns, url
 from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
                             ProblemDeleteView)
-from problems_rating.models import Problem
-from problems_rating.forms import ProblemForm, ProblemUpdateForm
-from problems_rating.views import SubmissionView
+from problems_rating.models import (Problem, Submission)
+from problems_rating.forms import (ProblemForm, ProblemUpdateForm)
+from problems_rating.views import (SubmissionView, SubmissionAsyncView)
 
 urlpatterns = patterns('',
     
@@ -33,5 +33,9 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(),
         name='rating_submit'),
+
+    url(r'^(?P<problem>[0-9]+)/run$',
+        SubmissionAsyncView.as_view(model=Submission),
+        name='rating_async_submit'),
     
 )

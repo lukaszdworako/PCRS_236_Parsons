@@ -142,7 +142,7 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
                                   submission=self.submission))
 
 
-class SubmissionAsyncView(SubmissionViewMixin,  SingleObjectMixin, View,
+class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
                           UserViewMixin):
     """
     Create a submission for a problem asynchronously.

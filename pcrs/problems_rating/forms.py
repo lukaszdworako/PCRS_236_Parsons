@@ -3,6 +3,7 @@ from crispy_forms.layout import (ButtonHolder, Submit, Layout,
 from django import forms
 
 from pcrs.form_mixins import CrispyFormMixin
+from problems.forms import BaseSubmissionForm
 from problems_rating.models import Problem
 
 
@@ -74,3 +75,9 @@ class ProblemUpdateForm(forms.ModelForm, CrispyFormMixin):
 
         self.helper.layout = Layout(Fieldset('', *fields),
                                     ButtonHolder(*self.buttons))
+
+
+class SubmissionForm(BaseSubmissionForm):
+    def __init__(self, *args, **kwargs):
+        problem = kwargs.get('problem', None)
+        super().__init__(*args, **kwargs)
