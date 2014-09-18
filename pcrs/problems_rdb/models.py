@@ -64,7 +64,7 @@ class Schema(AbstractSelfAwareModel):
         if self.name and self.name[0].isnumeric():
             raise ValidationError({'name': ['Cannot begin with a number.']})
 
-        if self.definition:
+        if self.definition and not self.representation:
             with self.get_db() as db:
                 try:
                     info = db.get_information(self.definition)

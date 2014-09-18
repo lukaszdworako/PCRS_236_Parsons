@@ -1,6 +1,15 @@
 import psycopg2
 from psycopg2 import extras
 from psycopg2._psycopg import DatabaseError
+import re
+
+
+# A pattern for finding for parsing relation and attribute names from
+# the postgres pg_catalog.pg_get_constraintdef() call.
+FOREIGN_KEYS_PATTERN = \
+        'FOREIGN KEY ([^\\.])?\\((?P<child_cols>.+?)\\) REFERENCES ' \
+        '([^\\.]*\\.)?(?P<parent>.+?)\\((?P<parent_cols>.+?)\\)'
+FOREIGN_KEYS_RE = re.compile(FOREIGN_KEYS_PATTERN)
 
 
 class PostgresWrapper:
@@ -185,16 +194,23 @@ class PostgresWrapper:
         return self._get_table_to_attrs(sql)
 
     def get_foreign_keys(self, schema_name):
-        sql = "select table_name, column_name, constraint_name from " \
-              "information_schema.constraint_column_usage where " \
-              "constraint_name like '%_fkey' and table_schema='{name}';" \
-            .format(name=schema_name)
+        # Postgres specific query that gets information about foreign keys in the
+        # namespace.
+        sql = "SELECT r.conrelid::regclass AS child_name, " \
+              "pg_catalog.pg_get_constraintdef(r.oid, TRUE) AS constraint_def " \
+              "FROM pg_catalog.pg_constraint r " \
+              "WHERE r.contype = 'f' AND " \
+              "connamespace = (SELECT oid FROM pg_namespace " \
+              "WHERE nspname = '{name}');".format(name=schema_name)
+
         foreign_keys = []
         for dictionary in self.run_query(sql):
-            table = dictionary['table_name']
-            ref = dictionary['column_name']
-            key_in_table, key, _ = dictionary['constraint_name'].split('_')
-            foreign_keys.append(((key_in_table, key), (table, ref)))
+            child = dictionary['child_name'].split('.')[-1]
+            constraint_def = dictionary['constraint_def']
+            matcher = FOREIGN_KEYS_RE.match(constraint_def)
+            child_cols, parent, parent_cols = matcher.group(
+                'child_cols', 'parent', 'parent_cols')
+            foreign_keys.append(((child, child_cols), (parent, parent_cols)))
         return foreign_keys
 
     def _get_table_to_attrs(self, sql):
@@ -224,11 +240,13 @@ class PostgresWrapper:
             repr.append('<b>{table}</b>({attributes})'.format(
                 table=table, attributes=', '.join(attributes)))
 
-        for fkey, where in info.get('fkeys', {}):
+        for (table, attrs), (ref_table, ref_attrs) in info.get('fkeys', {}):
             fkey_str = '{table1}[{attr1}] &sub; {table2}[{attr2}]'.format(
-                table1=fkey[0], attr1=fkey[1], table2=where[0], attr2=where[1])
+                table1=table, attr1=attrs,
+                table2=ref_table, attr2=ref_attrs)
             constraints.append(fkey_str)
-        return '<br>'.join(['<br>'.join(repr), '<br>'.join(constraints)])
+            print(table, attrs, ' '.join(attrs), ref_table, ref_attrs)
+        return '<br><br>'.join(['<br>'.join(repr), '<br>'.join(constraints)])
 
 
 class StudentWrapper(PostgresWrapper):
