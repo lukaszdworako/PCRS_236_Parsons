@@ -241,7 +241,7 @@ class PostgresWrapper:
                 table=table, attributes=', '.join(attributes)))
 
         for (table, attrs), (ref_table, ref_attrs) in info.get('fkeys', {}):
-            fkey_str = '{table1}[{attr1}] &sub; {table2}[{attr2}]'.format(
+            fkey_str = '{table1}[{attr1}] &sube; {table2}[{attr2}]'.format(
                 table1=table, attr1=attrs,
                 table2=ref_table, attr2=ref_attrs)
             constraints.append(fkey_str)
