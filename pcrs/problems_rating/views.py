@@ -1,7 +1,7 @@
 import json
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HTTPResponse
+from django.http import HttpResponse
 from django.views.generic import FormView, View
 from django.views.generic.detail import SingleObjectMixin
 
