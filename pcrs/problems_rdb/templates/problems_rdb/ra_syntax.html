@@ -2,112 +2,176 @@
 <body>
 <dl>
     <dt>Relation</dt>
-    <dd>A relation name is a valid RA expression that evaluates to all its
-        rows and columns.
+    <dd>
+        <p>A relation is referenced with its name. A relation name is a
+            well formed expression on its own. For example,
+
+        <p><code>Question;</code></p>
+
+        <p>would evaluate to all of the tuples in the
+            <code>Question</code> relation.</p>
+
+        <p>Relation names must begin with an alphabet character.</p>
     </dd>
 
     <dt>Attributes</dt>
-    <dd>An attribute may be referenced by its name, with or without the
-        relation
-        prefix, if and only if it is unambiguous in the context of the
-        expression being evaluated. If the attribute is ambiguous,
-        for example following a join, the attribute must be referenced
-        with its relation prefix.
-    </dd>
-</dl>
-<h5>Unary operators</h5>
-<dl>
-
-    <dt>Assignment</dt>
     <dd>
-        Assignment uses the keyword <code>:=</code> as the operator.
-        The left-hand side of the assignment operation must be a name of a
-        relation that does not already exist in the context of evaluating
-        the expression on the right-hand side.
-        The right-hand side must be a relational algebra expression.
+        <p>An attribute is referenced by its name, or optionally using
+            a prefixed dot notation <code>relation.attribute</code>.
+            For example,</p>
+        <ul>
+            <li><code>id</code></li>
+            <li><code>Question.id</code></li>
+        </ul>
+        <p>both reference the <code>id</code> attribute of the
+            <code>Question</code> relation.</p>
 
-        <li><code>Q := Questions</code></li>
-        <li><code>Q := \project_{answer} Questions</code></li>
+        <p>The prefix allows disambiguation when multiple attributes
+            have the same name. For example, the Cartesian product of
+            <code>Question</code> and <code>Answer</code> would require
+        <ul>
+            <li><code>Answer.id</code></li>
+            <li><code>Question.id</code></li>
+        </ul>
+        <p>and not the ambiguous reference <code>id</code>.</p>
 
-        Assignment operation may optionally rename the relation attributes:
-        <li><code>Q(q, a) := Questions</code></li>
-        The new attribute names must not contain any duplicates.
-        The number of attribute names must match the number of attributes in
-        the relation that the right-hand side evaluates to.
+        <p>A relation that results from a set operation that combines
+            tuples from two or more relations cannot be referenced using
+            the prefix notation, without using a rename operator.</p>
+    </dd>
+
+    <dt>Argument</dt>
+    <dd>
+        <p>Some relational algebra operators take additional
+            arguments, for example Select and Project.
+            In the syntax, arguments use a LaTeX-ish format,</p>
+
+        <p><code>Operator_{argument}</code></p>
+
+        <p>The specific operator descriptions below have more examples.</p>
+    </dd>
+
+    <dt>Logical Operators</dt>
+    <dd>Keywords: <code>not, and, or</code></dd>
+
+    <dt>Conditional Operators</dt>
+    <dd>Keywords: <code><, >, <=, >=, =, !=, <></code></dd>
+</dl>
+
+<h2>Unary operators</h2>
+<dl>
+    <dt>Assignment</dt>
+    <dd>Keyword: <code>:=</code></dd>
+    <dd><code>Q := \project_{answer} Question</code></dd>
+    <dd><code>Q(a) := \project_{answer} Question</code></dd>
+    <dd>
+        <p>Assignment assigns a new name and optionally
+            attributes names to a relation. The relation name must not
+            conflict with a name that already exists. The attribute names
+            must be unambiguous. The new name can be referenced by any
+            statement following the assignment.</p>
+
+        <p>Assignment uses the syntax
+
+        <p><code>name (attribute-list) := relation</code></p>
+
+        <p>where <code>(attribute-list)</code> is an optional, comma separated
+            list of new names for all of the attributes in the relation.</p>
     </dd>
 
     <dt>Select</dt>
+    <dd>Keyword: <code>\select</code></dd>
+    <dd><code>\select_{answer='42'} Question</code></dd>
+    <dd><code>\select_{question='life' and answer='42'} Question</code></dd>
     <dd>
-        Select uses the keyword <code>\select_</code> and must be followed
-        by a boolean expression enclosed in curly braces, and an expression.
-        If a condition references an attribute, the attribute must exist in
-        the context of the expression.
-        <li><code>\select_{answer=42} Questions</code></li>
-        <li><code>\select_{question='life' and answer=42} Questions</code>
-        </li>
-
+        <p>Select evaluates each tuple in a relation against a boolean
+            expression passed in as a required argument. The boolean
+            expression can be composed of attribute references, numbers,
+            quoted strings, comparison operators or logical operators.
+            Attribute references must be valid.</p>
     </dd>
 
     <dt>Project</dt>
+    <dd>Keyword: <code>\project</code></dd>
+    <dd><code>\project_{id} Question</code></dd>
+    <dd><code>\project_{id, question} Question</code></dd>
     <dd>
-        Project uses the keyword <code>\project_</code> and must be followed
-        by a comma-separated list of attributes enclosed in curly braces,
-        and an expression.
-        Every referenced attribute must exist in the context of the
-        expression.
-        <li><code>\project_{question, answer} Questions</code></li>
-        If an attribute is ambiguous, the reference to it must
-        include the relation prefix.
+        <p>Project requires a comma separated list of attributes
+            as a required argument. Attribute references must be valid.</p>
     </dd>
 
     <dt>Rename</dt>
+    <dd>Keyword: <code>\rename</code></dd>
+    <dd><code>\rename_{Q} Question</code></dd>
+    <dd><code>\rename_{(i, q)} Question</code></dd>
+    <dd><code>\project_{Q(i, q)} Question</code></dd>
     <dd>
-        Rename uses the keyword <code>\rename_</code> and must be followed,
-        in curly braces by:
-        <li>a relation name, or</li>
-        <li>a bracketed comma-separated list of attribute names, or</li>
-        <li>a relation name followed by a bracketed comma-separated list of
-            attribute names
-        </li>
-        As with assignment, the new relation name must be unique within
-        the evaluation context. The list of attribute names must not contain
-        any duplicates and the number of attributes must match the number
-        of atributes in the relation being renamed.
-        <li><code>\rename_{Q} Questions</code></li>
-        <li><code>\rename_{(q, a)} Questions</code></li>
-        <li><code>\rename_{Q(q, a)} Questions</code></li>
+        <p>Rename assigns a new name to a relation, renames all
+            of its attributes or does both. The new name must not conflict with
+            a name that already exists. The attributes must be
+            unambiguous.</p>
+
+        <p>Rename requires one argument with the syntax
+
+        <p><code>relation (attribute-list)</code></p>
+
+        <p>where <code>relation</code> and
+            <code>attribute-list</code> are both optional, but at least
+            one is required, and <code>attribute-list</code> is a
+            comma separated list of new names for all of the attributes
+            in the relation.</p>
     </dd>
 </dl>
 
-<h5>Binary operators</h5>
+<h2>Binary operators</h2>
+
+<h2>Join operators</h2>
+A relation cannot be joined with itself - even if select or project
+operator has been applied to it.
+To join a relation with itself, at least one of the instances of the relation
+must be renamed.
 <dl>
-    <dt>Join</dt>
+    <dt>Cartesian Product</dt>
+    <dd>Keyword: <code>\product</code></dd>
+    <dd><code>Question \product Answer</code></dd>
+    <dd><code>\rename_{Q1} Question \product \rename_{Q2} Question</code>
+    </dd>
+
+    <dt>Natural Join</dt>
+    <dd>Keyword: <code>\natural_join</code></dd>
+    <dd><code>Question \natural_join Answer</code></dd>
+
+    <dt>Theta Join</dt>
+    <dd>Keyword: <code>\join </code></dd>
+    <dd><code>Question \join_{Question.id = Answer.id} Answer</code></dd>
     <dd>
-        Join uses the keyword <code>\join</code> as the operator.
-        The right-hand and left-hand sides of the operator must be
-        expressions.
-        <li><code>Questions \join Answers</code></li>
-        <li><code>\rename_{Q1} Questions \join \rename_{Q2} Questions</code>
-        </li>
+        <p>Theta join evaluates each tuple in the Cartesian product of two
+            relations against a boolean
+            expression passed in as a required argument. The boolean
+            expression can be composed of attribute references, numbers,
+            quoted strings, comparison operators or logical operators.
+            Attribute references must be valid.</p>
     </dd>
 </dl>
 
-<h5>Binary set operators</h5>
-The right-hand and left-hand sides of the operator must be expressions.
-The attribute names of the relations that the expressions evaluate to must
-match exactly in names and order.
+<h2>Set operators</h2>
+
+<p>The right-hand and left-hand sides of the operator must be valid RA
+    expressions.
+    The attribute names of the relations that the expressions evaluate to must
+    match exactly in names and order.</p>
 <dl>
     <dt>Union</dt>
-    <dd>
-        Union uses the keyword <code>\union</code> as the operator.
-        <li><code>Questions \union MoreQuestions</code></li>
-    </dd>
+    <dd>Keyword: <code>\union </code></dd>
+    <dd><code>Question \union Question2</code></dd>
 
     <dt>Difference</dt>
-    <dd>
-        Difference uses the keyword <code>\difference</code> as the operator.
-        <li><code>MoreQuestions \difference Questions</code></li>
-    </dd>
+    <dd>Keyword: <code>\difference </code></dd>
+    <dd><code>Question \difference Question2</code></dd>
+
+    <dt>Intersection</dt>
+    <dd>Keyword: <code>\intersect </code></dd>
+    <dd><code>Question \intersect Question2</code></dd>
 </dl>
 </body>
 </html>
