@@ -31,7 +31,7 @@ class PostgresWrapper:
         Connect to the database as the user.
         """
         self._conn = psycopg2.connect(database=self.database,
-                                      user=self.user)
+                                      user=self.user, password=self.user)
         self._cursor = self._conn.cursor(cursor_factory=extras.RealDictCursor)
 
     def close(self):
