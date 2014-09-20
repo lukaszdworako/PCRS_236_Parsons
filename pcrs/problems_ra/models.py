@@ -47,7 +47,9 @@ class Problem(RDBProblem):
         """
 
         if self.grammar and self.schema:
-            translator = Rapt(grammar=self.grammar)
+            translator = Rapt(grammar=self.grammar,
+                              syntax={'join_op': '\\product'}
+            )
             schema = loads(self.schema.tables)
             try:
                 sql = translator.to_sql(instring=self.solution,
@@ -82,14 +84,16 @@ class Submission(AbstractSubmission):
 
         schema = loads(self.problem.schema.tables)
         use_bag = self.problem.semantics == 'bag'
-        translator = translator = Rapt(grammar=self.problem.grammar)
+        translator = translator = Rapt(grammar=self.problem.grammar,
+                                       syntax={'join_op': '\\product'})
 
         try:
             t_sub = translator.to_sql(instring=self.submission,
                                       schema=schema, use_bag_semantics=use_bag)
+            print('after submission')
             t_ans = translator.to_sql(instring=self.problem.solution,
                                       schema=schema, use_bag_semantics=use_bag)
-
+            print('after answer')
             with StudentWrapper(database=settings.RDB_DATABASE,
                                 user=request.user.username) as db:
                 for testcase in testcases:

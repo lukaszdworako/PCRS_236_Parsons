@@ -16,7 +16,7 @@ CodeMirror.defineMode("ra", function(config) {
   }
   var atoms = wordObj("");//NULL NA Inf NAN real
   var builtins = wordObj("and or");//list eval call parse
-  var keywords = wordObj("select project rename select_ project_ rename_ join join_ union difference"); //if else next break
+  var keywords = wordObj("select project rename select_ project_ rename_ product join_ union difference"); //if else next break
   var blockkeywords = wordObj("");//if else repear while function for
   var opChars = /[+\-*\/^<>=!&|~$:]/;
   var curPunc;
