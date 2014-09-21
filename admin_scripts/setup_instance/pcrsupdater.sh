@@ -11,10 +11,10 @@ FILEPATH='/home/pcrsadmin/www'
 DATE=`date +%Y-%m-%d`
 
 echo "Saving settings: settings.py, login.py, wsgi.py"
-pushd ${FILEPATH}/$2/pcrs
-mv pcrs/settings.py pcrs/settings.py.${DATE}.temp
-mv pcrs/wsgi.py pcrs/wsgi.py.${DATE}.temp
-mv login.py login.py.${DATE}.temp
+pushd ${FILEPATH}/$2
+mv pcrs/pcrs/settings.py ${FILEPATH}/pcrsloader/backup/settings.py.${DATE}.$2
+mv pcrs/pcrs/wsgi.py ${FILEPATH}/pcrsloader/backup/pcrs/wsgi.py.${DATE}.$2
+mv pcrs/login.py ${FILEPATH}/pcrsloader/backup/login.py.${DATE}.$2
 
 echo "Updating code"
 git remote set-url origin https://$1@bitbucket.org/utmandrew/pcrs.git
@@ -28,14 +28,15 @@ git remote set-url origin https://$1@bitbucket.org/utmandrew/pcrs.git
 git pull
 
 echo "Don't forget to check settings.py, wsgi.py, and login.py"
-mv pcrs/settings.py pcrs/settings.py.${DATE}
-mv pcrs/wsgi.py pcrs/wsgi.py.${DATE}
-mv login.py login.py.${DATE}
-mv pcrs/settings.py.${DATE}.temp pcrs/settings.py
-mv pcrs/wsgi.py.${DATE}.temp pcrs/wsgi.py
-mv login.py.${DATE}.temp login.py
+mv pcrs/pcrs/settings.py pcrs/pcrs/settings.py.${DATE}
+mv pcrs/pcrs/wsgi.py pcrs/pcrs/wsgi.py.${DATE}
+mv pcrs/login.py pcrs/login.py.${DATE}
+cp ${FILEPATH}/pcrsloader/backup/settings.py.${DATE}.$2 pcrs/pcrs/settings.py
+cp ${FILEPATH}/pcrsloader/backup/wsgi.py.${DATE}.$2 pcrs/pcrs/wsgi.py
+cp ${FILEPATH}/pcrsloader/backup/login.py.${DATE}.$2 pcrs/login.py
 
 echo "Syncing database"
+pushd pcrs
 python3.4 manage.py syncdb
 echo "Collecting static"
 python3.4 manage.py collectstatic
@@ -44,11 +45,13 @@ echo "Setting permissions"
 find . -type d -exec chmod 750 {} \;
 chmod 755 .
 find . -type f -exec chmod 640 {} \;
-find ../static -type d -exec chmod 775 {} \;
-find ../static -type f -exec chmod 664 {} \;
+popd
+
+find static -type d -exec chmod 775 {} \;
+find static -type f -exec chmod 664 {} \;
 
 # Hack to fix fonts issue
-rm -f ../static/fonts
-ln -s ../static/bootstrap-3.1.1/fonts ../static/fonts
+rm -f static/fonts
+ln -s static/bootstrap-3.1.1/fonts static/fonts
 
 popd
