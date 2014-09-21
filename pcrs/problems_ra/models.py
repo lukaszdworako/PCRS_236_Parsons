@@ -7,7 +7,7 @@ from django.db.models.signals import post_delete
 
 from pyparsing import ParseException
 from problems_rdb.db_wrapper import StudentWrapper
-from rapt.treebrd.errors import TreeBRDError as TranslationError
+from rapt.treebrd.errors import TreeBRDError
 from rapt.rapt import Rapt
 
 from rapt.treebrd.grammars import GRAMMARS as RAPT_GRAMMARS
@@ -60,7 +60,7 @@ class Problem(RDBProblem):
                 error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
                     .format(lineno=e.lineno, col=e.col, line=e.line)
                 raise ValidationError({'solution': [error]})
-            except TranslationError as e:
+            except TreeBRDError as e:
                 raise ValidationError({'solution': [e]})
 
 
@@ -79,44 +79,65 @@ class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
     def run_testcases(self, request):
+        results = []
         testcases = self.problem.testcase_set.all()
-        results, error = [], None
+        t_sub, t_ans, error = self.get_sql_translations()
 
-        schema = loads(self.problem.schema.tables)
-        use_bag = self.problem.semantics == 'bag'
-        translator = translator = Rapt(grammar=self.problem.grammar,
-                                       syntax={'join_op': '\\product'})
-
-        try:
-            t_sub = translator.to_sql(instring=self.submission,
-                                      schema=schema, use_bag_semantics=use_bag)
-            print('after submission')
-            t_ans = translator.to_sql(instring=self.problem.solution,
-                                      schema=schema, use_bag_semantics=use_bag)
-            print('after answer')
-            with StudentWrapper(database=settings.RDB_DATABASE,
-                                user=request.user.username) as db:
-                for testcase in testcases:
-                    dataset = testcase.dataset
-                    result = db.run_testcase('; '.join(t_ans),
-                                             '; '.join(t_sub),
-                                             dataset.namespace)
-                    TestRun(submission=self, testcase=testcase,
-                            test_passed=result['passed']).save()
-                    result['testcase'] = testcase.id
-                    results.append(result)
-        except ParseException as e:
-            error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
-                .format(lineno=e.lineno, col=e.col, line=e.line)
-
-        except TranslationError as e:
-            error = e
-
-        if error:
+        if not error:
+            results, error = self.get_results(request, t_sub, t_ans, testcases)
+        else:
             for testcase in testcases:
                 TestRun(submission=self, testcase=testcase,
                         test_passed=False).save()
         return results, str(error) if error else None
+
+    def get_results(self, request, submission, solution, testcases):
+        results, error = [], None
+        with StudentWrapper(database=settings.RDB_DATABASE,
+                            user=request.user.username) as db:
+            for testcase in testcases:
+                dataset = testcase.dataset
+                result = db.run_testcase('; '.join(solution),
+                                         '; '.join(submission),
+                                         dataset.namespace)
+                TestRun(submission=self, testcase=testcase,
+                        test_passed=result['passed']).save()
+                result['testcase'] = testcase.id
+                results.append(result)
+                if result['error']:
+                    error = self.parse_sql_error(result['error'])
+        return results, error
+
+    def parse_sql_error(self, error):
+        if '42883' in error and 'type casts' in error:
+            message = error.split(':')[3]
+            line_starts = message.find('LINE')
+            message = message[:line_starts]
+            return 'Type error: {}'.format(message)
+        return 'Error executing query.'
+
+    def get_sql_translations(self):
+        schema = loads(self.problem.schema.tables)
+        use_bag = self.problem.semantics == 'bag'
+        translator = Rapt(grammar=self.problem.grammar,
+                          syntax={'join_op': '\\product'})
+        submission, solution, error = [], [], None
+
+        try:
+            submission = translator.to_sql(instring=self.submission,
+                                           schema=schema,
+                                           use_bag_semantics=use_bag)
+            solution = translator.to_sql(instring=self.problem.solution,
+                                         schema=schema,
+                                         use_bag_semantics=use_bag)
+        except ParseException as e:
+            error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
+                .format(lineno=e.lineno, col=e.col, line=e.line)
+
+        except TreeBRDError as e:
+            error = e
+
+        return submission, solution, error
 
 
 class TestRun(AbstractTestRun):
