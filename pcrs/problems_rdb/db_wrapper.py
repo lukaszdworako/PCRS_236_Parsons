@@ -334,7 +334,8 @@ class StudentWrapper(PostgresWrapper):
                                             result['actual'],
                                             order_matters)
         except DatabaseError as e:
-            result['error'] = e.pgerror
+            result['error'] = '{code}: {message}'.format(code=e.pgcode,
+                                                         message=e.pgerror)
 
         finally:
             self.rollback()
