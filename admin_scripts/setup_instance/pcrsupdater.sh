@@ -13,7 +13,7 @@ DATE=`date +%Y-%m-%d`
 echo "Saving settings: settings.py, login.py, wsgi.py"
 pushd ${FILEPATH}/$2
 mv pcrs/pcrs/settings.py ${FILEPATH}/pcrsloader/backup/settings.py.${DATE}.$2
-mv pcrs/pcrs/wsgi.py ${FILEPATH}/pcrsloader/backup/pcrs/wsgi.py.${DATE}.$2
+mv pcrs/pcrs/wsgi.py ${FILEPATH}/pcrsloader/backup/wsgi.py.${DATE}.$2
 mv pcrs/login.py ${FILEPATH}/pcrsloader/backup/login.py.${DATE}.$2
 
 echo "Updating code"
