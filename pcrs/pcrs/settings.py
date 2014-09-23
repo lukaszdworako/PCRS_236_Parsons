@@ -54,6 +54,7 @@ if PRODUCTION:
     LOGIN_URL = SITE_PREFIX + "/login"
 AUTH_USER_MODEL = 'users.PCRSUser'
 AUTHENTICATION_BACKENDS = ('pcrs_authentication.ModelBackend',)
+AUTH_TYPE = 'none'       # Or 'pwauth' or 'none'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts

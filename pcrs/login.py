@@ -11,6 +11,7 @@ import datetime
 from django.utils.timezone import localtime, utc
 #
 
+import os
 import subprocess
 
 
@@ -28,7 +29,7 @@ def is_course_staff(user):
 
 def check_authorization(username, password):
     ''' Return True if user is authized on the university level, False othervise. '''
-    if not settings.PRODUCTION:
+    if settings.AUTH_TYPE == 'none':
         return True
 
     pwauth = subprocess.Popen("/usr/sbin/pwauth", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -41,6 +42,34 @@ def check_authorization(username, password):
     retcode = pwauth.wait()
     return retcode == 0
 
+
+def login_django(request, username):
+    logger = logging.getLogger('activity.logging')
+    logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+                str(username) + " | Log in")
+    # password-based authorization was provided at university level, 
+    # just create a user object. 
+    # user = authenticate(username=username, password=password)
+    user = authenticate(username=username)
+
+    if user is None:
+        NOTIFICATION = "djangoaccount"
+    elif not user.is_active:
+        NOTIFICATION = "user inactive"
+    else:
+        request.session['section'] = user.section
+        redirect_link = settings.SITE_PREFIX + '/content/quests'
+
+        login(request, user)
+        return HttpResponseRedirect(redirect_link)
+
+    # username is not registered with django    
+    if settings.AUTH_TYPE == "shibboleth":
+        # redirect user letting them know they do not belong to this server
+        redirect_link = settings.SITE_PREFIX + '/usernotfound.html'
+        return HttpResponseRedirect(redirect_link)
+    
+    return None
 
 def login_view(request):
     """
@@ -55,6 +84,14 @@ def login_view(request):
     if request.user and request.user.is_authenticated():
         return HttpResponseRedirect(NEXT or settings.SITE_PREFIX + '/content/quests')
 
+    if settings.AUTH_TYPE == "shibboleth":
+        # user authenticated through shibboleth
+        username = os.environ["utorid"]
+        response = login_django(request, username)
+        if response:
+            return response
+
+    # for settings.AUTH_TYPE == 'none' and settings.AUTH_TYPE == 'pwauth'
     if request.POST:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
@@ -66,25 +103,9 @@ def login_view(request):
             if not existing_user:
                 NOTIFICATION = "username"
             else:
-                logger = logging.getLogger('activity.logging')
-                logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
-                str(username) + " | Log in")
-                # password-based authorization was provided at university level, 
-                # just create a user object. 
-                # user = authenticate(username=username, password=password)
-                user = authenticate(username=username)
-
-                if user is None:
-                    NOTIFICATION = "djangoaccount"
-                if not user.is_active:
-                    NOTIFICATION = "user inactive"
-                else: 
-                    request.session['section'] = user.section
-                    post_link = request.POST['next']
-                    redirect_link = post_link or settings.SITE_PREFIX + '/content/quests'
-
-                    login(request, user)
-                    return HttpResponseRedirect(redirect_link)
+                response = login_django(request, username)                
+                if response:
+                    return response
 
     context = {'NEXT': NEXT, 'NOTIFICATION': NOTIFICATION}
     context.update(csrf(request))
