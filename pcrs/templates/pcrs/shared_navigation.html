@@ -6,6 +6,8 @@
             </a>
         </li>
     </ul>
+
+    {% if not auth_shibboleth %}
     <ul class="pcrs-navbar-nav">
         <li>
             <a href="{{ site_prefix }}/logout">
@@ -13,5 +15,6 @@
             </a>
         </li>
     </ul>
+    {% endif %}
 
 {% endif %}

@@ -19,6 +19,11 @@
                 </ul>
             {% endif %}
             <ul class="pcrs-navbar-nav-right">
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="">Logged in as <i>{{ request.user }}</i></a>
+                    </li>
+                 </ul>
                 {% include "pcrs/shared_navigation.html" %}
             </ul>
         </div>
