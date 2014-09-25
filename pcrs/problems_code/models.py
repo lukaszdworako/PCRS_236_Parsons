@@ -35,17 +35,25 @@ class Submission(AbstractSubmission):
         Return the list of testrun results.
         """
         results = []
+        error = None
         for testcase in self.problem.testcase_set.all():
             run = testcase.run(self.submission)
+
+            try:
+                passed = run['passed_test']
+            except KeyError:    # Timeout, usually because of infinite loop
+                passed = False
+                error = "Timeout occurred: do you have an infinite loop?"
             TestRun.objects.create(submission=self, testcase=testcase,
-                                   test_passed=run['passed_test'])
+                                   test_passed=passed)
+
             run['test_input'], run['expected_output'] = None, None
             run['test_desc'] = testcase.description
             if testcase.is_visible:
                 run['test_input'] = testcase.test_input
                 run['expected_output'] = testcase.expected_output
             results.append(run)
-        return results, None
+        return results, error
 
 
 class TestCase(AbstractTestCase):

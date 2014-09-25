@@ -250,7 +250,7 @@ function getTestcases(div_id) {
                         .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
-                if ((language == 'sql' || language == 'ra') && data['results'][1] != null ){
+                if (data['results'][1] != null){
                     error_msg = data['results'][1];
                 }
                 $("#"+div_id).find("#grade-code").show();
@@ -470,96 +470,103 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];
+    gradingTable.empty();
 
-    for (var i = 0; i < testcases.length; i++) {
-        var current_testcase = testcases[i];
-        var description = current_testcase.test_desc;
-        var passed = current_testcase.passed_test;
-        var testcaseInput = current_testcase.test_input;
-        var testcaseOutput = current_testcase.expected_output;
-        var result = create_output(current_testcase.test_val);
-        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
+    if (error_msg != null){
+        gradingTable.append("<div class='red-alert'>"+error_msg+"</div>");
+        error_msg = null;
+    }
+    else{
+	    for (var i = 0; i < testcases.length; i++) {
+	        var current_testcase = testcases[i];
+	        var description = current_testcase.test_desc;
+	        var passed = current_testcase.passed_test;
+	        var testcaseInput = current_testcase.test_input;
+	        var testcaseOutput = current_testcase.expected_output;
+	        var result = create_output(current_testcase.test_val);
+	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
 
-        if (description == ""){
-            description = "No Description Provided"
-        }
+	        if (description == ""){
+	            description = "No Description Provided"
+	        }
 
-        if (cleaner){
-            cleaner.remove();
-        }
+	        if (cleaner){
+	            cleaner.remove();
+	        }
 
-        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
-        gradingTable.append(newRow);
+	        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
+	        gradingTable.append(newRow);
 
-        if ("exception" in current_testcase){
-            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
-                          current_testcase.exception + '</th>');
-        }
-        else{
-            if (testcaseInput != null) {
-                newRow.append('<td class="description">' +
-                               description + '</td>');
+	        if ("exception" in current_testcase){
+	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
+	                          current_testcase.exception + '</th>');
+	        }
+	        else{
+	            if (testcaseInput != null) {
+	                newRow.append('<td class="description">' +
+	                               description + '</td>');
 
-                newRow.append('<td class="expression"><div class="expression_div">' +
-                               testcaseInput + '</div></td>');
+	                newRow.append('<td class="expression"><div class="expression_div">' +
+	                               testcaseInput + '</div></td>');
 
-                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
+	                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
 
-            }
-            else {
-                newRow.append('<td class="description">' + description + '</td>');
+	            }
+	            else {
+	                newRow.append('<td class="description">' + description + '</td>');
 
-                newRow.append('<td class="expression">' +
-                              "Hidden Test" +'</td>');
+	                newRow.append('<td class="expression">' +
+	                              "Hidden Test" +'</td>');
 
-                newRow.append('<td class="expected">' +
-                              "Hidden Result" +'</td>');
-            }
+	                newRow.append('<td class="expected">' +
+	                              "Hidden Result" +'</td>');
+	            }
 
-            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
-                           ''+'</div></div></td>');
+	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
+	                           ''+'</div></div></td>');
 
-            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
-            $('#current_testcase'+i).attr('id', "");
+	            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+	            $('#current_testcase'+i).attr('id', "");
 
-            renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
-            $('#exp_test_val').attr('id',"");
+	            renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
+	            $('#exp_test_val').attr('id',"");
 
-            newRow.append('<td class="passed"></td>');
+	            newRow.append('<td class="passed"></td>');
 
-            var pass_status = "";
+	            var pass_status = "";
 
-            if (passed){
-                var smFace = happyFace;
-                score += 1;
-                pass_status = "passed";
-            }
-            else{
-                var smFace = sadFace;
-                pass_status = "failed";
-            }
+	            if (passed){
+	                var smFace = happyFace;
+	                score += 1;
+	                pass_status = "passed";
+	            }
+	            else{
+	                var smFace = sadFace;
+	                pass_status = "failed";
+	            }
 
-            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
+	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
-            if (testcaseInput != null){
-                newRow.append('<td class="debug"><button id="' +
-                               div_id +"_"+i + '" class="debugBtn" type="button"' +
-                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
-                bindDebugButton(div_id+"_"+i);
-            }
-            else{
-                newRow.append('<td class="debug"></td>')
-            }
-            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
-                           testcaseOutput+'. Result: '+result+'</a>');
-        }
-        var test = {'visible':testcaseInput != null,
-                    'input': testcaseInput,
-                    'output': testcaseOutput,
-                    'passed': passed,
-                    'description': description};
+	            if (testcaseInput != null){
+	                newRow.append('<td class="debug"><button id="' +
+	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
+	                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
+	                bindDebugButton(div_id+"_"+i);
+	            }
+	            else{
+	                newRow.append('<td class="debug"></td>')
+	            }
+	            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
+	                           testcaseOutput+'. Result: '+result+'</a>');
+	        }
+	        var test = {'visible':testcaseInput != null,
+	                    'input': testcaseInput,
+	                    'output': testcaseOutput,
+	                    'passed': passed,
+	                    'description': description};
 
-        tests.push(test);
+	        tests.push(test);
+	    }
     }
     var data = {'sub_time':new Date(),
             'submission':myCodeMirrors[div_id].getValue(),
