@@ -76,6 +76,7 @@ class PythonSpecifics(BaseLanguage):
             script = [  "import sys", 
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
+						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
                         "import pg_encoder",
                         "expected_val =" + str(target_value),
                         "print(pg_encoder.encode(expected_val, True))",
@@ -115,6 +116,7 @@ class PythonSpecifics(BaseLanguage):
             script = [  "import sys", 
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
+						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
                         "import pg_logger_v3",
                         "import pg_encoder",
                         "code_lines =" + str(user_script.split("\n")),
@@ -125,7 +127,7 @@ class PythonSpecifics(BaseLanguage):
                         "exit()"]
         
             p = self.run_subprocess(script)
-            p.wait(timeout=5)
+            p.wait(timeout=3)
             
             output = p.stdout.readlines()
             data = output[-1].decode()
@@ -176,6 +178,7 @@ class PythonSpecifics(BaseLanguage):
             script = [  "import sys, os", 
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
+						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
                         "import pg_encoder"] +\
                         code_lines +\
                         test_params[: -1] +\
