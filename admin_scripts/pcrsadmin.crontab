@@ -1,0 +1,13 @@
+# Minute Hour Day Month Weekday Command
+5 1 * * * /home/pcrsadmin/bin/psql_backup.bash daily
+10 1 * * 0 /home/pcrsadmin/bin/psql_backup.bash weekly
+30 1 * * 0 mv /home/pcrsadmin/logs/StG108.log /home/pcrsadmin/logs/StG108.log.`date +%Y-%m-%d`
+31 1 * * 0 mv /home/pcrsadmin/logs/UTM108.log /home/pcrsadmin/logs/UTM108.log.`date +%Y-%m-%d`
+32 1 * * 0 mv /home/pcrsadmin/logs/343.log /home/pcrsadmin/logs/343.log.`date +%Y-%m-%d`
+33 1 * * 0 mv /home/pcrsadmin/logs/258.log /home/pcrsadmin/logs/258.log.`date +%Y-%m-%d`
+34 1 * * 0 mv /home/pcrsadmin/logs/209.log /home/pcrsadmin/logs/209.log.`date +%Y-%m-%d`
+30 13 * * * cd /home/pcrsadmin/bin ; python add_StG108_users.py ../classlists/incoming/CSC108H1F ../classlists/CSC108H1F.old ; psql -d StG108 -f StG108.sql ; mv ../classlists/incoming/CSC108H1F ../classlists/CSC108H1F.old 
+31 13 * * * cd /home/pcrsadmin/bin ; python add_UTM108_users.py ../classlists/incoming/CSC108H5F ../classlists/CSC108H5F.old ; psql -d UTM108 -f UTM108.sql ; mv ../classlists/incoming/CSC108H5F ../classlists/CSC108H5F.old 
+32 13 * * * cd /home/pcrsadmin/bin ; python add_343_users.py ../classlists/incoming/CSC343H1F ../classlists/CSC343H1F.old ; psql -d 343 -f 343.sql ; mv ../classlists/incoming/CSC343H1F ../classlists/CSC343H1F.old ; psql -d stg343_data -f 343_data.sql
+33 13 * * * cd /home/pcrsadmin/bin ; python add_258_users.py ../classlists/incoming/CSC258H1F ../classlists/CSC258H1F.old ; psql -d 258 -f 258.sql ; mv ../classlists/incoming/CSC258H1F ../classlists/CSC258H1F.old
+34 13 * * * cd /home/pcrsadmin/bin ; python add_209_users.py ../classlists/incoming/CSC209H1F ../classlists/CSC209H1F.old ; psql -d 209 -f 209.sql ; mv ../classlists/incoming/CSC209H1F ../classlists/CSC209H1F.old
