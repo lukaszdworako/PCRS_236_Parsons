@@ -163,7 +163,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
 
         return HttpResponse(json.dumps({
             'score': self.submission.score,
-            'max_score': self.get_problem().option_set.all().count(),
+            'max_score': problem.max_score,
             'best': self.submission.has_best_score,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
