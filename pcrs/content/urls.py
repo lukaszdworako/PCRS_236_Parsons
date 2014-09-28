@@ -116,4 +116,6 @@ urlpatterns = patterns('',
 
     url(r'^get_quest_list$', ReactiveQuestsDataView.as_view(),
         name='live_quest_list'),
+
+    url(r'$', quests_page_view.as_view(), name='quests'),
 )
