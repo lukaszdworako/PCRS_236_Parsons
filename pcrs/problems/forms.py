@@ -57,12 +57,14 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
                                            css_class='reg-button')
 
 
-
 class ProgrammingSubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
+        # Remove hidden code from the student
+        if problem.language == 'c':
+            problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = problem.starter_code
         self.helper.layout = Layout(
@@ -71,6 +73,21 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             ButtonHolder(self.submit_button, css_class='pull-right')
         )
 
+
+def remove_tag(tag_open, tag_close, source_code):
+    source_code = source_code.split('\n')
+    source_code_output = ""
+    tag_count = 0
+    for line in source_code:
+        if line.find(tag_open) > -1:
+            tag_count += 1
+            continue
+        elif line.find(tag_close) > -1:
+            tag_count -= 1
+            continue
+        if tag_count == 0:
+            source_code_output += line
+    return source_code_output
 
 class MonitoringForm(CrispyFormMixin, forms.Form):
     time = forms.DateTimeField(initial=now())

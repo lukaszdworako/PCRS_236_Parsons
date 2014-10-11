@@ -1,0 +1,13 @@
+{% load staticfiles %}
+
+<div class="pcrs-modal-wait" id="waitingModal" tabindex="-1" aria-labelledby="waitingModal" aria-hidden="true">
+    <div class="pcrs-modal-content">
+        <div class="pcrs-modal-header">
+            <h4 class="pcrs-modal-title" id="waitingModallLabel">Loading&hellip;</h4>
+        </div>
+        <div class="pcrs-modal-body">
+            <p>Processing code, please wait&hellip;</p>
+            <img src="{% static "problems/img/loading.gif" %}" alt="Loading"  height="42" width="42"/>
+        </div>
+    </div>
+</div>

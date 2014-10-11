@@ -1,0 +1,242 @@
+[
+    {
+        "pk": 1,
+        "fields": {
+            "printing_symbol": "%c",
+            "primitive_type": "char"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 2,
+        "fields": {
+            "printing_symbol": "%d -> %c",
+            "primitive_type": "signed char"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 3,
+        "fields": {
+            "printing_symbol": "%u -> %c",
+            "primitive_type": "unsigned char"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 4,
+        "fields": {
+            "printing_symbol": "%d",
+            "primitive_type": "short"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 5,
+        "fields": {
+            "printing_symbol": "%d",
+            "primitive_type": "short int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 6,
+        "fields": {
+            "printing_symbol": "%d",
+            "primitive_type": "signed short"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 7,
+        "fields": {
+            "printing_symbol": "%c",
+            "primitive_type": "signed short int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 8,
+        "fields": {
+            "printing_symbol": "%u",
+            "primitive_type": "unsigned short"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 9,
+        "fields": {
+            "printing_symbol": "%u",
+            "primitive_type": "unsigned short int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 10,
+        "fields": {
+            "printing_symbol": "%d",
+            "primitive_type": "int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 11,
+        "fields": {
+            "printing_symbol": "%d",
+            "primitive_type": "signed int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 12,
+        "fields": {
+            "printing_symbol": "%u",
+            "primitive_type": "unsigned"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 13,
+        "fields": {
+            "printing_symbol": "%u",
+            "primitive_type": "unsigned int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 14,
+        "fields": {
+            "printing_symbol": "%ld",
+            "primitive_type": "long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 15,
+        "fields": {
+            "printing_symbol": "%ld",
+            "primitive_type": "long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 16,
+        "fields": {
+            "printing_symbol": "%ld",
+            "primitive_type": "signed long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 17,
+        "fields": {
+            "printing_symbol": "%ld",
+            "primitive_type": "signed long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 18,
+        "fields": {
+            "printing_symbol": "%lu",
+            "primitive_type": "unsigned long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 19,
+        "fields": {
+            "printing_symbol": "%lu",
+            "primitive_type": "unsigned long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 20,
+        "fields": {
+            "printing_symbol": "%lld",
+            "primitive_type": "long long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 21,
+        "fields": {
+            "printing_symbol": "%lld",
+            "primitive_type": "long long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 22,
+        "fields": {
+            "printing_symbol": "%lld",
+            "primitive_type": "signed long long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 23,
+        "fields": {
+            "printing_symbol": "%lld",
+            "primitive_type": "signed long long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 24,
+        "fields": {
+            "printing_symbol": "%llu",
+            "primitive_type": "unsigned long long"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 25,
+        "fields": {
+            "printing_symbol": "%llu",
+            "primitive_type": "unsigned long long int"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 26,
+        "fields": {
+            "printing_symbol": "%f",
+            "primitive_type": "float"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 27,
+        "fields": {
+            "printing_symbol": "%f",
+            "primitive_type": "double"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 28,
+        "fields": {
+            "printing_symbol": "%lf",
+            "primitive_type": "long double"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 29,
+        "fields": {
+            "printing_symbol": "%p",
+            "primitive_type": "void*"
+        },
+        "model": "problems_c.cprimitivetypes"
+    },
+    {
+        "pk": 30,
+        "fields": {
+            "printing_symbol": "no",
+            "primitive_type": "void"
+        },
+        "model": "problems_c.cprimitivetypes"
+    }
+]

@@ -3,7 +3,6 @@
 {% load compress %}
 {% compress css %}
     <link rel="stylesheet" href="{% static "codemirror-4.1/lib/codemirror.css" %}">
-
     {# Three styles monokai: dark background, Eclipse : light background, shaped : black on white #}
     {% if user.code_style == "monokai" %}
         <link rel="stylesheet" href="{% static "codemirror-4.1/theme/monokai.css" %}">
@@ -12,4 +11,5 @@
     {% else %}
         <link rel="stylesheet" href="{% static "codemirror-4.1/theme/shaped.css" %}">
     {% endif %}
+
 {% endcompress %}

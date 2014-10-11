@@ -1,8 +1,15 @@
 # Django settings for pcrs project.
+import os
 
 # The following changes the UI. You should also install/uninstall apps
 # to keep tables from being created.
-LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'),)
+LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'), ('c', 'C'),)
+
+USE_SAFEEXEC = False              # For C only, for now
+SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
+SAFEEXEC_GROUPID = "1005"
+
+PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
 
 PRODUCTION = False
 
@@ -32,8 +39,8 @@ DATABASES = {
         'NAME': 'pcrs_dev',
         'USER': 'dev',
         'PASSWORD': 'dev',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '5432',                      # Set to empty string for default.
     }
 }
 
@@ -85,6 +92,10 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+# Absolute filesystem path to the location of the project
+# Example: "/var/www/example.com/media/"
+PROJECT_ROOT = str(os.getcwd())
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
 MEDIA_ROOT = ''
@@ -109,8 +120,7 @@ COMPRESS_ENABLED = "True"
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    '/Users/olessia/Projects/fresh/pcrs/resources',
-    '/home/nick/Documents/repos/main/test/pcrs/pcrs/resources',
+    (PROJECT_ROOT + os.sep + 'resources'),
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -163,11 +173,10 @@ ROOT_URLCONF = 'pcrs.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'pcrs.wsgi.application'
 
-import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
 INSTALLED_PROBLEM_APPS = (
-    'problems_code',
+    'problems_python', 'problems_c',
     'problems_multiple_choice',
     'problems_rdb', 'problems_sql', 'problems_ra',
     'problems_timed', 'problems_rating', 'problems_short_answer',

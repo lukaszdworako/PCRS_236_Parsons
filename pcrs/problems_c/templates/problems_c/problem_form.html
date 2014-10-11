@@ -1,0 +1,27 @@
+{% extends "pcrs/item_form.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems_c/problem_form_scripts.html" %}
+{% endblock %}
+
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems_c/problem_form_stylesheets.html" %}
+{% endblock %}
+
+{% block related_items %}
+    {% include "problems_c/tag_alert.html" %}
+    {% include "problems_c/student_preview.html" %}
+
+    {% if object %}
+        {% with list_name='Testcases' object_list=object.testcase_set.all related_item_name='testcase' %}
+            {% include "pcrs/related_items.html" %}
+        {% endwith %}
+    {% endif %}
+{% endblock %}
+
+

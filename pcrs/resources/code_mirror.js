@@ -7,16 +7,20 @@ function create_history_code_mirror (language, version, location){
 
 function history_code_mirror (language, version, location, value, lock){
 
+    var mode;
     if (language == 'python'){
-        var mode = {name: language,
-                   version: version,
-                   singleLineStringErrors: false}
+        mode = {name: language,
+                version: version,
+                singleLineStringErrors: false}
     }
     else if (language == 'sql'){
-        var mode = 'text/x-plsql';
+        mode = 'text/x-plsql';
     }
     else if (language == 'ra'){
-        var mode = 'text/ra';
+        mode = 'text/ra';
+    }
+    else if (language == 'c'){
+        mode = 'text/x-csrc';
     }
     historyCodeMirror = CodeMirror(function(elt) {
         $(location).replaceWith(elt);

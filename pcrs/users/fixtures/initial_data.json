@@ -5,7 +5,23 @@
       "fields": {
           "section_id": "master",
           "lecture_time": "master",
-      "location": "master"
-    }
+          "location": "master"
+      }
+  },
+  {
+      "model": "problems_c.jobscheduler",
+      "pk": 1,
+      "fields": {
+          "protocol": "http",
+          "ip": "localhost",
+          "dns": "localhost",
+          "port": "8001",
+          "api_url": "run_code",
+          "user": "admin",
+          "password": "admin",
+          "active": "False"
+      }
   }
+
 ]
+

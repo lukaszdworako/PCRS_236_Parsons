@@ -417,6 +417,37 @@ class AbstractTestRun(models.Model):
         return '{submission}: testcase {pk}'.format(
             submission=self.submission, pk=self.testcase.pk)
 
+class AbstractCPrimitiveTypes(models.Model):
+    """
+    For each C primitive type there is a respective printing symbol
+    This table is used for the C Visualizer to trace all the program variables located
+    in the C source code
+    """
+    primitive_type = models.CharField(unique=True, max_length=100, blank=False)
+    printing_symbol = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class AbstractJobScheduler(models.Model):
+    """
+    Base Job Scheduler class.
+
+    Detailed configuration information about the Job Scheduler System that
+    PCRS will communicate to solve code problems.
+    """
+    protocol = models.CharField(max_length=16, blank=True)
+    ip = models.CharField(max_length=16, blank=True)
+    dns = models.CharField(max_length=200, blank=True)
+    port = models.CharField(max_length=10, blank=True)
+    api_url = models.CharField(max_length=100, blank=True)
+    user = models.CharField(max_length=100, blank=True)
+    password = models.CharField(max_length=100, blank=True)
+    active = models.BooleanField(blank=False, default=True)
+
+    class Meta:
+        abstract = True
 
 # Signal handlers
 

@@ -20,7 +20,12 @@
                     <ul class="dropdown-menu">
                         {% if 'python' in languages %}
                         <li>
-                            <a href="{{ site_prefix }}/problems/code/list">Code</a>
+                            <a href="{{ site_prefix }}/problems/python/list">Python</a>
+                        </li>
+                        {% endif %}
+                        {% if 'c' in languages %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/c/list">C</a>
                         </li>
                         {% endif %}
                         <li>

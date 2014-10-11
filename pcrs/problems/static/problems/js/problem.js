@@ -23,29 +23,30 @@ function bindDebugButton(buttonId) {
 }
 
 
-function prepareVisualizer(option, data, buttonId) {
+function prepareVisualizer(option, testcaseCode, buttonId) {
     /**
      * Prepare Coding problem visualizer
      */
 
     var key = buttonId.split("_")[0];
+    var problemId = key.split("-")[1];
     var newCode = myCodeMirrors[key].getValue() + "\n";
-    var addCode = (option == "viz") ? myCodeMirrors[key].getValue() : data;
-    newCode += addCode;
-
-    getVisualizerComponents(newCode);
+    if (language == 'python') {
+        newCode += (option == "viz") ? myCodeMirrors[key].getValue() : testcaseCode;
+    }
+    getVisualizerComponents(newCode, testcaseCode, problemId);
 }
 
 
-function getVisualizerComponents(newCode) {
+function getVisualizerComponents(newCode, testcaseCode, problemId) {
     /**
      * Get Components for coding problem visualization
      */
 
-    var postParams = { language : language, user_script : newCode};
+    var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
 
-    $.post(root + '/problems/code/visualizer-details',
+    $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
                 executeGenericVisualizer("create_visualizer", data);
@@ -65,13 +66,16 @@ function getHistory(div_id){
 
     check_language(div_id);
     if (language == 'python'){
-        problem_path = root+'/problems/code/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/python/' + div_id.split("-")[1]+'/history';
+    }
+    else if (language == 'c'){
+        problem_path = root + '/problems/c/' + div_id.split("-")[1]+'/history';
     }
     else if (language == 'sql'){
-        problem_path = root+'/problems/sql/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/sql/' + div_id.split("-")[1]+'/history';
     }
     else if (language == 'ra'){
-        problem_path = root+'/problems/ra/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/ra/' + div_id.split("-")[1]+'/history';
     }
     $.post(problem_path,
         postParams,
@@ -136,6 +140,7 @@ function add_history_entry(data, div_id, flag){
                                       + "_"
                                       + data['sub_pk'],
                                   html:data['submission']});
+    cont2.html = cont2.text(data['submission']).html();
 
     var cont3 = $('<ul/>', {class:"pcrs-list-group"});
 
@@ -213,12 +218,71 @@ function show_history(data, div_id){
     }
 }
 
+function addHashkey(div_id){
+    /**
+     * Generate a Hashkey based on
+     * the problem_id to identify
+     * where the student code starts and ends
+     */
+    var line_count = myCodeMirrors[div_id].lineCount();
+    var code = " ";
+    var wrapClass;
+    var i;
+    for (i = 0; i < line_count; i++){
+        wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
+        if (wrapClass == 'CodeMirror-studentline-background')
+            code += CryptoJS.SHA1(div_id.split("-")[1]);
+        else
+            code += myCodeMirrors[div_id].getLine(i);
+        code += '\n';
+    }
+    return code.substring(0, code.length-1);
+}
+
+function handleCMessages(div_id, testcases){
+    /**
+     * Handle C error and warning
+     * messages - divs with different
+     * colors and font style
+     */
+    // Handle C warnings and exceptions
+    $('#'+div_id).find('#c_warning').remove();
+    $('#'+div_id).find('#c_error').remove();
+
+    // Find testcase with warning/error
+    var bad_testcase = null;
+    for(var i = 0; i < testcases.length; i++) {
+        if ("exception_type" in testcases[i]) {
+            bad_testcase = testcases[i];
+            break;
+        }
+    }
+
+    if(bad_testcase != null){
+        var class_type;
+        if(bad_testcase.exception_type == "warning") {
+            class_type = 'alert alert-warning';
+        }
+        else if(bad_testcase.exception_type == "error"){
+            class_type = 'alert alert-danger';
+        }
+        $('#'+div_id)
+            .find('#alert')
+            .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase.exception + '</div>');
+    }
+}
 
 function getTestcases(div_id) {
     /**
      * Submit code from div_id and get back the test cases
      */
-    var clean_code = myCodeMirrors[div_id].getValue();
+    var clean_code;
+
+    if(language == 'c'){
+        clean_code = addHashkey(div_id);
+    }else{
+        clean_code = myCodeMirrors[div_id].getValue();
+    }
 
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
@@ -230,7 +294,10 @@ function getTestcases(div_id) {
 
     check_language(div_id);
     if (language == 'python'){
-        call_path = root + '/problems/code/'+div_id.split("-")[1]+'/run'
+        call_path = root + '/problems/python/'+div_id.split("-")[1]+'/run'
+    }
+    else if (language == 'c'){
+        call_path = root + '/problems/c/'+div_id.split("-")[1]+'/run'
     }
     else if (language == 'sql'){
         call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
@@ -238,6 +305,9 @@ function getTestcases(div_id) {
     else if (language == 'ra'){
         call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
     }
+
+    // Activate loading pop-up
+    $('#waitingModal').modal('show');
 
     $.post(call_path,
             postParams,
@@ -295,6 +365,16 @@ function getTestcases(div_id) {
                                         data['sub_pk'],
                                         max_score);
                 }
+                else if (language == 'c'){
+                    // Handle C error and warning messages
+                    handleCMessages(div_id, testcases);
+
+                    prepareGradingTable(div_id,
+                                        data['best'],
+                                        data['past_dead_line'],
+                                        data['sub_pk'],
+                                        max_score);
+                }
                 else if (language=='sql'){
                     prepareSqlGradingTable(div_id,
                                            data['best'],
@@ -309,9 +389,16 @@ function getTestcases(div_id) {
                                            data['sub_pk'],
                                            max_score);
                 }
+                // Deactivate loading pop-up
+                $('#waitingModal').modal('hide');
             },
         "json")
-     .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+     .fail(
+        function(jqXHR, textStatus, errorThrown) {
+            // Deactivate loading pop-up
+            $('#waitingModal').modal('hide');
+            console.log(textStatus);
+        });
 }
 
 function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
@@ -470,7 +557,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];
-    gradingTable.empty();
+    //gradingTable.empty();
 
     if (error_msg != null){
         gradingTable.append("<div class='red-alert'>"+error_msg+"</div>");
@@ -497,11 +584,11 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
 	        gradingTable.append(newRow);
 
-	        if ("exception" in current_testcase){
+	        if (language != 'c' && "exception" in current_testcase){
 	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
 	                          current_testcase.exception + '</th>');
 	        }
-	        else{
+	        else if (!(language == 'c' && "exception" in current_testcase && current_testcase.exception_type == "error")){
 	            if (testcaseInput != null) {
 	                newRow.append('<td class="description">' +
 	                               description + '</td>');
@@ -547,7 +634,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
-	            if (testcaseInput != null){
+	            if (language != 'c' && testcaseInput != null){
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
@@ -623,7 +710,10 @@ function create_output(input){
     brakets_o = {"list":"[","tuple":"(","dict":"{"};
     brakets_c = {"list":"]","tuple":")","dict":"}"};
 
-    if (input.length == 2){
+    if(language == 'c'){
+       return input;
+    }
+    else if (input.length == 2){
         return create_output(input[0])+":"+create_output(input[1]);
     }
     else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict"){
@@ -658,8 +748,10 @@ function check_language(container){
      * Check the language of a problem
      * "container" is the id of the main_div
      */
-
-    if (container.indexOf("code") > -1){
+    if (container.indexOf("c") > -1){
+        language = 'c';
+    }
+    else if (container.indexOf("python") > -1){
         language = 'python';
     }
     else if (container.indexOf("sql") > -1){
@@ -673,6 +765,113 @@ function check_language(container){
     }
 }
 
+function escapeRegExp(string) {
+    /**
+     * Escape Regex Expressions
+     */
+    return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(find, replace, string) {
+    /**
+     * Replace an specific
+     * substring within a string
+     */
+  return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+function removeTags(source_code){
+   /**
+     * Remove [block] and [student_code] tags
+     * from source code
+     */
+    var lines = source_code.split("\n");
+    var line;
+    var blocked_open = 0;
+    var blocked_list = [];
+    var student_code_list = [];
+    var tag_num = 0;
+
+    source_code = "";
+    for(var i = 0; i < lines.length; i++){
+        line = lines[i];
+        if((line.split("[blocked]").length - 1) > 0){
+            blocked_list.push({"highlight": true, "start": i+1-tag_num, "end": 0});
+            blocked_open += 1;
+            tag_num += 1;
+        }
+        else if((line.split("[/blocked]").length - 1) > 0) {
+            tag_num += 1;
+            blocked_list[blocked_open - 1].end = i+1-tag_num;
+        }
+        else if((line.split("[student_code]").length - 1) > 0){
+            student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
+            source_code += '//Implementation start' + '\n';
+        }
+        else if((line.split("[/student_code]").length - 1) > 0) {
+            student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
+            source_code += '//Implementation end' + '\n';
+        }else {
+            source_code += lines[i] + '\n';
+        }
+    }
+
+    var tag_list;
+    // Remove last \n scape sequence
+    source_code = source_code.substring(0, source_code.length-1);
+    tag_list = blocked_list.concat(student_code_list);
+
+    return {source_code: source_code, tag_list: tag_list};
+}
+
+function blockInput(editor_id){
+    /**
+     * For every line of code inside a pair of [block] [/block] tags,
+     * the user is unable to clicks over it (modify the code)
+     */
+
+    var line_num = myCodeMirrors[editor_id].getCursor().line;
+    var line_count;
+    var wrapClass = myCodeMirrors[editor_id].lineInfo(line_num).wrapClass;
+    if (wrapClass == 'CodeMirror-studentline-background' || wrapClass == 'CodeMirror-activeline-background')
+    {
+        line_count = myCodeMirrors[editor_id].lineCount();
+        for (var i = 0; i < line_count; i++){
+            wrapClass = myCodeMirrors[editor_id].lineInfo(i).wrapClass;
+            if (wrapClass != 'CodeMirror-studentline-background' && wrapClass != 'CodeMirror-activeline-background'){
+                myCodeMirrors[editor_id].setCursor(i, 0);
+                return true;
+            }
+        }
+        myCodeMirrors[editor_id].replaceRange("\n", CodeMirror.Pos(myCodeMirrors[editor_id].lastLine()));
+        myCodeMirrors[editor_id].setCursor(myCodeMirrors[editor_id].lineCount(), 0);
+    }
+}
+
+function highlightCode(editor_id, tag_list){
+    /**
+     * For every line of code inside a pair of [block] [/block] tags,
+     * highlight this code with a different background color
+     */
+
+    // Block input in the highlighted area
+    myCodeMirrors[editor_id].on("cursorActivity", function(){ blockInput(editor_id);});
+
+    // Check for tags to apply code highlighting
+    var first_line = myCodeMirrors[editor_id].firstLine();
+    var last_line = myCodeMirrors[editor_id].lastLine();
+    for (var i = first_line; i <= last_line; i++) {
+        for(var j = 0; j < tag_list.length; j++){
+            if(tag_list[j].start <= i+1 && tag_list[j].end >= i+1){
+                if(tag_list[j].highlight == true)
+                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-activeline-background');
+                else if (tag_list[j].highlight == false)
+                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-studentline-background');
+                break;
+            }
+        }
+    }
+}
 
 $(document).ready(function() {
 
@@ -686,6 +885,13 @@ $(document).ready(function() {
             myCodeMirrors[all_wrappers[x].id] =
                     history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        }
+        else if (language == "c"){
+            var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
+            myCodeMirrors[all_wrappers[x].id] =
+                    history_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
+                            codeObj.source_code, false);
+            highlightCode(all_wrappers[x].id, codeObj.tag_list);
         }
         else if (language == "sql"){
             myCodeMirrors[all_wrappers[x].id] =
