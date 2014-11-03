@@ -23,8 +23,10 @@
             type="text/javascript"></script>
         <script src="{% static "problems_multiple_choice/js/mc_submit.js" %}"
                 type="text/javascript"></script>
+        {% if 'problems_rating' in problem_types %}
         <script src="{% static "problems_rating/js/rating_submit.js" %}"
                 type="text/javascript"></script>
+        {% endif %}
         {# video js for video widget #}
         <script src="{% static "video_js/video.js" %}"
                 type="text/javascript"></script>

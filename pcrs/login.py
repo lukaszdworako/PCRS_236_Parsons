@@ -5,6 +5,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
 from django.core.context_processors import csrf
 
+import content.models
+import users.models
+
 #
 import logging
 import datetime
@@ -52,9 +55,14 @@ def login_django(request, username):
     # user = authenticate(username=username, password=password)
     user = authenticate(username=username)
 
+    if user is None and settings.AUTOENROLL:
+        user = users.models.PCRSUser.objects.create_user(username, False, section_id='123')
+        user = authenticate(username=username)
+
     if user is None:
+        # Automatic accounts not set up or creation failed.
         NOTIFICATION = "djangoaccount"
-    elif not user.is_active:
+    if not user.is_active:
         NOTIFICATION = "user inactive"
     else:
         request.session['section'] = user.section
@@ -63,12 +71,12 @@ def login_django(request, username):
         login(request, user)
         return HttpResponseRedirect(redirect_link)
 
-    # username is not registered with django    
-    if settings.AUTH_TYPE == "shibboleth":
+    # Actions is user cannot be logged in.
+    if settings.AUTH_TYPE == 'shibboleth':
         # redirect user letting them know they do not belong to this server
         redirect_link = settings.SITE_PREFIX + '/usernotfound.html'
         return HttpResponseRedirect(redirect_link)
-    
+
     return None
 
 def login_view(request):
