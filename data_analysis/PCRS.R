@@ -43,7 +43,7 @@ generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasin
 }
 
 # Global variable for using static file path
-STATIC_PATH <-  TRUE
+STATIC_PATH <- FALSE
 
 # Choose file path interactively, or by using static path
 if(STATIC_PATH == TRUE){
@@ -114,7 +114,6 @@ for(exercise_num in exercise_number_list){
                                             decreasing = FALSE,
                                             filter_field_num = filter_field_num, 
                                             matrix = mc_data_mod)
-  print(mc_data_mod[1:1, ])
   
   # Labels sorted by first submission
   rownames(mc_data_custom_first) <- options_labels
