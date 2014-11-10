@@ -51,7 +51,7 @@ if(STATIC_PATH == TRUE){
   #code_data_path = "/Users/danielmarchena/Desktop/PCRS Analysis/code_data.csv"
 }else{
   mc_data_path = file.choose(new = FALSE)
-  code_data_path = file.choose(new = FALSE)
+  #code_data_path = file.choose(new = FALSE)
 }
 
 # Read csv file - mc_data
@@ -79,7 +79,8 @@ for(r in 1:nrow(mc_data)){
   index = 4 
   for(c in 1:num_cols){
     if(c > 3){
-      if(mc_data[r, index] == mc_data[r, index+1]){
+      if(mc_data[r, index] == mc_data[r, index+1] && 
+           mc_data[r, index] != "" && mc_data[r, index+1] != ""){
         mc_data_mod[r,c] = 't'
       }else{
         mc_data_mod[r,c] = 'f'
@@ -99,7 +100,7 @@ questions_labels = c('Q1','Q2','Q3','Q4','Q5')
 
 # Divide the canvas to fit all graphs
 par(mfrow=c(1,1))
-print(exercise_number_list)
+print(mc_data_mod[1: 10, ])
 for(exercise_num in exercise_number_list){
   # Filter by the problemID 
   filter = exercise_num 
@@ -114,6 +115,8 @@ for(exercise_num in exercise_number_list){
                                             decreasing = FALSE,
                                             filter_field_num = filter_field_num, 
                                             matrix = mc_data_mod)
+  
+  print(mc_data_custom_last[1:2, ])
   
   # Labels sorted by first submission
   rownames(mc_data_custom_first) <- options_labels
