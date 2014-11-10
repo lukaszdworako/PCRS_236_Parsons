@@ -9,10 +9,13 @@ generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasin
   if(decreasing != ""){
     # Order matrix to get first, or last submission
     if(decreasing == TRUE){
-      matrix = matrix[order(matrix[,1],matrix[,2],matrix[,3]), decreasing = decreasing]
+      matrix = matrix[order(matrix[,1],matrix[,2], matrix[,3]),]
+      print("TRUE")
     }else{
-      matrix = matrix[order(matrix[,1],matrix[,2],matrix[,3]), ]
+      matrix = matrix[order(matrix[,1],matrix[,2],-as.numeric((as.factor(matrix[,3])))), ]
+      print("FALSE")
     }
+    print(matrix[1: 10, ])
     unique = TRUE
   }else{
     unique = FALSE
@@ -79,8 +82,7 @@ for(r in 1:nrow(mc_data)){
   index = 4 
   for(c in 1:num_cols){
     if(c > 3){
-      if(mc_data[r, index] == mc_data[r, index+1] && 
-           mc_data[r, index] != "" && mc_data[r, index+1] != ""){
+      if(mc_data[r, index+1] == 't'){
         mc_data_mod[r,c] = 't'
       }else{
         mc_data_mod[r,c] = 'f'
@@ -100,7 +102,7 @@ questions_labels = c('Q1','Q2','Q3','Q4','Q5')
 
 # Divide the canvas to fit all graphs
 par(mfrow=c(1,1))
-print(mc_data_mod[1: 10, ])
+
 for(exercise_num in exercise_number_list){
   # Filter by the problemID 
   filter = exercise_num 
@@ -116,7 +118,6 @@ for(exercise_num in exercise_number_list){
                                             filter_field_num = filter_field_num, 
                                             matrix = mc_data_mod)
   
-  print(mc_data_custom_last[1:2, ])
   
   # Labels sorted by first submission
   rownames(mc_data_custom_first) <- options_labels
