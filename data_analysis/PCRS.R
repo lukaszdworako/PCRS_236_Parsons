@@ -10,12 +10,9 @@ generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasin
     # Order matrix to get first, or last submission
     if(decreasing == TRUE){
       matrix = matrix[order(matrix[,1],matrix[,2], matrix[,3]),]
-      print("TRUE")
     }else{
       matrix = matrix[order(matrix[,1],matrix[,2],-as.numeric((as.factor(matrix[,3])))), ]
-      print("FALSE")
     }
-    print(matrix[1: 10, ])
     unique = TRUE
   }else{
     unique = FALSE
@@ -127,11 +124,24 @@ for(exercise_num in exercise_number_list){
   rownames(mc_data_custom_last) <- options_labels
   colnames(mc_data_custom_last) <- questions_labels
   
-  barplot(mc_data_custom_first, main=paste("First Sub - Problem Id: ", filter), ylab="Quantity",
+  title = ""
+  if(filter == " 3"){
+    title = "Warmup first section"
+  }else if(filter == "28"){
+    title = "Final test first section"
+  }else if(filter == "30"){
+    title = "Warmup second section"
+  }else if(filter == "29"){
+    title = "Final test second section"
+  }else{
+    title = paste("Problem Id: ", filter)
+  }
+  
+  barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Quantity",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
   
-  barplot(mc_data_custom_last, main=paste("Last Sub - Problem Id: ", filter), ylab="Quantity",
+  barplot(mc_data_custom_last, main=paste("Last Sub - ", title), ylab="Quantity",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
 }
