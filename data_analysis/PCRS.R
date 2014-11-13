@@ -196,11 +196,13 @@ for(exercise_num in exercise_number_list){
   }
   
   par(mfrow=c(1, 1), mar=c(5,4,4,4))
-  #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
+
   barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
           #args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
+  abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
+  #means <- tapply(InsectSprays$count,InsectSprays$spray,mean)
   
   par(mfrow=c(1, 1), mar=c(5,4,4,4))
   #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
@@ -208,4 +210,9 @@ for(exercise_num in exercise_number_list){
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
           #args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
+  #m <- data.frame(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
+  print(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
+  #print(colMeans(m))
+  abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
+  print(mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
 }
