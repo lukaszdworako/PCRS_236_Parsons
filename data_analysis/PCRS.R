@@ -2,6 +2,52 @@ trim <- function(x) {
   gsub("(^[[:space:]]+|[[:space:]]+$)", "", x)
 }
 
+# Number of submissions for each question
+number_submission <- function(filter, filter_field_num, matrix) {
+  matrix = matrix[order(matrix[,1],matrix[,2], matrix[,3]),]
+  
+  # Remove studentID, problemID and time coluns
+  remove_column_num = 3
+  num_cols = ncol(matrix)-remove_column_num
+  
+  matrix_custom = matrix(data=0, nrow=0, ncol=num_cols)
+ 
+  student_id = ""
+  index = 0
+  print(paste("Number of negative submissions for question: ", filter))
+  for(r in 1:nrow(matrix)){
+    if(trim(matrix[r, filter_field_num]) == trim(filter)){
+      if(student_id != matrix[r, 1]){
+        matrix_custom <- rbind(matrix_custom, 0)
+        index = index + 1
+        student_id = matrix[r, 1]
+      }
+      for(c in 1:num_cols){
+        if(matrix[r, (c+remove_column_num)] == 'f'){
+          matrix_custom[index, c] = matrix_custom[index, c] + 1
+        }
+      }
+    }
+  }
+  print(matrix_custom)
+  
+  # Negative submission average for each question
+  matrix_avg = matrix(data=0, nrow=1, ncol=num_cols)
+  for(r in 1:nrow(matrix_custom)){
+    for(c in 1:ncol(matrix_custom)){
+      matrix_avg[1, c] = matrix_avg[1, c] + matrix_custom[r, c]
+    }
+  }
+  print("Number of tries:")
+  print(matrix_avg)
+  print("Number of tries average:")
+  for(c in 1:ncol(matrix_avg)){
+    print(paste("Q",c,": ", matrix_avg[1, c] / nrow(matrix_custom)))
+  }
+  
+}
+
+
 # Create a new matrix for each graph (example: matrix for the first submission of exercise 3).
 # This way we can plot a bar graph for each exercise and submission order
 # We remove all columns just leaving the true/false ones
@@ -38,6 +84,14 @@ generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasin
         }
       }
     }
+  }
+  
+  # Modify to percentage
+  for(c in 1:ncol(matrix_custom)){
+    total = as.numeric(matrix_custom[1, c]) + as.numeric(matrix_custom[2, c]);
+    matrix_custom[1, c] = as.character(as.numeric(matrix_custom[1, c]) * 100 / total);
+    matrix_custom[2, c] = as.character(as.numeric(matrix_custom[2, c]) * 100 / total);
+    
   }
   return(matrix_custom)
 }
@@ -105,6 +159,10 @@ for(exercise_num in exercise_number_list){
   filter = exercise_num 
   # The column position of problemID in the matrix is 2
   filter_field_num = 2
+  number_submission(filter = filter, 
+                    filter_field_num = filter_field_num, 
+                    matrix = mc_data_mod)
+                    
   mc_data_custom_first = generate_specific_matrix(filter = filter, 
                                              decreasing = TRUE,
                                              filter_field_num = filter_field_num, 
@@ -137,11 +195,17 @@ for(exercise_num in exercise_number_list){
     title = paste("Problem Id: ", filter)
   }
   
-  barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Quantity",
+  par(mfrow=c(1, 1), mar=c(5,4,4,4))
+  #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
+  barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
-          args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
+          args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
+          #args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
   
-  barplot(mc_data_custom_last, main=paste("Last Sub - ", title), ylab="Quantity",
+  par(mfrow=c(1, 1), mar=c(5,4,4,4))
+  #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
+  barplot(mc_data_custom_last, main=paste("Last Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
-          args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
+          args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
+          #args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
 }
