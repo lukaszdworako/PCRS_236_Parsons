@@ -14,7 +14,7 @@ number_submission <- function(filter, filter_field_num, matrix) {
  
   student_id = ""
   index = 0
-  print(paste("Number of negative submissions for question: ", filter))
+  #print(paste("Number of negative submissions for question: ", filter))
   for(r in 1:nrow(matrix)){
     if(trim(matrix[r, filter_field_num]) == trim(filter)){
       if(student_id != matrix[r, 1]){
@@ -29,29 +29,29 @@ number_submission <- function(filter, filter_field_num, matrix) {
       }
     }
   }
-  print(matrix_custom)
+  
+  #print(matrix_custom)
   
   # Negative submission average for each question
-  matrix_avg = matrix(data=0, nrow=1, ncol=num_cols)
+  matrix_avg = matrix(data=1, nrow=1, ncol=num_cols)
   for(r in 1:nrow(matrix_custom)){
     for(c in 1:ncol(matrix_custom)){
       matrix_avg[1, c] = matrix_avg[1, c] + matrix_custom[r, c]
     }
   }
-  print("Number of tries:")
-  print(matrix_avg)
-  print("Number of tries average:")
+  #print("Number of tries:")
+  #print(matrix_avg)
+  #print("Number of tries average:")
   for(c in 1:ncol(matrix_avg)){
-    print(paste("Q",c,": ", matrix_avg[1, c] / nrow(matrix_custom)))
+    #print(paste("Q",c,": ", matrix_avg[1, c] / nrow(matrix_custom)))
   }
   
 }
 
-
 # Create a new matrix for each graph (example: matrix for the first submission of exercise 3).
 # This way we can plot a bar graph for each exercise and submission order
 # We remove all columns just leaving the true/false ones
-generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasing="", remove_column_num = 3) {
+filter_matrix <- function(filter, filter_field_num, matrix, decreasing="", remove_column_num = 3) {
   if(decreasing != ""){
     # Order matrix to get first, or last submission
     if(decreasing == TRUE){
@@ -96,12 +96,74 @@ generate_specific_matrix <- function(filter, filter_field_num, matrix, decreasin
   return(matrix_custom)
 }
 
+# Create a new matrix to hold the number of attempts an student did 
+# till he/she answered a problem set correctly
+generate_attempts_matrix <- function(problem_set, input_matrix) {
+  
+  question_start = 4; 
+  problem_col = 2;
+  num_cols = 3;
+  student_id = "";
+  attempt_num = 1;
+  index = 0;
+  matrix_custom = matrix(data=0, nrow=0, ncol=num_cols)
+  got_right = FALSE;
+  
+  for(r in 1:nrow(input_matrix)){
+    if(trim(problem_set) == trim(input_matrix[r, problem_col])){
+      if(student_id != input_matrix[r, 1]){
+        matrix_custom <- rbind(matrix_custom, 0)
+        index = index + 1;
+        # Reset values
+        student_id = input_matrix[r, 1];
+        attempt_num = 1;
+        got_right = FALSE;
+      }
+      if(input_matrix[r, question_start]   == 't' && 
+         input_matrix[r, question_start+1] == 't' && 
+         input_matrix[r, question_start+2] == 't' && 
+         input_matrix[r, question_start+3] == 't' &&
+         input_matrix[r, question_start+4] == 't'){
+        got_right = TRUE;
+      }else if(got_right == FALSE){
+          attempt_num = attempt_num + 1;
+      }
+      matrix_custom[index, 1] = problem_set;
+      matrix_custom[index, 2] = student_id;
+      if(got_right == TRUE){
+        matrix_custom[index, 3] = attempt_num;
+      }else{
+        matrix_custom[index, 3] = 999;
+      }
+    }
+  }
+  return (matrix_custom);
+}
+
+
+get_problem_label <- function(problem_id){
+  problem_id = trim(problem_id);
+  title = ""
+  if(problem_id == "3"){
+    title = "Warmup first section"
+  }else if(problem_id == "28"){
+    title = "Final test first section"
+  }else if(problem_id == "30"){
+    title = "Warmup second section"
+  }else if(problem_id == "29"){
+    title = "Final test second section"
+  }else{
+    title = paste("Problem Id: ", problem_id)
+  }
+  return (title);
+}
+
 # Global variable for using static file path
-STATIC_PATH <- FALSE
+STATIC_PATH <- TRUE
 
 # Choose file path interactively, or by using static path
 if(STATIC_PATH == TRUE){
-  mc_data_path = "/Users/danielmarchena/Desktop/PCRS Analysis/mc_data.csv"
+  mc_data_path = "/Users/danielmarchena/Desktop/workspace/PCRS/data_analysis/mc_data.csv"
   #code_data_path = "/Users/danielmarchena/Desktop/PCRS Analysis/code_data.csv"
 }else{
   mc_data_path = file.choose(new = FALSE)
@@ -145,8 +207,51 @@ for(r in 1:nrow(mc_data)){
   }
 }
 
+for (exercise_id in exercise_number_list){
+  attempts_matrix = generate_attempts_matrix(exercise_id, mc_data_mod);
+  x_student_num = c()
+  y_student_attempt = c()
+  for(r in 1:nrow(attempts_matrix)){
+    x_student_num <- cbind(x_student_num, strtoi(attempts_matrix[r, 2]))
+    y_student_attempt <- cbind(y_student_attempt, strtoi(attempts_matrix[r, 3]))
+  }
+  h = hist(y_student_attempt, xlab="Number of attempts", main=get_problem_label(exercise_id), right=FALSE)
+  h$density = h$counts/sum(h$counts)*100
+  plot(h,freq=F, xlab="Number of attempts", ylab="Density %", main=paste(get_problem_label(exercise_id), "- %"))
+  print(attempts_matrix);
+}
+# Warmup wilcox.test
+wilcox_3 = generate_attempts_matrix("3", mc_data_mod)
+y_wilcox_3 = c()
+for(r in 1:nrow(wilcox_3)){
+  y_wilcox_3 <- cbind(y_wilcox_3, strtoi(wilcox_3[r, 3]))
+}
+
+wilcox_30 = generate_attempts_matrix("30", mc_data_mod)
+y_wilcox_30 = c()
+for(r in 1:nrow(wilcox_30)){
+  y_wilcox_30 <- cbind(y_wilcox_30, strtoi(wilcox_30[r, 3]))
+}
+print(wilcox.test(y_wilcox_3, y_wilcox_30, paired=FALSE))
+
+# Final wilcox.test
+wilcox_28 = generate_attempts_matrix("28", mc_data_mod)
+y_wilcox_28 = c()
+for(r in 1:nrow(wilcox_28)){
+  y_wilcox_28 <- cbind(y_wilcox_28, strtoi(wilcox_28[r, 3]))
+}
+
+wilcox_29 = generate_attempts_matrix("29", mc_data_mod)
+y_wilcox_29 = c()
+for(r in 1:nrow(wilcox_29)){
+  y_wilcox_29 <- cbind(y_wilcox_29, strtoi(wilcox_29[r, 3]))
+}
+print(wilcox.test(y_wilcox_28, y_wilcox_29, paired=FALSE))
+
 # Order the list of unique exercises found in the CSV file
 exercise_number_list = sort(exercise_number_list, )
+
+# Create matrix with first right attempt
 
 options_labels = c('True', 'False')
 questions_labels = c('Q1','Q2','Q3','Q4','Q5')
@@ -163,12 +268,12 @@ for(exercise_num in exercise_number_list){
                     filter_field_num = filter_field_num, 
                     matrix = mc_data_mod)
                     
-  mc_data_custom_first = generate_specific_matrix(filter = filter, 
+  mc_data_custom_first = filter_matrix(filter = filter, 
                                              decreasing = TRUE,
                                              filter_field_num = filter_field_num, 
                                              matrix = mc_data_mod)
   
-  mc_data_custom_last = generate_specific_matrix(filter = filter, 
+  mc_data_custom_last = filter_matrix(filter = filter, 
                                             decreasing = FALSE,
                                             filter_field_num = filter_field_num, 
                                             matrix = mc_data_mod)
@@ -182,18 +287,7 @@ for(exercise_num in exercise_number_list){
   rownames(mc_data_custom_last) <- options_labels
   colnames(mc_data_custom_last) <- questions_labels
   
-  title = ""
-  if(filter == " 3"){
-    title = "Warmup first section"
-  }else if(filter == "28"){
-    title = "Final test first section"
-  }else if(filter == "30"){
-    title = "Warmup second section"
-  }else if(filter == "29"){
-    title = "Final test second section"
-  }else{
-    title = paste("Problem Id: ", filter)
-  }
+  title = get_problem_label(filter)
   
   par(mfrow=c(1, 1), mar=c(5,4,4,4))
 
@@ -201,7 +295,7 @@ for(exercise_num in exercise_number_list){
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
           #args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
-  abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
+  #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
   #means <- tapply(InsectSprays$count,InsectSprays$spray,mean)
   
   par(mfrow=c(1, 1), mar=c(5,4,4,4))
@@ -211,8 +305,6 @@ for(exercise_num in exercise_number_list){
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
           #args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
   #m <- data.frame(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
-  print(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
-  #print(colMeans(m))
-  abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
-  print(mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
+  #print(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
+  #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
 }
