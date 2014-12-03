@@ -248,6 +248,10 @@ for(r in 1:nrow(wilcox_29)){
 }
 print(wilcox.test(y_wilcox_28, y_wilcox_29, paired=FALSE))
 
+# Warmup wilcox.test - new 
+print(wilcox.test(y_wilcox_3, y_wilcox_28, paired=FALSE))
+print(wilcox.test(y_wilcox_30, y_wilcox_29, paired=FALSE))
+
 # Order the list of unique exercises found in the CSV file
 exercise_number_list = sort(exercise_number_list, )
 
