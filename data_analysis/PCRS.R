@@ -2,6 +2,15 @@ trim <- function(x) {
   gsub("(^[[:space:]]+|[[:space:]]+$)", "", x)
 }
 
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+
 # Number of submissions for each question
 number_submission <- function(filter, filter_field_num, matrix) {
   matrix = matrix[order(matrix[,1],matrix[,2], matrix[,3]),]
@@ -91,14 +100,13 @@ filter_matrix <- function(filter, filter_field_num, matrix, decreasing="", remov
     total = as.numeric(matrix_custom[1, c]) + as.numeric(matrix_custom[2, c]);
     matrix_custom[1, c] = as.character(as.numeric(matrix_custom[1, c]) * 100 / total);
     matrix_custom[2, c] = as.character(as.numeric(matrix_custom[2, c]) * 100 / total);
-    
   }
   return(matrix_custom)
 }
 
-# Create a new matrix to hold the number of attempts an student did 
+# Create a new matrix to hold the number of attempts a student did 
 # till he/she answered a problem set correctly
-generate_attempts_matrix <- function(problem_set, input_matrix) {
+generate_attempts_matrix <- function(problem_set, input_matrix, stop_flag_999 = TRUE) {
   
   question_start = 4; 
   problem_col = 2;
@@ -130,10 +138,14 @@ generate_attempts_matrix <- function(problem_set, input_matrix) {
       }
       matrix_custom[index, 1] = problem_set;
       matrix_custom[index, 2] = student_id;
-      if(got_right == TRUE){
-        matrix_custom[index, 3] = attempt_num;
+      if(stop_flag_999 == TRUE){
+        if(got_right == TRUE){
+          matrix_custom[index, 3] = attempt_num;
+        }else{
+          matrix_custom[index, 3] = 999;
+        }        
       }else{
-        matrix_custom[index, 3] = 999;
+        matrix_custom[index, 3] = attempt_num;
       }
     }
   }
@@ -206,19 +218,19 @@ for(r in 1:nrow(mc_data)){
     }
   }
 }
-
+# Print histograms for number of attempts - with 999 flag
 for (exercise_id in exercise_number_list){
   attempts_matrix = generate_attempts_matrix(exercise_id, mc_data_mod);
+
   x_student_num = c()
   y_student_attempt = c()
   for(r in 1:nrow(attempts_matrix)){
     x_student_num <- cbind(x_student_num, strtoi(attempts_matrix[r, 2]))
     y_student_attempt <- cbind(y_student_attempt, strtoi(attempts_matrix[r, 3]))
   }
-  h = hist(y_student_attempt, xlab="Number of attempts", main=get_problem_label(exercise_id), right=FALSE)
+  h = hist(y_student_attempt, xlab="Number of attempts", main=paste(get_problem_label(exercise_id), ' - (with 999 flag)'), right=FALSE)
   h$density = h$counts/sum(h$counts)*100
-  plot(h,freq=F, xlab="Number of attempts", ylab="Density %", main=paste(get_problem_label(exercise_id), "- %"))
-  print(attempts_matrix);
+  plot(h,freq=F, xlab="Number of attempts", ylab="Density %", main=paste(get_problem_label(exercise_id), "- (with 999 flag) %"))
 }
 # Warmup wilcox.test
 wilcox_3 = generate_attempts_matrix("3", mc_data_mod)
@@ -294,7 +306,6 @@ for(exercise_num in exercise_number_list){
   title = get_problem_label(filter)
   
   par(mfrow=c(1, 1), mar=c(5,4,4,4))
-
   barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
@@ -311,4 +322,21 @@ for(exercise_num in exercise_number_list){
   #m <- data.frame(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
   #print(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
   #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
+}
+
+
+# Print histograms for number of attempts - no 999 flag
+for (exercise_id in exercise_number_list){
+  attempts_matrix_no_999 = generate_attempts_matrix(exercise_id, mc_data_mod, FALSE);
+
+  x_student_num = c()
+  y_student_attempt = c()
+  for(r in 1:nrow(attempts_matrix_no_999)){
+    x_student_num <- cbind(x_student_num, strtoi(attempts_matrix_no_999[r, 2]))
+    y_student_attempt <- cbind(y_student_attempt, strtoi(attempts_matrix_no_999[r, 3]))
+  }
+  y_student_attempt = remove_outliers(y_student_attempt)
+  h = hist(y_student_attempt, xlab="Number of attempts", main=paste(get_problem_label(exercise_id), ' - (no 999 flag)'), right=FALSE)
+  h$density = h$counts/sum(h$counts)*100
+  plot(h,freq=F, xlab="Number of attempts", ylab="Density %", main=paste(get_problem_label(exercise_id), "- (no 999 flag) %"))
 }
