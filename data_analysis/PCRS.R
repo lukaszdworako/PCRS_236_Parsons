@@ -20,7 +20,7 @@ number_submission <- function(filter, filter_field_num, matrix) {
   num_cols = ncol(matrix)-remove_column_num
   
   matrix_custom = matrix(data=0, nrow=0, ncol=num_cols)
- 
+  
   student_id = ""
   index = 0
   #print(paste("Number of negative submissions for question: ", filter))
@@ -128,13 +128,13 @@ generate_attempts_matrix <- function(problem_set, input_matrix, stop_flag_999 = 
         got_right = FALSE;
       }
       if(input_matrix[r, question_start]   == 't' && 
-         input_matrix[r, question_start+1] == 't' && 
-         input_matrix[r, question_start+2] == 't' && 
-         input_matrix[r, question_start+3] == 't' &&
-         input_matrix[r, question_start+4] == 't'){
+           input_matrix[r, question_start+1] == 't' && 
+           input_matrix[r, question_start+2] == 't' && 
+           input_matrix[r, question_start+3] == 't' &&
+           input_matrix[r, question_start+4] == 't'){
         got_right = TRUE;
       }else if(got_right == FALSE){
-          attempt_num = attempt_num + 1;
+        attempt_num = attempt_num + 1;
       }
       matrix_custom[index, 1] = problem_set;
       matrix_custom[index, 2] = student_id;
@@ -221,7 +221,7 @@ for(r in 1:nrow(mc_data)){
 # Print histograms for number of attempts - with 999 flag
 for (exercise_id in exercise_number_list){
   attempts_matrix = generate_attempts_matrix(exercise_id, mc_data_mod);
-
+  
   x_student_num = c()
   y_student_attempt = c()
   for(r in 1:nrow(attempts_matrix)){
@@ -283,16 +283,16 @@ for(exercise_num in exercise_number_list){
   number_submission(filter = filter, 
                     filter_field_num = filter_field_num, 
                     matrix = mc_data_mod)
-                    
+  
   mc_data_custom_first = filter_matrix(filter = filter, 
-                                             decreasing = TRUE,
-                                             filter_field_num = filter_field_num, 
-                                             matrix = mc_data_mod)
+                                       decreasing = TRUE,
+                                       filter_field_num = filter_field_num, 
+                                       matrix = mc_data_mod)
   
   mc_data_custom_last = filter_matrix(filter = filter, 
-                                            decreasing = FALSE,
-                                            filter_field_num = filter_field_num, 
-                                            matrix = mc_data_mod)
+                                      decreasing = FALSE,
+                                      filter_field_num = filter_field_num, 
+                                      matrix = mc_data_mod)
   
   
   # Labels sorted by first submission
@@ -309,7 +309,7 @@ for(exercise_num in exercise_number_list){
   barplot(mc_data_custom_first, main=paste("First Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
-          #args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
+  #args.legend = list(x = ncol(mc_data_custom_first)-4 , y=max(colSums(mc_data_custom_first))+10))
   #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_first)),nrow=nrow(mc_data_custom_first))))
   #means <- tapply(InsectSprays$count,InsectSprays$spray,mean)
   
@@ -318,7 +318,7 @@ for(exercise_num in exercise_number_list){
   barplot(mc_data_custom_last, main=paste("Last Sub - ", title), ylab="Percentage",
           xlab="Questions", legend.text = TRUE,
           args.legend = list(x = "topright", bty = "n", inset=c(-0.15, 0)))
-          #args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
+  #args.legend = list(x = ncol(mc_data_custom_last)-4 , y=max(colSums(mc_data_custom_last))+10))
   #m <- data.frame(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
   #print(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last)))
   #abline(h=mean(matrix(as.numeric(unlist(mc_data_custom_last)),nrow=nrow(mc_data_custom_last))))
@@ -328,7 +328,7 @@ for(exercise_num in exercise_number_list){
 # Print histograms for number of attempts - no 999 flag
 for (exercise_id in exercise_number_list){
   attempts_matrix_no_999 = generate_attempts_matrix(exercise_id, mc_data_mod, FALSE);
-
+  
   x_student_num = c()
   y_student_attempt = c()
   for(r in 1:nrow(attempts_matrix_no_999)){
