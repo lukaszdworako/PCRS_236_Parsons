@@ -32,7 +32,7 @@ class PostgresWrapper:
         """
         self._conn = psycopg2.connect(database=self.database,
                                       user=self.user, password=self.user)
-        self._cursor = self._conn.cursor(cursor_factory=extras.RealDictCursor)
+        self._cursor = self._conn.cursor(cursor_factory=extras.DictCursor)
 
     def close(self):
         """
@@ -326,10 +326,40 @@ class StudentWrapper(PostgresWrapper):
         try:
             result['expected'] = self.run_query(solution, schema_name=namespace)
             result['expected_attrs'] = [d[0] for d in self._cursor.description]
+
+            L = result['expected_attrs']
+            for index in range(len(L)):
+                count = L[: index].count(L[index])
+                if count > 0:
+                    L[index] = L[index] + " (" + str(count + 1) + ")"
+
+            cursor = result['expected']
+            for cursor_index in range(len(cursor)):
+                d = {}
+                item = cursor[cursor_index]
+                for index in range(len(L)):
+                    d[L[index]] = item[index]
+                cursor[cursor_index] = d
+            
             self.rollback()
 
             result['actual'] = self.run_query(submission, schema_name=namespace)
             result['actual_attrs'] = [d[0] for d in self._cursor.description]
+
+            L = result['actual_attrs']
+            for index in range(len(L)):
+                count = L[: index].count(L[index])
+                if count > 0:
+                    L[index] = L[index] + " (" + str(count + 1) + ")"  
+                    
+            cursor = result['actual']
+            for cursor_index in range(len(cursor)):
+                d = {}
+                item = cursor[cursor_index]
+                for index in range(len(L)):
+                    d[L[index]] = item[index]
+                cursor[cursor_index] = d          
+            
             result['passed'] = self.process(result['expected'],
                                             result['actual'],
                                             order_matters)
