@@ -152,8 +152,11 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
 
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except:   # content.models.DoesNotExist
+            deadline = None
 
         logger = logging.getLogger('activity.logging')
         logger.info(str(localtime(self.submission.timestamp)) + " | " +
