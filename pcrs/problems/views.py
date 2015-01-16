@@ -1,4 +1,5 @@
 import json
+import datetime
 import logging
 
 from django.http import HttpResponse
@@ -17,6 +18,13 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
+
+# Helper class to encode datetime objects
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
 
 
 class ProblemView:
@@ -264,7 +272,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
             'sub_pk': self.object.pk,
             'best': self.object.has_best_score,
             'past_dead_line': deadline and self.object.timestamp > deadline,
-            'max_score': self.object.problem.max_score}),
+            'max_score': self.object.problem.max_score}, cls=DateEncoder),
         mimetype='application/json')
 
 
