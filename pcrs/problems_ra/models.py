@@ -7,7 +7,7 @@ from django.db.models.signals import post_delete
 
 from pyparsing import ParseException
 from problems_rdb.db_wrapper import StudentWrapper
-from rapt.treebrd.errors import TreeBRDError
+from rapt.treebrd.errors import TreeBRDError, AttributeReferenceError, InputError
 from rapt.rapt import Rapt
 
 from rapt.treebrd.grammars import GRAMMARS as RAPT_GRAMMARS
@@ -134,7 +134,7 @@ class Submission(AbstractSubmission):
             error = 'Syntax error at line {lineno} column {col}:  \'{line}\''\
                 .format(lineno=e.lineno, col=e.col, line=e.line)
 
-        except TreeBRDError as e:
+        except (TreeBRDError, AttributeReferenceError, InputError) as e:
             error = e
 
         return submission, solution, error
