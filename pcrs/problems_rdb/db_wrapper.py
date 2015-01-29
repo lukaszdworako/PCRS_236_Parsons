@@ -344,9 +344,10 @@ class StudentWrapper(PostgresWrapper):
             self.rollback()
 
             result['actual'] = self.run_query(submission, schema_name=namespace)
-            result['actual_attrs'] = [d[0] for d in self._cursor.description]
             if len(result['actual']) > max(10000, 10 * len(result['expected'])):
+                result['actual'], result['actual_attrs'] = None, None
                 raise RuntimeError("Result not shown: Too large. Try to restrict the size of joins.")
+            result['actual_attrs'] = [d[0] for d in self._cursor.description]
 
             L = result['actual_attrs']
             for index in range(len(L)):
