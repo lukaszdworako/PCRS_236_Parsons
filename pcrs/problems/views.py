@@ -318,8 +318,11 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
     def post(self, request, *args, **kwargs):
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except Exception:
+            deadline = False
         try:
             best_score = self.model.objects\
                 .filter(user=user, problem=problem, has_best_score=True).latest("id").score
