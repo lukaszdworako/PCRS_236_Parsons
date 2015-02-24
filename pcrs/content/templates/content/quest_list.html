@@ -47,7 +47,7 @@
             <div id="challenges" class="tab-content">
                 {% for challenge in challenges %}
                     <div id="{{ challenge.pk }}" class="challenge">
-                        {{ challenge.name }}
+                        <a style="color:white" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="View {{ challenge.name }}"> {{challenge.name}} </a>
                         <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                     </div>
 
@@ -98,7 +98,7 @@
                                     <i class="close"
                                        title="Remove {{ challenge.name }} from {{ object.name }}">
                                     </i>
-                                    {{ challenge.name }}
+                                <a style="color:white" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="View {{ challenge.name }}"> {{challenge.name}} </a>
                                 <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                                 </div>
                             {% endfor %}

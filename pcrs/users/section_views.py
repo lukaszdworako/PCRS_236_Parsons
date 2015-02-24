@@ -5,7 +5,9 @@ from django.http import HttpResponse
 from django.views.generic import FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.html import strip_tags
+from django.contrib.contenttypes.models import ContentType
 
+from content.models import ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from problems.models import (get_problem_content_types,
@@ -71,30 +73,56 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         initial = super().get_initial()
         initial['section'] = self.get_object()
         return initial
-
+       
+                
     def form_valid(self, form):
         section = form.cleaned_data['section']
         quest = form.cleaned_data['quest']
         active_only = bool(form.cleaned_data['active'])
+        for_credit = form.cleaned_data['for_credit']
 
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename=report.csv'
         writer = csv.writer(response)
 
-        # collect the problem ids, names, and max_scores
-        problems, names, max_scores = [], [], []
-        problem_types = get_problem_content_types()
+        # query database for this section's problems
+        problem_types = get_problem_content_types()  
+        section_problems = []
+        problem_ids = []
         for ctype in problem_types:
             for problem in ctype.model_class().objects\
+                    .select_related('challenge')\
                     .filter(challenge__quest=quest, visibility='open')\
                     .order_by('id'):
-                problems.append((ctype.app_label, problem.pk))
-                names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
-                max_scores.append(problem.max_score)
+                section_problems.append(problem)
+                problem_ids.append(problem.pk)
 
-        writer.writerow(['problems'] + names)
+        #query database for order of problems and sort problems accordingly
+        sorted_section_problems = []
+        content_sequence_items = ContentSequenceItem.objects.filter(object_id__in=problem_ids)\
+                                 .order_by('content_page__id', 'order')
+        for item in content_sequence_items:
+            try:
+                sorted_section_problems.append([problem for problem in section_problems if problem.pk == item.object_id][0])
+            except Exception as e:
+                print(e)
+                trace = str(e)
+                
+
+        # collect the problem ids, names, and max_scores, and for_credit
+        problems, names, max_scores, for_credit_row = [], [], [], []
+        for problem in sorted_section_problems:
+                # include for_credit and/or not for_credit problems
+                is_graded = problem.challenge.is_graded
+                if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
+                    problems.append((ctype.app_label, problem.pk))
+                    names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' ') + ' / ' + str(problem.pk))
+                    max_scores.append(problem.max_score)
+                    for_credit_row.append(is_graded)
+        writer.writerow(['problems/ID'] + names)
         writer.writerow(['users/max_scores'] + max_scores)
+        writer.writerow(['for credit'] + for_credit_row)
 
         # collect grades for each student
         results = defaultdict(dict)

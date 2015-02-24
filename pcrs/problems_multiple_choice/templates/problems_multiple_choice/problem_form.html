@@ -3,7 +3,7 @@
 {% block related_items %}
     {% if object %}
         {% with list_name='Answer options' object_list=object.option_set.all related_item_name='option' %}
-            {% include "pcrs/related_items.html" %}
+            {% include "problems_multiple_choice/option_display.html" %}
         {% endwith %}
     {% endif %}
 {% endblock %}
