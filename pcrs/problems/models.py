@@ -417,6 +417,7 @@ class AbstractTestRun(models.Model):
         return '{submission}: testcase {pk}'.format(
             submission=self.submission, pk=self.testcase.pk)
 
+
 class AbstractCPrimitiveTypes(models.Model):
     """
     For each C primitive type there is a respective printing symbol

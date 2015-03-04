@@ -6,6 +6,10 @@ var error_msg = null;
 var code_problem_id = -1;
 var myCodeMirrors = {};
 var cmh_list = {};
+var debugger_id = "";
+var debugger_index = 0;
+var last_stepped_line_debugger = 0;
+var c_debugger_load = false;
 //root is a global variable from base.html
 
 
@@ -49,7 +53,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
     $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data);
+                executeGenericVisualizer("create_visualizer", data, newCode);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -634,10 +638,10 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
-	            if (language != 'c' && testcaseInput != null){
+	            if (testcaseInput != null){
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
-	                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
+	                              ' >Trace</button></td>');
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{
@@ -886,11 +890,17 @@ $(document).ready(function() {
                     history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
-        else if (language == "c"){
+        else if (language == "c") {
             var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
-                            codeObj.source_code, false);
+                history_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
+                    codeObj.source_code, false);
+            // Debugguer declaration
+            debugger_id = all_wrappers[x].id+1;
+            myCodeMirrors[debugger_id] =
+                    history_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
+                        codeObj.source_code, false);
+
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
         }
         else if (language == "sql"){

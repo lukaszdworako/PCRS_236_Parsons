@@ -21,7 +21,7 @@
  *
  */
 
-function executeGenericVisualizer(option, data) {
+function executeGenericVisualizer(option, data, newCode) {
     
     var supportedVisualization = ['python', 'c'];
 
@@ -30,7 +30,7 @@ function executeGenericVisualizer(option, data) {
             return executePythonVisualizer(option, data);
         }
         else if (language == 'c') {
-            return executeCVisualizer(option, data);
+            return executeCVisualizer(option, data, newCode);
         }
     }else{
         alert("No support for visualization available!");
@@ -212,14 +212,16 @@ function executeGenericVisualizer(option, data) {
         }
     }
 
-    function executeCVisualizer(option, data) {
+    function executeCVisualizer(option, data, newCode) {
     /**
      * C visualizer representation.
      */
         switch(option) {
 
             case "create_visualizer":
-                createVisualizer(data);
+                if(!errorsInTraceC(data)) {
+                    createVisualizer(data, newCode);
+                }
                 break;
 
             case "gen_execution_trace_params":
@@ -236,126 +238,82 @@ function executeGenericVisualizer(option, data) {
                 return "option not supported";
         }
 
-        function createVisualizer(data) {
-        /**
-         * Verify trace does not contain errors and create visualizer,
-         * othervise don't enter visualization mode.
-         */
-            if (errorsInTraceC(data)) {
-                changeView("edit-code");
-            }
-
-            else {
-                // assign global
-                visualizer = createVisualizerC(data);
-                visualizer.updateOutput();
-            }
+        function replaceAll(find, replace, str) {
+          return str.replace(new RegExp(find, 'g'), replace);
         }
 
-        function errorsInTraceC(data) {
-        /**
-         * This function has been taken from:
-         *
-         * Online Python Tutor
-         * https://github.com/pgbovine/OnlinePythonTutor/
-         *
-         * Copyright (C) 2010-2013 Philip J. Guo (philip@pgbovine.net)
-         *
-         * Return boolean true if there are errors in trace, false otherwise.
-         * Note that this function raises alerts.
-         */
+        function errorsInTraceC(data){
 
-            // don't enter visualize mode if there are killer errors:
-            var errors_caught = false;
-
-            if (data.exception) {
-                alert(data.exception);
-                errors_caught = true;
+            if(data.hasOwnProperty('exception')){
+                alert(replaceAll("<br />", "\n", data['exception']));
+                return true;
             }
-            else {
-                trace = data.trace;
+            return false;
+        }
 
-                if (trace.length == 0) {
-                    var errorLineNo = trace[0].line - 1; /* CodeMirror lines are zero-indexed */
-                    if (errorLineNo !== undefined) {
-                        // highlight the faulting line in mainCodeMirror
-                        mainCodeMirror.focus();
-                        mainCodeMirror.setCursor(errorLineNo, 0);
-                        mainCodeMirror.setLineClass(errorLineNo, null, 'errorLine');
+        function createVisualizer(data, newCode) {
+            /**
+             * Verify trace does not contain errors and create visualizer,
+             * othervise don't enter visualization mode.
+             */
 
-                        mainCodeMirror.setOption('onChange', function() {
-                            mainCodeMirror.setLineClass(errorLineNo, null, null); // reset line back to normal
-                            mainCodeMirror.setOption('onChange', null); // cancel
-                        });
+            if(!c_debugger_load) {
+                c_debugger_load = true;
+
+                // Refresh Code Mirror
+                $('#visualizerModal').on('shown.bs.modal', function () {
+                    myCodeMirrors[debugger_id].refresh();
+                });
+
+                // Bind debugger buttons
+                $('#previous_debugger').bind('click', {data: data}, function () {
+                    if (debugger_index >= 1) {
+                        debugger_index--;
                     }
+                    update_debugger_table(data);
+                });
 
-                    alert("Syntax error, cannot visualize code execution");
-                    errors_caught = true;
-                }
+                $('#next_debugger').bind('click', {data: data}, function () {
+                    if (typeof (data[debugger_index + 1]) != 'undefined') {
+                        debugger_index++;
+                        update_debugger_table(data);
+                    }
+                });
 
-                else if (trace[trace.length - 1].exception_msg) {
-                    alert(trace[trace.length - 1].exception_msg);
-                    errors_caught = true;
-                }
-
-                else if (!trace) {
-                    alert("Unknown error.");
-                    errors_caught = true;
-
-                }
+                $('#reset_debugger').bind('click', {data: data}, function () {
+                    debugger_index = 0;
+                    update_debugger_table(data);
+                });
             }
 
-            return errors_caught;
+            debugger_index = 0;
+            last_stepped_line_debugger = 0;
+
+            myCodeMirrors[debugger_id].setValue(newCode);
+
+            // Initialize debugger for the first time
+            update_debugger_table(data);
+
+            $('#visualizerModal').modal('show');
 
         }
 
-        function createVisualizerC(data) {
-        /**
-         * Content of this function has been taken from:
-         *
-         * Online Python Tutor
-         * https://github.com/pgbovine/OnlinePythonTutor/
-         *
-         * Copyright (C) 2010-2013 Philip J. Guo (philip@pgbovine.net)
-         *
-         * Return an instance of Python visualizer.
-         */
-            var cVisualizer = new ExecutionVisualizer('visualize-code',
-                                                   data,
-                                                   {startingInstruction:  0,
-                                                    updateOutputCallback: function() {$('#urlOutput,#embedCodeOutput').val('');},
-                                                    // tricky: selector 'true' and 'false' values are strings!
-                                                    disableHeapNesting: ('true' == 'true'),
-                                                    drawParentPointers: ('true' == 'true'),
-                                                    textualMemoryLabels: ('true' == 'true')
-                                                    //allowEditAnnotations: true,
-                                                   });
+        function update_debugger_table(data) {
 
+            $('#debugger_table').empty();
+            myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
 
-            // set keyboard bindings
-            $(document).keydown(function(k) {
-                if (k.keyCode == 37) { // left arrow
-                    if (cVisualizer.stepBack()) {
-                        k.preventDefault(); // don't horizontally scroll the display
-                        keyStuckDown = true;
-                    }
-                }
-                else if (k.keyCode == 39) { // right arrow
-                    if (cVisualizer.stepForward()) {
-                        k.preventDefault(); // don't horizontally scroll the display
-                        keyStuckDown = true;
-                    }
-                }
-            });
+            for(var i = 0; i < data[debugger_index].length; i++) {
+                myCodeMirrors[debugger_id].addLineClass(parseInt(data[debugger_index][i][0]-1), '', 'CodeMirror-activeline-background');
+                $('#debugger_table').append('<tr>' +
+                                            '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
+                                            '<td>' + data[debugger_index][i][2] + '</td>' +
+                                            '<td>' + data[debugger_index][i][3] + '</td>' +
+                                            '<td>' + data[debugger_index][i][1] + '</td>' +
+                                            '</tr>');
+                last_stepped_line_debugger = parseInt(data[debugger_index][i][0]-1);
+            }
 
-            $(document).keyup(function(k) {
-              keyStuckDown = false;
-            });
-
-            // also scroll to top to make the UI more usable on smaller monitors
-            $(document).scrollTop(0);
-
-            return cVisualizer;
         }
 
         function getExecutionTraceParams(initPostParams) {

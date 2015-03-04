@@ -16,13 +16,13 @@ def visualizer_details(request):
 
     ret = {}
     try:
-        language = request.POST.get("language")
         user_script = request.POST.get("user_script")
         # add_params is always JSON encoded. 
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
+        add_params['user'] = request.META["USERNAME"]
 
-        gen = GenericLanguage(language) # create a language instance
+        gen = CSpecifics(add_params['user'], user_script) # create a language instance
 
         ret = gen.get_exec_trace(user_script, add_params)
 
@@ -30,5 +30,6 @@ def visualizer_details(request):
         ret['exception'] = str(e)
 
     json_output = json.dumps(ret, indent=None)
+    print(json_output)
 
     return HttpResponse(json_output)

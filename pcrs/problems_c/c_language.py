@@ -25,6 +25,16 @@ class CSpecifics():
         self.username = username
         self.submission = submission
 
+    def run_test_visualizer(self, test_input, username, source_code):
+        self.username = username
+        self.submission = source_code
+        self.compiled = False
+
+        ret = self.run_test(test_input, test_input)
+        self.clear_exec_file(self.compilation_ret["temp_gcc_file"])
+
+        return ret
+
     def run_test(self, test_input, expected_output):
         """ Return dictionary ret containing results of a testrun.
             ret has the following mapping:
@@ -223,7 +233,7 @@ class CSpecifics():
         # Remove compiled file
         self.clear_exec_file(ret["temp_gcc_file"])
         # Return compilation/warning error if it exists
-        if 'exception' in ret:
+        if ret['exception'] != ' ':
             return {'trace': None, 'exception': ret["exception"]}
 
         c_visualizer = CVisualizer(user, temp_path)
@@ -232,12 +242,11 @@ class CSpecifics():
         # Change original source code with the proper printf (debug)
         mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
         # Compile and run the modified source code and remove compiled file
-        code_output = self.run_test(user, mod_user_script, test_input, test_input)
-        self.clear_exec_file(self.compilation_ret["temp_gcc_file"])
+        print(mod_user_script)
+        code_output = self.run_test_visualizer(test_input, user, mod_user_script)
         # Get the proper encoding for the javascript visualizer
-        visualizer_encoding = c_visualizer.get_visualizer_enconding(code_output, stack_trace, user_script)
+        visualizer_encoding = c_visualizer.get_visualizer_enconding(code_output)
 
-        self.clear_exec_file(ret["temp_gcc_file"])
         return visualizer_encoding
 
     def get_download_mimetype(self):

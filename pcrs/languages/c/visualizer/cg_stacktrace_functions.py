@@ -191,7 +191,7 @@ def get_variables_details(line, declaration_type):
 
 def is_function_prototype(line):
     """Verify if line contains a prototype declaration"""
-    if '(' in line and ')' in line:
+    if '(' in line and ')' in line and "=" not in line and ';' in line:
         return True
     return False
 
@@ -199,6 +199,13 @@ def is_function_prototype(line):
 def is_function_call(line):
     """Verify if line contains a function call"""
     if '(' in line and ')' in line and ';' in line:
+        return True
+    return False
+
+
+def is_language_statement(line):
+    """Verify if line contains a language statement (if, else, for)"""
+    if '(' in line and ')' in line and ';' not in line:
         return True
     return False
 
@@ -236,7 +243,7 @@ def get_global_printf_list(stacktrace, line, key, primitive_types):
     for res in stacktrace:
         if res['declaration'] == 'variable' and res['scope'] == 'global':
             output_symbol = get_printf_symbol(res['type'], primitive_types)
-            print_list.append(get_printf_string(line, key, output_symbol, res['name']))
+            print_list.append(get_printf_string(line, key, output_symbol, res['name'], res['type']))
 
     return print_list
 
@@ -253,11 +260,11 @@ def get_local_printf_list(stacktrace, line, func_name, print_list, hash_key, pri
                             for return_str, var_detail in value.items():
                                 for type, var_name in var_detail.items():
                                     output_symbol = get_printf_symbol(type, primitive_types)
-                                    print_list.append({'return': get_printf_string(line, hash_key, output_symbol, var_name)})
+                                    print_list.append({'return': get_printf_string(line, hash_key, output_symbol, var_name,type)})
                         else:
                             for type, var_name in value[0].items():
                                 output_symbol = get_printf_symbol(type, primitive_types)
-                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name))
+                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name, type))
             break
     return print_list
 
@@ -274,8 +281,15 @@ def get_printf_symbol(type, primitive_types):
     return output_symbol
 
 
-def get_printf_string(line, hex_dig, output_symbol, var_name):
+def get_printf_string(line, hex_dig, output_symbol, var_name, type):
     """Build a single printf statement"""
+
+    # Check for pointers
+    var_address = var_name
+    if '*' in var_name:
+        var_address = var_name.replace("*", "")
+        output_symbol = "%p"
+
     # Process arrays
     if '[' in var_name and ']' in var_name:
         var_name = var_name[0: var_name.find('[')]
@@ -287,9 +301,9 @@ def get_printf_string(line, hex_dig, output_symbol, var_name):
                               "printf(\"(" + str(hex_dig) + ")\");"}
     # Process variables
     else:
-        printf = {str(line): "printf(" + "\"(" + str(hex_dig) + ")" + "<line>;" +
-                  str(var_name) + ";" + str(output_symbol) + "(" + str(hex_dig) + ")" + \
-                  "\\n" + "\"," + str(var_name) + ");"}
+        printf = {str(line): "printf(" + "\"(" + str(hex_dig) + ")" + "<line>;" + str(type) + ";" +
+                  str(var_name) + ";" + str(output_symbol) + ";" + "%p" + "(" + str(hex_dig) + ")" + \
+                  "\\n" + "\"," + str(var_name) + "," + str(var_address) + ");"}
 
     return printf
 

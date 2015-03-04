@@ -1,0 +1,13 @@
+; Extended relational algebra grammar rules.
+; Uses rules from core_grammar.bnf.
+
+expression ::= expression | theta_join_expr | intersect_expr
+
+natural_join_expr ::= expression natural_join expression
+
+theta_join_expr ::= expression join param_start conditions param_stop expression
+
+intersect_expr ::= expression intersect expression
+
+intersect ::= "\\intersect"
+natural_join ::= "\\natural_join"

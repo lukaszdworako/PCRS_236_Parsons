@@ -1,5 +1,5 @@
 from languages.c.visualizer.cg_stacktrace_functions import *
-from problems.models import AbstractCPrimitiveTypes
+import problems_c.models
 
 
 class CVisualizer:
@@ -16,7 +16,7 @@ class CVisualizer:
         self.key = hash_string((str(self.user) + str(get_current_date())).encode("utf-8"))
 
         # Get primitive types from database
-        for primitive_type in AbstractCPrimitiveTypes.objects.values_list():
+        for primitive_type in problems_c.models.CPrimitiveTypes.objects.values_list():
             self.primitive_types.append({primitive_type[1]: primitive_type[2]})
 
     def build_stacktrace(self, user_script):
@@ -49,7 +49,7 @@ class CVisualizer:
 
                 if analyze_declaration:
                     # Function declaration
-                    if '(' in line and '{' in line and not inside_function:
+                    if '(' in line and ')' in line and '{' in line and not inside_function:
                         dic = {'declaration': 'function', 'type': declaration_type,
                                'name': format_function_name(line, declaration_type),
                                'line_begin': line_count, 'scope': 'global', 'function_calls': [],
@@ -58,9 +58,12 @@ class CVisualizer:
                         inside_function = True
                         analyze_declaration = False
                         line = ""
-
+                    # Prototype declaration
+                    elif is_function_prototype(line):
+                        line = ""
+                        analyze_declaration = False
                     # Variable declaration
-                    elif ';' in line and not is_function_prototype(line):
+                    elif ';':
                         # Variable declaration inside function
                         if inside_function:
                             for local_var in get_variables_details(line, declaration_type):
@@ -90,6 +93,11 @@ class CVisualizer:
                     if is_function_call(line) and not analyze_declaration and\
                        search_dictionary(self.primitive_types, remove_bracket_value_range(line, "(", ")")) == "":
                         stacktrace[len(stacktrace)-1]['function_calls'].extend(get_function_call(line, line_count)[::-1])
+
+                    # Language statement (if, else, for)
+                    if is_language_statement(line):
+                        line = ""
+                        analyze_declaration = False
 
                     # Clean line and verify end of function
                     if line.find(";") > -1 or line.find("{") > -1 or line.find("}") > -1:
@@ -189,45 +197,34 @@ class CVisualizer:
 
         return user_script
 
-    def get_visualizer_enconding(self, code_output, stacktrace, user_script):
+    def get_visualizer_enconding(self, code_output):
 
-        from copy import deepcopy
+        import re
+        r = re.compile("\("+self.key+"\)"+'(.*?)'+"\("+self.key+"\)")
+        visualizer_trace = []
+        line_num = ""
 
-        visualizer_trace = {'trace': [], 'code': user_script}
+        lines_info = code_output['test_val'].split('\n')
+        lines_info = [line for line in lines_info if line != '']
 
-        entrance_point_line = 1
-        function_counter = 1
-        index = 0
-        stacktrace_size = len(stacktrace)
-        # Find and define all functions
-        while index < stacktrace_size:
-            trace = stacktrace[index]
-            if trace['declaration'] == 'function':
-                function_line = trace['line_begin']
-                # Get next function line
-                if index < stacktrace_size-1:
-                    function_line = stacktrace[index+1]['line_begin']
+        j = -1
+        for i in range(len(lines_info)):
 
-                if trace['declaration'] == 'function':
-                    if trace['name'].find("main(") > -1:
-                        entrance_point_line = trace['line_begin']
-                    if len(visualizer_trace['trace']) == 0:
-                        visualizer_trace['trace'].append({'heap': {}, 'func_name': '<module>', 'stack_to_render': [],
-                                                          'globals': {}, 'event': 'step_line', 'ordered_globals': [],
-                                                          'stdout': '', 'line': trace["line_begin"]})
-                    visualizer_trace_tmp = deepcopy(visualizer_trace['trace'][len(visualizer_trace['trace'])-1])
-                    visualizer_trace_tmp['heap'][function_counter] = ['FUNCTION', trace['name'], None]
-                    visualizer_trace_tmp['globals'][trace['name']] = ['REF', function_counter]
-                    visualizer_trace_tmp['ordered_globals'].append(trace['name'])
-                    visualizer_trace_tmp['line'] = int(function_line)
-                    visualizer_trace['trace'].append(visualizer_trace_tmp)
-                index += 1
-                function_counter += 1
+            line = lines_info[i]
+            ret = r.search(line)
+            if ret:
+                values = ret.group(1)
+                values_list = values.split(";")
+                if '*' in values_list[2]:
+                    values_list[2] = values_list[2][1:]
+                    values_list[1] += '*'
 
-        # Start from main function
-        visualizer_trace_tmp = deepcopy(visualizer_trace['trace'][len(visualizer_trace['trace'])-1])
-        visualizer_trace_tmp['line'] = entrance_point_line
-        visualizer_trace['trace'].append(visualizer_trace_tmp)
+                if line_num == values_list[0]:
+                    visualizer_trace[j].append(values_list)
+                else:
+                    line_num = values_list[0]
+                    j += 1
+                    visualizer_trace.append([values_list])
 
         return visualizer_trace
 
