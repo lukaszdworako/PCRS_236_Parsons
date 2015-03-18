@@ -25,17 +25,17 @@ class CSpecifics():
         self.username = username
         self.submission = submission
 
-    def run_test_visualizer(self, test_input, username, source_code):
+    def run_test_visualizer(self, test_input, username, source_code, deny_warnings=True):
         self.username = username
         self.submission = source_code
         self.compiled = False
 
-        ret = self.run_test(test_input, test_input)
+        ret = self.run_test(test_input, test_input, deny_warnings)
         self.clear_exec_file(self.compilation_ret["temp_gcc_file"])
 
         return ret
 
-    def run_test(self, test_input, expected_output):
+    def run_test(self, test_input, expected_output, deny_warnings=False):
         """ Return dictionary ret containing results of a testrun.
             ret has the following mapping:
             'test_val' -> test output.
@@ -50,7 +50,7 @@ class CSpecifics():
 
         # Compile C source code
         if not self.compiled:
-            self.compilation_ret = self.compile_source_code(user, user_script)
+            self.compilation_ret = self.compile_source_code(user, user_script, deny_warnings)
         # Naming the temporary output file
         temp_output_file = self.temp_path + user + self.date_time + ".out"
         # Naming the temporary runtime error file
@@ -91,7 +91,7 @@ class CSpecifics():
             execution_output = f.read()
             f.close()
 
-            # Runtime error during process execution (desconsider warning errors)
+            # Runtime error during process execution (ignore warning errors)
             if process != 0 and ret["exception"] == " ":
                 execution_output = 'Runtime error!'
                 ret["exception_type"] = "warning"
@@ -147,7 +147,7 @@ class CSpecifics():
             #    pass
             return ret
 
-    def compile_source_code(self, user, user_script):
+    def compile_source_code(self, user, user_script, deny_warning=False):
 
         # Naming the C file
         temp_c_file = self.temp_path + user + self.date_time + ".c"
@@ -184,9 +184,12 @@ class CSpecifics():
                 if not compilation_alert.find("warning") != -1:
                     ret["exception_type"] = "error"
                     ret["exception"] = str("Compilation Error:\n" + compilation_alert).replace('\n', '<br />')
-                else:
+                elif not deny_warning:
                     ret["exception_type"] = "warning"
                     ret["exception"] = str("Compilation Warning:\n" + compilation_alert).replace('\n', '<br />')
+                else:
+                    ret["exception_type"] = " "
+                    ret["exception"] = " "
             else:
                 ret["exception_type"] = " "
                 ret["exception"] = " "
@@ -226,14 +229,15 @@ class CSpecifics():
         user = add_params['user']
         temp_path = os.getcwd()
         test_input = add_params['test_case']
+        deny_warnings = True
 
         # Compile code checking for invalid changes after submission
-        ret = self.compile_source_code(user, user_script)
+        ret = self.compile_source_code(user, user_script, deny_warnings)
 
         # Remove compiled file
         self.clear_exec_file(ret["temp_gcc_file"])
         # Return compilation/warning error if it exists
-        if ret['exception'] != ' ':
+        if ret['exception_type'] != 'warning' and ret['exception'] != ' ':
             return {'trace': None, 'exception': ret["exception"]}
 
         c_visualizer = CVisualizer(user, temp_path)
@@ -243,11 +247,14 @@ class CSpecifics():
         mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
         # Compile and run the modified source code and remove compiled file
         print(mod_user_script)
-        code_output = self.run_test_visualizer(test_input, user, mod_user_script)
-        # Get the proper encoding for the javascript visualizer
-        visualizer_encoding = c_visualizer.get_visualizer_enconding(code_output)
-
-        return visualizer_encoding
+        code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
+        print(code_output)
+        if 'exception_type' in code_output and code_output['exception_type'] != 'error':
+            # Get the proper encoding for the javascript visualizer
+            return c_visualizer.get_visualizer_enconding(code_output)
+        else:
+            # Return error to user
+            return code_output
 
     def get_download_mimetype(self):
         """ Return string with mimetype. """

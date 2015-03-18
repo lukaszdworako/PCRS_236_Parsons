@@ -20,16 +20,17 @@ def visualizer_details(request):
         # add_params is always JSON encoded. 
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
-        add_params['user'] = request.META["USERNAME"]
+        # Use CSRF_COOKIE as username
+        add_params['user'] = request.META["CSRF_COOKIE"]
 
         gen = CSpecifics(add_params['user'], user_script) # create a language instance
 
         ret = gen.get_exec_trace(user_script, add_params)
+        print(ret)
 
     except Exception as e:
         ret['exception'] = str(e)
 
     json_output = json.dumps(ret, indent=None)
-    print(json_output)
 
     return HttpResponse(json_output)

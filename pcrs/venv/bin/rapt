@@ -1,0 +1,10 @@
+#!/Users/daniel/Desktop/workspace/PCRS/pcrs/venv/bin/python3
+# EASY-INSTALL-ENTRY-SCRIPT: 'rapt==0.0.2','console_scripts','rapt'
+__requires__ = 'rapt==0.0.2'
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.exit(
+        load_entry_point('rapt==0.0.2', 'console_scripts', 'rapt')()
+    )

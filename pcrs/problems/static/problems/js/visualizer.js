@@ -216,6 +216,7 @@ function executeGenericVisualizer(option, data, newCode) {
     /**
      * C visualizer representation.
      */
+        console.log(data);
         switch(option) {
 
             case "create_visualizer":
@@ -257,6 +258,8 @@ function executeGenericVisualizer(option, data, newCode) {
              * othervise don't enter visualization mode.
              */
 
+            debugger_data = data;
+
             if(!c_debugger_load) {
                 c_debugger_load = true;
 
@@ -266,23 +269,23 @@ function executeGenericVisualizer(option, data, newCode) {
                 });
 
                 // Bind debugger buttons
-                $('#previous_debugger').bind('click', {data: data}, function () {
+                $('#previous_debugger').bind('click', function () {
                     if (debugger_index >= 1) {
                         debugger_index--;
                     }
-                    update_debugger_table(data);
+                    update_debugger_table(debugger_data);
                 });
 
-                $('#next_debugger').bind('click', {data: data}, function () {
+                $('#next_debugger').bind('click', function () {
                     if (typeof (data[debugger_index + 1]) != 'undefined') {
                         debugger_index++;
-                        update_debugger_table(data);
+                        update_debugger_table(debugger_data);
                     }
                 });
 
-                $('#reset_debugger').bind('click', {data: data}, function () {
+                $('#reset_debugger').bind('click', function () {
                     debugger_index = 0;
-                    update_debugger_table(data);
+                    update_debugger_table(debugger_data);
                 });
             }
 
@@ -292,7 +295,7 @@ function executeGenericVisualizer(option, data, newCode) {
             myCodeMirrors[debugger_id].setValue(newCode);
 
             // Initialize debugger for the first time
-            update_debugger_table(data);
+            update_debugger_table(debugger_data);
 
             $('#visualizerModal').modal('show');
 

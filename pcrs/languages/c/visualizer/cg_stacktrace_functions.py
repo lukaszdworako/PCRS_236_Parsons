@@ -80,7 +80,7 @@ def remove_bracket_value_range(line, open, close):
 
 
 def remove_from_string_token_range(token_list, line):
-    """Remove substring from string using a token partner"""
+    """Remove substring from string using a token pattern"""
     # Consider only quote pairs (open and a close quote)
     size_readjust = 0
     while len(token_list) > 0 and len(token_list) % 2 == 0:
@@ -176,6 +176,8 @@ def get_variables_details(line, declaration_type):
     attributes = attributes.replace(";", "")
     # Treat value range declared with a list
     attributes = remove_bracket_value_range(attributes, "{", "}")
+    if '=' in attributes and '(' in attributes and ')' in attributes:
+        attributes = remove_bracket_value_range(attributes, "=", ")")
     attributes_list = attributes.split(',')
     attributes_ret = []
     # In case of comma separate attributes
@@ -288,7 +290,10 @@ def get_printf_string(line, hex_dig, output_symbol, var_name, type):
     var_address = var_name
     if '*' in var_name:
         var_address = var_name.replace("*", "")
+        var_name =  "&" + var_name
         output_symbol = "%p"
+
+    var_address = "&" + var_address
 
     # Process arrays
     if '[' in var_name and ']' in var_name:

@@ -10,6 +10,7 @@ var debugger_id = "";
 var debugger_index = 0;
 var last_stepped_line_debugger = 0;
 var c_debugger_load = false;
+var debugger_data = null;
 //root is a global variable from base.html
 
 
@@ -49,6 +50,8 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
 
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
     executeGenericVisualizer("gen_execution_trace_params", postParams);
+
+    console.log(newCode);
 
     $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
