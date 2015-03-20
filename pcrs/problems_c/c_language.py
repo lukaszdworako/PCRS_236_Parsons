@@ -246,9 +246,7 @@ class CSpecifics():
         # Change original source code with the proper printf (debug)
         mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
         # Compile and run the modified source code and remove compiled file
-        print(mod_user_script)
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
-        print(code_output)
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
             return c_visualizer.get_visualizer_enconding(code_output)

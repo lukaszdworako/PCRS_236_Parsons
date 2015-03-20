@@ -67,16 +67,23 @@ class CVisualizer:
                         # Variable declaration inside function
                         if inside_function:
                             for local_var in get_variables_details(line, declaration_type):
+                                malloc = False
+                                if "malloc" in line:
+                                    malloc = True
                                 stacktrace[len(stacktrace)-1]['variables'].\
                                     append({line_count: [{local_var[0]: local_var[1]}, \
-                                                         get_variable_location_inside_function(function_brackets)]})
+                                                         get_variable_location_inside_function(function_brackets),
+                                                         {"malloc": malloc}]})
                             analyze_declaration = False
                         # Variable declaration outside function
                         elif not inside_function:
+                            malloc = False
+                            if "malloc" in line:
+                                malloc = True
                             for global_var in get_variables_details(line, declaration_type):
                                 dic = {'declaration': 'variable', 'type': global_var[0],
                                         'name': global_var[1], 'line': line_count,
-                                        'scope': 'global'}
+                                        'scope': 'global', 'malloc': malloc}
                                 stacktrace.append(dic.copy())
                             analyze_declaration = False
                             line = ""
@@ -85,10 +92,14 @@ class CVisualizer:
                 if inside_function:
                     # Treat return statement as variable
                     if line.find("return") > -1:
+                        malloc = False
+                        if "malloc" in line:
+                            malloc = True
                         stacktrace[len(stacktrace)-1]['return'].append(line_count)
                         stacktrace[len(stacktrace)-1]['variables'].\
                             append({line_count:
-                                   {'return': {stacktrace[len(stacktrace)-1]['type']: get_return_variable(line)}}})
+                                   {'return': {stacktrace[len(stacktrace)-1]['type']: get_return_variable(line)}, 'malloc': malloc
+                                    }})
                     # Function calls
                     if is_function_call(line) and not analyze_declaration and\
                        search_dictionary(self.primitive_types, remove_bracket_value_range(line, "(", ")")) == "":
@@ -142,6 +153,7 @@ class CVisualizer:
                                                             self.primitive_types)
                     line += 1
                 print_stack.append({(res['line_begin'], res['line_end']): print_list_func})
+
 
         # Include printf inside source code for compilation
         line_count = 1

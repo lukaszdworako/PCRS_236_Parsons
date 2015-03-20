@@ -259,6 +259,7 @@ function executeGenericVisualizer(option, data, newCode) {
              */
 
             debugger_data = data;
+            console.log(debugger_data)
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -303,17 +304,25 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function update_debugger_table(data) {
 
-            $('#debugger_table').empty();
+            $('#debugger_table_stack').empty();
+            $('#debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
 
             for(var i = 0; i < data[debugger_index].length; i++) {
                 myCodeMirrors[debugger_id].addLineClass(parseInt(data[debugger_index][i][0]-1), '', 'CodeMirror-activeline-background');
-                $('#debugger_table').append('<tr>' +
+                $('#debugger_table_stack').append('<tr>' +
                                             '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
                                             '<td>' + data[debugger_index][i][2] + '</td>' +
                                             '<td>' + data[debugger_index][i][3] + '</td>' +
                                             '<td>' + data[debugger_index][i][1] + '</td>' +
                                             '</tr>');
+                
+                if(data[debugger_index][i][5] == "True") {
+                    $('#debugger_table_heap').append('<tr>' +
+                    '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
+                    '<td>' + data[debugger_index][i][3] + '</td>' +
+                    '</tr>');
+                }
                 last_stepped_line_debugger = parseInt(data[debugger_index][i][0]-1);
             }
 

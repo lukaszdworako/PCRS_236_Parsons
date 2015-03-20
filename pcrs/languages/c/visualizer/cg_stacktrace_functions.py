@@ -144,7 +144,7 @@ def get_variables_details_func_signature(line, line_number):
         if 'void' != attribute:
             attribute = attribute.split(' ')
             attribute = remove_values_from_list(attribute, '')
-            attributes_dic.append({line_number: [{attribute[0]: attribute[1]}, 'outside_bracket']})
+            attributes_dic.append({line_number: [{attribute[0]: attribute[1]}, 'outside_bracket', {'malloc': False}]})
 
     return attributes_dic
 
@@ -245,7 +245,7 @@ def get_global_printf_list(stacktrace, line, key, primitive_types):
     for res in stacktrace:
         if res['declaration'] == 'variable' and res['scope'] == 'global':
             output_symbol = get_printf_symbol(res['type'], primitive_types)
-            print_list.append(get_printf_string(line, key, output_symbol, res['name'], res['type']))
+            print_list.append(get_printf_string(line, key, output_symbol, res['name'], res['type'], res['malloc']))
 
     return print_list
 
@@ -258,15 +258,17 @@ def get_local_printf_list(stacktrace, line, func_name, print_list, hash_key, pri
             for var_line in res['variables']:
                 if line in var_line:
                     for key, value in var_line.items():
+                        print(value)
                         if 'return' in value:
                             for return_str, var_detail in value.items():
-                                for type, var_name in var_detail.items():
-                                    output_symbol = get_printf_symbol(type, primitive_types)
-                                    print_list.append({'return': get_printf_string(line, hash_key, output_symbol, var_name,type)})
+                                if 'return_str' in return_str:
+                                    for type, var_name in var_detail.items():
+                                        output_symbol = get_printf_symbol(type, primitive_types)
+                                        print_list.append({'return': get_printf_string(line, hash_key, output_symbol, var_name, type, value['malloc'])})
                         else:
                             for type, var_name in value[0].items():
                                 output_symbol = get_printf_symbol(type, primitive_types)
-                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name, type))
+                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name, type, value[2]['malloc']))
             break
     return print_list
 
@@ -283,7 +285,7 @@ def get_printf_symbol(type, primitive_types):
     return output_symbol
 
 
-def get_printf_string(line, hex_dig, output_symbol, var_name, type):
+def get_printf_string(line, hex_dig, output_symbol, var_name, type, malloc):
     """Build a single printf statement"""
 
     # Check for pointers
@@ -307,9 +309,9 @@ def get_printf_string(line, hex_dig, output_symbol, var_name, type):
     # Process variables
     else:
         printf = {str(line): "printf(" + "\"(" + str(hex_dig) + ")" + "<line>;" + str(type) + ";" +
-                  str(var_name) + ";" + str(output_symbol) + ";" + "%p" + "(" + str(hex_dig) + ")" + \
-                  "\\n" + "\"," + str(var_name) + "," + str(var_address) + ");"}
-
+                  str(var_name) + ";" + str(output_symbol) + ";" + "%p" + ";" + "%s" + "(" + str(hex_dig) + ")" + \
+                  "\\n" + "\"," + str(var_name) + "," + str(var_address) + "," + "\"" + str(malloc) + "\"" + ");"}
+    print(printf)
     return printf
 
 
