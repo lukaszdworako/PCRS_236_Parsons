@@ -26,7 +26,6 @@ def visualizer_details(request):
         gen = CSpecifics(add_params['user'], user_script) # create a language instance
 
         ret = gen.get_exec_trace(user_script, add_params)
-        print(ret)
 
     except Exception as e:
         ret['exception'] = str(e)

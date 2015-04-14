@@ -309,18 +309,23 @@ function executeGenericVisualizer(option, data, newCode) {
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
 
             for(var i = 0; i < data[debugger_index].length; i++) {
+
+                console.log(data[debugger_index][i]);
+
                 myCodeMirrors[debugger_id].addLineClass(parseInt(data[debugger_index][i][0]-1), '', 'CodeMirror-activeline-background');
-                $('#debugger_table_stack').append('<tr>' +
-                                            '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
-                                            '<td>' + data[debugger_index][i][2] + '</td>' +
-                                            '<td>' + data[debugger_index][i][3] + '</td>' +
-                                            '<td>' + data[debugger_index][i][1] + '</td>' +
-                                            '</tr>');
-                
-                if(data[debugger_index][i][5] == "True") {
-                    $('#debugger_table_heap').append('<tr>' +
+
+                if(data[debugger_index][i][6] != "True") {
+                    $('#debugger_table_stack').append('<tr>' +
                     '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
+                    '<td>' + data[debugger_index][i][2] + '</td>' +
                     '<td>' + data[debugger_index][i][3] + '</td>' +
+                    '<td>' + data[debugger_index][i][1] + '</td>' +
+                    '</tr>');
+                }
+                else {
+                    $('#debugger_table_heap').append('<tr>' +
+                    '<th class="text-nowrap" scope="row">' + data[debugger_index][i][3] + '</th>' +
+                    '<td>' + data[debugger_index][i][5] + '</td>' +
                     '</tr>');
                 }
                 last_stepped_line_debugger = parseInt(data[debugger_index][i][0]-1);

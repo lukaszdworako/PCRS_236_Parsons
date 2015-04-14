@@ -27,8 +27,8 @@ class CVisualizer:
         # Process C source code
         stacktrace = []  # Stacktrace data structure
         line = ""  # Current source code line
-        inside_function = False  # Program is examing the inside of a function
-        analyze_declaration = False  # Program is examing a function/variable declaration
+        inside_function = False  # Program is examining the inside of a function
+        analyze_declaration = False  # Program is examining a function/variable declaration
         line_count = 1
         declaration_type = ""  # Function/variable type
         other_brackets = 1
@@ -165,7 +165,7 @@ class CVisualizer:
             line = remove_string_constant(user_script[index_last_semicolon: index+1])
             # Find end of statement to print object
             if line.find(";") > -1:
-                # Find breaklines and count
+                # Find break lines and count
                 last_line = line_count
                 line_count += len(list(find_all_occurrences(line, '\n')))
                 for function in print_stack:
@@ -212,12 +212,15 @@ class CVisualizer:
     def get_visualizer_enconding(self, code_output):
 
         import re
+        import copy
         r = re.compile("\("+self.key+"\)"+'(.*?)'+"\("+self.key+"\)")
         visualizer_trace = []
         line_num = ""
 
         lines_info = code_output['test_val'].split('\n')
         lines_info = [line for line in lines_info if line != '']
+
+        malloc_values_list = []
 
         j = -1
         for i in range(len(lines_info)):
@@ -230,6 +233,27 @@ class CVisualizer:
                 if '*' in values_list[2]:
                     values_list[2] = values_list[2][1:]
                     values_list[1] += '*'
+                    # Check for malloc variables
+
+                    not_in_mem = True
+                    for x in range(len(malloc_values_list)):
+                        if malloc_values_list[x][3] == values_list[3]:
+                            not_in_mem = False
+                            malloc_value = copy.deepcopy(values_list)
+                            malloc_values_list[x][5] = malloc_value[5]
+                            break
+                    if values_list[6] == 'True' and not_in_mem:
+                        valid_update = True
+                        for x in range(len(malloc_values_list)):
+                            if malloc_values_list[x][2] == values_list[2] and\
+                               malloc_values_list[x][7] == values_list[7] and\
+                               malloc_values_list[x][8] == values_list[8]:
+                                valid_update = False
+                                break
+                        if valid_update:
+                            malloc_value = copy.deepcopy(values_list)
+                            malloc_values_list.append(malloc_value)
+                    values_list[6] = 'False'
 
                 if line_num == values_list[0]:
                     visualizer_trace[j].append(values_list)
@@ -237,6 +261,18 @@ class CVisualizer:
                     line_num = values_list[0]
                     j += 1
                     visualizer_trace.append([values_list])
+                    if j > 0:
+                        for x in range(len(malloc_values_list)):
+                            malloc_value = copy.deepcopy(malloc_values_list[x])
+                            malloc_value[0] = copy.deepcopy(visualizer_trace[j-1][0][0])
+                            visualizer_trace[j-1].append(malloc_value)
 
+        for x in range(len(malloc_values_list)):
+            malloc_value = copy.deepcopy(malloc_values_list[x])
+            malloc_value[0] = copy.deepcopy(visualizer_trace[j][0][0])
+            visualizer_trace[j].append(malloc_value)
+
+
+        print(visualizer_trace)
         return visualizer_trace
 

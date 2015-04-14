@@ -21,7 +21,6 @@ def get_current_date():
 #             Supporting functions - build_stacktrace             #
 # --------------------------------------------------------------- #
 
-
 def add_break_line_after_token(user_script, tokens):
     """Add \n scape sequence at the end of every ;."""
 
@@ -245,7 +244,8 @@ def get_global_printf_list(stacktrace, line, key, primitive_types):
     for res in stacktrace:
         if res['declaration'] == 'variable' and res['scope'] == 'global':
             output_symbol = get_printf_symbol(res['type'], primitive_types)
-            print_list.append(get_printf_string(line, key, output_symbol, res['name'], res['type'], res['malloc']))
+            print_list.append(get_printf_string(line, key, output_symbol, res['name'], res['type'], res['malloc'],
+                                                res['line_begin'], res['line_end']))
 
     return print_list
 
@@ -258,17 +258,19 @@ def get_local_printf_list(stacktrace, line, func_name, print_list, hash_key, pri
             for var_line in res['variables']:
                 if line in var_line:
                     for key, value in var_line.items():
-                        print(value)
                         if 'return' in value:
                             for return_str, var_detail in value.items():
                                 if 'return_str' in return_str:
                                     for type, var_name in var_detail.items():
                                         output_symbol = get_printf_symbol(type, primitive_types)
-                                        print_list.append({'return': get_printf_string(line, hash_key, output_symbol, var_name, type, value['malloc'])})
+                                        print_list.append({'return': get_printf_string(line, hash_key, output_symbol,
+                                                                                       var_name, type, value['malloc'],
+                                                                                       res['line_begin'], res['line_end'])})
                         else:
                             for type, var_name in value[0].items():
                                 output_symbol = get_printf_symbol(type, primitive_types)
-                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name, type, value[2]['malloc']))
+                                print_list.append(get_printf_string(line, hash_key, output_symbol, var_name, type,
+                                                                    value[2]['malloc'], res['line_begin'], res['line_end']))
             break
     return print_list
 
@@ -285,20 +287,24 @@ def get_printf_symbol(type, primitive_types):
     return output_symbol
 
 
-def get_printf_string(line, hex_dig, output_symbol, var_name, type, malloc):
+def get_printf_string(line, hex_dig, output_symbol, var_name, type, malloc, line_begin, line_end):
     """Build a single printf statement"""
 
-    # Check for pointers
-    var_address = var_name
+    printf = ""
+    var_address = "&" + var_name
+
+    # Process for pointers
     if '*' in var_name:
         var_address = var_name.replace("*", "")
-        var_name =  "&" + var_name
-        output_symbol = "%p"
 
-    var_address = "&" + var_address
+        printf = {str(line): "printf(" + "\"(" + str(hex_dig) + ")" + "<line>;" + str(type) + ";" +
+                  str(var_name) + ";" + "%p" + ";" + "%p" + ";" + str(output_symbol) + ";" + "%s" + ';' + "%d"
+                  + ';' + "%d" + "(" + str(hex_dig) + ")" + "\\n" + "\"," + str("&" + var_name) + "," +
+                  str("&" + var_address) + "," + str(var_name) + "," + "\"" + str(malloc) + "\"" + "," + str(line_begin)
+                  + "," + str(line_end) + ");"}
 
     # Process arrays
-    if '[' in var_name and ']' in var_name:
+    elif '[' in var_name and ']' in var_name:
         var_name = var_name[0: var_name.find('[')]
         printf = {str(line):  "printf(\"(" + str(hex_dig) + ")" + "<line>;" + str(var_name) + ";\");" +
                               "{int max = sizeof("+var_name+")/sizeof("+var_name+"[0]);" +
@@ -309,9 +315,10 @@ def get_printf_string(line, hex_dig, output_symbol, var_name, type, malloc):
     # Process variables
     else:
         printf = {str(line): "printf(" + "\"(" + str(hex_dig) + ")" + "<line>;" + str(type) + ";" +
-                  str(var_name) + ";" + str(output_symbol) + ";" + "%p" + ";" + "%s" + "(" + str(hex_dig) + ")" + \
-                  "\\n" + "\"," + str(var_name) + "," + str(var_address) + "," + "\"" + str(malloc) + "\"" + ");"}
-    print(printf)
+                  str(var_name) + ";" + str(output_symbol) + ";" + "%p" + ";" + "%s" + ';' + "%d"
+                  + ';' + "%d" + "(" + str(hex_dig) + ")" + "\\n" + "\"," + str(var_name) + "," + str(var_address) +
+                  "," + "\"" + str(malloc) + "\"" + "," + str(line_begin) + "," + str(line_end) + ");"}
+
     return printf
 
 

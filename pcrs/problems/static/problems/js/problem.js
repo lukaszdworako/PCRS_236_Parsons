@@ -603,9 +603,9 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                newRow.append('<td class="expression"><div class="expression_div">' +
 	                               testcaseInput + '</div></td>');
 
-	                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
-
-	            }
+                    newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
+	                           ''+'</div></div></td>');
+                }
 	            else {
 	                newRow.append('<td class="description">' + description + '</td>');
 
@@ -622,7 +622,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
 	            $('#current_testcase'+i).attr('id', "");
 
-	            renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
+	            renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
 	            $('#exp_test_val').attr('id',"");
 
 	            newRow.append('<td class="passed"></td>');
