@@ -261,7 +261,7 @@ class CVisualizer:
                     line_num = values_list[0]
                     j += 1
                     visualizer_trace.append([values_list])
-                    if j > 0 or (j == 0 and len(malloc_values_list) > 0):
+                    if j > 0:
                         for x in range(len(malloc_values_list)):
                             malloc_value = copy.deepcopy(malloc_values_list[x])
                             malloc_value[0] = copy.deepcopy(visualizer_trace[j-1][0][0])
