@@ -267,7 +267,6 @@ class CVisualizer:
                             malloc_value[0] = copy.deepcopy(visualizer_trace[j-1][0][0])
                             visualizer_trace[j-1].append(malloc_value)
 
-
         for x in range(len(malloc_values_list)):
             malloc_value = copy.deepcopy(malloc_values_list[x])
             malloc_value[0] = copy.deepcopy(visualizer_trace[j][0][0])
