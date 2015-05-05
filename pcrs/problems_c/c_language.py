@@ -161,9 +161,15 @@ class CSpecifics():
         ret = {"temp_gcc_file": temp_gcc_file}
         try:
             # Creating the C file
-            f = open(temp_c_file, 'w')
+            try:
+                f = open(temp_c_file, 'w')
+            except OSError:
+                # Create temp directory if it doesn't exist
+                os.makedirs(os.path.dirname(temp_c_file))
+
             f.write(user_script)
             f.close()
+
 
             # Compiling the C file
             subprocess.call("gcc " + flags + " " + temp_c_file + " -o " + temp_gcc_file + " 2> " + temp_error_file,
