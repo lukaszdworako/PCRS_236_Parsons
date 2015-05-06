@@ -1,5 +1,68 @@
 {% extends "pcrs/item_list.html" %}
+{% load filters %}
 
-{% block item_title %}
-    <a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object|striptags|truncatechars:150 }} | {{ object.challenge }}</a>
+{% block object_info %}
+<div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
+    <div class="pcrs-panel">
+        <h4 class="pcrs-panel-title">
+            <a href="#quest_collapse_{{ object.pk }}"
+               data-parent="quest_accordion_{{ object.pk }}"
+               class="collapsed"
+               data-toggle="collapse">
+                <i class="collapse-indicator"></i>
+                {{ object.name|striptags|truncatechars:150 }}
+                <div class="info">
+                        <br class="info-sm">
+                        Challenge: {{ object.challenge }}
+                </div>
+            </a>
+        </h4>
+    </div>
+
+    {% if object.visibity == open %}
+        <div id="quest_collapse_{{ object.pk }}"
+             class="panel-collapse collapse">
+            <div class="quest-body"
+                id="challenge_accordion_{{ object.pk }}">
+                {% autoescape off %}
+                	<h4> {{ object.description }} </h4>
+                {% endautoescape %}
+            </div>
+        </div>
+    {% else %}
+        <div class="red-label">
+            The problem-masters are still working on a few minor details.
+        </div>
+    {% endif %}
+</div>
+
 {% endblock %}
+
+<!--<a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object.name|striptags|truncatechars:150 }} | {{ object.challenge }}</a>-->
+<!--
+{% block content %}
+    <div class="item-list">
+        {% for object in object_list %}
+            <div class="item">
+                {% block item_title %}
+                    {{ object }}
+                {% endblock %}
+
+                {% if user.is_instructor or user.is_ta %}
+                    <span>
+                        {% block item_controls %}
+                            {% include "pcrs/buttons/edit.html" %}
+                        {% endblock %}
+                    </span>
+                {% endif %}
+
+                <div>
+                    {% block item_details %}
+                        {% include "pcrs/tags.html" %}
+                    {% endblock %}
+                </div>
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}-->

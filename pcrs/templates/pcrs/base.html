@@ -65,7 +65,9 @@
             <hr>
 
                 {% block content %}
-                    {% block alerts %} {% endblock %}
+                    {% block object_info %}
+                        {% block alerts %} {% endblock %}
+                    {% endblock %}
                 {% endblock %}
 
         </div>
