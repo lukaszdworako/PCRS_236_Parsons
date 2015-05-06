@@ -82,12 +82,14 @@
                         {% else %}
                                 <div class="green-label pull-right">LIVE</div>
                         {% endif %}
+
                         <div class="quest-detail">
                             <h3 class="name">
                                 {{ object.name }}
                             </h3>
+                            {% autoescape off %}
                             <h5 class="description">{{ object.description }}</h5>
-
+                            {% endautoescape %}
                         </div>
                         <div class="quest-box">
                             {% for challenge in object.challenge_set.all %}

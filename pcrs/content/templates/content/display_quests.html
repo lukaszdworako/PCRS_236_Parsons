@@ -31,8 +31,9 @@
                  class="panel-collapse collapse">
                 <div class="quest-body"
                      id="challenge_accordion_{{ challenge.pk }}">
+                     {% autoescape off %}
                     <h4> {{ quest.quest.description }} </h4>
-
+                    {% endautoescape %}
                     <h3> Challenges </h3>
                     {% for challenge in challenges|get_item:quest.quest.pk %}
                         {% include "content/quest_display_challenge.html" %}
