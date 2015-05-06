@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
 from django.utils.timezone import utc, now, localtime
-from graph_utilities.create_graph import output_graph
+#from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
 
