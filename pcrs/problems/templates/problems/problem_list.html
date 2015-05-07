@@ -4,7 +4,7 @@
 {% block object_info %}
 <div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
     <div class="pcrs-panel">
-        <h4 class="pcrs-panel-title">
+        <h4 class="pcrs-panel-title problem-panel">
             <a href="#quest_collapse_{{ object.pk }}"
                data-parent="quest_accordion_{{ object.pk }}"
                class="collapsed"
@@ -13,6 +13,7 @@
                 {{ object.name|striptags|truncatechars:150 }}|{{ object.challenge }}
                 <div class="info">
                         <br class="info-sm">
+                        <a class="small-button searchable_content attempt-btn" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
                         {% if user.is_instructor or user.is_ta %}
                         <span>
                             {% block item_controls %}
@@ -31,7 +32,6 @@
              class="panel-collapse collapse">
             <div class="quest-body"
                 id="challenge_accordion_{{ object.pk }}">
-                <a class="small-button searchable_content" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
                 {% autoescape off %}
                 	<h4> {{ object.description }} </h4>
                 {% endautoescape %}
