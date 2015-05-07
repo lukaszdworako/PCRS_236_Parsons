@@ -10,10 +10,17 @@
                class="collapsed"
                data-toggle="collapse">
                 <i class="collapse-indicator"></i>
-                {{ object.name|striptags|truncatechars:150 }}
+                {{ object.name|striptags|truncatechars:150 }}|{{ object.challenge }}
                 <div class="info">
                         <br class="info-sm">
-                        Challenge: {{ object.challenge }}
+                        {% if user.is_instructor or user.is_ta %}
+                        <span>
+                            {% block item_controls %}
+                                {% include "pcrs/buttons/edit.html" %}
+                            {% endblock %}
+                        </span>
+                        {% endif %}
+
                 </div>
             </a>
         </h4>
@@ -24,6 +31,7 @@
              class="panel-collapse collapse">
             <div class="quest-body"
                 id="challenge_accordion_{{ object.pk }}">
+                <a class="small-button searchable_content" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
                 {% autoescape off %}
                 	<h4> {{ object.description }} </h4>
                 {% endautoescape %}
@@ -38,31 +46,3 @@
 
 {% endblock %}
 
-<!--<a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object.name|striptags|truncatechars:150 }} | {{ object.challenge }}</a>-->
-<!--
-{% block content %}
-    <div class="item-list">
-        {% for object in object_list %}
-            <div class="item">
-                {% block item_title %}
-                    {{ object }}
-                {% endblock %}
-
-                {% if user.is_instructor or user.is_ta %}
-                    <span>
-                        {% block item_controls %}
-                            {% include "pcrs/buttons/edit.html" %}
-                        {% endblock %}
-                    </span>
-                {% endif %}
-
-                <div>
-                    {% block item_details %}
-                        {% include "pcrs/tags.html" %}
-                    {% endblock %}
-                </div>
-                <hr>
-            </div>
-        {% endfor %}
-    </div>
-{% endblock %}-->
