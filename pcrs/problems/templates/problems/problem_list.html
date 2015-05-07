@@ -1,5 +1,49 @@
 {% extends "pcrs/item_list.html" %}
+{% load filters %}
 
-{% block item_title %}
-    <a class="searchable_content" href="{{ object.get_absolute_url }}/submit">{{ object|striptags|truncatechars:150 }} | {{ object.challenge }}</a>
+{% block object_info %}
+<div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
+    <div class="pcrs-panel">
+        <h4 class="pcrs-panel-title problem-panel">
+            <a href="#quest_collapse_{{ object.pk }}"
+               data-parent="quest_accordion_{{ object.pk }}"
+               class="collapsed"
+               data-toggle="collapse">
+                <i class="collapse-indicator"></i>
+                <span title="{{ object.description|striptags|truncatechars:50 }}">
+                    {{ object.name|striptags|truncatechars:150 }}|{{ object.challenge|striptags|truncatechars:150 }}
+                </span>
+                <div class="info">
+                        <br class="info-sm">
+                        <a class="small-button searchable_content attempt-btn" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
+                        {% if user.is_instructor or user.is_ta %}
+                        <span>
+                            {% block item_controls %}
+                                {% include "pcrs/buttons/edit.html" %}
+                            {% endblock %}
+                        </span>
+                        {% endif %}
+                </div>
+            </a>
+        </h4>
+    </div>
+
+    {% if object.visibity == open %}
+        <div id="quest_collapse_{{ object.pk }}"
+             class="panel-collapse collapse">
+            <div class="quest-body problem-body"
+                id="challenge_accordion_{{ object.pk }}">
+                {% autoescape off %}
+                	<p> {{ object.description }} </p>
+                {% endautoescape %}
+            </div>
+        </div>
+    {% else %}
+        <div class="red-label">
+            The problem-masters are still working on a few minor details.
+        </div>
+    {% endif %}
+</div>
+
 {% endblock %}
+
