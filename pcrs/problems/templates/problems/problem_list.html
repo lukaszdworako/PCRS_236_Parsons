@@ -10,7 +10,9 @@
                class="collapsed"
                data-toggle="collapse">
                 <i class="collapse-indicator"></i>
-                {{ object.name|striptags|truncatechars:150 }}|{{ object.challenge }}
+                <span title="{{ object.description|striptags|truncatechars:50 }}">
+                    {{ object.name|striptags|truncatechars:150 }}|{{ object.challenge|striptags|truncatechars:150 }}
+                </span>
                 <div class="info">
                         <br class="info-sm">
                         <a class="small-button searchable_content attempt-btn" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
@@ -21,7 +23,6 @@
                             {% endblock %}
                         </span>
                         {% endif %}
-
                 </div>
             </a>
         </h4>
@@ -30,10 +31,10 @@
     {% if object.visibity == open %}
         <div id="quest_collapse_{{ object.pk }}"
              class="panel-collapse collapse">
-            <div class="quest-body"
+            <div class="quest-body problem-body"
                 id="challenge_accordion_{{ object.pk }}">
                 {% autoescape off %}
-                	<h4> {{ object.description }} </h4>
+                	<p> {{ object.description }} </p>
                 {% endautoescape %}
             </div>
         </div>
