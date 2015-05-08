@@ -1,14 +1,5 @@
 [
-  {
-      "model": "users.section",
-      "pk": 1,
-      "fields": {
-          "section_id": "master",
-          "lecture_time": "master",
-          "location": "master"
-      }
-  },
-  {
+    {
       "model": "problems_c.jobscheduler",
       "pk": 1,
       "fields": {
@@ -21,7 +12,5 @@
           "password": "admin",
           "active": "False"
       }
-  }
-
+    }
 ]
-
