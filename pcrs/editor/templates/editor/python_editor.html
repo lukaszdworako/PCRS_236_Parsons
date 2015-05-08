@@ -1,0 +1,26 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems/code_problem_scripts.html" %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+
+    {% include "problems_python/code_trace.html" %}
+
+    <div id="python-editor" class="code-mirror-wrapper">
+        {% include "editor/python_widget.html" %}
+    </div>
+
+{% endblock %}
