@@ -165,7 +165,7 @@ TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').repl
 
 INSTALLED_PROBLEM_APPS = (
 #    'problems_code',
-    'problems_multiple_choice',
+    'problems_multiple_choice', 'editor',
     'problems_rdb', 'problems_sql', 'problems_ra',
 #    'problems_timed',
 )
