@@ -6,8 +6,8 @@ import problems_python.models as python_models
 
 urlpatterns = patterns('',
     url(r'^c$',
-        EditorView.as_view(model=c_models.Submission, template_name='editor/c_editor.html', pType='c')),
+        EditorView.as_view(model=c_models.Submission, template_name='editor/editor.html', pType='c')),
 
     url(r'^python$',
-        EditorView.as_view(model=python_models.Submission, template_name='editor/python_editor.html', pType='python')),
+        EditorView.as_view(model=python_models.Submission, template_name='editor/editor.html', pType='python')),
 )

@@ -31,6 +31,7 @@ class EditorViewMixin:
        	else:
        		logging.info('NONE PTYPE')
        		p = None
+       	logging.info(p.name)
         return p
 
     def get_form_kwargs(self):
@@ -39,7 +40,10 @@ class EditorViewMixin:
         return kwargs
 
     def get_context_data(self, **kwargs):
-        return None
+        context = super().get_context_data(**kwargs)
+        problem = self.get_problem()
+        context['problem'] = problem
+        return context
 
     def record_submission(self, request):
         """
