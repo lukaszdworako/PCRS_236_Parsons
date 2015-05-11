@@ -36,8 +36,11 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
     var key = buttonId.split("_")[0];
     var problemId = key.split("-")[1];
     var newCode = myCodeMirrors[key].getValue() + "\n";
+
     if (language == 'python') {
         newCode += (option == "viz") ? myCodeMirrors[key].getValue() : testcaseCode;
+    } else if (language == 'c') {
+        newCode = addHashkey(key);
     }
     getVisualizerComponents(newCode, testcaseCode, problemId);
 }

@@ -43,7 +43,6 @@ class CSpecifics():
             'exception' (only if exception occurs) -> exception message.
             'warning' (only if warning occurs) -> warning message.
         """
-
         ret = {}
         user = str(self.username)
         user_script = str(self.submission)
@@ -87,7 +86,7 @@ class CSpecifics():
                 # + " 2> " + temp_runtime_error_file
 
             # Getting the execution output
-            f = open(temp_output_file, 'r')
+            f = open(temp_output_file, 'r', encoding="ISO-8859-1")
             execution_output = f.read()
             f.close()
 
@@ -171,7 +170,6 @@ class CSpecifics():
             f.write(user_script)
             f.close()
 
-
             # Compiling the C file
             subprocess.call("gcc " + flags + " " + temp_c_file + " -o " + temp_gcc_file + " 2> " + temp_error_file,
                             shell=True)
@@ -232,7 +230,6 @@ class CSpecifics():
             'exception' (only if exception occurs) -> exception message.
             'trace' -> program trace.
         """
-
         user = add_params['user']
         temp_path = os.getcwd()
         test_input = add_params['test_case']

@@ -30,7 +30,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
             self.submission = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem'])[:1].get()
         except ObjectDoesNotExist:
             self.submission = Submission.objects.create(user=info['user'], section=info['section'], problem=info['problem'])
-        
+
 
         # This does not exist -- javascript sends what?
         # Go back to the beginning (javascript): how do you pull the value out of a radio button?
@@ -46,16 +46,16 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     def get(self, request, *args, **kwargs):
         info = {'user': request.user, 'section': request.user.section, 'problem': self.get_problem()}
         context = self.get_context_data()
-        
+
         try:
             prev_sub = Submission.objects.filter(user=info['user'], section=info['section'], problem=info['problem'])[:1].get()
             context['previous_rating'] = True
             context['previous_rating_value'] = prev_sub.submission
         except ObjectDoesNotExist:
             context['previous_rating'] = False
-        
+
         return self.render_to_response(context)
-    
+
     def post(self, request, *args, **kwargs):
         """
         Record the submission and redisplay the problem submission page,
