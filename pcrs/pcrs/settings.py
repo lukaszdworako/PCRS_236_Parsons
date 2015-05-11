@@ -196,10 +196,10 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'crispy_forms',
     'helpers',
-    'users',
     'content',
     'problems',
     'compressor',
+    'users',
 ) + INSTALLED_PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'

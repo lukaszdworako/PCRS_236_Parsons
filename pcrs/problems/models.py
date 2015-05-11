@@ -418,19 +418,6 @@ class AbstractTestRun(models.Model):
             submission=self.submission, pk=self.testcase.pk)
 
 
-class AbstractCPrimitiveTypes(models.Model):
-    """
-    For each C primitive type there is a respective printing symbol
-    This table is used for the C Visualizer to trace all the program variables located
-    in the C source code
-    """
-    primitive_type = models.CharField(unique=True, max_length=100, blank=False)
-    printing_symbol = models.CharField(max_length=100, blank=True)
-
-    class Meta:
-        abstract = True
-
-
 class AbstractJobScheduler(models.Model):
     """
     Base Job Scheduler class.

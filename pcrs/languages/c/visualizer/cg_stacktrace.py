@@ -6,22 +6,48 @@ class CVisualizer:
     """ Representation of C language in the visualizer platform
         * running tests
     """
+    primitive_types = \
+        [{'char': '%c'},
+         {'signed char': '%d -> %c'},
+         {'unsigned char': '%u -> %c'},
+         {'short': '%d'},
+         {'short int': '%d'},
+         {'signed short': '%d'},
+         {'signed short int': '%c'},
+         {'unsigned short': '%u'},
+         {'unsigned short int': '%u'},
+         {'int': '%d'},
+         {'signed int': '%d'},
+         {'unsigned': '%u'},
+         {'unsigned int': '%u'},
+         {'long': '%ld'},
+         {'long int': '%ld'},
+         {'signed long': '%ld'},
+         {'signed long int': '%ld'},
+         {'unsigned long': '%lu'},
+         {'unsigned long int': '%lu'},
+         {'long long': '%lld'},
+         {'long long int': '%lld'},
+         {'signed long long': '%lld'},
+         {'signed long long int': '%lld'},
+         {'unsigned long long': '%llu'},
+         {'unsigned long long int': '%llu'},
+         {'float': '%f'},
+         {'double': '%f'},
+         {'long double': '%lf'},
+         {'void*': '%p'},
+         {'void': 'no'}]
 
     def __init__(self, user, temp_path):
         self.user = user
         self.temp_path = temp_path
-        self.primitive_types = []
 
         # Printf hashkey to detect valid output
         self.key = hash_string((str(self.user) + str(get_current_date())).encode("utf-8"))
 
-        # Get primitive types from database
-        for primitive_type in problems_c.models.CPrimitiveTypes.objects.values_list():
-            self.primitive_types.append({primitive_type[1]: primitive_type[2]})
-
     def build_stacktrace(self, user_script):
-
         user_script = remove_string_constant(user_script)
+        user_script = remove_all_comments(user_script)
         extra_scape_sequence_list, user_script = add_break_line_after_token(user_script, [";", "{", "}"])
 
         # Process C source code
@@ -35,7 +61,6 @@ class CVisualizer:
         function_brackets = []
         function_bracket_open_line = 0  # Function inner bracket open
         #function_bracket_close_line = 0  # Function inner bracket close
-
         for char in user_script:
             if char == '\n':
 
