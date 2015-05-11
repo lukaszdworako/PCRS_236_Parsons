@@ -49,12 +49,15 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
                                     css_class='green-button')
-        self.history_button = StrictButton('History', name='history',
-                                           data_toggle="modal",
-                                           data_target="#history_window_"+
-                                            problem.get_problem_type_name()+
-                                                       "-{}".format(problem.pk),
-                                           css_class='reg-button')
+        if problem.name != 'blank':
+            self.history_button = StrictButton('History', name='history',
+                                               data_toggle="modal",
+                                               data_target="#history_window_"+
+                                                problem.get_problem_type_name()+
+                                                           "-{}".format(problem.pk),
+                                               css_class='reg-button')
+        else:
+            self.history_button = None
 
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
@@ -72,7 +75,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right')
         )
-
+        
 
 def remove_tag(tag_open, tag_close, source_code):
     source_code = source_code.split('\n')

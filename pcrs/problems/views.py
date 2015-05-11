@@ -184,6 +184,7 @@ class SubmissionViewMixin:
         """
         Return the Problem object for the submission.
         """
+        logging.info('GETTING PROBLEM')
         if self.request.user.is_student:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'),
@@ -195,7 +196,6 @@ class SubmissionViewMixin:
         else:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'))
-
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()

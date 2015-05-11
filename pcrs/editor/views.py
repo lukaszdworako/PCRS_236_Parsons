@@ -10,6 +10,7 @@ from django.utils.timezone import localtime
 from problems.forms import ProgrammingSubmissionForm
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
+from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin
 import problems_c.models as c_models
@@ -72,7 +73,6 @@ class EditorViewMixin:
             self.get_context_data(form=form, results=results, error=error,
                                   submission=self.object))
 
-
 class EditorView(ProtectedViewMixin, EditorViewMixin, SingleObjectMixin,
                      FormView, UserViewMixin):
     """
@@ -81,3 +81,33 @@ class EditorView(ProtectedViewMixin, EditorViewMixin, SingleObjectMixin,
     pType = None
     form_class = ProgrammingSubmissionForm
     object = None
+
+class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
+                          SectionViewMixin, View):
+    """
+    Create a submission for a problem asynchronously.
+    """
+    pType = None
+    def post(self, request, *args, **kwargs):
+        results = self.record_submission(request)
+        problem = self.get_problem()
+        pType = problem.language
+        user, section = self.request.user, self.get_section()
+
+        logger = logging.getLogger('activity.logging')
+        logger.info("IN HERE")
+
+        logger.info(str(localtime(self.object.timestamp)) + " | " +
+                    str(user) + " | Submit " +
+                    str(problem.get_problem_type_name()) + " " +
+                    str(problem.pk))
+        deadline = False
+
+        return HttpResponse(json.dumps({
+            'results': results,
+            'score': self.object.score,
+            'sub_pk': self.object.pk,
+            'best': self.object.has_best_score,
+            'past_dead_line': deadline and self.object.timestamp > deadline,
+            'max_score': self.object.problem.max_score}, cls=DateEncoder),
+        mimetype='application/json')
