@@ -1,0 +1,26 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    C Editor
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+    </h3>
+{% endblock %}
+
+{% block problem_description %}
+    <div>
+        <h5>Enter your C code here to compile and visualize it</h5>
+    </div>
+    <br>
+{% endblock %}
+
+{% block problem_specific %}
+    {% include "problems_c/grade_table.html" %}
+    {% include "problems_c/code_trace.html" %}
+    {% include "problems_c/wait_async_job.html" %}
+{% endblock %}

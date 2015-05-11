@@ -1,0 +1,32 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems/code_problem_scripts.html" %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+	{% with "problems_"|add:problem.language|add:"/code_trace.html" as URL %}
+    	{% include URL %}
+    {% endwith %}
+    
+    {% with problem.language|add:"-editor" as tag %}
+  		<div id={{ tag }} class="code-mirror-wrapper">
+    {% endwith %}
+
+		{% with "editor/"|add:problem.language|add:"_widget.html" as URL %}
+	    	{% include URL %}
+	    {% endwith %}
+    </div>
+
+{% endblock %}
