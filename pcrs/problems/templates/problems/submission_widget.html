@@ -62,7 +62,7 @@
     <br>
 {% endblock %}
 
-{% if problem.is_visible_to_students %}
+{% if problem.is_visible_to_students or problem.name == 'blank' %}
     {% block submission_form %}
         {% autoescape off %}
             {% load crispy_forms_tags %}
