@@ -99,13 +99,12 @@ def login_view(request):
         if response:
             return response
 
-    # for settings.AUTH_TYPE == 'none' and settings.AUTH_TYPE == 'pwauth'
-    if request.POST:
+    # settings.AUTH_TYPE == 'none' or settings.AUTH_TYPE == 'pwauth'
+    elif request.POST:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
 
         if username != '':
-            # university-level authentication
             existing_user = check_authorization(username, password)
 
             if not existing_user:
