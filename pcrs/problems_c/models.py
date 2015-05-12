@@ -1,3 +1,4 @@
+import logging
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -16,7 +17,6 @@ from json import loads, dumps
 from requests import post
 from hashlib import sha1
 from re import finditer, search
-
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -159,22 +159,29 @@ class Submission(AbstractSubmission):
             return Submission.run_testcases_locally(self), None
 
     def treat_exception_text(self, program_exception):
+
+        logger = logging.getLogger('activity.logging')
+        
         exception = ""
         # No hidden code in the script, no need to process the exception message
         if not self.hidden_lines_list:
             return program_exception
 
+        logging.info("--------------program exception is " + program_exception)
         for exception_line in program_exception.split('<br />'):
             number_break = exception_line.find(":")
             if number_break > -1 and exception_line[:number_break].isdigit():
                 if int(exception_line[:number_break]) in self.hidden_lines_list:
-                    exception_line = "There's a problem in your code! Please check the exercise description."
+                    exception = "There's a problem in your code! Please check the exercise description."
+                    break
+                    logging.info("--------------in here, exception line is " + exception_line)
                 else:
                     for hidden_line_num in self.hidden_lines_list:
                         if int(exception_line[:number_break]) > hidden_line_num:
                             exception_line = str(int(exception_line[:number_break])-1) + exception_line[number_break:]
                             number_break = exception_line.find(":")
             exception += exception_line + "<br />"
+            logging.info("-----------out here, NOW exception line is " + exception_line)
         # Remove last break line
         if '<br />' in program_exception:
             exception = exception[:len(exception)-len("<br />")]
