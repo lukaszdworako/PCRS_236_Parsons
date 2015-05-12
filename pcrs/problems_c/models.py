@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .c_language import CSpecifics
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractJobScheduler, AbstractCPrimitiveTypes,
+                             AbstractJobScheduler,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete, problem_delete)
 
@@ -39,17 +39,6 @@ class JobScheduler(AbstractJobScheduler):
     that enables remote compiling/interpreting
     """
     pass
-
-
-class CPrimitiveTypes(AbstractCPrimitiveTypes):
-    """
-    CPrimitiveTypes configuration.
-
-    A table that holds information about C primitive types and
-    its respective output type
-    """
-    pass
-
 
 class Submission(AbstractSubmission):
     """
