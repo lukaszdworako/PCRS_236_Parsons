@@ -5,6 +5,7 @@ from problems.views import SubmissionView, SubmissionAsyncView
 from problems_c.forms import ProblemForm, TestCaseForm
 from problems_c.models import Problem, TestCase, Submission
 from problems_c import st_async_requests
+from editor.views import EditorAsyncView
 
 
 urlpatterns = patterns('',
@@ -51,6 +52,9 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='coding_problem_async_submit'),
+    url(r'^editor/run$',
+        EditorAsyncView.as_view(model=Submission, pType='c'),
+        name='editor_problem_async_submit'),
 
     url(r'^(?P<problem>[0-9]+)/history$',
         SubmissionHistoryAsyncView.as_view(model=Submission),

@@ -198,6 +198,7 @@ INSTALLED_APPS = (
     'helpers',
     'content',
     'problems',
+    'editor',
     'compressor',
     'users',
 ) + INSTALLED_PROBLEM_APPS

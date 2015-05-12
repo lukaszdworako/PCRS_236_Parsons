@@ -15,7 +15,9 @@
                 </span>
                 <div class="info">
                         <br class="info-sm">
-                        <a class="small-button searchable_content attempt-btn" type="button" href="{{ object.get_absolute_url }}/submit">Attempt</a>
+                        <a class="searchable_content attempt-btn" type="button" title="Attempt" href="{{ object.get_absolute_url }}/submit">&nbsp;
+                            <i class="doc-icon"></i>
+                        </a>
                         {% if user.is_instructor or user.is_ta %}
                         <span>
                             {% block item_controls %}
