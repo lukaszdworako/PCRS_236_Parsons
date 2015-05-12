@@ -16,6 +16,13 @@ from users.views_mixins import ProtectedViewMixin
 import problems_c.models as c_models
 import problems_python.models as python_models
 
+# Helper class to encode datetime objects
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
+
 class EditorViewMixin:
     def get_section(self):
         return None
@@ -24,14 +31,10 @@ class EditorViewMixin:
         """
         Return the Problem object for the submission.
         """
-        logging.info('page_processor logging test')
-        if(self.pType == 'c'):
-        	p = c_models.Problem(name="blank", starter_code="")
-        elif(self.pType == 'python'):
-       		p = python_models.Problem(name="blank", starter_code="")
-       	else:
-       		logging.info('NONE PTYPE')
-       		p = None
+        if self.pType == 'c':
+        	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="c")
+        elif self.pType == 'python':
+        	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="python")
        	logging.info(p.name)
         return p
 
@@ -50,15 +53,17 @@ class EditorViewMixin:
         """
         Record the submission and return the results of running the testcases.
         """
-        submission_model = self.model.get_submission_class()
         submission_code = request.POST.get('submission', '')
         results, error = [], None
         if submission_code:
-            submission = submission_model.objects.create(
-                user=request.user, problem=self.get_problem(),
-                section=self.get_section(), submission=submission_code)
+            logging.info(submission_code)
+            if self.pType == 'python':
+            	submission = python_models.Submission(user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
+            elif self.pType == 'c':
+            	submission = c_models.Submission(user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
-            submission.set_score()
             self.object = submission
         return results, error
 
@@ -95,8 +100,6 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
         user, section = self.request.user, self.get_section()
 
         logger = logging.getLogger('activity.logging')
-        logger.info("IN HERE")
-
         logger.info(str(localtime(self.object.timestamp)) + " | " +
                     str(user) + " | Submit " +
                     str(problem.get_problem_type_name()) + " " +
