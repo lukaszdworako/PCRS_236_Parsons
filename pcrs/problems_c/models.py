@@ -175,23 +175,56 @@ class Submission(AbstractSubmission):
         if not self.hidden_lines_list:
             return program_exception
 
-        for exception_line in program_exception.split('<br />'):
-            number_break = exception_line.find(":")
-            if number_break > -1 and exception_line[:number_break].isdigit():
-                if int(exception_line[:number_break]) in self.hidden_lines_list:
+        hidden_error = 0
+        logging.info("--------------program exception is " + program_exception)
+        #First, get only the parts that match what I want to split by
+        split_pattern = re.compile(r'(([0-9]+):[0-9]+:\s(?:warning:|error:))')
+        tuple_of_delims = split_pattern.findall(program_exception)
+        #array_of_delims.group(0)
+        for delim in tuple_of_delims:
+            logging.info("-----------------DELIM0 IS " + delim[0])
+            logging.info("-----------------DELIM1 IS " + delim[1])
+
+        msg_delim = [str(cur_tuple[0]) for cur_tuple in tuple_of_delims]
+
+        split_warning = re.split(r'[0-9]+:[0-9]+:\s(?:warning:|error:)', program_exception)
+
+        first_item = split_warning.pop(0)
+        msg_delim[0]=first_item + msg_delim[0]
+        final_split = map("".join, zip(msg_delim, split_warning))
+
+        logging.info("NUMS IN HIDDEN LIST:")
+        for num in self.hidden_lines_list:
+            logging.info(num)
+
+        #Changing this to split by either : warning: or : error:
+        count=0
+        for exception_line in final_split:
+            logging.info("--------------SPLIT exception is " + exception_line)
+            #number_break = exception_line.find(":")
+            #logging.info(number_break)
+            #logging.info(exception_line[:19])
+            #if number_break.start() > -1 and exception_line[:number_break.start()].isdigit():
+            logging.info(tuple_of_delims[count][1])
+            if (int)(tuple_of_delims[count][1]) in self.hidden_lines_list:
+                logging.info("IN HIDDEN LINES LIST")
+                if hidden_error == 0:
+                    hidden_error = 1
                     exception_line = "There's a problem in your code! Please check the exercise description."
                 else:
-                    for hidden_line_num in self.hidden_lines_list:
-                        if int(exception_line[:number_break]) > hidden_line_num:
-                            exception_line = str(int(exception_line[:number_break])-1) + exception_line[number_break:]
-                            number_break = exception_line.find(":")
-            exception += exception_line + "<br />"
-        # Remove last break line
-        if '<br />' in program_exception:
-            exception = exception[:len(exception)-len("<br />")]
-        else:
-            exception = program_exception
+                    exception_line = ""
+            #else:
+                #CHANGE THIS to change the tuple containing the line number to be a diff. line number, then make exception line
+                #the concatination of the new tuple's line number with the rest of the message. 
 
+                #cur_break = number_break.start()
+                #for hidden_line_num in self.hidden_lines_list:
+                #    if int(exception_line[:cur_break]) > hidden_line_num:
+                #        exception_line = str(int(exception_line[:cur_break])-1) + exception_line[cur_break:]
+                #        cur_break = exception_line.find(":")
+            exception += exception_line
+            count += 1
+            
         return exception
 
     def pre_process_code_tags(self):
