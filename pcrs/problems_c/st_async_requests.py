@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from problems_c.c_language import *
+from problems_c.c_utilities import *
+from problems_c.models import Problem
 
 
 @csrf_exempt
@@ -17,15 +19,21 @@ def visualizer_details(request):
     ret = {}
     try:
         user_script = request.POST.get("user_script")
-        # add_params is always JSON encoded. 
+        # Get starter code from database and insert student submission
+        problem_id = request.POST.get("problemId")
+        starter_code = Problem.objects.get(pk=problem_id).starter_code
+        clean_code = process_code_tags(problem_id, user_script, starter_code)
+
+        # add_params is always JSON encoded.
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
         # Use CSRF_COOKIE as username
         add_params['user'] = request.META["CSRF_COOKIE"]
 
-        gen = CSpecifics(add_params['user'], user_script) # create a language instance
+        # Create a language instance
+        gen = CSpecifics(add_params['user'], clean_code)
 
-        ret = gen.get_exec_trace(user_script, add_params)
+        ret = gen.get_exec_trace(clean_code, add_params)
 
     except Exception as e:
         ret['exception'] = str(e)

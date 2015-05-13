@@ -61,7 +61,7 @@ if PRODUCTION:
     LOGIN_URL = SITE_PREFIX + "/login"
 AUTH_USER_MODEL = 'users.PCRSUser'
 AUTHENTICATION_BACKENDS = ('pcrs_authentication.ModelBackend',)
-AUTH_TYPE = 'none'       # Or 'pwauth' or 'none'
+AUTH_TYPE = 'none'       # 'shibboleth', 'pwauth', or 'none'
 AUTOENROLL = False
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
@@ -196,11 +196,11 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'crispy_forms',
     'helpers',
-    'users',
     'content',
     'problems',
     'editor',
     'compressor',
+    'users',
 ) + INSTALLED_PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'

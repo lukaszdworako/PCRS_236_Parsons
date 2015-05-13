@@ -9,6 +9,10 @@ from django.contrib.auth.models import (BaseUserManager)
 import content.models
 from pcrs.models import AbstractSelfAwareModel
 
+from django.db.models.signals import post_syncdb
+from django.dispatch import receiver
+import django.contrib.auth.models
+
 
 VISIBILITY_LEVELS = (
     ('closed', 'closed'),
@@ -258,6 +262,14 @@ class Section(AbstractSelfAwareModel):
                     quest=quest)
         else:
             super().save(force_insert, force_update, using, update_fields)
+
+
+# This should ordinarily be in pcrs/management/__init__.py but it wasn't working that way
+# The post_syncdb receiver is also deprecated in Django 1.9, in favor of post_migrate
+@receiver(post_syncdb, sender=django.contrib.auth.models)
+def insert_master_section(sender, **kwargs):
+    # Required for the superuser creation and must happen first
+    Section(pk='master', description='master', location='master', lecture_time='master').save()
 
 
 class AbstractLimitedVisibilityObject(models.Model):

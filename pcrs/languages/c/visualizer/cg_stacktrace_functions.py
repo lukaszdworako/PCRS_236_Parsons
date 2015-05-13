@@ -42,6 +42,20 @@ def remove_string_constant(line):
     """Remove double quotes and what is inside it"""
     return remove_from_string_token_range(find_string_constants(line), line)
 
+def remove_all_comments(user_script):
+    """Remove all comments from the code"""
+    while '/*' in user_script and '*/' in user_script:
+        comment_start = user_script.index('/*')
+        comment_end = user_script.index('*/', comment_start)
+        user_script = user_script[:comment_start] + user_script[comment_end+1:]
+
+    while '//' in user_script:
+        comment_start = user_script.index('//')
+        comment_end = user_script.index('\n', comment_start)
+        user_script = user_script[:comment_start] + user_script[comment_end+1:]
+
+    return user_script
+
 
 def find_string_constants(line):
     """Find double quote strings in a line"""
@@ -143,7 +157,9 @@ def get_variables_details_func_signature(line, line_number):
         if 'void' != attribute:
             attribute = attribute.split(' ')
             attribute = remove_values_from_list(attribute, '')
-            attributes_dic.append({line_number: [{attribute[0]: attribute[1]}, 'outside_bracket', {'malloc': False}]})
+            attributes_dic.append(
+                {line_number: [{attribute[0]: ''.join(attribute[1:len(attribute)])}
+                , 'outside_bracket', {'malloc': False}]})
 
     return attributes_dic
 

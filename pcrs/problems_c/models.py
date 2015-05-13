@@ -1,3 +1,4 @@
+import logging
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -7,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .c_language import CSpecifics
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractJobScheduler, AbstractCPrimitiveTypes,
+                             AbstractJobScheduler,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete, problem_delete)
 
@@ -39,17 +40,6 @@ class JobScheduler(AbstractJobScheduler):
     that enables remote compiling/interpreting
     """
     pass
-
-
-class CPrimitiveTypes(AbstractCPrimitiveTypes):
-    """
-    CPrimitiveTypes configuration.
-
-    A table that holds information about C primitive types and
-    its respective output type
-    """
-    pass
-
 
 class Submission(AbstractSubmission):
     """
@@ -170,6 +160,9 @@ class Submission(AbstractSubmission):
             return Submission.run_testcases_locally(self), None
 
     def treat_exception_text(self, program_exception):
+
+        logger = logging.getLogger('activity.logging')
+        
         exception = ""
         # No hidden code in the script, no need to process the exception message
         if not self.hidden_lines_list:
