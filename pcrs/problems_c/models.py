@@ -14,8 +14,6 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
 from rest_framework import status
 from json import loads, dumps
 from requests import post
-from hashlib import sha1
-from re import finditer, search
 
 
 class Problem(AbstractProgrammingProblem):
