@@ -2,6 +2,7 @@
 {% load filters %}
 
 {% block object_info %}
+{% if object.id != 9999999 %}
 <div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
     <div class="pcrs-panel">
         <h4 class="pcrs-panel-title problem-panel">
@@ -46,6 +47,6 @@
         </div>
     {% endif %}
 </div>
-
+{% endif %}
 {% endblock %}
 
