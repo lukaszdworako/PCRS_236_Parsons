@@ -232,7 +232,7 @@ class Submission(AbstractSubmission):
         #    exception = exception[:len(exception)-len("<br />")]
         #else:
             #exception = program_exception
-
+            
         return exception
 
     def pre_process_code_tags(self):
