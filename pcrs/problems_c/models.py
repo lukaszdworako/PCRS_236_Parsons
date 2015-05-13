@@ -18,6 +18,7 @@ from requests import post
 from hashlib import sha1
 from re import finditer, search
 import re
+import bisect
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -206,9 +207,19 @@ class Submission(AbstractSubmission):
                     exception_line = "There's a problem in your code! Please check the exercise description."
                 else:
                     exception_line = ""
-            #else:
+            else:
+                #Getting a list of all lines that are less than the current line number in the hidden list
+                list_amt = bisect.bisect_left(self.hidden_lines_list, (int)(tuple_of_delims[count][1]))
+                adjusted_line_no = (int)(tuple_of_delims[count][1]) - list_amt
+                logging.info("ADJUSTED NUM IS ")
+                logging.info(adjusted_line_no)
+                #Got the correct number, now just need to change it to replace the old number in the exception
+                #string with the new number =D
+
                 #CHANGE THIS to change the tuple containing the line number to be a diff. line number, then make exception line
                 #the concatination of the new tuple's line number with the rest of the message. 
+                #In order to do this, we will have to get a portion of the hidden list that contains numbers below the current line
+                #number - then, we will subtract the length of this list portion from the current line number.
 
                 #cur_break = number_break.start()
                 #for hidden_line_num in self.hidden_lines_list:
