@@ -1,3 +1,4 @@
+import logging
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -5,16 +6,15 @@ from django.db.models.signals import post_delete
 from django.core.exceptions import ObjectDoesNotExist
 
 from .c_language import CSpecifics
-from .c_utilities import *
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractJobScheduler, AbstractTestCase, AbstractTestRun,
+                             AbstractJobScheduler,
+                             AbstractTestCase, AbstractTestRun,
                              testcase_delete, problem_delete)
 
 from rest_framework import status
 from json import loads, dumps
 from requests import post
-
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -24,7 +24,7 @@ class Problem(AbstractProgrammingProblem):
     a language and starter code
     """
 
-    language = models.CharField(max_length=50,
+    language = models.CharField(max_length=50, 
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='c')
 
@@ -37,7 +37,6 @@ class JobScheduler(AbstractJobScheduler):
     that enables remote compiling/interpreting
     """
     pass
-
 
 class Submission(AbstractSubmission):
     """
@@ -158,22 +157,29 @@ class Submission(AbstractSubmission):
             return Submission.run_testcases_locally(self), None
 
     def treat_exception_text(self, program_exception):
+
+        logger = logging.getLogger('activity.logging')
+        
         exception = ""
         # No hidden code in the script, no need to process the exception message
         if not self.hidden_lines_list:
             return program_exception
 
+        logging.info("--------------program exception is " + program_exception)
         for exception_line in program_exception.split('<br />'):
             number_break = exception_line.find(":")
             if number_break > -1 and exception_line[:number_break].isdigit():
                 if int(exception_line[:number_break]) in self.hidden_lines_list:
-                    exception_line = "There's a problem in your code! Please check the exercise description."
+                    exception = "There's a problem in your code! Please check the exercise description."
+                    break
+                    logging.info("--------------in here, exception line is " + exception_line)
                 else:
                     for hidden_line_num in self.hidden_lines_list:
                         if int(exception_line[:number_break]) > hidden_line_num:
                             exception_line = str(int(exception_line[:number_break])-1) + exception_line[number_break:]
                             number_break = exception_line.find(":")
             exception += exception_line + "<br />"
+            logging.info("-----------out here, NOW exception line is " + exception_line)
         # Remove last break line
         if '<br />' in program_exception:
             exception = exception[:len(exception)-len("<br />")]
@@ -183,11 +189,51 @@ class Submission(AbstractSubmission):
         return exception
 
     def pre_process_code_tags(self):
+        # Get student code hashed key
+        student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
+        student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
+        student_code_key_len = len(student_code_key)
+        student_code_key_list_len = len(student_code_key_list)
+
+        # Could not find student code
+        if (len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0) and self.problem_id != 9999999:
+            raise Exception("No student code found!")
+
+        # Get student code from submission and add it to the official exercise (from the database)
+        student_code_list = []
+        while len(student_code_key_list) >= 2:
+            student_code_list.append(
+                self.submission[student_code_key_list[0]+student_code_key_len+1: student_code_key_list[1]])
+            del student_code_key_list[0], student_code_key_list[0]
+
+        # Create variable mod_submission to handle the fusion of student code with starter_code from the database
+        self.mod_submission = self.problem.starter_code
+        last_tag_size = len('[/student_code]') + 1
+        for student_code in student_code_list:
+            self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
+                                    '//Implementation start\r\n' + student_code + '//Implementation end' +\
+                                    self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
+
+        # Replace hashed key with text (Implementation start/end)
+        x = 0
+        while x < student_code_key_list_len:
+            if x % 2 == 0:
+                comment_text = '//Implementation start'
+            else:
+                comment_text = '//Implementation end'
+            m = search(student_code_key, self.submission)
+            self.submission = self.submission[: m.start()] + comment_text + self.submission[m.end():]
+            x += 1
+
+        # Remove blocked tags from the source code
+        self.mod_submission = self.mod_submission.replace("[blocked]\r\n", '').replace("[/blocked]\r\n", '')
+        self.mod_submission = self.mod_submission.replace("[blocked]", '').replace("[/blocked]", '')
+
         # Store hidden code lines for previous use when showing compilation and warning errors
         inside_hidden_tag = False
         self.hidden_lines_list = []
         line_num = 1
-        for line in self.problem.starter_code.split('\n'):
+        for line in self.mod_submission.split('\n'):
             if line.find("[hidden]") > -1:
                 inside_hidden_tag = True
                 continue
@@ -198,7 +244,9 @@ class Submission(AbstractSubmission):
                 self.hidden_lines_list.append(line_num)
             line_num += 1
 
-        self.mod_submission = process_code_tags(self.problem_id, self.submission, self.problem.starter_code)
+        # Remove hidden tags from the source code
+        self.mod_submission = self.mod_submission.replace("[hidden]\r\n", '').replace("[/hidden]\r\n", '')
+        self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
 
 
 def raw_string(s):
