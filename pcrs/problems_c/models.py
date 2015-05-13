@@ -15,6 +15,8 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
 from rest_framework import status
 from json import loads, dumps
 from requests import post
+from hashlib import sha1
+from re import finditer, search
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -24,7 +26,7 @@ class Problem(AbstractProgrammingProblem):
     a language and starter code
     """
 
-    language = models.CharField(max_length=50, 
+    language = models.CharField(max_length=50,
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='c')
 
@@ -159,7 +161,7 @@ class Submission(AbstractSubmission):
     def treat_exception_text(self, program_exception):
 
         logger = logging.getLogger('activity.logging')
-        
+
         exception = ""
         # No hidden code in the script, no need to process the exception message
         if not self.hidden_lines_list:
