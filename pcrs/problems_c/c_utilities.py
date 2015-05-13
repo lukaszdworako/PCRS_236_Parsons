@@ -10,7 +10,7 @@ def process_code_tags(problem_id, user_submission, starter_code):
     student_code_key_list_len = len(student_code_key_list)
 
     # Could not find student code
-    if (len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0) and self.problem_id != 9999999:
+    if len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0:
         raise Exception("No student code found!")
 
     # Get student code from submission and add it to the official exercise (from the database)
