@@ -18,7 +18,6 @@ from hashlib import sha1
 from re import finditer, search
 import re
 
-
 class Problem(AbstractProgrammingProblem):
     """
     A coding problem.
