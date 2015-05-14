@@ -100,6 +100,9 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
         user, section = self.request.user, self.get_section()
 
         logger = logging.getLogger('activity.logging')
+
+        logger.info("RESULTS WERE " + (str)(results[0]) )
+
         logger.info(str(localtime(self.object.timestamp)) + " | " +
                     str(user) + " | Submit " +
                     str(problem.get_problem_type_name()) + " " +
@@ -114,3 +117,17 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
             'past_dead_line': deadline and self.object.timestamp > deadline,
             'max_score': self.object.problem.max_score}, cls=DateEncoder),
         mimetype='application/json')
+
+
+    #         var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
+    # executeGenericVisualizer("gen_execution_trace_params", postParams);
+
+    # console.log(newCode);
+
+    # $.post(root + '/problems/' + language + '/visualizer-details',
+    #         postParams,
+    #         function(data) {
+    #             executeGenericVisualizer("create_visualizer", data, newCode);
+    #         },
+    #     "json")
+    #  .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });

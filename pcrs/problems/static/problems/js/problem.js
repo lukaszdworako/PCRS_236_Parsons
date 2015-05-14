@@ -564,6 +564,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
      * "max_score" maximum score for this problem
      */
 
+    //Check if this is getting called from the editor - if so, don't need to render all this
+    var isEditor = $( "p.widget_title" ).text().includes("C Editor");
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];
@@ -922,7 +924,6 @@ $(document).ready(function() {
 
         $(all_wrappers[x]).find('#submit-id-submit').click(function(event){
             event.preventDefault();
-
             var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
 
             if (myCodeMirrors[div_id].getValue() == ''){

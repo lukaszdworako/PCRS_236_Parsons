@@ -238,6 +238,11 @@ class CVisualizer:
 
         import re
         import copy
+        
+        import pdb
+
+        #pdb.set_trace()
+
         r = re.compile("\("+self.key+"\)"+'(.*?)'+"\("+self.key+"\)")
         visualizer_trace = []
         line_num = ""
