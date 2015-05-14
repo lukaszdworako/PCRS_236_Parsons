@@ -75,12 +75,12 @@ urlpatterns = patterns('',
         name='challenge_stats_data'),
 
     # prerequisites graph
-    url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
-    url(r'^challenges/prereq_graph/generate_horizontal$', ChallengeGraphGenViewHorizontal.as_view()),
-    url(r'^challenges/prereq_graph/generate_vertical$', ChallengeGraphGenViewVertical.as_view()),
-    url(r'^challenges/prereq_graph/for_user$',
-        ChallengeCompletionForUserView.as_view(),
-        name='challenge_prerequisite_data_for_user'),
+    # url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
+    # url(r'^challenges/prereq_graph/generate_horizontal$', ChallengeGraphGenViewHorizontal.as_view()),
+    # url(r'^challenges/prereq_graph/generate_vertical$', ChallengeGraphGenViewVertical.as_view()),
+    # url(r'^challenges/prereq_graph/for_user$',
+    #     ChallengeCompletionForUserView.as_view(),
+    #     name='challenge_prerequisite_data_for_user'),
 
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
