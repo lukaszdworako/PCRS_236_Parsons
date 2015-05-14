@@ -249,13 +249,14 @@ function addHashkey(div_id){
     return code.substring(0, code.length-1);
 }
 
-function handleCMessages(div_id, testcases){
+function handleCMessages(div_id, testcases, fullScore){
     /**
      * Handle C error and warning
      * messages - divs with different
      * colors and font style
      */
     // Handle C warnings and exceptions
+
     $('#'+div_id).find('#c_warning').remove();
     $('#'+div_id).find('#c_error').remove();
 
@@ -268,7 +269,7 @@ function handleCMessages(div_id, testcases){
         }
     }
 
-    if(bad_testcase != null){
+    if((bad_testcase != null) && !(fullScore && (bad_testcase.exception ==  "There's a problem in your code! Please check the exercise description.")) ){
         var class_type;
         if(bad_testcase.exception_type == "warning") {
             class_type = 'alert alert-warning';
@@ -377,8 +378,7 @@ function getTestcases(div_id) {
                 }
                 else if (language == 'c'){
                     // Handle C error and warning messages
-                    handleCMessages(div_id, testcases);
-
+                    handleCMessages(div_id, testcases, score==max_score);
                     prepareGradingTable(div_id,
                                         data['best'],
                                         data['past_dead_line'],

@@ -4,3 +4,4 @@ __pycache__
 *.log
 CACHE
 node_modules
+venv
