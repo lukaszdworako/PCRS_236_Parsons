@@ -161,8 +161,6 @@ class Submission(AbstractSubmission):
             return Submission.run_testcases_locally(self), None
 
     def treat_exception_text(self, program_exception):
-
-        logger = logging.getLogger('activity.logging')
         
         exception = ""
         # No hidden code in the script, no need to process the exception message
@@ -170,14 +168,9 @@ class Submission(AbstractSubmission):
             return program_exception
 
         hidden_error = 0
-        logging.info("--------------program exception is " + program_exception)
         #First, get only the parts that match what I want to split by
         split_pattern = re.compile(r'(([0-9]+):[0-9]+:\s(?:warning:|error:))')
         tuple_of_delims = split_pattern.findall(program_exception)
-        #array_of_delims.group(0)
-        for delim in tuple_of_delims:
-            logging.info("-----------------DELIM0 IS " + delim[0])
-            logging.info("-----------------DELIM1 IS " + delim[1])
 
         msg_delim = [str(cur_tuple[0]) for cur_tuple in tuple_of_delims]
 
@@ -187,21 +180,10 @@ class Submission(AbstractSubmission):
         msg_delim[0]=first_item + msg_delim[0]
         final_split = map("".join, zip(msg_delim, split_warning))
 
-        logging.info("NUMS IN HIDDEN LIST:")
-        for num in self.hidden_lines_list:
-            logging.info(num)
-
-        #Changing this to split by either : warning: or : error:
+        #Split by either ": warning:" or ": error:"
         count=0
         for exception_line in final_split:
-            logging.info("--------------SPLIT exception is " + exception_line)
-            #number_break = exception_line.find(":")
-            #logging.info(number_break)
-            #logging.info(exception_line[:19])
-            #if number_break.start() > -1 and exception_line[:number_break.start()].isdigit():
-            logging.info(tuple_of_delims[count][1])
             if (int)(tuple_of_delims[count][1]) in self.hidden_lines_list:
-                logging.info("IN HIDDEN LINES LIST")
                 if hidden_error == 0:
                     hidden_error = 1
                     exception_line = "There's a problem in your code! Please check the exercise description."
@@ -211,32 +193,12 @@ class Submission(AbstractSubmission):
                 #Getting a list of all lines that are less than the current line number in the hidden list
                 list_amt = bisect.bisect_left(self.hidden_lines_list, (int)(tuple_of_delims[count][1]))
                 adjusted_line_no = (int)(tuple_of_delims[count][1]) - list_amt
-                logging.info("ADJUSTED NUM IS ")
-                logging.info(adjusted_line_no)
-                #Got the correct number, now just need to change it to replace the old number in the exception
-                #string with the new number =D
+                #Replacing the actual line number with the one that the user sees
+                exception_line = exception_line.replace((str)(tuple_of_delims[count][1])+":", (str)(adjusted_line_no)+":")
 
-                #CHANGE THIS to change the tuple containing the line number to be a diff. line number, then make exception line
-                #the concatination of the new tuple's line number with the rest of the message. 
-                #In order to do this, we will have to get a portion of the hidden list that contains numbers below the current line
-                #number - then, we will subtract the length of this list portion from the current line number.
-
-                #cur_break = number_break.start()
-                #for hidden_line_num in self.hidden_lines_list:
-                #    if int(exception_line[:cur_break]) > hidden_line_num:
-                #        exception_line = str(int(exception_line[:cur_break])-1) + exception_line[cur_break:]
-                #        cur_break = exception_line.find(":")
             exception += exception_line
             count += 1
 
-        # Remove last break line
-        if '<br />' not in program_exception:
-            exception = program_exception
-
-        #    exception = exception[:len(exception)-len("<br />")]
-        #else:
-            #exception = program_exception
-            
         return exception
 
     def pre_process_code_tags(self):
