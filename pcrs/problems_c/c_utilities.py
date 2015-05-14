@@ -25,19 +25,14 @@ def process_code_tags(problem_id, user_submission, starter_code):
     last_tag_size = len('[/student_code]') + 1
     for student_code in student_code_list:
         mod_submission = mod_submission[: mod_submission.find('[student_code]')] + \
-                                '//Implementation start\r\n' + student_code + '//Implementation end' +\
+                                '\r\n' + student_code + '' +\
                                 mod_submission[mod_submission.find('[/student_code]')+last_tag_size:]
 
     # Replace hashed key with text (Implementation start/end)
     x = 0
     while x < student_code_key_list_len:
-        if x % 2 == 0:
-            comment_text = '//Implementation start'
-        else:
-            comment_text = '//Implementation end'
-
         m = search(student_code_key, user_submission)
-        user_submission = user_submission[: m.start()] + comment_text + user_submission[m.end():]
+        user_submission = user_submission[: m.start()] + user_submission[m.end():]
         x += 1
 
     # Remove blocked tags from the source code

@@ -816,11 +816,11 @@ function removeTags(source_code){
         }
         else if((line.split("[student_code]").length - 1) > 0){
             student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-            source_code += '//Implementation start' + '\n';
+            source_code += '\n';
         }
         else if((line.split("[/student_code]").length - 1) > 0) {
             student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-            source_code += '//Implementation end' + '\n';
+            source_code += '\n';
         }else {
             source_code += lines[i] + '\n';
         }
