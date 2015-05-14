@@ -28,7 +28,7 @@ class Problem(AbstractProgrammingProblem):
     a language and starter code
     """
 
-    language = models.CharField(max_length=50, 
+    language = models.CharField(max_length=50,
                                 choices=settings.LANGUAGE_CHOICES,
                                 default='c')
 
@@ -161,7 +161,7 @@ class Submission(AbstractSubmission):
             return Submission.run_testcases_locally(self), None
 
     def treat_exception_text(self, program_exception):
-        
+
         exception = ""
         # No hidden code in the script, no need to process the exception message
         if not self.hidden_lines_list:
