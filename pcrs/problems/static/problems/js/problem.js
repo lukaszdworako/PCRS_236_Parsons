@@ -295,6 +295,7 @@ function getTestcases(div_id) {
         clean_code = myCodeMirrors[div_id].getValue();
     }
 
+    console.log(clean_code);
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
         clean_code = clean_code.replace('\t',"    ");
@@ -339,6 +340,7 @@ function getTestcases(div_id) {
                 var score = data['score'];
                 var max_score = data['max_score'];
                 var desider = score == max_score;
+                var isEditor = $( "p.widget_title" ).text().includes("C Editor");
 
                 $('#'+div_id).find('#alert')
                     .toggleClass("red-alert", !desider);
@@ -379,11 +381,17 @@ function getTestcases(div_id) {
                 else if (language == 'c'){
                     // Handle C error and warning messages
                     handleCMessages(div_id, testcases, score==max_score);
-                    prepareGradingTable(div_id,
-                                        data['best'],
-                                        data['past_dead_line'],
-                                        data['sub_pk'],
-                                        max_score);
+                    if (!isEditor){
+                        prepareGradingTable(div_id,
+                                            data['best'],
+                                            data['past_dead_line'],
+                                            data['sub_pk'],
+                                            max_score);
+                    }
+                    //If it's the editor, start calling virtualizer functions now
+                    else{
+                        getVisualizerComponents(clean_code, "", 9999999);
+                    }
                 }
                 else if (language=='sql'){
                     prepareSqlGradingTable(div_id,
@@ -565,7 +573,6 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
      */
 
     //Check if this is getting called from the editor - if so, don't need to render all this
-    var isEditor = $( "p.widget_title" ).text().includes("C Editor");
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];

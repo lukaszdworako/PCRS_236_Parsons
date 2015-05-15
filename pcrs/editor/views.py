@@ -32,7 +32,9 @@ class EditorViewMixin:
         Return the Problem object for the submission.
         """
         if self.pType == 'c':
-        	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="c")
+
+            starter ="#include <stdio.h>"
+            p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code=starter, id=9999999, language="c")
         elif self.pType == 'python':
         	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="python")
        	logging.info(p.name)

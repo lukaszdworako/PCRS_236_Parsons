@@ -3,7 +3,7 @@ import subprocess
 import datetime
 from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_GROUPID
 from languages.c.visualizer.cg_stacktrace import CVisualizer
-
+import logging
 
 class CSpecifics():
     """ Representation of C language:
@@ -230,6 +230,8 @@ class CSpecifics():
             'exception' (only if exception occurs) -> exception message.
             'trace' -> program trace.
         """
+        logger = logging.getLogger('activity.logging')
+        
         user = add_params['user']
         temp_path = os.getcwd()
         test_input = add_params['test_case']
@@ -245,10 +247,18 @@ class CSpecifics():
             return {'trace': None, 'exception': ret["exception"]}
 
         c_visualizer = CVisualizer(user, temp_path)
+        logger.info("gets here 1")
         # Build initial stack with functions and variables data
+        #Each element of stack trace contains a dictionary for a 
+        #function in the code(one element per function, ie. stacktrace[0] 
+        #is the main function, etc)
         stack_trace = c_visualizer.build_stacktrace(user_script)
+        logger.info("gets here 2")
+        for item in stack_trace:
+            logger.info(item)
         # Change original source code with the proper printf (debug)
         mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
+        logger.info("here 3")
         # Compile and run the modified source code and remove compiled file
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':

@@ -211,7 +211,7 @@ class Submission(AbstractSubmission):
 
     def pre_process_code_tags(self):
         # Get student code hashed key
-
+        
         #if code from editor, just return straight code
         if self.problem_id == 9999999:
             if len(self.submission) == 0:
