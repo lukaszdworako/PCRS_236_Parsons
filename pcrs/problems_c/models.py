@@ -224,18 +224,14 @@ class Submission(AbstractSubmission):
         last_tag_size = len('[/student_code]') + 1
         for student_code in student_code_list:
             self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
-                                    '//Implementation start\r\n' + student_code + '//Implementation end' +\
+                                    '\r\n' + student_code + '' +\
                                     self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
 
         # Replace hashed key with text (Implementation start/end)
         x = 0
         while x < student_code_key_list_len:
-            if x % 2 == 0:
-                comment_text = '//Implementation start'
-            else:
-                comment_text = '//Implementation end'
             m = search(student_code_key, self.submission)
-            self.submission = self.submission[: m.start()] + comment_text + self.submission[m.end():]
+            self.submission = self.submission[: m.start()] + self.submission[m.end():]
             x += 1
 
         # Remove blocked tags from the source code
