@@ -249,14 +249,13 @@ function addHashkey(div_id){
     return code.substring(0, code.length-1);
 }
 
-function handleCMessages(div_id, testcases, fullScore){
+function handleCMessages(div_id, testcases){
     /**
      * Handle C error and warning
      * messages - divs with different
      * colors and font style
      */
     // Handle C warnings and exceptions
-
     $('#'+div_id).find('#c_warning').remove();
     $('#'+div_id).find('#c_error').remove();
 
@@ -269,7 +268,7 @@ function handleCMessages(div_id, testcases, fullScore){
         }
     }
 
-    if((bad_testcase != null) && !(fullScore && (bad_testcase.exception ==  "There's a problem in your code! Please check the exercise description.")) ){
+    if(bad_testcase != null){
         var class_type;
         if(bad_testcase.exception_type == "warning") {
             class_type = 'alert alert-warning';
@@ -378,7 +377,8 @@ function getTestcases(div_id) {
                 }
                 else if (language == 'c'){
                     // Handle C error and warning messages
-                    handleCMessages(div_id, testcases, score==max_score);
+                    handleCMessages(div_id, testcases);
+
                     prepareGradingTable(div_id,
                                         data['best'],
                                         data['past_dead_line'],
@@ -883,6 +883,69 @@ function highlightCode(editor_id, tag_list){
     }
 }
 
+function preventDeleteLastLine(editor_id) {
+    editor = myCodeMirrors[editor_id];
+
+    // Find the lines which are accessible to the user
+    startLine = editor.doc.getCursor().line;
+    //    if (wrapClass != 'CodeMirror-studentline-background' && wrapClass != 'CodeMirror-activeline-background'){
+
+    editor.setOption("extraKeys",
+        {
+            "Backspace": guardBackspace,
+            "Delete": guardDelete
+        });
+}
+
+function guardBackspace(editor) {
+    curLine = editor.getCursor().line;
+    curLineChar = editor.getCursor().ch;
+
+    prevLine = (curLine > 0) ? curLine - 1 : 0;
+
+    codeSelected = editor.getSelection().length > 0;
+    curLineEmpty = editor.lineInfo(curLine).text.length == 0;
+    curLineFirstChar = curLineChar == 0;
+    prevLineWrapClass = editor.lineInfo(prevLine).wrapClass;
+
+    // Allow deleting selections, characters on the same line and previous unblocked lines
+    if (codeSelected
+        || (!curLineEmpty && !curLineFirstChar)
+        || (prevLineWrapClass != 'CodeMirror-studentline-background'
+            && prevLineWrapClass != 'CodeMirror-activeline-background')) {
+
+        // Resume default behaviour
+        return CodeMirror.Pass;
+    }
+}
+
+function guardDelete(editor) {
+    selection = editor.getSelection();
+
+    curLine = editor.getCursor().line;
+    curLineLen = editor.lineInfo(curLine).text.length;
+    curLineChar = editor.getCursor().ch;
+
+    lineCount = editor.lineCount();
+    nextLine = (curLine < lineCount) ? curLine + 1 : lineCount;
+
+    codeSelected = editor.getSelection().length > 0;
+    curLineEmpty = curLineLen == 0;
+    curLineLastChar = curLineChar == curLineLen;
+    nextLineWrapClass = editor.lineInfo(nextLine).wrapClass;
+
+    // Allow deleting selections, characters on the same line and following unblocked lines
+    if (codeSelected
+        || (!curLineEmpty && !curLineLastChar)
+        || (nextLineWrapClass != 'CodeMirror-studentline-background'
+            && nextLineWrapClass != 'CodeMirror-activeline-background')) {
+
+        // Resume default behaviour
+        return CodeMirror.Pass;
+    }
+}
+
+
 $(document).ready(function() {
 
     var all_wrappers = $('.code-mirror-wrapper');
@@ -908,6 +971,8 @@ $(document).ready(function() {
                         codeObj.source_code, false);
 
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
+
+            preventDeleteLastLine(all_wrappers[x].id)
         }
         else if (language == "sql"){
             myCodeMirrors[all_wrappers[x].id] =
