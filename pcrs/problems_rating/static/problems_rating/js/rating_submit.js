@@ -41,7 +41,7 @@ function submit_rating(rating, problem_pk, div_id) {
                     $('#'+div_id)
                         .find('#alert')
                         .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Submitted after the deadline!");    
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Submitted after the deadline!");
                 }
 
                 var display_element = $('#rating-'+problem_pk)
@@ -54,7 +54,7 @@ function submit_rating(rating, problem_pk, div_id) {
                 $(display_element)
                     .children('span')
                     .text("Rating entered!");
-                $('#'+div_id).find('.screen-reader-text').prop('title', "Rating entered!");  
+                $('#'+div_id).find('.screen-reader-text').prop('title', "Rating entered!");
 
 
                 returnable = {

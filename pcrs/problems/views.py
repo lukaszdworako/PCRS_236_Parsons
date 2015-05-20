@@ -94,6 +94,12 @@ class ProblemUpdateView(CourseStaffViewMixin, ProblemView, GenericItemUpdateView
     """
     template_name = 'problems/problem_form.html'
 
+    def get_success_url(self):
+        if 'attempt' in self.request.POST:
+            return '{}/submit'.format(self.object.get_absolute_url())
+        else:
+            return self.object.get_absolute_url()
+
 
 class ProblemDeleteView(CourseStaffViewMixin, ProblemView, DeleteView):
     """

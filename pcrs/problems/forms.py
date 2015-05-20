@@ -13,6 +13,7 @@ class BaseProblemForm(CrispyFormMixin):
                         'href="{{ object.get_absolute_url }}/clear">'
                         'Clear submissions</a>')
     save_button = Submit('submit', 'Save', css_class='green-button-right')
+    attempt_button = Submit('attempt', 'Attempt', css_class='green-button-right')
 
     save_and_add = Submit('submit', 'Save and add testcases',
                            css_class='green-button-right',
@@ -25,11 +26,14 @@ class BaseProblemForm(CrispyFormMixin):
             clone = Submit('clone', 'Clone', css_class='green-button',
                            formaction='{}/clone'.format(
                                self.instance.get_absolute_url()))
+
             self.buttons = (Div(CrispyFormMixin.delete_button,
                                 self.clear_button,
                                 css_class='button-group'),
-                            Div(clone, self.save_button,
-                                css_class='button-group-right'))
+                            Div(clone, self.save_button, self.attempt_button,
+                                css_class='button-group-right'),
+                            )
+
         elif self.instance:
             # cloning
             self.buttons = self.save_button,
@@ -75,7 +79,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right')
         )
-        
+
 
 def remove_tag(tag_open, tag_close, source_code):
     source_code = source_code.split('\n')
