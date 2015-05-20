@@ -53,8 +53,8 @@ class Submission(AbstractSubmission):
         Run all testcases for the submission locally and create testrun objects.
         Return the list of testrun results.
         """
-
         results = []
+
         runner = CSpecifics(self.user.username, self.mod_submission)
         for testcase in self.problem.testcase_set.all():
             run = runner.run_test(testcase.test_input, testcase.expected_output)
@@ -73,6 +73,14 @@ class Submission(AbstractSubmission):
         # Clear exec file created by GCC during compilation process
         if len(self.problem.testcase_set.all()) > 0:
             runner.clear_exec_file(runner.compilation_ret["temp_gcc_file"])
+
+        # Condition for editor running code - no testcases, just result
+        if self.problem.id == 9999999:
+            run = runner.run_test("", "")
+            if run["exception"] != " ":
+                run["exception"] = self.treat_exception_text(run["exception"])
+            run['test_input'], run['expected_output'] = None, None
+            results.append(run)
 
         return results
 
@@ -202,61 +210,68 @@ class Submission(AbstractSubmission):
         return exception
 
     def pre_process_code_tags(self):
-        # Get student code hashed key
-        student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-        student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
-        student_code_key_len = len(student_code_key)
-        student_code_key_list_len = len(student_code_key_list)
+        #if code from editor, just return straight code
+        if self.problem_id == 9999999:
+            if len(self.submission) == 0:
+                raise Exception("No code found!")
+            else:
+                self.hidden_lines_list = []
+                self.mod_submission = self.submission
+        else:
+            # Get student code hashed key
+            student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
+            student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
+            student_code_key_len = len(student_code_key)
+            student_code_key_list_len = len(student_code_key_list)
 
-        # Could not find student code
-        if (len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0) and self.problem_id != 9999999:
-            raise Exception("No student code found!")
+            # Could not find student code
+            if (len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0) and self.problem_id != 9999999:
+                raise Exception("No student code found!")
 
-        # Get student code from submission and add it to the official exercise (from the database)
-        student_code_list = []
-        while len(student_code_key_list) >= 2:
-            student_code_list.append(
-                self.submission[student_code_key_list[0]+student_code_key_len+1: student_code_key_list[1]])
-            del student_code_key_list[0], student_code_key_list[0]
+            # Get student code from submission and add it to the official exercise (from the database)
+            student_code_list = []
+            while len(student_code_key_list) >= 2:
+                student_code_list.append(
+                    self.submission[student_code_key_list[0]+student_code_key_len+1: student_code_key_list[1]])
+                del student_code_key_list[0], student_code_key_list[0]
 
-        # Create variable mod_submission to handle the fusion of student code with starter_code from the database
-        self.mod_submission = self.problem.starter_code
-        last_tag_size = len('[/student_code]') + 1
-        for student_code in student_code_list:
-            self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
-                                    '\r\n' + student_code + '' +\
-                                    self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
+            # Create variable mod_submission to handle the fusion of student code with starter_code from the database
+            self.mod_submission = self.problem.starter_code
+            last_tag_size = len('[/student_code]') + 1
+            for student_code in student_code_list:
+                self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
+                                        '\r\n' + student_code + '' +\
+                                        self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
 
-        # Replace hashed key with text (Implementation start/end)
-        x = 0
-        while x < student_code_key_list_len:
-            m = search(student_code_key, self.submission)
-            self.submission = self.submission[: m.start()] + self.submission[m.end():]
-            x += 1
+            # Replace hashed key with text (Implementation start/end)
+            x = 0
+            while x < student_code_key_list_len:
+                m = search(student_code_key, self.submission)
+                self.submission = self.submission[: m.start()] + self.submission[m.end():]
+                x += 1
 
-        # Remove blocked tags from the source code
-        self.mod_submission = self.mod_submission.replace("[blocked]\r\n", '').replace("[/blocked]\r\n", '')
-        self.mod_submission = self.mod_submission.replace("[blocked]", '').replace("[/blocked]", '')
+            # Remove blocked tags from the source code
+            self.mod_submission = self.mod_submission.replace("[blocked]\r\n", '').replace("[/blocked]\r\n", '')
+            self.mod_submission = self.mod_submission.replace("[blocked]", '').replace("[/blocked]", '')
 
-        # Store hidden code lines for previous use when showing compilation and warning errors
-        inside_hidden_tag = False
-        self.hidden_lines_list = []
-        line_num = 1
-        for line in self.mod_submission.split('\n'):
-            if line.find("[hidden]") > -1:
-                inside_hidden_tag = True
-                continue
-            elif line.find("[/hidden]") > -1:
-                inside_hidden_tag = False
-                continue
-            if inside_hidden_tag:
-                self.hidden_lines_list.append(line_num)
-            line_num += 1
+            # Store hidden code lines for previous use when showing compilation and warning errors
+            inside_hidden_tag = False
+            self.hidden_lines_list = []
+            line_num = 1
+            for line in self.mod_submission.split('\n'):
+                if line.find("[hidden]") > -1:
+                    inside_hidden_tag = True
+                    continue
+                elif line.find("[/hidden]") > -1:
+                    inside_hidden_tag = False
+                    continue
+                if inside_hidden_tag:
+                    self.hidden_lines_list.append(line_num)
+                line_num += 1
 
-        # Remove hidden tags from the source code
-        self.mod_submission = self.mod_submission.replace("[hidden]\r\n", '').replace("[/hidden]\r\n", '')
-        self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
-
+            # Remove hidden tags from the source code
+            self.mod_submission = self.mod_submission.replace("[hidden]\r\n", '').replace("[/hidden]\r\n", '')
+            self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
 
 def raw_string(s):
     if isinstance(s, str):

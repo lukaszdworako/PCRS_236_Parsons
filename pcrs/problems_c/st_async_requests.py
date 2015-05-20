@@ -7,7 +7,7 @@ import json
 from problems_c.c_language import *
 from problems_c.c_utilities import *
 from problems_c.models import Problem
-
+import logging
 
 @csrf_exempt
 def visualizer_details(request):
@@ -15,6 +15,7 @@ def visualizer_details(request):
         Return json encoded dictionary ret containing trace required
         for visualizer. Contents of the ret depend on language implementation.
     """
+    logger = logging.getLogger('activity.logging')
 
     ret = {}
     try:
@@ -36,7 +37,9 @@ def visualizer_details(request):
         ret = gen.get_exec_trace(clean_code, add_params)
 
     except Exception as e:
+     #   logger.info("----------------EXCEPTION--------------------")
         ret['exception'] = str(e)
+    #logger.info("----------------RIGHT BEFORE RETURN-------------------")
 
     json_output = json.dumps(ret, indent=None)
 
