@@ -43,25 +43,28 @@ if __name__ == "__main__":
     ast.show()
 
 
+
+    #Going to try a diff approach since this doesn't go deep enough if there's assignments in if statements, etc: 
+    #can I get where all the assignments & declarations are?
+    #write a recursive tree search that returns the parent and the # index of the node, so we can add a print statement right after it.
     amt_of_functions = len(ast.ext)
     for i in range(0, amt_of_functions):
 	    #Note:ast.ext[0] gets the first function, .body gets the stuff under Compound, and block_items gets each group of elements under Compound
-	    body_node_list = ast.ext[i].body.block_items
-	    j = 0
-	    total_len = len(body_node_list)
-	    
-	    while j < total_len:
-	    	if isinstance(body_node_list[j], c_ast.Decl) or isinstance(body_node_list[j], c_ast.Assignment):
-	    		if isinstance(body_node_list[j], c_ast.Decl):
-	    			var_name = (str)(body_node_list[j].name)
-	    		else:
-	    			var_name = (str)(body_node_list[j].lvalue.name)
-	    		print("node line num:"+(str)(body_node_list[j].coord.line)+" name: " +var_name)
-	    		node_to_insert = create_printf_node()
-	    		body_node_list.insert(j+1, node_to_insert)
-	    		j += 1
-	    		total_len += 1
-	    	j += 1
+        body_node_list = ast.ext[i].body.block_items
+        j=0
+        total_len = len(body_node_list)
+        while j < total_len:
+            if isinstance(body_node_list[j], c_ast.Decl) or isinstance(body_node_list[j], c_ast.Assignment):
+                if isinstance(body_node_list[j], c_ast.Decl):
+                    var_name = (str)(body_node_list[j].name)
+                else:
+                    var_name = (str)(body_node_list[j].lvalue.name)
+                    print("node line num:"+(str)(body_node_list[j].coord.line)+" name: " +var_name)
+                node_to_insert = create_printf_node()
+                body_node_list.insert(j+1, node_to_insert)
+                j += 1
+                total_len += 1
+            j += 1
 	    
 
     # new_node.show()

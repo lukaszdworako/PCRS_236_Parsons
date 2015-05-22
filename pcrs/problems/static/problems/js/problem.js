@@ -22,13 +22,26 @@ function bindDebugButton(buttonId) {
     $('#'+ buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId)}, 250
+            prepareVisualizer("debug", testcaseCode, buttonId, "old")}, 250
         );
     });
 }
 
+function bindNewDebugButton(buttonId) {
+    /**
+    * For coding problems bing a given New "Debug" button to start code visualizer
+    */
 
-function prepareVisualizer(option, testcaseCode, buttonId) {
+    $('#'+"new"+buttonId).bind('click', function() {
+        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
+        console.log("test case code is "+ testcaseCode);
+        setTimeout(function(){
+            prepareVisualizer("debug", testcaseCode, buttonId, "new")}, 250
+        );
+    });
+}
+
+function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
     /**
      * Prepare Coding problem visualizer
      */
@@ -42,11 +55,11 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
     } else if (language == 'c') {
         newCode = addHashkey(key);
     }
-    getVisualizerComponents(newCode, testcaseCode, problemId);
+    getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld);
 }
 
 
-function getVisualizerComponents(newCode, testcaseCode, problemId) {
+function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     /**
      * Get Components for coding problem visualization
      */
@@ -59,7 +72,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
     $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data, newCode);
+                executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -650,6 +663,10 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                              ' >Trace</button></td>');
+                    newRow.append('<td class="new_debug"><button id="new' +
+                                   div_id +"_"+i + '" class="debugBtn" type="button"' +
+                                  ' >New Trace</button></td>');
+                    bindNewDebugButton(div_id+"_"+i);
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{

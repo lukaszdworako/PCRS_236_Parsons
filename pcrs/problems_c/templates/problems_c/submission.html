@@ -18,7 +18,7 @@
 {% block content %}
 
     {% include "problems_c/code_trace.html" %}
-
+	{% include "problems_c/new_visualizer.html" %}
     <div id="{{ problem.get_problem_type_name }}-{{ problem.pk }}" class="code-mirror-wrapper">
         {% include "problems_c/submission_widget.html" %}
     </div>

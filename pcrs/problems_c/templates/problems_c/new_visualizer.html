@@ -1,0 +1,71 @@
+<div class="pcrs-modal-history" id="newvisualizerModal" tabindex="-1" aria-labelledby="newvisualizerModal" aria-hidden="true"> <!-- style="display: none" -->
+    <div class="pcrs-modal-content">
+      <div class="pcrs-modal-header">
+        <h4 class="pcrs-modal-title" id="visualizerModalLabel">NEW C Debugger</h4>
+        <button type="button" class="x-button-right" data-dismiss="modal" aria-hidden="false" title="Close Debugger"></button>
+      </div>
+      <div class="pcrs-modal-body">
+          <div id="preview-code">
+              <textarea id="id_preview_code_debugger" rows="4" cols="10"></textarea>
+          </div>
+          <br/>
+          <button id="previous_debugger" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Previous</button>
+          <button id="next_debugger" class="btn btn-default">Next <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+          <button id="reset_debugger" class="btn btn-default"><span class="glyphicon glyphicon-indent-right" aria-hidden="true"></span> Reset</button>
+          <br />
+          <div class="table-responsive">
+            <p style="font-size: 200%;" align="left">Stack<span style="float: right;">Heap</span></p>
+            <table class="table table-bordered table-striped" style="width: 50%; float:left;">
+              <thead>
+                <tr>
+                  <th>Address</th>
+                  <th>Name</th>
+                  <th>Value</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody id="debugger_table_stack">
+              </tbody>
+            </table>
+
+              <table class="table table-bordered table-striped" style="width: 40%; float:right;">
+              <thead>
+                <tr>
+                  <th>Address</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="debugger_table_heap">
+              </tbody>
+            </table>
+          </div>
+          <br/><br/><br/><br/><br/><br/>
+          <br/><br/><br/><br/><br/><br/>
+          <br/><br/><br/><br/><br/><br/>
+          <!--<div class="table-responsive">
+            <p align="right" style="font-size: 200%;">Read Only</p>
+              <table class="table table-bordered table-striped" style="width: 40%; float:right;">
+              <thead>
+                <tr>
+                  <th>Address</th>
+                  <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Underdevelopment</td>
+                    <td>Underdevelopment</td>
+                </tr>
+              </thead>
+              <tbody id="debugger_table2">
+              </tbody>
+            </table>
+          </div>
+          <br/><br/><br/><br/><br/><br/>
+          -->
+      </div>
+      <div class="pcrs-modal-footer">
+        <button type="button" class="reg-button" data-dismiss="modal">Close
+            <span class="at"> Close Debugger </span>
+        </button>
+      </div>
+    </div>
+</div>

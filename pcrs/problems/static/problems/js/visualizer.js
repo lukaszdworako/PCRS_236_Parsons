@@ -21,8 +21,8 @@
  *
  */
 
-function executeGenericVisualizer(option, data, newCode) {
-    
+function executeGenericVisualizer(option, data, newCode, newOrOld) {
+    console.log("got to visualizer.js");
     var supportedVisualization = ['python', 'c'];
 
     if (visualizationSupported()){
@@ -30,7 +30,7 @@ function executeGenericVisualizer(option, data, newCode) {
             return executePythonVisualizer(option, data);
         }
         else if (language == 'c') {
-            return executeCVisualizer(option, data, newCode);
+            return executeCVisualizer(option, data, newCode, newOrOld);
         }
     }else{
         alert("No support for visualization available!");
@@ -212,7 +212,7 @@ function executeGenericVisualizer(option, data, newCode) {
         }
     }
 
-    function executeCVisualizer(option, data, newCode) {
+    function executeCVisualizer(option, data, newCode, newOrOld) {
     /**
      * C visualizer representation.
      */
@@ -221,7 +221,12 @@ function executeGenericVisualizer(option, data, newCode) {
 
             case "create_visualizer":
                 if(!errorsInTraceC(data)) {
-                    createVisualizer(data, newCode);
+                    if(newOrOld == "old") {
+                        createVisualizer(data, newCode);
+                    }
+                    else {
+                        createNewVisualizer(data, newCode);
+                    } 
                 }
                 break;
 
@@ -257,9 +262,9 @@ function executeGenericVisualizer(option, data, newCode) {
              * Verify trace does not contain errors and create visualizer,
              * othervise don't enter visualization mode.
              */
-
+            console.log("new code is "+newCode);
             debugger_data = data;
-            console.log(debugger_data)
+            console.log("data is "+debugger_data)
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -302,12 +307,65 @@ function executeGenericVisualizer(option, data, newCode) {
 
         }
 
+        /*FOR THE NEW VISUALIZER*/
+        function createNewVisualizer(data, newCode) {
+            /**
+             * Verify trace does not contain errors and create visualizer,
+             * othervise don't enter visualization mode.
+             */
+            console.log("new code is "+newCode);
+            debugger_data = data;
+            console.log("data is "+debugger_data)
+
+            if(!c_debugger_load) {
+                c_debugger_load = true;
+                // Refresh Code Mirror
+                $('#newvisualizerModal').on('shown.bs.modal', function () {
+                    myCodeMirrors[debugger_id].refresh();
+                });
+
+                // Bind debugger buttons
+                $('#previous_debugger').bind('click', function () {
+                    if (debugger_index >= 1) {
+                        debugger_index--;
+                    }
+                    update_debugger_table(debugger_data);
+                });
+
+                $('#next_debugger').bind('click', function () {
+                    if (typeof (data[debugger_index + 1]) != 'undefined') {
+                        debugger_index++;
+                        update_debugger_table(debugger_data);
+                    }
+                });
+
+                $('#reset_debugger').bind('click', function () {
+                    debugger_index = 0;
+                    update_debugger_table(debugger_data);
+                });
+            }
+
+            debugger_index = 0;
+            last_stepped_line_debugger = 0;
+
+            console.log(myCodeMirrors);
+            console.log(myCodeMirrors[debugger_id]);
+            myCodeMirrors[debugger_id].setValue(newCode);
+
+            // Initialize debugger for the first time
+            update_debugger_table(debugger_data);
+
+            $('#newvisualizerModal').modal('show');
+
+        }
+
+
         function update_debugger_table(data) {
 
             $('#debugger_table_stack').empty();
             $('#debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
-
+            console.log("down here data is "+data + " while debugger index is at "+debugger_index);
             for(var i = 0; i < data[debugger_index].length; i++) {
 
                 console.log(data[debugger_index][i]);
