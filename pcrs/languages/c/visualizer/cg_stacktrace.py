@@ -123,7 +123,7 @@ class CVisualizer:
 
                 # Analyse attributes inside function, end of the function and other function calls
                 if inside_function:
-                    pdb.set_trace()
+                    #pdb.set_trace()
                     # Treat return statement as variable
                     if line.find("return") > -1:
                         malloc = False
