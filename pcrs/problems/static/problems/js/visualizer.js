@@ -325,21 +325,21 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 });
 
                 // Bind debugger buttons
-                $('#previous_debugger').bind('click', function () {
+                $('#new_previous_debugger').bind('click', function () {
                     if (debugger_index >= 1) {
                         debugger_index--;
                     }
                     update_debugger_table(debugger_data);
                 });
 
-                $('#next_debugger').bind('click', function () {
+                $('#new_next_debugger').bind('click', function () {
                     if (typeof (data[debugger_index + 1]) != 'undefined') {
                         debugger_index++;
                         update_debugger_table(debugger_data);
                     }
                 });
 
-                $('#reset_debugger').bind('click', function () {
+                $('#new_reset_debugger').bind('click', function () {
                     debugger_index = 0;
                     update_debugger_table(debugger_data);
                 });
@@ -364,6 +364,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             $('#debugger_table_stack').empty();
             $('#debugger_table_heap').empty();
+            $('#new_debugger_table_stack').empty();
+            $('#new_debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             console.log("down here data is "+data + " while debugger index is at "+debugger_index);
             for(var i = 0; i < data[debugger_index].length; i++) {
@@ -379,9 +381,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     '<td>' + data[debugger_index][i][3] + '</td>' +
                     '<td>' + data[debugger_index][i][1] + '</td>' +
                     '</tr>');
+                    $('#new_debugger_table_stack').append('<tr>' +
+                    '<th class="text-nowrap" scope="row">' + data[debugger_index][i][4] + '</th>' +
+                    '<td>' + data[debugger_index][i][2] + '</td>' +
+                    '<td>' + data[debugger_index][i][3] + '</td>' +
+                    '<td>' + data[debugger_index][i][1] + '</td>' +
+                    '</tr>');
                 }
                 else {
                     $('#debugger_table_heap').append('<tr>' +
+                    '<th class="text-nowrap" scope="row">' + data[debugger_index][i][3] + '</th>' +
+                    '<td>' + data[debugger_index][i][5] + '</td>' +
+                    '</tr>');
+                    $('#new_debugger_table_heap').append('<tr>' +
                     '<th class="text-nowrap" scope="row">' + data[debugger_index][i][3] + '</th>' +
                     '<td>' + data[debugger_index][i][5] + '</td>' +
                     '</tr>');
