@@ -1,6 +1,7 @@
 from languages.c.visualizer.cg_stacktrace_functions import *
 import problems_c.models
-
+import logging
+import pdb
 
 class CVisualizer:
     """ Representation of C language in the visualizer platform
@@ -46,10 +47,15 @@ class CVisualizer:
         self.key = hash_string((str(self.user) + str(get_current_date())).encode("utf-8"))
 
     def build_stacktrace(self, user_script):
+        logger = logging.getLogger('activity.logging')
+        logger.info("in stacktrace user script is "+user_script+"DONE")
         user_script = remove_string_constant(user_script)
         user_script = remove_all_comments(user_script)
+        logger.info("before it crashes user script is "+user_script+" DONE")
         extra_scape_sequence_list, user_script = add_break_line_after_token(user_script, [";", "{", "}"])
-
+        for thngy in extra_scape_sequence_list:
+            logger.info("extra scape sequence contains "+(str)(thngy))    
+        logger.info(" and user script is "+user_script+" done ")
         # Process C source code
         stacktrace = []  # Stacktrace data structure
         line = ""  # Current source code line
@@ -62,6 +68,7 @@ class CVisualizer:
         function_bracket_open_line = 0  # Function inner bracket open
         #function_bracket_close_line = 0  # Function inner bracket close
         for char in user_script:
+            logger.info("-"+char+"-")
             if char == '\n':
 
                 # Search for variables and functions
@@ -79,6 +86,7 @@ class CVisualizer:
                                'name': format_function_name(line, declaration_type),
                                'line_begin': line_count, 'scope': 'global', 'function_calls': [],
                                'return': [], 'variables': get_variables_details_func_signature(line, line_count)}
+                        logger.info("GOT DIC")
                         stacktrace.append(dic.copy())
                         inside_function = True
                         analyze_declaration = False
@@ -115,6 +123,7 @@ class CVisualizer:
 
                 # Analyse attributes inside function, end of the function and other function calls
                 if inside_function:
+                    pdb.set_trace()
                     # Treat return statement as variable
                     if line.find("return") > -1:
                         malloc = False
@@ -179,6 +188,8 @@ class CVisualizer:
                     line += 1
                 print_stack.append({(res['line_begin'], res['line_end']): print_list_func})
 
+        logger = logging.getLogger('activity.logging')
+        logger.info("inside change for debug")
 
         # Include printf inside source code for compilation
         line_count = 1

@@ -1,3 +1,5 @@
+import logging
+import pdb
 # --------------------------------------------------------------- #
 #        Supporting functions - cg_stacktrace constructor         #
 # --------------------------------------------------------------- #
@@ -23,14 +25,14 @@ def get_current_date():
 
 def add_break_line_after_token(user_script, tokens):
     """Add \n scape sequence at the end of every ;."""
-
+    logger = logging.getLogger('activity.logging')
     index = 0
     line_count = 1
     extra_scape_sequence_list = []
     while index < len(user_script):
         if user_script[index] == '\n':
             line_count += 1
-        if user_script[index] in tokens and user_script[index+1] != '\n':
+        if (user_script[index] in tokens) and (index+1 != len(user_script)) and (user_script[index+1] != '\n'):
             user_script = insert_substring_in_string(user_script, '\n', index+1)
             extra_scape_sequence_list.append(line_count)
             line_count -= 1
@@ -146,15 +148,18 @@ def search_dictionary(list, lookup):
 
 def get_variables_details_func_signature(line, line_number):
     """Get full details on variables located in function signature"""
-    attributes = get_variables_inside_brackets(line)
 
+    #pdb.set_trace()
+    attributes = get_variables_inside_brackets(line)
+    logger = logging.getLogger('activity.logging')
     attributes = attributes.strip()
     attributes_list = attributes.split(',')
     attributes_dic = []
     for attribute in attributes_list:
+        logger.info("ATTRIBUTE IS "+attribute)
         attribute = attribute.strip()
-        # ignore void
-        if 'void' != attribute:
+        # ignore void or functions with no args
+        if ('void' != attribute) and (attribute != ""):
             attribute = attribute.split(' ')
             attribute = remove_values_from_list(attribute, '')
             attributes_dic.append(

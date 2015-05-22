@@ -210,6 +210,8 @@ class Submission(AbstractSubmission):
         return exception
 
     def pre_process_code_tags(self):
+        # Get student code hashed key
+
         #if code from editor, just return straight code
         if self.problem_id == 9999999:
             if len(self.submission) == 0:
@@ -217,15 +219,16 @@ class Submission(AbstractSubmission):
             else:
                 self.hidden_lines_list = []
                 self.mod_submission = self.submission
+
+        #Code not from editor, process tags
         else:
-            # Get student code hashed key
             student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
             student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
             student_code_key_len = len(student_code_key)
             student_code_key_list_len = len(student_code_key_list)
 
             # Could not find student code
-            if (len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0) and self.problem_id != 9999999:
+            if len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0:
                 raise Exception("No student code found!")
 
             # Get student code from submission and add it to the official exercise (from the database)
