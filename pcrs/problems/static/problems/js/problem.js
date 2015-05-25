@@ -263,6 +263,27 @@ function addHashkey(div_id){
     return code.substring(0, code.length-1);
 }
 
+function removeHashkeyForDisplay(div_id){
+    /**
+     * Generate a Hashkey based on
+     * the problem_id to identify
+     * where the student code starts and ends
+     */
+    var line_count = myCodeMirrors[div_id].lineCount();
+    var code = " ";
+    var wrapClass;
+    var i;
+    for (i = 0; i < line_count; i++){
+        wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
+        if (wrapClass == 'CodeMirror-studentline-background')
+            code += "";
+        else
+            code += myCodeMirrors[div_id].getLine(i);
+        code += '\n';
+    }
+    return code.substring(0, code.length-1);
+}
+
 function handleCMessages(div_id, testcases){
     /**
      * Handle C error and warning
@@ -308,7 +329,7 @@ function getTestcases(div_id) {
         clean_code = myCodeMirrors[div_id].getValue();
     }
 
-    console.log(clean_code);
+    console.log("clean_code is "+clean_code);
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
         clean_code = clean_code.replace('\t',"    ");
@@ -993,10 +1014,7 @@ $(document).ready(function() {
             debugger_id = all_wrappers[x].id+1;
             myCodeMirrors[debugger_id] =
                     history_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
-                        codeObj.source_code, false);
-            myNewCodeMirrors[debugger_id] =                     
-                    history_code_mirror(language, 'text/x-csrc', $("#new_id_preview_code_debugger"),
-                        codeObj.source_code, false);
+                        codeObj.source_code, true);
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
 
             preventDeleteLastLine(all_wrappers[x].id)
