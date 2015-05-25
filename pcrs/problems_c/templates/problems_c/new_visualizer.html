@@ -1,25 +1,26 @@
-<div class="pcrs-modal-history" id="newvisualizerModal" tabindex="-1" aria-labelledby="newvisualizerModal" aria-hidden="true"> <!-- style="display: none" -->
+<div class="pcrs-modal-history" id="newvisualizerModal" tabindex="-1" aria-labelledby="newvisualizerModal" aria-hidden="true">
     <div class="pcrs-modal-content">
       <div class="pcrs-modal-header">
         <h4 class="pcrs-modal-title" id="visualizerModalLabel">NEW C Debugger</h4>
         <button type="button" class="x-button-right" data-dismiss="modal" aria-hidden="false" title="Close Debugger"></button>
       </div>
       <div class="pcrs-modal-body">
+        <div class="table-responsive">
 
-          <div class="table-responsive">
+            <div class="row">
+                <div class="code-window-section">{% include "problems_c/visualizer_code.html" %}</div>
 
-            {% include "problems_c/visualizer_code.html" %}
+                <div class="name-type-section">{% include "problems_c/visualizer_names.html" %}</div>
 
-            {% include "problems_c/visualizer_names.html" %}            
+                <div class="memory-map-section">{% include "problems_c/visualizer_memory.html" %}</div>
+            </div>
 
-            {% include "problems_c/visualizer_memory.html" %}
+        </div>
+        <br/><br/><br/><br/><br/><br/>
+        <br/><br/><br/><br/><br/><br/>
+        <br/><br/><br/><br/><br/><br/>
 
-          </div>
-          <br/><br/><br/><br/><br/><br/>
-          <br/><br/><br/><br/><br/><br/>
-          <br/><br/><br/><br/><br/><br/>
-
-      </div>
+    </div>
       <div class="pcrs-modal-footer">
         <button type="button" class="reg-button" data-dismiss="modal">Close
             <span class="at"> Close Debugger </span>
