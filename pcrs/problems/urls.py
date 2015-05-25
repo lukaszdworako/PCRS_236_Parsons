@@ -12,7 +12,7 @@ pattern_options = {'problems_python': (r'^python/', 'problems_python.urls'),
                    'problems_short_answer': (r'^short_answer/', 'problems_short_answer.urls'),
 }
 
-pattern_list = [''] + [url(pattern_options[mod][0], include(pattern_options[mod][1])) for mod in INSTALLED_PROBLEM_APPS]
+pattern_list = [''] + [url(pattern_options[pt][0], include(pattern_options[pt][1])) for pt in INSTALLED_PROBLEM_APPS.keys()]
 
 urlpatterns = patterns(*pattern_list)
 
