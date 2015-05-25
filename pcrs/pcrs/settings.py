@@ -13,8 +13,6 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_rating': '',
     # 'problems_short_answer': '',
 }
-    
-LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'), ('c', 'C'),)
 
 USE_SAFEEXEC = False              # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
@@ -188,14 +186,14 @@ WSGI_APPLICATION = 'pcrs.wsgi.application'
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
 PROBLEM_APPS = (
-    'problems_python', 
+    'problems_python',
     'problems_c',
-    'problems_sql', 
+    'problems_sql',
     'problems_rdb',
     'problems_ra',
     'problems_multiple_choice',
-    'problems_timed', 
-    'problems_rating', 
+    'problems_timed',
+    'problems_rating',
     'problems_short_answer',
 )
 
@@ -217,7 +215,7 @@ INSTALLED_APPS = (
     'editor',
     'compressor',
     'users',
-) + INSTALLED_PROBLEM_APPS
+) + PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
