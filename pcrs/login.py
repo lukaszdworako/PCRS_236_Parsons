@@ -8,11 +8,9 @@ from django.core.context_processors import csrf
 import content.models
 import users.models
 
-#
 import logging
 import datetime
 from django.utils.timezone import localtime, utc
-#
 
 import os
 import subprocess
@@ -50,8 +48,8 @@ def login_django(request, username):
     logger = logging.getLogger('activity.logging')
     logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
                 str(username) + " | Log in")
-    # password-based authorization was provided at university level, 
-    # just create a user object. 
+    # password-based authorization was provided at university level,
+    # just create a user object.
     # user = authenticate(username=username, password=password)
     user = authenticate(username=username)
 
@@ -62,7 +60,7 @@ def login_django(request, username):
     if user is None:
         # Automatic accounts not set up or creation failed.
         NOTIFICATION = "djangoaccount"
-    if not user.is_active:
+    elif not user.is_active:
         NOTIFICATION = "user inactive"
     else:
         request.session['section'] = user.section
@@ -110,7 +108,7 @@ def login_view(request):
             if not existing_user:
                 NOTIFICATION = "username"
             else:
-                response = login_django(request, username)                
+                response = login_django(request, username)
                 if response:
                     return response
 
