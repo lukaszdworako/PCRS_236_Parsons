@@ -1,7 +1,6 @@
 from languages.c.visualizer.cg_stacktrace_functions import *
 import problems_c.models
 import logging
-import pdb
 
 class CVisualizer:
     """ Representation of C language in the visualizer platform
@@ -54,7 +53,7 @@ class CVisualizer:
         logger.info("before it crashes user script is "+user_script+" DONE")
         extra_scape_sequence_list, user_script = add_break_line_after_token(user_script, [";", "{", "}"])
         for thngy in extra_scape_sequence_list:
-            logger.info("extra scape sequence contains "+(str)(thngy))    
+            logger.info("extra scape sequence contains "+(str)(thngy))
         logger.info(" and user script is "+user_script+" done ")
         # Process C source code
         stacktrace = []  # Stacktrace data structure
@@ -249,7 +248,7 @@ class CVisualizer:
 
         import re
         import copy
-        
+
         import pdb
 
         #pdb.set_trace()
