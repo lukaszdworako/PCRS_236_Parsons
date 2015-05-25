@@ -1,0 +1,34 @@
+{
+    "global_vars": [
+        {
+            "name": "the name of this global variable",
+            "value": "the value of this global variable",
+            "location": "Stack, Heap or Static"
+        }
+    ],
+
+    "steps": [
+        {
+            "step": 1,
+            "line": 6,
+            "student_view_line":1 //the line that the student actually sees on the code mirror: will be different if this step is hidden
+            // Can have either "changed_vars" or "return", should not have both
+            "changed_vars": [
+                {
+                    "var_name": "",
+                    "addr": "",
+                    "type": "",
+                    "new": "",
+                    "value": "",
+                    "invalid": "",
+                    "location": "Stack, Heap or Static",
+                    "max_size": 4, // In bytes, the largest size that this variable can be
+                }
+            ],
+            "return": 4, // This is the return value if this step is a return statement
+            "function": "the function name that this step is in",
+            "on_entry_point": true // This is true if we just entered a function, right before executing the first line
+        }
+    ]
+
+}

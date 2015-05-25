@@ -1,0 +1,33 @@
+FileAST:
+  FuncDef:
+    Decl: main, [], [], []
+      FuncDecl:
+        ParamList:
+          Decl: argc, [], [], []
+            TypeDecl: argc, []
+              IdentifierType: ['int']
+          Decl: argv, [], [], []
+            PtrDecl: []
+              PtrDecl: []
+                TypeDecl: argv, []
+                  IdentifierType: ['char']
+        TypeDecl: main, []
+          IdentifierType: ['int']
+    Compound:
+      Decl: battery_percentage, [], [], []
+        TypeDecl: battery_percentage, []
+          IdentifierType: ['int']
+      Assignment: =
+        ID: battery_percentage
+        FuncCall:
+          ID: atoi
+          ExprList:
+            ArrayRef:
+              ID: argv
+              Constant: int, 1
+      FuncCall:
+        ID: printf
+        ExprList:
+          Constant: string, "7654"
+      Return:
+        Constant: int, 0

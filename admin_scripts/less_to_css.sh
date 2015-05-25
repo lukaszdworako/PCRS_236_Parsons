@@ -1,6 +1,7 @@
 #!/bin/bash
 
-FILES="edit_challenge
+FILES="new-visualizer
+edit_challenge
 challenge_page
 quest_list
 quest_page
@@ -18,11 +19,11 @@ if hash lessc 2>/dev/null; then
 			if lessc -x $file.less > $file.css ; then
 				echo "Created $file.css"
 			else
-				echo "ERROR: Could not create $file.css"			
+				echo "ERROR: Could not create $file.css"
 			fi
 		else
 			echo "ERROR: File $file.less does not exist"
-		fi	
+		fi
 	done
 
 else
