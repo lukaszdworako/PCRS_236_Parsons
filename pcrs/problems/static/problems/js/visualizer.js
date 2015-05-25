@@ -331,23 +331,28 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if (debugger_index >= 1) {
                         debugger_index--;
                     }
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "prev");
                 });
 
                 $('#new_next_debugger').bind('click', function () {
                     if (typeof (data[debugger_index + 1]) != 'undefined') {
                         debugger_index++;
-                        update_debugger_table(debugger_data);
+                        update_debugger_table(debugger_data, "next");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
                     debugger_index = 0;
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "reset");
                 });
+
+                //Clear the stack and heap tables
+                $('#new_debugger_table_stack').empty();
+                $('#new_debugger_table_heap').empty();
             }
 
-            debugger_index = 0;
+            debugger_index = 1;
+            json_index = 0;
             last_stepped_line_debugger = 0;
 
             console.log(myCodeMirrors);
@@ -357,10 +362,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_debugger_table(debugger_data);
+            update_new_debugger_table(debugger_data);
 
             $('#newvisualizerModal').modal('show');
 
+        }
+
+        function update_new_debugger_table(data, update_type){
+            myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
+            if(update_type == "next") {
+                while(debugger_data["steps"][0]) {
+                    //
+                }
+            }
         }
 
 
@@ -368,8 +382,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             $('#debugger_table_stack').empty();
             $('#debugger_table_heap').empty();
-            $('#new_debugger_table_stack').empty();
-            $('#new_debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             console.log("down here data is <below> while debugger index is at "+debugger_index);
             console.log(data);

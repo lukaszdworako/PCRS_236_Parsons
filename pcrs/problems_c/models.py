@@ -260,6 +260,7 @@ class Submission(AbstractSubmission):
             # Store hidden code lines for previous use when showing compilation and warning errors
             inside_hidden_tag = False
             self.hidden_lines_list = []
+            self.non_hidden_lines_list = []
             line_num = 1
             for line in self.mod_submission.split('\n'):
                 if line.find("[hidden]") > -1:
@@ -270,11 +271,15 @@ class Submission(AbstractSubmission):
                     continue
                 if inside_hidden_tag:
                     self.hidden_lines_list.append(line_num)
+                else:
+                    self.non_hidden_lines_list.append(line_num)
                 line_num += 1
+            self.non_hidden_lines_list.pop()
 
             # Remove hidden tags from the source code
             self.mod_submission = self.mod_submission.replace("[hidden]\r\n", '').replace("[/hidden]\r\n", '')
             self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
+
 
 def raw_string(s):
     if isinstance(s, str):
