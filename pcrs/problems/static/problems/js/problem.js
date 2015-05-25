@@ -70,7 +70,8 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
 
     console.log(newCode);
 
-    $.post(root + '/problems/' + language + '/visualizer-details',
+    visualizerDetailsTarget = newOrOld == 'old' ? '/visualizer-details' : '/new-visualizer-details';
+    $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
             function(data) {
                 executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
@@ -690,7 +691,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                              ' >Trace</button></td>');
-                    newRow.append('<td class="new_debug"><button id="new' +
+                    newRow.append('<td class="debug"><button id="new' +
                                    div_id +"_"+i + '" class="debugBtn" type="button"' +
                                   ' >New Trace</button></td>');
                     bindNewDebugButton(div_id+"_"+i);
