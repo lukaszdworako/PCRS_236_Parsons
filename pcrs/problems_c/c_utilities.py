@@ -2,6 +2,10 @@ from hashlib import sha1
 from re import finditer, search
 import logging
 
+
+'''
+Convert code with tags like [student], [blocked] and [hidden] from the starter_code by merging with the user_submission
+'''
 def process_code_tags(problem_id, user_submission, starter_code):
     #if code from editor, just return straight code
     if (str)(problem_id) == "9999999":
@@ -9,7 +13,7 @@ def process_code_tags(problem_id, user_submission, starter_code):
         if len(user_submission) == 0:
             raise Exception("No code found!")
         else:
-            logger.info("length of sub is not 0")            
+            logger.info("length of sub is not 0")
             return user_submission
     else:
         # Get student code hashed key
@@ -54,3 +58,21 @@ def process_code_tags(problem_id, user_submission, starter_code):
 
 
     return mod_submission
+
+
+'''
+Replace preprocessor directives with empty lines to allow pycparser to parse the file correctly
+'''
+def remove_preprocessor_directives(user_script):
+    lines = user_script.split('\n')
+    new_lines = [clear_directive_line(l) for l in lines]
+    new_user_script = '\n'.join(new_lines)
+
+    return new_user_script
+
+
+def clear_directive_line(line):
+    if ('_Generic' in line) or ('#include' in line):
+        return '\r'
+    else:
+        return line
