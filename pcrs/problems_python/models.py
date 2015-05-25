@@ -19,7 +19,7 @@ class Problem(AbstractProgrammingProblem):
     """
 
     language = models.CharField(max_length=50, 
-                                choices=settings.LANGUAGE_CHOICES,
+                                choices=[lang[1] for lang in settings.INSTALLED_PROBLEM_APPS.items() if lang[1]],
                                 default='python')
 
 
