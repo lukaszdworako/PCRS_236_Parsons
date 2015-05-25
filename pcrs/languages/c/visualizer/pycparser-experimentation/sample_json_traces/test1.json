@@ -29,6 +29,7 @@
                     "max_size": 21
                 }
             ],
+            "return": false,
             "function": "main",
             "function_decl": true
         },
@@ -47,6 +48,7 @@
                     "max_size": 8
                 }
             ],
+            "return": false,
             "function": "main",
             "function_decl": false
         },
@@ -65,6 +67,7 @@
                     "max_size": 4
                 }
             ],
+            "return": false,
             "function": "main",
             "function_decl": false
         },
@@ -93,12 +96,14 @@
                     "max_size": 4
                 }
             ],
+            "return": false,
             "function": "can_take_wizardry",
             "function_decl": true
         },
         {
             "step": 5,
             "line": 15,
+            "changed_vars": [],
             "return": 0,
             "function": "can_take_wizardry",
             "function_decl": false
@@ -106,6 +111,7 @@
         {
             "step": 6,
             "line": 11,
+            "changed_vars": [],
             "return": 0,
             "function": "main",
             "function_decl": false
