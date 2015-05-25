@@ -262,6 +262,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
              * Verify trace does not contain errors and create visualizer,
              * othervise don't enter visualization mode.
              */
+            
+
             console.log("new code is "+newCode);
             debugger_data = data;
             console.log("data is "+debugger_data)
@@ -350,7 +352,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             console.log(myCodeMirrors);
             console.log(myCodeMirrors[debugger_id]);
-            myCodeMirrors[debugger_id].setValue(newCode);
+
+            codeToShow = removeHashkeyForDisplay(debugger_id);
+            myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
             update_debugger_table(debugger_data);
