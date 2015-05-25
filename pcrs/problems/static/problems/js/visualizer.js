@@ -316,8 +316,128 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
              * othervise don't enter visualization mode.
              */
             console.log("new code is "+newCode);
-            debugger_data = data;
-            console.log("data is "+debugger_data)
+            debugger_data = JSON.stringify({
+                "steps": [
+                {
+                    "step": 1,
+                    "line": 6,
+                    "student_view_line":1,
+                    "changed_vars": [
+                        {
+                            "var_name": "argc",
+                            "addr": "0x100",
+                            "type": "int",
+                            "new": true,
+                            "value": 3,
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 4
+                        },
+                        {
+                            "var_name": "argv",
+                            "addr": "0x104",
+                            "type": "char**",
+                            "new": true,
+                            "value": [
+                                "can_take_wizardry",
+                                "2.5",
+                                "6"
+                            ],
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 21
+                        }
+                    ],
+                    "function": "main",
+                    "function_decl": true
+                },
+                {
+                    "step": 2,
+                    "line": 8,
+                    "student_view_line":1,
+                    "changed_vars": [
+                        {
+                            "var_name": "cgpa",
+                            "addr": "0x128",
+                            "type": "double",
+                            "new": true,
+                            "value": 2.5,
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 8
+                        }
+                    ],
+                    "function": "main",
+                    "function_decl": false
+                },
+                {
+                    "step": 3,
+                    "line": 9,
+                    "student_view_line":1,
+                    "changed_vars": [
+                        {
+                            "var_name": "credits",
+                            "addr": "0x136",
+                            "type": "int",
+                            "new": true,
+                            "value": 6,
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 4
+                        }
+                    ],
+                    "function": "main",
+                    "function_decl": false
+                },
+                {
+                    "step": 4,
+                    "line": 13,
+                    "student_view_line":1,
+                    "changed_vars": [
+                        {
+                            "var_name": "cgpa",
+                            "addr": "0x140",
+                            "type": "double",
+                            "new": true,
+                            "value": 2.5,
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 8
+                        },
+                        {
+                            "var_name": "credits_complete",
+                            "addr": "0x148",
+                            "type": "int",
+                            "new": true,
+                            "value": 6,
+                            "invalid": false,
+                            "location": "stack",
+                            "max_size": 4
+                        }
+                    ],
+                    "function": "can_take_wizardry",
+                    "function_decl": true
+                },
+                {
+                    "step": 5,
+                    "line": 15,
+                    "student_view_line":3,
+                    "return": 0,
+                    "function": "can_take_wizardry",
+                    "function_decl": false
+                },
+                {
+                    "step": 6,
+                    "line": 11,
+                    "student_view_line":5,
+                    "return": 0,
+                    "function": "main",
+                    "function_decl": false
+                }
+            ],
+            "global_vars": []
+        });
+            console.log(debugger_data)
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -331,23 +451,28 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if (debugger_index >= 1) {
                         debugger_index--;
                     }
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "prev");
                 });
 
                 $('#new_next_debugger').bind('click', function () {
                     if (typeof (data[debugger_index + 1]) != 'undefined') {
                         debugger_index++;
-                        update_debugger_table(debugger_data);
+                        update_debugger_table(debugger_data, "next");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
                     debugger_index = 0;
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "reset");
                 });
+
+                //Clear the stack and heap tables
+                $('#new_debugger_table_stack').empty();
+                $('#new_debugger_table_heap').empty();
             }
 
-            debugger_index = 0;
+            debugger_index = 1;
+            json_index = 0;
             last_stepped_line_debugger = 0;
 
             console.log(myCodeMirrors);
@@ -357,10 +482,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_debugger_table(debugger_data);
+            update_new_debugger_table(debugger_data);
 
             $('#newvisualizerModal').modal('show');
 
+        }
+
+        function update_new_debugger_table(data, update_type){
+            myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
+            if(update_type == "next") {
+                while(debugger_data["steps"][0]) {
+                    //
+                }
+            }
         }
 
 
@@ -368,8 +502,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             $('#debugger_table_stack').empty();
             $('#debugger_table_heap').empty();
-            $('#new_debugger_table_stack').empty();
-            $('#new_debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             console.log("down here data is "+data + " while debugger index is at "+debugger_index);
             for(var i = 0; i < data[debugger_index].length; i++) {
