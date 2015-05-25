@@ -5,6 +5,7 @@ var testcases = null;
 var error_msg = null;
 var code_problem_id = -1;
 var myCodeMirrors = {};
+var myNewCodeMirrors = {};
 var cmh_list = {};
 var debugger_id = "";
 var debugger_index = 0;
@@ -993,7 +994,9 @@ $(document).ready(function() {
             myCodeMirrors[debugger_id] =
                     history_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
                         codeObj.source_code, false);
-
+            myNewCodeMirrors[debugger_id] =                     
+                    history_code_mirror(language, 'text/x-csrc', $("#new_id_preview_code_debugger"),
+                        codeObj.source_code, false);
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
 
             preventDeleteLastLine(all_wrappers[x].id)
