@@ -18,8 +18,8 @@ class Problem(AbstractProgrammingProblem):
     a language and starter code
     """
 
-    language = models.CharField(max_length=50, 
-                                choices=settings.LANGUAGE_CHOICES,
+    language = models.CharField(max_length=50,
+                                choices=(('python', 'Python 3.4'),),
                                 default='python')
 
 
