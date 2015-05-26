@@ -3,6 +3,7 @@
         {
             "step": 1,
             "line": 6,
+            "student_view_line":1,
             "changed_vars": [
                 {
                     "var_name": "argc",
@@ -35,6 +36,7 @@
         {
             "step": 2,
             "line": 8,
+            "student_view_line":1,
             "changed_vars": [
                 {
                     "var_name": "cgpa",
@@ -53,6 +55,7 @@
         {
             "step": 3,
             "line": 9,
+            "student_view_line":1,
             "changed_vars": [
                 {
                     "var_name": "credits",
@@ -71,6 +74,7 @@
         {
             "step": 4,
             "line": 13,
+            "student_view_line":1,
             "changed_vars": [
                 {
                     "var_name": "cgpa",
@@ -99,6 +103,7 @@
         {
             "step": 5,
             "line": 15,
+            "student_view_line":3,
             "return": 0,
             "function": "can_take_wizardry",
             "function_decl": false
@@ -106,6 +111,7 @@
         {
             "step": 6,
             "line": 11,
+            "student_view_line":5,
             "return": 0,
             "function": "main",
             "function_decl": false

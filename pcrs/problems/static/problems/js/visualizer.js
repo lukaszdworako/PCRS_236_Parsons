@@ -1,21 +1,21 @@
 /**
- * Generic Visualizer, that is used by all languages. 
+ * Generic Visualizer, that is used by all languages.
  * To plug in a language, create a corresponing function. Function must support
- * required options, regardless of existence of visualizer for the language. 
- * If a visualizer exists, function must support all options, and language has to be 
+ * required options, regardless of existence of visualizer for the language.
+ * If a visualizer exists, function must support all options, and language has to be
  * added to supportedVisualization array.
- * 
- *                          Usage options: 
- *  
+ *
+ *                          Usage options:
+ *
  * "create_visualizer": creates visualizer of required language
  *     data: format depends on the language.
- *              
- * "gen_execution_trace_params": update dictionary with additional parameters required 
+ *
+ * "gen_execution_trace_params": update dictionary with additional parameters required
  *  to generate execution trace. Make sure to JSON.stringify add_params.
  *     data: {language : language, user_script : code}
  *     updated data: {language : language, user_script : code, add_params : {}}
  *
- * "render_data" (required): render code string and populate 
+ * "render_data" (required): render code string and populate
  *  corresponding cell in grading table
  *     data: {codeStr : encodedResult, targetElement : $('#tcase_ td.testOutputCell')}
  *
@@ -99,14 +99,14 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
          */
             // don't enter visualize mode if there are killer errors:
             var errors_caught = false;
-            
-            
+
+
             if (data.exception) {
                 alert(data.exception);
                 errors_caught = true;
-                                
+
             }
-            
+
             else {
                 trace = data.trace;
 
@@ -130,9 +130,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 else if (trace[trace.length - 1].exception_msg) {
                     alert(trace[trace.length - 1].exception_msg);
-                    errors_caught = true;        
+                    errors_caught = true;
                 }
-            
+
                 else if (!trace) {
                     alert("Unknown error.");
                     errors_caught = true;
@@ -208,7 +208,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
          * Make sure to clean targetElement, then call actual visualizer function.
          */
             targetElement.empty();
-            renderData_ignoreID(codeStr, targetElement);                
+            renderData_ignoreID(codeStr, targetElement);
         }
     }
 
@@ -226,7 +226,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     }
                     else {
                         createNewVisualizer(data, newCode);
-                    } 
+                    }
                 }
                 break;
 
@@ -262,7 +262,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
              * Verify trace does not contain errors and create visualizer,
              * othervise don't enter visualization mode.
              */
-            
+
 
             console.log("new code is "+newCode);
             debugger_data = data;
@@ -317,7 +317,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
              */
             console.log("new code is "+newCode);
             debugger_data = data;
-            console.log("data is "+debugger_data)
+            console.log(debugger_data);
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -331,23 +331,28 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if (debugger_index >= 1) {
                         debugger_index--;
                     }
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "prev");
                 });
 
                 $('#new_next_debugger').bind('click', function () {
                     if (typeof (data[debugger_index + 1]) != 'undefined') {
                         debugger_index++;
-                        update_debugger_table(debugger_data);
+                        update_debugger_table(debugger_data, "next");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
                     debugger_index = 0;
-                    update_debugger_table(debugger_data);
+                    update_debugger_table(debugger_data, "reset");
                 });
+
+                //Clear the stack and heap tables
+                $('#new_debugger_table_stack').empty();
+                $('#new_debugger_table_heap').empty();
             }
 
-            debugger_index = 0;
+            debugger_index = 1;
+            json_index = 0;
             last_stepped_line_debugger = 0;
 
             console.log(myCodeMirrors);
@@ -357,10 +362,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_debugger_table(debugger_data);
+            update_new_debugger_table(debugger_data);
 
             $('#newvisualizerModal').modal('show');
 
+        }
+
+        function update_new_debugger_table(data, update_type){
+            myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
+            if(update_type == "next") {
+                while(debugger_data["steps"][0]) {
+                    //
+                }
+            }
         }
 
 
@@ -368,10 +382,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             $('#debugger_table_stack').empty();
             $('#debugger_table_heap').empty();
-            $('#new_debugger_table_stack').empty();
-            $('#new_debugger_table_heap').empty();
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
-            console.log("down here data is "+data + " while debugger index is at "+debugger_index);
+            console.log("down here data is <below> while debugger index is at "+debugger_index);
+            console.log(data);
             for(var i = 0; i < data[debugger_index].length; i++) {
 
                 console.log(data[debugger_index][i]);
