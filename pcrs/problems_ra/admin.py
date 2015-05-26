@@ -1,9 +1,9 @@
 from django.contrib import admin
+from problems.admin import ProblemAdmin, SubmissionAdmin
+from .models import *
 
-from problems_ra.models import *
 
-
-admin.site.register(Problem)
+admin.site.register(Problem, ProblemAdmin)
+admin.site.register(Submission, SubmissionAdmin)
 admin.site.register(TestCase)
-admin.site.register(Submission)
 admin.site.register(TestRun)
