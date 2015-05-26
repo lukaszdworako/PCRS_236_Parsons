@@ -3,7 +3,7 @@ import os
 # Select the types of problems visible in the UI.
 # app_name : language name
 INSTALLED_PROBLEM_APPS = {
-    'problems_python': 'Python',
+    #'problems_python': 'Python',
     'problems_c': 'C',
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
