@@ -1,9 +1,18 @@
-# Django settings for pcrs project.
 import os
 
-# The following changes the UI. You should also install/uninstall apps
-# to keep tables from being created.
-LANGUAGE_CHOICES = (('python', 'Python'), ('sql', 'SQL'), ('ra', 'RA'), ('c', 'C'),)
+# Select the types of problems visible in the UI.
+# app_name : language name
+INSTALLED_PROBLEM_APPS = {
+    #'problems_python': 'Python',
+    'problems_c': 'C',
+    # 'problems_rdb': '',
+    # 'problems_sql': 'SQL',
+    # 'problems_ra': 'Relational Algebra',
+    'problems_multiple_choice': '',
+    # 'problems_timed': '',
+    # 'problems_rating': '',
+    # 'problems_short_answer': '',
+}
 
 USE_SAFEEXEC = False              # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
@@ -25,6 +34,7 @@ QUESTS_LIVE = False
 MYMEDIA_VIDEOS = True
 
 DEBUG = True
+SQL_DEBUG = False                   # Suppresses logging of SQL queries
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -176,11 +186,16 @@ WSGI_APPLICATION = 'pcrs.wsgi.application'
 
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
-INSTALLED_PROBLEM_APPS = (
-    'problems_python', 'problems_c',
+PROBLEM_APPS = (
+    'problems_python',
+    'problems_c',
+    'problems_sql',
+    'problems_rdb',
+    'problems_ra',
     'problems_multiple_choice',
-    'problems_rdb', 'problems_sql', 'problems_ra',
-    'problems_timed', 'problems_rating', 'problems_short_answer',
+    'problems_timed',
+    'problems_rating',
+    'problems_short_answer',
 )
 
 INSTALLED_APPS = (
@@ -201,9 +216,15 @@ INSTALLED_APPS = (
     'editor',
     'compressor',
     'users',
-) + INSTALLED_PROBLEM_APPS
+) + PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+if DEBUG and not SQL_DEBUG:
+    # These lines must be positioned *after* the definition of the not so secret SECRET_KEY
+    import django.db.backends
+    import django.db.backends.util
+    django.db.backends.BaseDatabaseWrapper.make_debug_cursor = lambda self, cursor: django.db.backends.util.CursorWrapper(cursor, self)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

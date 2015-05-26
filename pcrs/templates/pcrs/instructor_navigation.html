@@ -18,20 +18,21 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Problems
                         <b class="caret"></b></a>
                     <ul class="dropdown-menu">
-                        {% if 'python' in languages %}
+                        {% if 'problems_python' in problem_types %}
                         <li>
                             <a href="{{ site_prefix }}/problems/python/list">Python</a>
                         </li>
                         {% endif %}
-                        {% if 'c' in languages %}
+                        {% if 'problems_c' in problem_types %}
                         <li>
                             <a href="{{ site_prefix }}/problems/c/list">C</a>
                         </li>
                         {% endif %}
+                        {% if 'problems_multiple_choice' in problem_types %}
                         <li>
                             <a href="{{ site_prefix }}/problems/multiple_choice/list">Multiple
                                 Choice</a></li>
-                        <li class="divider"></li>
+                        {% endif %}
                         {% if 'problems_timed' in problem_types %}
                         <li>
                             <a href="{{ site_prefix }}/problems/timed/list">Timed</a>
@@ -47,17 +48,17 @@
                             <a href="{{ site_prefix }}/problems/short_answer/list">Short Answer</a>
                         </li>
                         {% endif %}
-                        {% if 'sql' in languages or 'ra' in languages %}
+                        {% if 'problems_rdb' in problem_types %}
                             <li class="divider"></li>
                             <li>
                                 <a href="{{ site_prefix }}/problems/rdb/schema/list">Schemas</a>
                             </li>
                         {% endif %}
-                        {% if 'sql' in languages %}
+                        {% if 'problems_sql' in problem_types %}
                             <li><a href="{{ site_prefix }}/problems/sql/list">SQL</a>
                             </li>
                         {% endif %}
-                        {% if 'ra' in languages %}
+                        {% if 'problems_ra' in problem_types %}
                             <li>
                                 <a href="{{ site_prefix }}/problems/ra/list">RA</a>
                             </li>
@@ -88,19 +89,26 @@
                     </ul>
                 </li>
             </ul>
-            <ul class="pcrs-navbar-nav">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
-                        <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="{{ site_prefix }}/editor/python/submit">Python</a>
-                        </li>
-                        <li><a href="{{ site_prefix }}/editor/c/submit">C</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+            {% if 'problems_c' in problem_types or 'problems_python' in problem_types %}
+                <ul class="pcrs-navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
+                            <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        {% if 'problems_python' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/python/submit">Python</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_c' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/c/submit">C</a>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
 
             <ul class="pcrs-navbar-nav-right">
                 <ul class="pcrs-navbar-nav">

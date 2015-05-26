@@ -29,7 +29,7 @@ class Problem(AbstractProgrammingProblem):
     """
 
     language = models.CharField(max_length=50,
-                                choices=settings.LANGUAGE_CHOICES,
+                                choices=(('c', 'C'),),
                                 default='c')
 
 

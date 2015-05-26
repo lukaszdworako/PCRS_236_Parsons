@@ -15,12 +15,12 @@ def get_problem_labels():
 
 
 def get_problem_content_types():
-    apps = settings.INSTALLED_PROBLEM_APPS
+    apps = list(settings.INSTALLED_PROBLEM_APPS.keys())
     return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
 
 
 def get_submission_content_types():
-    apps = settings.INSTALLED_PROBLEM_APPS
+    apps = list(settings.INSTALLED_PROBLEM_APPS.keys())
     return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
