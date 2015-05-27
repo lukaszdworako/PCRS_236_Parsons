@@ -484,7 +484,45 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_name_table(json_step) {
-            //implement me!
+
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
+                
+                //Check if it's new - if so, adding it, if not, may only be changing its address in the tag or deleting it
+                
+                //Check if it's in the stack, heap, or read only to decide what we're looking for
+
+                //Check if there's a current stack frame up for this
+                var cur_frame = $('#names-'+json_step['function']);
+                if(cur_frame.length == 0) {
+                //If not, create a whole new stack name table
+                    //Collapse stack name table we're currently on
+                    $('#name-type-section').append('<h4>'+json_step['function']+'</h4> <table id="names-' +json_step['function']+ 
+                    '" class="table table-bordered table-striped" style="width: 100%; float:left;">'+
+                    '<thead>'+
+                        '<tr>'+
+                        '<th width="60%">Name</th>' +
+                        '<th width="40%">Type</th>' +
+                        '</tr>' +
+                    '</thead>' +
+                    '<tbody id="name-body-'+json_step['function']+'">' +
+                        '<tr>' +
+                            '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                            '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                        '</tr>' +
+                    '</tbody>' +
+                    '</table>');
+                }
+
+                //If so, add it to the existing stack name table
+                    //If not currently expanded, close the table we're on and expand this one
+                else {
+                    $('#name-body-'+json_step['function']).append('<tr>' +
+                        '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                        '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                    '</tr>');
+                }
+            }
         }
 
         function add_to_memory_table(json_step) {
