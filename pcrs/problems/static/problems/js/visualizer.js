@@ -366,7 +366,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             console.log(myCodeMirrors);
             console.log(myCodeMirrors[debugger_id]);
-            codeToShow = removeHashkeyForDisplay(debugger_id);
+            console.log("dugger id is "+debugger_id);
+            div_id = debugger_id.substring(0, debugger_id.length - 1);
+            codeToShow = removeHashkeyForDisplay(div_id, newCode);
+            console.log("codetoshow is "+codeToShow);
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
@@ -480,6 +483,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function add_to_val_list(json_step) {
             //implement me!
+
         }
 
         function remove_from_name_table(json_step) {
@@ -510,4 +514,27 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             renderData_ignoreID(codeStr, targetElement);
         }
     }
+}
+
+function removeHashkeyForDisplay(div_id, newCode){
+    /**
+     * Generate a Hashkey based on
+     * the problem_id to identify
+     * where the student code starts and ends
+     */
+    var codeArray = newCode.split('\n');
+    var line_count = codeArray.length;
+    var code = " ";
+    var i;
+    for (i = 0; i < line_count; i++){
+        //wrapClass = newCode.lineInfo(i).wrapClass;
+        console.log("code is "+codeArray[i]);
+        console.log("hash is "+CryptoJS.SHA1(div_id.split("-")[1]))
+        if (codeArray[i] == CryptoJS.SHA1(div_id.split("-")[1]))
+            code += "";
+        else
+            code += codeArray[i];
+        code += '\n';
+    }
+    return code.substring(0, code.length-1);
 }

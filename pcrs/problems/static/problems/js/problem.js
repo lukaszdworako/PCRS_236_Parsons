@@ -264,27 +264,6 @@ function addHashkey(div_id){
     return code.substring(0, code.length-1);
 }
 
-function removeHashkeyForDisplay(div_id){
-    /**
-     * Generate a Hashkey based on
-     * the problem_id to identify
-     * where the student code starts and ends
-     */
-    var line_count = myCodeMirrors[div_id].lineCount();
-    var code = " ";
-    var wrapClass;
-    var i;
-    for (i = 0; i < line_count; i++){
-        wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
-        if (wrapClass == 'CodeMirror-studentline-background')
-            code += "";
-        else
-            code += myCodeMirrors[div_id].getLine(i);
-        code += '\n';
-    }
-    return code.substring(0, code.length-1);
-}
-
 function handleCMessages(div_id, testcases){
     /**
      * Handle C error and warning
@@ -325,6 +304,7 @@ function getTestcases(div_id) {
     var clean_code;
 
     if(language == 'c'){
+        console.log("IN PROBLEM.JS DIV ID IS "+div_id);
         clean_code = addHashkey(div_id);
     }else{
         clean_code = myCodeMirrors[div_id].getValue();
