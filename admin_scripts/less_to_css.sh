@@ -1,12 +1,18 @@
 #!/bin/bash
 
-FILES="new-visualizer
-edit_challenge
-challenge_page
-quest_list
-quest_page
-submission
-base"
+# Can provide a single file to compile
+if [ -z "$1" ]
+then
+    FILES="new-visualizer
+    edit_challenge
+    challenge_page
+    quest_list
+    quest_page
+    submission
+    base"
+else
+    FILES="$1"
+fi
 
 cd ../pcrs/resources/less
 
