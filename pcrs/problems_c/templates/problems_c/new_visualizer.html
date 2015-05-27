@@ -5,15 +5,31 @@
         <button type="button" class="x-button-right" data-dismiss="modal" aria-hidden="false" title="Close Debugger"></button>
       </div>
       <div class="pcrs-modal-body">
-        <div class="table-responsive">
+        <div class="table-responsive table-bordered">
+          <table class="table-bordered" style="width: 100%; float:left;">
+            <thead>
+              <tr>
+                <th class="visualizer-section-heading">Code</th>
+                <th class="visualizer-section-heading">Name Table</th>
+                <th class="visualizer-section-heading">Memory Map</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="code-window-section">
+                  <div>{% include "problems_c/visualizer_code.html" %}</div>
+                </td>
 
-            <div class="row">
-                <div class="code-window-section">{% include "problems_c/visualizer_code.html" %}</div>
+                <td class="name-type-section">
+                  <div>{% include "problems_c/visualizer_names.html" %}</div>
+                </td>
 
-                <div class="name-type-section">{% include "problems_c/visualizer_names.html" %}</div>
-
-                <div class="memory-map-section">{% include "problems_c/visualizer_memory.html" %}</div>
-            </div>
+                <td class="memory-map-section">
+                  <div>{% include "problems_c/visualizer_memory.html" %}</div>
+                </td>
+              </tr>
+            <tbody>
+          </table>
 
         </div>
         <br/><br/><br/><br/><br/><br/>
