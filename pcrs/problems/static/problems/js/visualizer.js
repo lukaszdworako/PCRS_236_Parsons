@@ -328,25 +328,25 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 // Bind debugger buttons
                 $('#new_previous_debugger').bind('click', function () {
-                    if (cur_line >= 1) {
+                    if ((cur_line -1) >= 0) {
+                        last_stepped_line_debugger = cur_line;
                         cur_line--;
+                        update_new_debugger_table(debugger_data, "prev");
                     }
-                    update_new_debugger_table(debugger_data, "prev");
                 });
 
                 $('#new_next_debugger').bind('click', function () {
-                    if (typeof (data[cur_line + 1]) != 'undefined') {
-                        console.log("calling next");
+                    if (myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null) {
+                        last_stepped_line_debugger = cur_line;
                         cur_line++;
                         update_new_debugger_table(debugger_data, "next");
-                    }
-                    else{
-                        console.log("undef");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
-                    cur_line = 1;
+                    last_stepped_line_debugger = cur_line;
+                    cur_line = 0;
+                    json_index = 0;
                     //Clear the stack and heap tables
                     $('#new_debugger_table_stack').empty();
                     $('#new_debugger_table_heap').empty();
@@ -358,7 +358,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             $('#new_debugger_table_stack').empty();
             $('#new_debugger_table_heap').empty();
 
-            cur_line = 1;
+            //Note: cur_line starts at 0 even though the line numbers start at 1: this is why
+            //we add 1 to cur_line when we do checking vs. JSON files below.
+            cur_line = 0;
             json_index = 0;
             last_stepped_line_debugger = 0;
 
@@ -366,8 +368,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log(myCodeMirrors[debugger_id]);
             codeToShow = removeHashkeyForDisplay(debugger_id);
             myCodeMirrors[debugger_id].setValue(codeToShow);
-
-            //console.log("num lines in mirror: "+myCodeMirrors[debugger_id].linecount());
 
             // Initialize debugger for the first time
             update_new_debugger_table(debugger_data, "reset");
@@ -378,7 +378,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function update_new_debugger_table(data, update_type){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
-            
+            myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
             //If resetting, first ensure all global variables are dealt with
             if(update_type == "reset") {
                 globals = debugger_data["global_vars"];
@@ -389,11 +389,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
 
             if((update_type == "next") || (update_type == "reset")) {
-                while(debugger_data["steps"][json_index]["student_view_line"] <= cur_line) {
+                while((json_index < debugger_data["steps"].length) && (debugger_data["steps"][json_index]["student_view_line"] <= (cur_line+1))) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
-
+                    console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
                     //Process JSON here to go forward a line
-                    if (json_index < debugger_data["steps"].length) {
+                    if (json_index < (debugger_data["steps"].length-1)) {
                         json_index++;            
                     }
                     else {
@@ -402,8 +402,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
             }
             else if(update_type == "prev") {
-                while(debugger_data["steps"][json_index]["student_view_line"] >= cur_line) {
+                while((json_index >= 0) && (debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
+                    console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
                     //Process JSON here to go backward a line
                     if (json_index > 0) {
                         json_index--;            
