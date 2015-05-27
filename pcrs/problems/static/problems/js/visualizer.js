@@ -328,41 +328,49 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 // Bind debugger buttons
                 $('#new_previous_debugger').bind('click', function () {
-                    if (debugger_index >= 1) {
-                        debugger_index--;
+                    if (cur_line >= 1) {
+                        cur_line--;
                     }
-                    update_debugger_table(debugger_data, "prev");
+                    update_new_debugger_table(debugger_data, "prev");
                 });
 
                 $('#new_next_debugger').bind('click', function () {
-                    if (typeof (data[debugger_index + 1]) != 'undefined') {
-                        debugger_index++;
-                        update_debugger_table(debugger_data, "next");
+                    if (typeof (data[cur_line + 1]) != 'undefined') {
+                        console.log("calling next");
+                        cur_line++;
+                        update_new_debugger_table(debugger_data, "next");
+                    }
+                    else{
+                        console.log("undef");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
-                    debugger_index = 0;
-                    update_debugger_table(debugger_data, "reset");
+                    cur_line = 1;
+                    //Clear the stack and heap tables
+                    $('#new_debugger_table_stack').empty();
+                    $('#new_debugger_table_heap').empty();
+                    update_new_debugger_table(debugger_data, "reset");
                 });
-
-                //Clear the stack and heap tables
-                $('#new_debugger_table_stack').empty();
-                $('#new_debugger_table_heap').empty();
             }
 
-            debugger_index = 1;
+            //Clear the stack and heap tables
+            $('#new_debugger_table_stack').empty();
+            $('#new_debugger_table_heap').empty();
+
+            cur_line = 1;
             json_index = 0;
             last_stepped_line_debugger = 0;
 
             console.log(myCodeMirrors);
             console.log(myCodeMirrors[debugger_id]);
-
             codeToShow = removeHashkeyForDisplay(debugger_id);
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
+            //console.log("num lines in mirror: "+myCodeMirrors[debugger_id].linecount());
+
             // Initialize debugger for the first time
-            update_new_debugger_table(debugger_data);
+            update_new_debugger_table(debugger_data, "reset");
 
             $('#newvisualizerModal').modal('show');
 
@@ -370,9 +378,39 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function update_new_debugger_table(data, update_type){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
-            if(update_type == "next") {
-                while(debugger_data["steps"][0]) {
-                    //
+            
+            //If resetting, first ensure all global variables are dealt with
+            if(update_type == "reset") {
+                globals = debugger_data["global_vars"];
+                global_amt = globals.length;
+                for(var i = 0; i < global_amt; i++) {
+                    //Include global vars
+                } 
+            }
+
+            if((update_type == "next") || (update_type == "reset")) {
+                while(debugger_data["steps"][json_index]["student_view_line"] <= cur_line) {
+                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
+
+                    //Process JSON here to go forward a line
+                    if (json_index < debugger_data["steps"].length) {
+                        json_index++;            
+                    }
+                    else {
+                        break;  
+                    }
+                }
+            }
+            else if(update_type == "prev") {
+                while(debugger_data["steps"][json_index]["student_view_line"] >= cur_line) {
+                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
+                    //Process JSON here to go backward a line
+                    if (json_index > 0) {
+                        json_index--;            
+                    }
+                    else {
+                        break;
+                    }
                 }
             }
         }
