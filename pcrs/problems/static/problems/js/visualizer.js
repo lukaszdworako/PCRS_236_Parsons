@@ -385,6 +385,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 global_amt = globals.length;
                 for(var i = 0; i < global_amt; i++) {
                     //Include global vars
+                    add_to_name_table(globals[i]);
+                    add_to_memory_table(globals[i]);
+                    add_to_val_list(globals[i]);
                 } 
             }
 
@@ -393,6 +396,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
                     //Process JSON here to go forward a line
+                    add_to_name_table(debugger_data["steps"][json_index]);
+                    add_to_memory_table(debugger_data["steps"][json_index]);
+                    add_to_val_list(debugger_data["steps"][json_index]);
+
                     if (json_index < (debugger_data["steps"].length-1)) {
                         json_index++;            
                     }
@@ -406,6 +413,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
                     //Process JSON here to go backward a line
+                    remove_from_name_table(debugger_data["steps"][json_index]);
+                    remove_from_memory_table(debugger_data["steps"][json_index]);
+                    remove_from_val_list(debugger_data["steps"][json_index]);
+
                     if (json_index > 0) {
                         json_index--;            
                     }
@@ -457,6 +468,30 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 last_stepped_line_debugger = parseInt(data[debugger_index][i][0]-1);
             }
 
+        }
+
+        function add_to_name_table(json_step) {
+            //implement me!
+        }
+
+        function add_to_memory_table(json_step) {
+            //implement me!
+        }
+
+        function add_to_val_list(json_step) {
+            //implement me!
+        }
+
+        function remove_from_name_table(json_step) {
+            //implement me!
+        }
+
+        function remove_from_memory_table(json_step) {
+            //implement me!
+        }
+
+        function remove_from_val_list(json_step) {
+            //implement me!
         }
 
         function getExecutionTraceParams(initPostParams) {
