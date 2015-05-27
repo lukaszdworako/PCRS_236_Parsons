@@ -367,7 +367,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             codeToShow = removeHashkeyForDisplay(debugger_id);
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
-            console.log("num lines in mirror: "+myCodeMirrors[debugger_id].linecount());
+            //console.log("num lines in mirror: "+myCodeMirrors[debugger_id].linecount());
 
             // Initialize debugger for the first time
             update_new_debugger_table(debugger_data, "reset");
