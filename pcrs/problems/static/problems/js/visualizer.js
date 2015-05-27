@@ -534,7 +534,7 @@ function removeHashkeyForDisplay(div_id, newCode){
      */
     var codeArray = newCode.split('\n');
     var line_count = codeArray.length;
-    var code = " ";
+    var code = "";
     var i;
     var main_line = -1;
     //var re = new RegExp(main\s*\([\s\w]*\));

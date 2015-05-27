@@ -250,7 +250,7 @@ function addHashkey(div_id){
      * where the student code starts and ends
      */
     var line_count = myCodeMirrors[div_id].lineCount();
-    var code = " ";
+    var code = "";
     var wrapClass;
     var i;
     for (i = 0; i < line_count; i++){
