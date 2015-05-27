@@ -304,7 +304,6 @@ function getTestcases(div_id) {
     var clean_code;
 
     if(language == 'c'){
-        console.log("IN PROBLEM.JS DIV ID IS "+div_id);
         clean_code = addHashkey(div_id);
     }else{
         clean_code = myCodeMirrors[div_id].getValue();

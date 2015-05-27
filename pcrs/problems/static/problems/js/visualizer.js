@@ -318,6 +318,22 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log("new code is "+newCode);
             debugger_data = data;
             console.log(debugger_data);
+            var main_line;
+            var removedLines;
+            var start_line;
+
+            div_id = debugger_id.substring(0, debugger_id.length - 1);
+            removedLines = removeHashkeyForDisplay(div_id, newCode);
+            codeToShow = removedLines[0];
+            main_line = removedLines[1];
+            //If the main function is inside the student-visible code, start on this line:
+            //otherwise, start on the first student-visible line
+            if(main_line >= 0) {
+                start_line = main_line
+            }
+            else {
+                start_line = 0;
+            }
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -328,7 +344,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 // Bind debugger buttons
                 $('#new_previous_debugger').bind('click', function () {
-                    if ((cur_line -1) >= 0) {
+                    if ((cur_line -1) >= start_line) {
                         last_stepped_line_debugger = cur_line;
                         cur_line--;
                         update_new_debugger_table(debugger_data, "prev");
@@ -345,7 +361,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 $('#new_reset_debugger').bind('click', function () {
                     last_stepped_line_debugger = cur_line;
-                    cur_line = 0;
+                    cur_line = start_line;
                     json_index = 0;
                     //Clear the stack and heap tables
                     $('#new_debugger_table_stack').empty();
@@ -360,16 +376,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             //Note: cur_line starts at 0 even though the line numbers start at 1: this is why
             //we add 1 to cur_line when we do checking vs. JSON files below.
-            cur_line = 0;
+            cur_line = start_line;
             json_index = 0;
             last_stepped_line_debugger = 0;
 
-            console.log(myCodeMirrors);
-            console.log(myCodeMirrors[debugger_id]);
-            console.log("dugger id is "+debugger_id);
-            div_id = debugger_id.substring(0, debugger_id.length - 1);
-            codeToShow = removeHashkeyForDisplay(div_id, newCode);
-            console.log("codetoshow is "+codeToShow);
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
@@ -526,15 +536,22 @@ function removeHashkeyForDisplay(div_id, newCode){
     var line_count = codeArray.length;
     var code = " ";
     var i;
+    var main_line = -1;
+    //var re = new RegExp(main\s*\([\s\w]*\));
     for (i = 0; i < line_count; i++){
         //wrapClass = newCode.lineInfo(i).wrapClass;
-        console.log("code is "+codeArray[i]);
-        console.log("hash is "+CryptoJS.SHA1(div_id.split("-")[1]))
-        if (codeArray[i] == CryptoJS.SHA1(div_id.split("-")[1]))
+        if (codeArray[i] == CryptoJS.SHA1(div_id.split("-")[1])) {
             code += "";
-        else
+        }
+        else {
             code += codeArray[i];
+            //Check for the main function declaration, this is the line we should start
+            //student steps from, if it is not hidden
+            if (codeArray[i].search('main\s*\([\s\w]*\)') >= 0){
+                main_line = i;
+            }
+        }
         code += '\n';
     }
-    return code.substring(0, code.length-1);
+    return [code.substring(0, code.length-1), main_line];
 }
