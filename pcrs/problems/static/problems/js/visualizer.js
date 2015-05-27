@@ -336,8 +336,12 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 $('#new_next_debugger').bind('click', function () {
                     if (typeof (data[cur_line + 1]) != 'undefined') {
+                        console.log("calling next");
                         cur_line++;
                         update_new_debugger_table(debugger_data, "next");
+                    }
+                    else{
+                        console.log("undef");
                     }
                 });
 
@@ -363,6 +367,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             codeToShow = removeHashkeyForDisplay(debugger_id);
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
+            console.log("num lines in mirror: "+myCodeMirrors[debugger_id].linecount());
+
             // Initialize debugger for the first time
             update_new_debugger_table(debugger_data, "reset");
 
@@ -382,18 +388,29 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 } 
             }
 
-            if(update_type == ("next" || "reset")) {
-                while(debugger_data["steps"][json_index][student_view_line] <= cur_line) {
+            if((update_type == "next") || (update_type == "reset")) {
+                while(debugger_data["steps"][json_index]["student_view_line"] <= cur_line) {
+                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
+
                     //Process JSON here to go forward a line
-                    if json_index < debugger_data["steps"].length:
+                    if (json_index < debugger_data["steps"].length) {
                         json_index++;            
+                    }
+                    else {
+                        break;  
+                    }
                 }
             }
             else if(update_type == "prev") {
-                while(debugger_data["steps"][json_index][student_view_line] >= cur_line) {
+                while(debugger_data["steps"][json_index]["student_view_line"] >= cur_line) {
+                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     //Process JSON here to go backward a line
-                    if json_index > 0:
+                    if (json_index > 0) {
                         json_index--;            
+                    }
+                    else {
+                        break;
+                    }
                 }
             }
         }
