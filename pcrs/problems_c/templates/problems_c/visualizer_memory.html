@@ -1,12 +1,75 @@
-<table id="memory-map-table" class="table table-bordered table-striped">
+<h3>Static Memory</h3>
+<table id="static-memory-map" class="table table-bordered memory-map-table">
   <thead>
     <tr>
-      <th id="address-heading">Address</th>
-      <th id="values-heading" colspan="4">Values</th>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="4">Values</th>
     </tr>
   </thead>
-  <!-- id="new_debugger_table_heap" -->
-  <tbody id="">
+  <tbody>
+    <tr>
+        <td class="memory-map-address">0x00001276</td>
+
+        <td class="memory-map-cell">'H'</td>
+        <td class="memory-map-cell">'i'</td>
+        <td class="memory-map-cell">'!'</td>
+        <td class="memory-map-cell">0x0A</td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127A</td>
+
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h3>Heap</h3>
+<table id="heap-memory-map" class="table table-bordered memory-map-table">
+  <thead>
+    <tr>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="4">Values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td class="memory-map-address">0x00001276</td>
+
+        <td class="memory-map-cell">'H'</td>
+        <td class="memory-map-cell">'i'</td>
+        <td class="memory-map-cell">'!'</td>
+        <td class="memory-map-cell">0x0A</td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127A</td>
+
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h3>Stack</h3>
+<table stack-frame-id="1" class="table table-bordered memory-map-table">
+  <thead>
+    <tr>
+        <th colspan="10">main: <span id="stack-frame-number">4</span></th>
+    </tr>
+    <tr>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="4">Values</th>
+    </tr>
+  </thead>
+  <tbody>
     <tr>
         <td class="memory-map-address">0x00001276</td>
 

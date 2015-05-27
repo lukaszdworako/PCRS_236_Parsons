@@ -1,3 +1,5 @@
+@thick-border: #DDDDDD;
+
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -36,14 +38,14 @@
     text-align: center;
 }
 
-#memory-map-table {
+.memory-map-table {
     width: 100%;
-    float:left;
+    float: left;
 }
 
 #address-heading {
     text-align: right;
-    border-right: 2px solid grey;
+    border-right: 2px solid @thick-border;
     width: 20%;
 }
 
@@ -54,7 +56,7 @@
 
 td.memory-map-address {
     text-align: right;
-    border-right: 2px solid grey !important;
+    border-right: 2px solid @thick-border !important;
 }
 
 td.memory-map-cell {
