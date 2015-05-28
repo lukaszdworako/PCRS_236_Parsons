@@ -542,16 +542,17 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                                 '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
                             '</tr>');
                         }
+                    }
                 }
 
                 //If not new, will only be deleting it if on the heap table (verify this)
                 else if ((json_step['changed_vars'][i]['location']) == "heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
                         //Remove this var from table
+                        $('#heap-'+json_step['changed_vars'][i]['var_name']).remove();
                         //check_empty_table();
                 }
             }
         }
-    }
 
         function add_to_memory_table(json_step) {
             //implement me!
