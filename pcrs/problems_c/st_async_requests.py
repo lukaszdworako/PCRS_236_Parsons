@@ -22,14 +22,14 @@ def visualizer_details(request):
     ret = {}
     try:
         user_script = request.POST.get("user_script")
-        logger.info("user script is "+user_script)
+
         # Get starter code from database and insert student submission
         problem_id = request.POST.get("problemId")
-        logger.info("PID is  "+problem_id)
+
         starter_code = Problem.objects.get(pk=problem_id).starter_code
-        logger.info("starter code is "+starter_code)
+
         clean_code = process_code_tags(problem_id, user_script, starter_code)
-        logger.info("CLEAN code is "+clean_code)
+
         # add_params is always JSON encoded.
         #pdb.set_trace()
         add_params = json.loads(request.POST.get("add_params"))
@@ -44,9 +44,7 @@ def visualizer_details(request):
         ret = gen.get_exec_trace(clean_code, add_params)
 
     except Exception as e:
-     #   logger.info("----------------EXCEPTION--------------------")
         ret['exception'] = str(e)
-    #logger.info("----------------RIGHT BEFORE RETURN-------------------")
 
     json_output = json.dumps(ret, indent=None)
 
