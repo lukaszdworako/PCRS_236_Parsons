@@ -483,6 +483,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         }
 
+        //Applies the most recent forward-changes of the current step to the name table: the only time this might be
+        //a removal is if a variable got freed on the heap
         function add_to_name_table(json_step) {
             if(!json_step.hasOwnProperty('changed_vars')) {
                 return;
@@ -514,7 +516,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            //Collapse name table we're currently on
                             $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+ 
                             '" class="table table-bordered" style="width: 100%; float:left;">'+
                             '<thead>'+
@@ -524,24 +525,16 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                                 '</tr>' +
                             '</thead>' +
                             '<tbody id="name-body-'+table_name+'">' +
-                                '<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
-                                json_step['changed_vars'][i]['addr']+'">' +
-                                    '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                                    '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                                '</tr>' +
                             '</tbody>' +
                             '</table>');
                         }
 
-                        //If so, add it to the existing name table
-                            //If not currently expanded, close the table we're on and expand this one
-                        else {
-                            $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
-                                json_step['changed_vars'][i]['addr']+'">' +
-                                '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                                '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                            '</tr>');
-                        }
+                        //Add a row to the existing name table
+                        $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
+                            json_step['changed_vars'][i]['addr']+'">' +
+                            '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                            '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                        '</tr>');
                     }
                 }
 
@@ -552,6 +545,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         //check_empty_table();
                 }
             }
+            //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
         }
 
         function add_to_memory_table(json_step) {
@@ -563,12 +557,79 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         }
 
+        //Applies the most recent backward-changes of the current step to the name table: the only time this might be
+        //an addition is if a variable got freed on the heap in the last step, adding it back
         function remove_from_name_table(json_step) {
             //implement me!
         }
 
         function remove_from_memory_table(json_step) {
-            //implement me!
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
+
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
+                
+                //Check if it's new - if so, removing it
+                if(json_step['changed_vars'][i]['new']) {
+
+                    //If the variable is a pointer, only remove it if its marked to show up in the name table
+                    if(!(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) || (json_step['changed_vars'][i]['is_ptr']=="name")) {
+
+                        //Check if it's in the stack, heap, or data to decide what we're looking for
+                        if(json_step['changed_vars'][i]['location'] == "stack") {
+                            table_name = json_step['function'];
+                        }
+                        else if (json_step['changed_vars'][i]['location'] == "heap") {
+                            table_name = 'Heap';
+                        }
+                        else {
+                            table_name = 'Data';   
+                        }
+
+                        var cur_frame;
+                        cur_frame = $('#names-'+table_name);
+                        
+                        $(table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
+
+                        //Check if the table is now empty from this removal
+                        //check_empty_table();
+                    }
+                }
+
+                //If not new, will only be adding it if on the heap table and it was freed in the most recent step
+                else if ((json_step['changed_vars'][i]['location']) == "heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
+                    //Add this var to the table
+
+                    //Check if table exists: either create heap table, or add to heap table
+                    var heap_frame = $('#names-heap');
+                    
+                    //Check if there's a current frame up for this:
+                    if(heap_frame.length == 0) {
+                    //If not, create a whole new name table
+                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-heap"'+ 
+                            'class="table table-bordered" style="width: 100%; float:left;">'+
+                        '<thead>'+
+                            '<tr>'+
+                            '<th width="60%">Name</th>' +
+                            '<th width="40%">Type</th>' +
+                            '</tr>' +
+                        '</thead>' +
+                        '<tbody id="name-body-heap">' +
+                        '</tbody>' +
+                        '</table>');
+                    }
+
+                    //Add the new row to the existing heap name table
+                    $('#name-body-heap').append('<tr id="heap-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
+                        json_step['changed_vars'][i]['addr']+'">' +
+                        '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                        '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                    '</tr>');
+                }
+            }
+            //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
         }
 
         function remove_from_val_list(json_step) {
