@@ -347,7 +347,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if ((cur_line -1) >= start_line) {
                         last_stepped_line_debugger = cur_line;
                         cur_line--;
-                        update_new_debugger_table(debugger_data, "prev");
+                        update_new_debugger_table(debugger_data, "prev", start_line);
                     }
                 });
 
@@ -355,7 +355,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if (myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null) {
                         last_stepped_line_debugger = cur_line;
                         cur_line++;
-                        update_new_debugger_table(debugger_data, "next");
+                        update_new_debugger_table(debugger_data, "next", start_line);
                     }
                 });
 
@@ -366,7 +366,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Clear the stack and heap tables
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
-                    update_new_debugger_table(debugger_data, "reset");
+                    update_new_debugger_table(debugger_data, "reset", start_line);
                 });
             }
 
@@ -383,13 +383,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_new_debugger_table(debugger_data, "reset");
+            update_new_debugger_table(debugger_data, "reset", start_line);
 
             $('#newvisualizerModal').modal('show');
 
         }
 
-        function update_new_debugger_table(data, update_type){
+        function update_new_debugger_table(data, update_type, start_line){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
             //If resetting, first ensure all global variables are dealt with
@@ -408,7 +408,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 while((json_index < debugger_data["steps"].length) && (debugger_data["steps"][json_index]["student_view_line"] <= (cur_line+1))) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
-                    //Process JSON here to go forward a line
+                    //Process JSON here to go forward a line(
                     add_to_name_table(debugger_data["steps"][json_index]);
                     add_to_memory_table(debugger_data["steps"][json_index]);
                     add_to_val_list(debugger_data["steps"][json_index]);
@@ -422,6 +422,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
             }
             else if(update_type == "prev") {
+                //Decrease the json index by 1 if it's not at the very beginning or end, since this step has not actually been applied
+                //to the chart yet, it will be after the user presses next again
+                if((cur_line > start_line) && ((myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null))) {
+                    json_index --;
+                }
                 while((json_index >= 0) && (debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
@@ -483,6 +488,14 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         }
 
+
+        /*
+        TO DO for name table functions:
+            -Add in function return handling
+            -Add in collapsing/expanding of previous/recent tables
+            -Testing on more extensive JSON
+        */
+
         //Applies the most recent forward-changes of the current step to the name table: the only time this might be
         //a removal is if a variable got freed on the heap
         function add_to_name_table(json_step) {
@@ -539,10 +552,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
 
                 //If not new, will only be deleting it if on the heap table (verify this)
-                else if ((json_step['changed_vars'][i]['location']) == "heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
+                else if ((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
                         //Remove this var from table
-                        $('#heap-'+json_step['changed_vars'][i]['var_name']).remove();
-                        //check_empty_table();
+                        $('#Heap-'+json_step['changed_vars'][i]['var_name']).remove();
+                        check_rm_empty_table("names-Heap");
                 }
             }
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
@@ -593,8 +606,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         
                         $(table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
 
-                        //Check if the table is now empty from this removal
-                        //check_empty_table();
+                        //Check if the table is now empty from this removal, remove if so
+                        table_id = '#names-'+table_name;
+                        check_rm_empty_table(table_id);
                     }
                 }
 
@@ -603,12 +617,12 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Add this var to the table
 
                     //Check if table exists: either create heap table, or add to heap table
-                    var heap_frame = $('#names-heap');
+                    var heap_frame = $('#names-Heap');
                     
                     //Check if there's a current frame up for this:
                     if(heap_frame.length == 0) {
                     //If not, create a whole new name table
-                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-heap"'+ 
+                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-Heap"'+ 
                             'class="table table-bordered" style="width: 100%; float:left;">'+
                         '<thead>'+
                             '<tr>'+
@@ -636,9 +650,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             //implement me!
         }
 
-        function check_empty_table(table_id) {
+        function check_rm_empty_table(table_name) {
             //Check if a table is empty (has no rows in body)- if so, remove the whole table from the DOM
             //Call this any time a row is removed from a table
+            var row_amt = $('#'+table_name+' tr').length;
+            if (row_amt <= 1) {
+                $('#'+table_name).remove();
+            }
         }
 
         function getExecutionTraceParams(initPostParams) {
