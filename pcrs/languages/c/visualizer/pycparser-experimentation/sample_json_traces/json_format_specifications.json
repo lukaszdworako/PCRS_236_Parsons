@@ -23,6 +23,8 @@
                     "invalid": "",
                     "location": "Stack, Heap or Static",
                     "max_size": 4, // In bytes, the largest size that this variable can be
+                    "freed":"", //If this exists as an attribute, means this was on the heap and just got freed
+                    "is_ptr":"", //If this exists an an attribute, means this is a pointer to something else. If value is "name", show in name table, otherwise, don't
                 }
             ],
             "return": 4, // This is the return value if this step is a return statement
