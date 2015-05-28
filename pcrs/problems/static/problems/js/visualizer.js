@@ -527,7 +527,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                                 '<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
                                 json_step['changed_vars'][i]['addr']+'">' +
                                     '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                                    '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                                    '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
                                 '</tr>' +
                             '</tbody>' +
                             '</table>');
@@ -539,7 +539,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                             $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
                                 json_step['changed_vars'][i]['addr']+'">' +
                                 '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                                '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                                '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
                             '</tr>');
                         }
                 }
