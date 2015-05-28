@@ -401,7 +401,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     add_to_name_table(globals[i]);
                     add_to_memory_table(globals[i]);
                     add_to_val_list(globals[i]);
-                } 
+                }
             }
 
             if((update_type == "next") || (update_type == "reset")) {
@@ -414,10 +414,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     add_to_val_list(debugger_data["steps"][json_index]);
 
                     if (json_index < (debugger_data["steps"].length-1)) {
-                        json_index++;            
+                        json_index++;
                     }
                     else {
-                        break;  
+                        break;
                     }
                 }
             }
@@ -431,7 +431,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     remove_from_val_list(debugger_data["steps"][json_index]);
 
                     if (json_index > 0) {
-                        json_index--;            
+                        json_index--;
                     }
                     else {
                         break;
@@ -542,7 +542,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                                 '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
                             '</tr>');
                         }
-                    }
                 }
 
                 //If not new, will only be deleting it if on the heap table (verify this)
