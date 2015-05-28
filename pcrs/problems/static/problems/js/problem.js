@@ -354,7 +354,7 @@ function getTestcases(div_id) {
                 var score = data['score'];
                 var max_score = data['max_score'];
                 var desider = score == max_score;
-                var isEditor = $( "p.widget_title" ).text().includes("C Editor");
+                var isEditor = ($("p.widget_title").text().indexOf("C Editor") >= 0);
 
                 $('#'+div_id).find('#alert')
                     .toggleClass("red-alert", !desider);
