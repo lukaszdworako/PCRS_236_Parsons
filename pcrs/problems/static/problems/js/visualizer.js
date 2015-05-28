@@ -401,7 +401,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     add_to_name_table(globals[i]);
                     add_to_memory_table(globals[i]);
                     add_to_val_list(globals[i]);
-                } 
+                }
             }
 
             if((update_type == "next") || (update_type == "reset")) {
@@ -414,10 +414,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     add_to_val_list(debugger_data["steps"][json_index]);
 
                     if (json_index < (debugger_data["steps"].length-1)) {
-                        json_index++;            
+                        json_index++;
                     }
                     else {
-                        break;  
+                        break;
                     }
                 }
             }
@@ -431,7 +431,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     remove_from_val_list(debugger_data["steps"][json_index]);
 
                     if (json_index > 0) {
-                        json_index--;            
+                        json_index--;
                     }
                     else {
                         break;
@@ -484,12 +484,15 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_name_table(json_step) {
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
-                
+
                 //Check if it's new - if so, adding it, if not, may only be changing its address in the tag or deleting it
-                
+
                 //Check if it's in the stack, heap, or read only to decide what we're looking for
 
                 //Check if there's a current stack frame up for this
@@ -497,8 +500,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 if(cur_frame.length == 0) {
                 //If not, create a whole new stack name table
                     //Collapse stack name table we're currently on
-                    $('#name-type-section').append('<h4>'+json_step['function']+'</h4> <table id="names-' +json_step['function']+ 
-                    '" class="table table-bordered table-striped" style="width: 100%; float:left;">'+
+                    $('#name-type-section').append('<h4>'+json_step['function']+'</h4> <table id="names-' +json_step['function']+
+                    '" class="table table-bordered" style="width: 100%; float:left;">'+
                     '<thead>'+
                         '<tr>'+
                         '<th width="60%">Name</th>' +
