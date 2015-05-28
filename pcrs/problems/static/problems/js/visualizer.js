@@ -364,14 +364,14 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     cur_line = start_line;
                     json_index = 0;
                     //Clear the stack and heap tables
-                    $('#new_debugger_table_stack').empty();
+                    $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
                     update_new_debugger_table(debugger_data, "reset");
                 });
             }
 
             //Clear the stack and heap tables
-            $('#new_debugger_table_stack').empty();
+            $('#name-type-section').empty();
             $('#new_debugger_table_heap').empty();
 
             //Note: cur_line starts at 0 even though the line numbers start at 1: this is why
@@ -484,43 +484,72 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_name_table(json_step) {
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
                 
-                //Check if it's new - if so, adding it, if not, may only be changing its address in the tag or deleting it
-                
-                //Check if it's in the stack, heap, or read only to decide what we're looking for
+                //Check if it's new - if so, adding it
+                if(json_step['changed_vars'][i]['new']) {
 
-                //Check if there's a current stack frame up for this
-                var cur_frame = $('#names-'+json_step['function']);
-                if(cur_frame.length == 0) {
-                //If not, create a whole new stack name table
-                    //Collapse stack name table we're currently on
-                    $('#name-type-section').append('<h4>'+json_step['function']+'</h4> <table id="names-' +json_step['function']+ 
-                    '" class="table table-bordered table-striped" style="width: 100%; float:left;">'+
-                    '<thead>'+
-                        '<tr>'+
-                        '<th width="60%">Name</th>' +
-                        '<th width="40%">Type</th>' +
-                        '</tr>' +
-                    '</thead>' +
-                    '<tbody id="name-body-'+json_step['function']+'">' +
-                        '<tr>' +
-                            '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                            '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                        '</tr>' +
-                    '</tbody>' +
-                    '</table>');
+                    //If the variable is a pointer, only add it if its marked to show up in the name table
+                    if(!(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) || (json_step['changed_vars'][i]['is_ptr']=="name")) {
+
+                        //Check if it's in the stack, heap, or data to decide what we're looking for
+                        if(json_step['changed_vars'][i]['location'] == "stack") {
+                            table_name = json_step['function'];
+                        }
+                        else if (json_step['changed_vars'][i]['location'] == "heap") {
+                            table_name = 'Heap';
+                        }
+                        else {
+                            table_name = 'Data';   
+                        }
+
+                        var cur_frame;
+                        cur_frame = $('#names-'+table_name);
+                        
+                        //Check if there's a current frame up for this:
+                        if(cur_frame.length == 0) {
+                        //If not, create a whole new name table
+                            //Collapse name table we're currently on
+                            $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+ 
+                            '" class="table table-bordered" style="width: 100%; float:left;">'+
+                            '<thead>'+
+                                '<tr>'+
+                                '<th width="60%">Name</th>' +
+                                '<th width="40%">Type</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                            '<tbody id="name-body-'+table_name+'">' +
+                                '<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
+                                json_step['changed_vars'][i]['addr']+'">' +
+                                    '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                                    '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                                '</tr>' +
+                            '</tbody>' +
+                            '</table>');
+                        }
+
+                        //If so, add it to the existing name table
+                            //If not currently expanded, close the table we're on and expand this one
+                        else {
+                            $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
+                                json_step['changed_vars'][i]['addr']+'">' +
+                                '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                                '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                            '</tr>');
+                        }
+                    }
                 }
 
-                //If so, add it to the existing stack name table
-                    //If not currently expanded, close the table we're on and expand this one
+                //If not new, will only be deleting it if on the heap table (verify this)
                 else {
-                    $('#name-body-'+json_step['function']).append('<tr>' +
-                        '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                        '<td class="memory-map-cell">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                    '</tr>');
+                    if (json_step['changed_vars'][i]['location'] == "heap") {
+                        //do some stuff here
+                    }
                 }
             }
         }
