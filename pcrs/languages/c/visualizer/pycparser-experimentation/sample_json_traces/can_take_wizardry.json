@@ -27,7 +27,8 @@
                     ],
                     "invalid": false,
                     "location": "stack",
-                    "max_size": 21
+                    "max_size": 21,
+                    "is_ptr": "name"
                 }
             ],
             "function": "main",
