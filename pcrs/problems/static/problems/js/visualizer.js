@@ -357,7 +357,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         last_stepped_line_debugger = cur_line;
                         cur_line++;
                         if(json_index <(debugger_data["steps"].length-1)) {
-                            console.log("about to call reset!");
+                            //console.log("about to call reset!");
                             json_index++;
                             update_new_debugger_table(debugger_data, "next", start_line);
                         }
@@ -411,7 +411,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             if((update_type == "next") || (update_type == "reset")) {            
                 //Set j to the current json_index
-                console.log("resetting, json index is "+json_index);
+                //console.log("resetting, json index is "+json_index);
                 for(json_index; json_index<debugger_data["steps"].length;json_index++) {
                     
                     if((debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
