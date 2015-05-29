@@ -1,4 +1,7 @@
 @thick-border: #DDDDDD;
+@address-width: 30%;
+@values-width: 70%;
+@cell-width: 17.5%;
 
 .title {
     font-size: 20px;
@@ -46,20 +49,44 @@
 #address-heading {
     text-align: right;
     border-right: 2px solid @thick-border;
-    width: 20%;
+    width: @address-width;
 }
 
 #values-heading {
     text-align: center;
-    width: 80%;
+    width: @values-width;
 }
 
-td.memory-map-address {
+.memory-map-address {
     text-align: right;
     border-right: 2px solid @thick-border !important;
+    width: @address-width;
 }
 
-td.memory-map-cell {
+.memory-map-cell {
     text-align: center;
-    width: 20%;
+    vertical-align: middle !important;
+    width: @cell-width;
+}
+
+.clear-memory-map-cell {
+    .memory-map-cell;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+.top-row-clear-cell {
+    .clear-memory-map-cell;
+    border-bottom: none !important;
+}
+
+.middle-row-clear-cell {
+    .clear-memory-map-cell;
+    border-top: none !important;
+    border-bottom: none !important;
+}
+
+.bottom-row-clear-cell {
+    .clear-memory-map-cell;
+    border-top: none !important;
 }
