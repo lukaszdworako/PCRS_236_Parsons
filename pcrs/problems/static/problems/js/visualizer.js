@@ -321,6 +321,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             var main_line;
             var removedLines;
             var start_line;
+            //var json_index;
 
             div_id = debugger_id.substring(0, debugger_id.length - 1);
             removedLines = removeHashkeyForDisplay(div_id, newCode);
@@ -355,7 +356,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if (myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null) {
                         last_stepped_line_debugger = cur_line;
                         cur_line++;
-                        update_new_debugger_table(debugger_data, "next", start_line);
+                        if(json_index <(debugger_data["steps"].length-1)) {
+                            console.log("about to call reset!");
+                            json_index++;
+                            update_new_debugger_table(debugger_data, "next", start_line);
+                        }
                     }
                 });
 
@@ -404,29 +409,32 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
             }
 
-            if((update_type == "next") || (update_type == "reset")) {
-                while((json_index < debugger_data["steps"].length) && (debugger_data["steps"][json_index]["student_view_line"] <= (cur_line+1))) {
-                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
-                    console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
-                    //Process JSON here to go forward a line(
-                    add_to_name_table(debugger_data["steps"][json_index]);
-                    add_to_memory_table(debugger_data["steps"][json_index]);
-                    add_to_val_list(debugger_data["steps"][json_index]);
-
-                    if (json_index < (debugger_data["steps"].length-1)) {
-                        json_index++;
-                    }
-                    else {
+            if((update_type == "next") || (update_type == "reset")) {            
+                //Set j to the current json_index
+                console.log("resetting, json index is "+json_index);
+                for(json_index; json_index<debugger_data["steps"].length;json_index++) {
+                    
+                    if((debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
+                        json_index --;
                         break;
                     }
+
+                    else {
+                        console.log("step:"+debugger_data["steps"][json_index]["step"]);
+                        console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
+                        
+                        add_to_name_table(debugger_data["steps"][json_index]);
+                        add_to_memory_table(debugger_data["steps"][json_index]);
+                        add_to_val_list(debugger_data["steps"][json_index]);
+                    }
                 }
-            }
-            else if(update_type == "prev") {
-                //Decrease the json index by 1 if it's not at the very beginning or end, since this step has not actually been applied
-                //to the chart yet, it will be after the user presses next again
-                if((cur_line > start_line) && ((myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null))) {
+                if(json_index == debugger_data["steps"].length) {
                     json_index --;
                 }
+            }
+
+            else if(update_type == "prev") {
+                console.log("json index:"+json_index);
                 while((json_index >= 0) && (debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
                     console.log("step:"+debugger_data["steps"][json_index]["step"]);
                     console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
