@@ -2,8 +2,60 @@
     "steps": [
         {
             "step": 1,
-            "line": 100,
-            "student_view_line":100,
+            "line": 53,
+            "student_view_line":53,
+            "function": "main",
+            "function_decl": true   
+        },
+        {
+            "step": 2,
+            "line": 54,
+            "student_view_line":54,
+            "changed_vars": [
+                {
+                    "name":"board",
+                    "addr": "0x7ffff793c190",
+                    "type": "int[][]",
+                    "new": true,
+                    "value": [[1, 2, 3], [1, 3, 2],[2, 1, 2]],
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 36
+                }
+            ],
+            "function": "none",
+            "function_decl": false   
+        },
+        {
+            "step": 3,
+            "line": 59,
+            "student_view_line":59,
+            "changed_vars": [
+                {
+                    "name":"solution",
+                    "addr": "0x7ffff793c1c0",
+                    "type": "int[][]",
+                    "new": true,
+                    "value": [[0, 1, 1], [0, 1, 0], [0, 1, 0]],
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 36
+                }
+            ],
+            "function": "none",
+            "function_decl": false   
+        },
+        {
+            "step": 4,
+            "line": 64,
+            "student_view_line":64,
+            "function": "main",
+            "function_decl": false   
+        },
+        {
+            "step": 5,
+            "line": 4,
+            "student_view_line":4,
             "changed_vars": [
                 {
                     "var_name": "board",
@@ -16,105 +68,283 @@
                     "max_size": 36
                 },
                 {
-                    "var_name": "argv",
-                    "addr": "0x104",
-                    "type": "char**",
+                    "var_name": "solution",
+                    "addr": "0x7ffff793c1c0",
+                    "type": "int[][]",
                     "new": true,
-                    "value": [
-                        "can_take_wizardry",
-                        "2.5",
-                        "6"
-                    ],
+                    "value": [[0, 1, 1], [0, 1, 0], [0, 1, 0]],
                     "invalid": false,
                     "location": "stack",
-                    "max_size": 21,
-                    "is_ptr": "name"
+                    "max_size": 36
                 }
             ],
-            "function": "main",
+            "function": "verify_board",
             "function_decl": true
-        },
-        {
-            "step": 2,
-            "line": 8,
-            "student_view_line":1,
-            "changed_vars": [
-                {
-                    "var_name": "cgpa",
-                    "addr": "0x128",
-                    "type": "double",
-                    "new": true,
-                    "value": 2.5,
-                    "invalid": false,
-                    "location": "stack",
-                    "max_size": 8
-                }
-            ],
-            "function": "main",
-            "function_decl": false
-        },
-        {
-            "step": 3,
-            "line": 9,
-            "student_view_line":1,
-            "changed_vars": [
-                {
-                    "var_name": "credits",
-                    "addr": "0x136",
-                    "type": "int",
-                    "new": true,
-                    "value": 6,
-                    "invalid": false,
-                    "location": "stack",
-                    "max_size": 4
-                }
-            ],
-            "function": "main",
-            "function_decl": false
-        },
-        {
-            "step": 4,
-            "line": 13,
-            "student_view_line":1,
-            "changed_vars": [
-                {
-                    "var_name": "cgpa",
-                    "addr": "0x140",
-                    "type": "double",
-                    "new": true,
-                    "value": 2.5,
-                    "invalid": false,
-                    "location": "stack",
-                    "max_size": 8
-                },
-                {
-                    "var_name": "credits_complete",
-                    "addr": "0x148",
-                    "type": "int",
-                    "new": true,
-                    "value": 6,
-                    "invalid": false,
-                    "location": "stack",
-                    "max_size": 4
-                }
-            ],
-            "function": "can_take_wizardry",
-            "function_decl": true
-        },
-        {
-            "step": 5,
-            "line": 15,
-            "student_view_line":3,
-            "return": 0,
-            "function": "can_take_wizardry",
-            "function_decl": false
         },
         {
             "step": 6,
-            "line": 11,
-            "student_view_line":5,
-            "return": 0,
-            "function": "main",
+            "line": 6,
+            "student_view_line":6,
+            "changed_vars": [
+                {
+                    "var_name": "validity",
+                    "addr": "0x7ffff793c130",
+                    "type": "int[][]",
+                    "new": true,
+                    "value": "junk",
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 36
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 7,
+            "line": 8,
+            "student_view_line":8,
+            "changed_vars": [
+                {
+                    "var_name": "idx",
+                    "addr": "0x7ffff793c104",
+                    "type": "int",
+                    "new": true,
+                    "value": "junk",
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+                {
+                    "var_name": "subidx",
+                    "addr": "0x7ffff793c108",
+                    "type": "int",
+                    "new": true,
+                    "value": "junk",
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+                {
+                    "var_name": "comp",
+                    "addr": "0x7ffff793c10c",
+                    "type": "int",
+                    "new": true,
+                    "value": "junk",
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 8,
+            "line": 9,
+            "student_view_line":9,
+            "changed_vars": [
+                {
+                    "var_name": "idx",
+                    "addr": "0x7ffff793c104",
+                    "type": "int",
+                    "new": false,
+                    "value": 0,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 9,
+            "line": 10,
+            "student_view_line":10,
+            "changed_vars": [
+                {
+                    "var_name": "subidx",
+                    "addr": "0x7ffff793c108",
+                    "type": "int",
+                    "new": false,
+                    "value": 0,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 10,
+            "line": 12,
+            "student_view_line":12,
+            "changed_vars": [
+                {
+                    "var_name": "comp",
+                    "addr": "0x7ffff793c10c",
+                    "type": "int",
+                    "new": false,
+                    "value": 0,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 11,
+            "line": 13,
+            "student_view_line":13,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 12,
+            "line": 12,
+            "student_view_line":12,
+            "changed_vars": [
+                {
+                    "var_name": "comp",
+                    "addr": "0x7ffff793c10c",
+                    "type": "int",
+                    "new": false,
+                    "value": 1,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 13,
+            "line": 13,
+            "student_view_line":13,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 14,
+            "line": 14,
+            "student_view_line":14,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 15,
+            "line": 17,
+            "student_view_line":17,
+            "function": "verify_board",
+            "function_decl": false
+        }, 
+        {
+            "step": 16,
+            "line": 18,
+            "student_view_line":18,
+            "changed_vars": [
+                {
+                    "var_name": "validity",
+                    "addr": "0x7ffff793c130",
+                    "type": "int",
+                    "new": false,
+                    "value": 1,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 17,
+            "line": 12,
+            "student_view_line":12,
+            "changed_vars": [
+                {
+                    "var_name": "comp",
+                    "addr": "0x7ffff793c10c",
+                    "type": "int",
+                    "new": false,
+                    "value": 2,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 18,
+            "line": 13,
+            "student_view_line":13,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 19,
+            "line": 14,
+            "student_view_line":14,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 20,
+            "line": 17,
+            "student_view_line":18,
+            "function": "verify_board",
+            "function_decl": false
+        }, 
+        {
+            "step": 21,
+            "line": 18,
+            "student_view_line":18,
+            "changed_vars": [
+                {
+                    "var_name": "validity",
+                    "addr": "0x7ffff793c130",
+                    "type": "int",
+                    "new": false,
+                    "value": 1,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 22,
+            "line": 23,
+            "student_view_line":23,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
+            "step": 23,
+            "line": 25,
+            "student_view_line":25,
+            "changed_vars": [
+                {
+                    "var_name": "comp",
+                    "addr": "0x7ffff793c10c",
+                    "type": "int",
+                    "new": false,
+                    "value": 0,
+                    "invalid": false,
+                    "location": "stack",
+                    "max_size": 4
+                }
+            ],            
+            "function": "verify_board",
             "function_decl": false
         }
     ],
