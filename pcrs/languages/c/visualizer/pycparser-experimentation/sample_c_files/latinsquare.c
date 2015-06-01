@@ -7,7 +7,7 @@ int verify_board(int board[BOARD_SIZE][BOARD_SIZE], int solution[BOARD_SIZE][BOA
  	int k;
  	for(j=0; j<BOARD_SIZE; j++){
  		for (k=0; k<BOARD_SIZE; k++){
- 			printf("PARSING: name: board value:%d address:%p line:10\n", board[j][k], &(board[j][k]));
+ 			printf("PARSING: name: board value:%d address:%p line:4\n", board[j][k], &(board[j][k]));
  		}
  	}
 
@@ -15,7 +15,7 @@ int verify_board(int board[BOARD_SIZE][BOARD_SIZE], int solution[BOARD_SIZE][BOA
  	int m;
  	for(l=0; l<BOARD_SIZE; l++){
  		for (m=0; m<BOARD_SIZE; m++){
- 			printf("PARSING: name: solution value:%d address:%p line:18\n", solution[l][m], &(solution[l][m]));
+ 			printf("PARSING: name: solution value:%d address:%p line:4\n", solution[l][m], &(solution[l][m]));
  		}
  	} 	
 
@@ -24,14 +24,14 @@ int verify_board(int board[BOARD_SIZE][BOARD_SIZE], int solution[BOARD_SIZE][BOA
  	int s;
  	for(q=0; q<BOARD_SIZE; q++){
  		for (s=0; s<BOARD_SIZE; s++){
- 			printf("PARSING: name: validity value:%d address:%p line:27\n", validity[q][s], &(validity[q][s]));
+ 			printf("PARSING: name: validity value:%d address:%p line:6\n", validity[q][s], &(validity[q][s]));
  		}
  	} 	
 
 	int idx, subidx, comp;
-	printf("PARSING: name: idx value:%d address:%p line:32\n", idx, &idx);
-	printf("PARSING: name: subidx value:%d address:%p line:33\n", subidx, &subidx);
-	printf("PARSING: name: comp value:%d address:%p line:34\n", comp, &comp);
+	printf("PARSING: name: idx value:%d address:%p line:8\n", idx, &idx);
+	printf("PARSING: name: subidx value:%d address:%p line:8\n", subidx, &subidx);
+	printf("PARSING: name: comp value:%d address:%p line:8\n", comp, &comp);
 	for (idx = 0; idx < BOARD_SIZE; idx++) {
 		printf("PARSING: name: idx value:%d address:%p line:36\n", idx, &idx);
 		for (subidx = 0; subidx < BOARD_SIZE; subidx++) {
