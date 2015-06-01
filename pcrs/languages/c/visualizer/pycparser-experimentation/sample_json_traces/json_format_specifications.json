@@ -21,7 +21,7 @@
                     "new": "",
                     "value": "",
                     "invalid": "",
-                    "location": "Stack, Heap or Static",
+                    "location": "stack, heap or static",
                     "max_size": 4, // In bytes, the largest size that this variable can be
                 }
             ],

@@ -1,3 +1,11 @@
+var memory_map_cell_height = 37; // In pixels
+var memory_map_cell_width = 17.5; // In %
+
+function zeroPad (str, max) {
+  str = str.toString();
+  return str.length < max ? zeroPad("0" + str, max) : str;
+}
+
 /**
  * Generic Visualizer, that is used by all languages.
  * To plug in a language, create a corresponing function. Function must support
@@ -411,7 +419,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 while((json_index < debugger_data["steps"].length) && (debugger_data["steps"][json_index]["student_view_line"] <= (cur_line+1))) {
                     //Process JSON here to go forward a line(
-                    add_to_name_table(debugger_data["steps"][json_index]);
+                    //add_to_name_table(debugger_data["steps"][json_index]);
                     //add_to_memory_table(debugger_data["steps"][json_index]);
                     add_to_val_list(debugger_data["steps"][json_index]);
 
@@ -564,7 +572,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_memory_table(json_step) {
-            console.log('GOOBY PLSSSSSSSSSSSS');
+            console.log('Adding to memory table');
             console.log('step: ' + json_step.step);
             console.log(json_step);
             if(json_step.hasOwnProperty('changed_vars')) {
@@ -577,13 +585,170 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function add_changed_vars_to_memory_table(json_step){
             var changed_vars = json_step.changed_vars;
-            var num_changed_vars = changed_vars.length;
-            for(var i=0; i < num_changed_vars; i++) {
+            for(var i=0; i < changed_vars.length; i++) {
+                var changed_var = changed_vars[i];
 
+                var var_name = changed_var["var-name"];
+                var addr = parseInt(changed_var["addr"], 16);
+                var type = changed_var["type"];
+                var is_new = changed_var["new"];
+                var value = changed_var["value"];
+                var invalid = changed_var["invalid"];
+                var location = changed_var["location"];
+                var cells_needed = changed_var["max_size"];
+
+                if(location === "static") {
+                    location = "#static-memory-map";
+                } else if(location === "heap") {
+                    location = "#heap-memory-map";
+                } else if(location === "stack") {
+                    if(is_new) {
+                        // TODO: Create a new stack frame
+                    } else {
+                        // TODO: Find which function it belongs to
+                    }
+                }
+
+                var is_array = type.indexOf("[]") >= 0;
+
+                var memory_map_tbody = $(location + " > tbody");
+                var table_rows = $(location + " > tbody > tr").toArray();
+                if(table_rows.length > 0) {
+                    // Find location to insert and insert
+                } else {
+                    // Insert the first element
+                    var end_addr = addr + cells_needed;
+
+                    var start_addr_extra_cells = addr % 4;
+                    var end_addr_extra_cells = (end_addr % 4) == 0 ? 0 : 4 - (end_addr % 4);
+                    var middle_cells = (cells_needed - start_addr_extra_cells - end_addr_extra_cells)
+                    var rows_needed =
+                        (start_addr_extra_cells > 0 ? 1 : 0) // Add rows for extra cells on last and first row
+                        + (end_addr_extra_cells > 0 ? 1 : 0)
+                        + (middle_cells / 4);
+
+
+                    var current_addr = addr;
+                    var remaining_cells = cells_needed;
+                    var label_added = false;
+                    for(var r=1; r <= rows_needed; r++) {
+                        var row_start_addr = current_addr - (current_addr % 4);
+                        var start_cell_number = current_addr % 4;
+                        var current_cell_addr = row_start_addr;
+
+                        var start_addr_str = zeroPad(row_start_addr.toString(16), 8);
+                        var memory_map_row = create_memory_map_base_row(start_addr_str);
+
+                        // Add the cells of this row
+                        var cells_on_row = Math.min(remaining_cells, 4);
+
+                        var c = 0;
+                        while(c < start_cell_number) {
+                            var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
+                            memory_map_row.appendChild(memory_map_cell);
+                            current_cell_addr++;
+                            c++;
+                        }
+                        while(c < (start_cell_number + cells_on_row)) {
+                            var cols = 2;
+                            // Add the label cell
+                            if((!is_array)
+                                && ((rows_needed == 1) || ((current_cell_addr == row_start_addr) && !label_added))) {
+                                var label_height_cells = middle_cells / 4;
+                                var label_width_cells = cells_on_row;
+                                var label_value = value;
+
+                                var label_cell = create_label_cell(label_height_cells, label_width_cells, label_value);
+                                memory_map_row.appendChild(label_cell);
+                                cols = 1;
+                                label_added = true;
+                            }
+
+                            // Add the data cells
+                            var clarity_class = "clear-memory-map-cell";
+                            if(rows_needed > 1){
+                                // First row
+                                if(r == 0) {
+                                    clarity_class = "top-row-clear-cell";
+                                } else if(r == rows_needed) {
+                                    clarity_class = "bottom-row-clear-cell";
+                                } else {
+                                    clarity_class = "middle-row-clear-cell";
+                                }
+                            }
+
+                            var memory_map_cell = create_clear_memory_map_cell(current_cell_addr, clarity_class, cols);
+                            memory_map_row.appendChild(memory_map_cell)
+                            current_cell_addr++;
+                            c++;
+                        }
+                        while(c < 4) {
+                            var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
+                            memory_map_row.appendChild(memory_map_cell);
+                            current_cell_addr++;
+                            c++;
+                        }
+
+                        memory_map_tbody.append(memory_map_row);
+
+                        // Advance to the next row
+                        current_addr = row_start_addr + 4;
+                        remaining_cells -= cells_on_row;
+                    }
+                }
             }
         }
 
-        function add_return_to_memory_table(json_step){
+        function create_label_cell(label_height_cells, label_width_cells, label_value) {
+            var label_cell = document.createElement("td");
+            var label_height = (label_height_cells * memory_map_cell_height).toString() + "px";
+            var label_width = (label_width_cells * memory_map_cell_width).toString() + "%";
+
+            label_cell.className = "cell-label-td";
+            label_cell.style.height = label_height;
+            label_cell.style.width = label_width;
+            label_cell.style.maxWidth = label_width;
+
+            var label_cell_div = document.createElement("div");
+            label_cell_div.className = "cell-label-div";
+            label_cell_div.style.height = label_height;
+            label_cell_div.innerHTML = label_value;
+
+            label_cell.appendChild(label_cell_div);
+
+            return label_cell;
+        }
+
+        function create_clear_memory_map_cell(cell_addr, clarity_class, cols) {
+            var memory_map_cell = document.createElement("td");
+            memory_map_cell.className = clarity_class;
+            memory_map_cell.setAttribute("colspan", cols);
+            memory_map_cell.setAttribute("addr", cell_addr.toString(16,8));
+
+            return memory_map_cell;
+        }
+
+        function create_regular_memory_map_cell(cell_addr) {
+            var memory_map_cell = document.createElement("td");
+            memory_map_cell.className = "memory-map-cell";
+            memory_map_cell.setAttribute("colspan", "2");
+            memory_map_cell.setAttribute("addr", cell_addr.toString(16,8));
+
+            return memory_map_cell;
+        }
+
+        function create_memory_map_base_row(start_addr) {
+            var memory_map_row = document.createElement("tr");
+            memory_map_row.setAttribute("start-addr", start_addr);
+            var td = document.createElement("td");
+            td.className = "memory-map-address";
+            td.innerHTML = "0x" + start_addr;
+            memory_map_row.appendChild(td);
+
+            return memory_map_row;
+        }
+
+        function add_return_to_memory_table(json_step) {
             // TODO: implement
         }
 
