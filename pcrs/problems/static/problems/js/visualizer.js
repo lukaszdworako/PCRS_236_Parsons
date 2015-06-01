@@ -318,23 +318,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log("new code is "+newCode);
             debugger_data = data;
             console.log(debugger_data);
-            var main_line;
             var removedLines;
-            var start_line;
-            //var json_index;
+            var start_line = debugger_data["steps"][0]["student_view_line"];
 
             div_id = debugger_id.substring(0, debugger_id.length - 1);
-            removedLines = removeHashkeyForDisplay(div_id, newCode);
-            codeToShow = removedLines[0];
-            main_line = removedLines[1];
-            //If the main function is inside the student-visible code, start on this line:
-            //otherwise, start on the first student-visible line
-            if(main_line >= 0) {
-                start_line = main_line
-            }
-            else {
-                start_line = 0;
-            }
+            codeToShow = removeHashkeyForDisplay(div_id, newCode);
 
             if(!c_debugger_load) {
                 c_debugger_load = true;
@@ -716,8 +704,6 @@ function removeHashkeyForDisplay(div_id, newCode){
     var line_count = codeArray.length;
     var code = "";
     var i;
-    var main_line = -1;
-    //var re = new RegExp(main\s*\([\s\w]*\));
     for (i = 0; i < line_count; i++){
         //wrapClass = newCode.lineInfo(i).wrapClass;
         if (codeArray[i] == CryptoJS.SHA1(div_id.split("-")[1])) {
@@ -727,11 +713,8 @@ function removeHashkeyForDisplay(div_id, newCode){
             code += codeArray[i];
             //Check for the main function declaration, this is the line we should start
             //student steps from, if it is not hidden
-            if (codeArray[i].search('main\s*\([\s\w]*\)') >= 0){
-                main_line = i;
-            }
         }
         code += '\n';
     }
-    return [code.substring(0, code.length-1), main_line];
+    return code.substring(0, code.length-1);
 }
