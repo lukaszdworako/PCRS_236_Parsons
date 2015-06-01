@@ -513,7 +513,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
-                
+
                 //Check if it's new - if so, adding it
                 if(json_step['changed_vars'][i]['new']) {
 
@@ -528,16 +528,16 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                             table_name = 'Heap';
                         }
                         else {
-                            table_name = 'Data';   
+                            table_name = 'Data';
                         }
 
                         var cur_frame;
                         cur_frame = $('#names-'+table_name);
-                        
+
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+ 
+                            $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+
                             '" class="table table-bordered" style="width: 100%; float:left;">'+
                             '<thead>'+
                                 '<tr>'+
@@ -570,8 +570,29 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_memory_table(json_step) {
-            //implement me!
+            console.log('GOOBY PLSSSSSSSSSSSS');
+            console.log('step: ' + json_step.step);
+            console.log(json_step);
+            if(json_step.hasOwnProperty('changed_vars')) {
+                add_changed_vars_to_memory_table(json_step);
+            }
+            if(json_step.hasOwnProperty('return')) {
+                add_return_to_memory_table(json_step);
+            }
         }
+
+        function add_changed_vars_to_memory_table(json_step){
+            var changed_vars = json_step.changed_vars;
+            var num_changed_vars = changed_vars.length;
+            for(var i=0; i < num_changed_vars; i++) {
+
+            }
+        }
+
+        function add_return_to_memory_table(json_step){
+            // TODO: implement
+        }
+
 
         function add_to_val_list(json_step) {
             //implement me!
@@ -581,17 +602,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
         //an addition is if a variable got freed on the heap in the last step, adding it back
         function remove_from_name_table(json_step) {
-            //implement me!
-        }
-
-        function remove_from_memory_table(json_step) {
             if(!json_step.hasOwnProperty('changed_vars')) {
                 return;
             }
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
-                
+
                 //Check if it's new - if so, removing it
                 if(json_step['changed_vars'][i]['new']) {
 
@@ -606,12 +623,12 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                             table_name = 'Heap';
                         }
                         else {
-                            table_name = 'Data';   
+                            table_name = 'Data';
                         }
 
                         var cur_frame;
                         cur_frame = $('#names-'+table_name);
-                        
+
                         $(table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
 
                         //Check if the table is now empty from this removal, remove if so
@@ -626,11 +643,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                     //Check if table exists: either create heap table, or add to heap table
                     var heap_frame = $('#names-Heap');
-                    
+
                     //Check if there's a current frame up for this:
                     if(heap_frame.length == 0) {
                     //If not, create a whole new name table
-                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-Heap"'+ 
+                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-Heap"'+
                             'class="table table-bordered" style="width: 100%; float:left;">'+
                         '<thead>'+
                             '<tr>'+
@@ -652,6 +669,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
             }
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
+        }
+
+        function remove_from_memory_table(json_step) {
+            //implement me!
         }
 
         function remove_from_val_list(json_step) {

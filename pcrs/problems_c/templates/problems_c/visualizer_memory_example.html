@@ -1,0 +1,161 @@
+<h3>Static Memory</h3>
+<table id="static-memory-map" class="table table-bordered memory-map-table" style="position: relative;">
+  <thead>
+    <tr>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="8">Values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr start-addr="00001276">
+        <td class="memory-map-address">0x00001276</td>
+
+        <td class="memory-map-cell" addr="00001276" colspan="2">'H'</td>
+        <td class="memory-map-cell" addr="00001277" colspan="2">'i'</td>
+        <td class="memory-map-cell" addr="00001278" colspan="2">'!'</td>
+        <td class="memory-map-cell" addr="00001279" colspan="2">'\n'</td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127A</td>
+
+        <td style="position: absolute;
+                    padding: 0px; margin: 0px;
+                    height: 37px;
+                    width: 70%;
+                    max-width: 70%;
+                    border: none;">
+            <div style="display: table-cell !important;
+                        text-align: center;
+                        vertical-align: middle;
+                        width: 10000px;
+                        height: 37px;">
+                34
+            </div>
+        </td>
+        <td class="clear-memory-map-cell"></td>
+        <td class="clear-memory-map-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell" colspan="2"></td>
+
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127E</td>
+
+        <td class="memory-map-cell" colspan="2">'a'</td>
+        <td style="position: absolute;
+                    padding: 0px; margin: 0px;
+                    height: 37px;
+                    width: 35%;
+                    max-width: 35%;
+                    border: none;">
+            <div style="display: table-cell !important;
+                        text-align: center;
+                        vertical-align: middle;
+                        width: 10000px;
+                        height: 37px;">
+                42
+            </div>
+        </td>
+        <td class="clear-memory-map-cell"></td>
+        <td class="clear-memory-map-cell" colspan="2"></td>
+
+        <td class="memory-map-cell" colspan="2">'b'</td>
+
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h3>Heap</h3>
+<table id="static-memory-map" class="table table-bordered memory-map-table" style="position: relative;">
+  <thead>
+    <tr>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="5">Values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr start-addr="00001276">
+        <td class="memory-map-address">0x00001276</td>
+
+        <td class="memory-map-cell" addr="00001276" colspan="2">'H'</td>
+        <td class="memory-map-cell" addr="00001277">'i'</td>
+        <td class="memory-map-cell" addr="00001278">'!'</td>
+        <td class="memory-map-cell" addr="00001279">'\n'</td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127A</td>
+
+        <td style="position: absolute;
+                    padding: 0px; margin: 0px;
+                    height: 111px;
+                    width: 70%;
+                    max-width: 70%;
+                    border: none;"
+            rowspan="2">
+            <div style="display: table-cell !important;
+                        text-align: center;
+                        vertical-align: middle;
+                        width: 10000px;
+                        height: 111px;">
+                1,000,000
+            </div>
+        </td>
+
+        <td class="top-row-clear-cell"></td>
+        <td class="top-row-clear-cell"></td>
+        <td class="top-row-clear-cell"></td>
+        <td class="top-row-clear-cell"></td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127E</td>
+
+        <td class="middle-row-clear-cell" colspan="2"></td>
+        <td class="middle-row-clear-cell"></td>
+        <td class="middle-row-clear-cell"></td>
+        <td class="middle-row-clear-cell"></td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x00001282</td>
+
+        <td class="bottom-row-clear-cell" colspan="2"></td>
+        <td class="bottom-row-clear-cell"></td>
+        <td class="bottom-row-clear-cell"></td>
+        <td class="bottom-row-clear-cell"></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h3>Stack</h3>
+<table stack-frame-id="1" class="table table-bordered memory-map-table">
+  <thead>
+    <tr>
+        <th colspan="10">main: <span id="stack-frame-number">4</span></th>
+    </tr>
+    <tr>
+        <th id="address-heading">Address</th>
+        <th id="values-heading" colspan="4">Values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td class="memory-map-address">0x00001276</td>
+
+        <td class="memory-map-cell">'H'</td>
+        <td class="memory-map-cell">'i'</td>
+        <td class="memory-map-cell">'!'</td>
+        <td class="memory-map-cell">'\n'</td>
+    </tr>
+    <tr>
+        <td class="memory-map-address">0x0000127A</td>
+
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+        <td class="memory-map-cell">0x0A</td>
+    </tr>
+  </tbody>
+</table>
