@@ -506,7 +506,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+
+                            $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
                             '" class="table table-bordered" style="width: 100%; float:left;">'+
                             '<thead>'+
                                 '<tr>'+
@@ -516,7 +516,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                             '</thead>' +
                             '<tbody id="name-body-'+table_name+'">' +
                             '</tbody>' +
-                            '</table>');
+                            '</table></span>');
                         }
 
                         //Add a row to the existing name table
@@ -532,7 +532,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 else if ((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
                         //Remove this var from table
                         $('#Heap-'+json_step['changed_vars'][i]['var_name']).remove();
-                        check_rm_empty_table("names-Heap");
+                        check_rm_empty_table("name-table-Heap");
                 }
             }
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
@@ -792,8 +792,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         $("#"+table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
 
                         //Check if the table is now empty from this removal, remove if so
-                        table_id = '#names-'+table_name;
-                        check_rm_empty_table(table_name);
+                        table_id = '#name-table-'+table_name;
+                        check_rm_empty_table(table_id);
                     }
                 }
 
@@ -807,7 +807,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Check if there's a current frame up for this:
                     if(heap_frame.length == 0) {
                     //If not, create a whole new name table
-                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-Heap"'+
+                        $('#name-type-section').append('<span id="name-table-Heap"><h4>Heap</h4> <table id="names-Heap"'+
                             'class="table table-bordered" style="width: 100%; float:left;">'+
                         '<thead>'+
                             '<tr>'+
@@ -817,7 +817,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         '</thead>' +
                         '<tbody id="name-body-heap">' +
                         '</tbody>' +
-                        '</table>');
+                        '</table></span>');
                     }
 
                     //Add the new row to the existing heap name table
@@ -842,9 +842,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function check_rm_empty_table(table_name) {
             //Check if a table is empty (has no rows in body)- if so, remove the whole table from the DOM
             //Call this any time a row is removed from a table
-            var row_amt = $('#'+table_name+' tr').length;
+            var row_amt = $(table_name).length;
             if (row_amt <= 1) {
-                $('#'+table_name).remove();
+                $(table_name).remove();
             }
         }
 
