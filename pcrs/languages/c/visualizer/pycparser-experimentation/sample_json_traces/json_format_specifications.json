@@ -1,3 +1,4 @@
+//Note: the JSON will only include steps that are not hidden. Hidden steps are assumed to be removed.
 {
     "global_vars": [
         {
@@ -13,7 +14,6 @@
             "line": 6,
             "student_view_line":1, //the line that the student actually sees on the code mirror: will propertybe different if this step is hidden
             // Can have either "changed_vars" or "return", should not have both
-            "hidden":true, //hidden will only exist if this step is on a line that's hidden from the student
             "changed_vars": [
                 {
                     "var_name": "",

@@ -579,90 +579,109 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 var is_array = type.indexOf("[]") >= 0;
 
                 var memory_map_tbody = $(location + " > tbody");
-                var table_rows = $(location + " > tbody > tr").toArray();
-                if(table_rows.length > 0) {
-                    // Find location to insert and insert
+                var table_rows = $(location + " > tbody > tr[start-addr]");
+                if(table_rows.toArray().length > 0) {
+                    // Find location to insert
+                    var current_addr = addr;
+                    var row_start_addr = current_addr - (current_addr % 4);
+                    var all_addrs = table_rows.map(function() {
+                        return parseInt($(this).attr("start-addr"), 16);
+                    }).toArray();
+
+                    var largest_smaller_addr = Math.max.apply(null, all_addrs);
+
+                    var smaller_addrs = all_addrs.filter(function(value, index, ar){return (value < addr);});
+                    if(smaller_addrs.length > 0) {
+                        largest_smaller_addr = Math.max.apply(null, smaller_addrs);
+                    }
+
+                    // Either insert or modify
                 } else {
                     // Insert the first element
-                    var end_addr = addr + cells_needed;
-
-                    var start_addr_extra_cells = addr % 4;
-                    var end_addr_extra_cells = (end_addr % 4) == 0 ? 0 : 4 - (end_addr % 4);
-                    var middle_cells = (cells_needed - start_addr_extra_cells - end_addr_extra_cells)
-                    var rows_needed =
-                        (start_addr_extra_cells > 0 ? 1 : 0) // Add rows for extra cells on last and first row
-                        + (end_addr_extra_cells > 0 ? 1 : 0)
-                        + (middle_cells / 4);
-
-
-                    var current_addr = addr;
-                    var remaining_cells = cells_needed;
-                    var label_added = false;
-                    for(var r=1; r <= rows_needed; r++) {
-                        var row_start_addr = current_addr - (current_addr % 4);
-                        var start_cell_number = current_addr % 4;
-                        var current_cell_addr = row_start_addr;
-
-                        var start_addr_str = zeroPad(row_start_addr.toString(16), 8);
-                        var memory_map_row = create_memory_map_base_row(start_addr_str);
-
-                        // Add the cells of this row
-                        var cells_on_row = Math.min(remaining_cells, 4);
-
-                        var c = 0;
-                        while(c < start_cell_number) {
-                            var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
-                            memory_map_row.appendChild(memory_map_cell);
-                            current_cell_addr++;
-                            c++;
-                        }
-                        while(c < (start_cell_number + cells_on_row)) {
-                            var cols = 2;
-                            // Add the label cell
-                            if((!is_array)
-                                && ((rows_needed == 1) || ((current_cell_addr == row_start_addr) && !label_added))) {
-                                var label_height_cells = middle_cells / 4;
-                                var label_width_cells = cells_on_row;
-                                var label_value = value;
-
-                                var label_cell = create_label_cell(label_height_cells, label_width_cells, label_value);
-                                memory_map_row.appendChild(label_cell);
-                                cols = 1;
-                                label_added = true;
-                            }
-
-                            // Add the data cells
-                            var clarity_class = "clear-memory-map-cell";
-                            if(rows_needed > 1){
-                                // First row
-                                if(r == 0) {
-                                    clarity_class = "top-row-clear-cell";
-                                } else if(r == rows_needed) {
-                                    clarity_class = "bottom-row-clear-cell";
-                                } else {
-                                    clarity_class = "middle-row-clear-cell";
-                                }
-                            }
-
-                            var memory_map_cell = create_clear_memory_map_cell(current_cell_addr, clarity_class, cols);
-                            memory_map_row.appendChild(memory_map_cell)
-                            current_cell_addr++;
-                            c++;
-                        }
-                        while(c < 4) {
-                            var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
-                            memory_map_row.appendChild(memory_map_cell);
-                            current_cell_addr++;
-                            c++;
-                        }
-
-                        memory_map_tbody.append(memory_map_row);
-
-                        // Advance to the next row
-                        current_addr = row_start_addr + 4;
-                        remaining_cells -= cells_on_row;
-                    }
+                    insert_first_element_in_memory_map(memory_map_tbody, addr, cells_needed, value, is_array);
                 }
+            }
+        }
+
+        function insert_first_element_in_memory_map(memory_map_tbody, start_addr, cells_needed, value, is_array) {
+            var end_addr = start_addr + cells_needed;
+
+            var middle_cells = cells_needed;
+            var rows_needed = (Math.floor(end_addr/4)) - (Math.floor(start_addr/4)) + 1;
+
+            if(rows_needed > 1) {
+                var start_addr_extra_cells = (start_addr % 4) == 0 ? 0 : 4 - (start_addr % 4);
+                var end_addr_extra_cells = (end_addr % 4);
+                middle_cells = (cells_needed - start_addr_extra_cells - end_addr_extra_cells);
+            }
+
+
+            var current_addr = start_addr;
+            var remaining_cells = cells_needed;
+            var label_added = false;
+            for(var r=1; r <= rows_needed; r++) {
+                var row_start_addr = current_addr - (current_addr % 4);
+                var start_cell_number = current_addr % 4;
+                var current_cell_addr = row_start_addr;
+
+                var start_addr_str = zeroPad(row_start_addr.toString(16), 8);
+                var memory_map_row = create_memory_map_base_row(start_addr_str);
+
+                // Add the cells of this row
+                var cells_on_row = Math.min(remaining_cells, (4 - start_cell_number));
+
+                var c = 0;
+                while(c < start_cell_number) {
+                    var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
+                    memory_map_row.appendChild(memory_map_cell);
+                    current_cell_addr++;
+                    c++;
+                }
+                while(c < (start_cell_number + cells_on_row)) {
+                    var cols = 2;
+                    // Add the label cell
+                    if((!label_added) && (!is_array)
+                        && ((rows_needed < 3) || (current_cell_addr == row_start_addr))) {
+                        var label_height_cells = Math.max((middle_cells / 4), 1);
+                        var label_width_cells = cells_on_row;
+                        var label_value = value;
+
+                        var label_cell = create_label_cell(label_height_cells, label_width_cells, label_value);
+                        memory_map_row.appendChild(label_cell);
+                        cols = 1;
+                        label_added = true;
+                    }
+
+                    // Add the data cells
+                    var clarity_class = "clear-memory-map-cell";
+                    if(rows_needed > 1){
+                        // First row
+                        if(r == 0) {
+                            clarity_class = "top-row-clear-cell";
+                        } else if(r == rows_needed) {
+                            clarity_class = "bottom-row-clear-cell";
+                        } else {
+                            clarity_class = "middle-row-clear-cell";
+                        }
+                    }
+
+                    var memory_map_cell = create_clear_memory_map_cell(current_cell_addr, clarity_class, cols);
+                    memory_map_row.appendChild(memory_map_cell)
+                    current_cell_addr++;
+                    c++;
+                }
+                while(c < 4) {
+                    var memory_map_cell = create_regular_memory_map_cell(current_cell_addr);
+                    memory_map_row.appendChild(memory_map_cell);
+                    current_cell_addr++;
+                    c++;
+                }
+
+                memory_map_tbody.append(memory_map_row);
+
+                // Advance to the next row
+                current_addr = row_start_addr + 4;
+                remaining_cells -= cells_on_row;
             }
         }
 
@@ -707,12 +726,29 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function create_memory_map_base_row(start_addr) {
             var memory_map_row = document.createElement("tr");
             memory_map_row.setAttribute("start-addr", start_addr);
+
             var td = document.createElement("td");
             td.className = "memory-map-address";
             td.innerHTML = "0x" + start_addr;
             memory_map_row.appendChild(td);
 
             return memory_map_row;
+        }
+
+        function create_memory_map_break_row() {
+            var break_row = document.createElement("tr");
+
+            var td1 = document.createElement("td");
+            td1.className = "memory-break-line-addr";
+
+            var td2 = document.createElement("td");
+            td2.className = "memory-break-line";
+            td2.colSpan = "8";
+
+            break_row.appendChild(td1);
+            break_row.appendChild(td2);
+
+            return break_row;
         }
 
         function add_return_to_memory_table(json_step) {
