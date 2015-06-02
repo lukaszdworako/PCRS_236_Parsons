@@ -2,18 +2,18 @@
     "steps": [
         {
             "step": 1,
-            "line": 53,
-            "student_view_line": 53,
+            "line": 54,
+            "student_view_line": 54,
             "function": "main",
             "function_decl": true
         },
         {
             "step": 2,
-            "line": 54,
-            "student_view_line": 54,
+            "line": 55,
+            "student_view_line": 55,
             "changed_vars": [
                 {
-                    "name": "board",
+                    "var_name": "board",
                     "addr": "0x7ffff793c190",
                     "type": "int[][]",
                     "new": true,
@@ -39,16 +39,16 @@
                     "max_size": 36
                 }
             ],
-            "function": "none",
+            "function": "main",
             "function_decl": false
         },
         {
             "step": 3,
-            "line": 59,
-            "student_view_line": 59,
+            "line": 60,
+            "student_view_line": 60,
             "changed_vars": [
                 {
-                    "name": "solution",
+                    "var_name": "solution",
                     "addr": "0x7ffff793c1c0",
                     "type": "int[][]",
                     "new": true,
@@ -74,20 +74,20 @@
                     "max_size": 36
                 }
             ],
-            "function": "none",
+            "function": "main",
             "function_decl": false
         },
         {
             "step": 4,
-            "line": 64,
-            "student_view_line": 64,
+            "line": 65,
+            "student_view_line": 65,
             "function": "main",
             "function_decl": false
         },
         {
             "step": 5,
-            "line": 4,
-            "student_view_line": 4,
+            "line": 5,
+            "student_view_line": 5,
             "changed_vars": [
                 {
                     "var_name": "board",
@@ -147,8 +147,8 @@
         },
         {
             "step": 6,
-            "line": 6,
-            "student_view_line": 6,
+            "line": 7,
+            "student_view_line": 7,
             "changed_vars": [
                 {
                     "var_name": "validity",
@@ -166,8 +166,8 @@
         },
         {
             "step": 7,
-            "line": 8,
-            "student_view_line": 8,
+            "line": 9,
+            "student_view_line": 9,
             "changed_vars": [
                 {
                     "var_name": "idx",
@@ -205,8 +205,8 @@
         },
         {
             "step": 8,
-            "line": 9,
-            "student_view_line": 9,
+            "line": 10,
+            "student_view_line": 10,
             "changed_vars": [
                 {
                     "var_name": "idx",
@@ -224,8 +224,8 @@
         },
         {
             "step": 9,
-            "line": 10,
-            "student_view_line": 10,
+            "line": 11,
+            "student_view_line": 11,
             "changed_vars": [
                 {
                     "var_name": "subidx",
@@ -243,8 +243,8 @@
         },
         {
             "step": 10,
-            "line": 12,
-            "student_view_line": 12,
+            "line": 13,
+            "student_view_line": 13,
             "changed_vars": [
                 {
                     "var_name": "comp",
@@ -262,15 +262,15 @@
         },
         {
             "step": 11,
-            "line": 13,
-            "student_view_line": 13,
+            "line": 14,
+            "student_view_line": 14,
             "function": "verify_board",
             "function_decl": false
         },
         {
             "step": 12,
-            "line": 12,
-            "student_view_line": 12,
+            "line": 13,
+            "student_view_line": 13,
             "changed_vars": [
                 {
                     "var_name": "comp",
@@ -288,29 +288,29 @@
         },
         {
             "step": 13,
-            "line": 13,
-            "student_view_line": 13,
-            "function": "verify_board",
-            "function_decl": false
-        },
-        {
-            "step": 14,
             "line": 14,
             "student_view_line": 14,
             "function": "verify_board",
             "function_decl": false
         },
         {
+            "step": 14,
+            "line": 15,
+            "student_view_line": 15,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
             "step": 15,
-            "line": 17,
-            "student_view_line": 17,
+            "line": 18,
+            "student_view_line": 18,
             "function": "verify_board",
             "function_decl": false
         },
         {
             "step": 16,
-            "line": 18,
-            "student_view_line": 18,
+            "line": 19,
+            "student_view_line": 19,
             "changed_vars": [
                 {
                     "var_name": "validity",
@@ -328,8 +328,8 @@
         },
         {
             "step": 17,
-            "line": 12,
-            "student_view_line": 12,
+            "line": 13,
+            "student_view_line": 13,
             "changed_vars": [
                 {
                     "var_name": "comp",
@@ -347,29 +347,29 @@
         },
         {
             "step": 18,
-            "line": 13,
-            "student_view_line": 13,
-            "function": "verify_board",
-            "function_decl": false
-        },
-        {
-            "step": 19,
             "line": 14,
             "student_view_line": 14,
             "function": "verify_board",
             "function_decl": false
         },
         {
+            "step": 19,
+            "line": 15,
+            "student_view_line": 15,
+            "function": "verify_board",
+            "function_decl": false
+        },
+        {
             "step": 20,
-            "line": 17,
-            "student_view_line": 17,
+            "line": 18,
+            "student_view_line": 18,
             "function": "verify_board",
             "function_decl": false
         },
         {
             "step": 21,
-            "line": 18,
-            "student_view_line": 18,
+            "line": 19,
+            "student_view_line": 19,
             "changed_vars": [
                 {
                     "var_name": "validity",
@@ -387,15 +387,15 @@
         },
         {
             "step": 22,
-            "line": 23,
-            "student_view_line": 23,
+            "line": 24,
+            "student_view_line": 24,
             "function": "verify_board",
             "function_decl": false
         },
         {
             "step": 23,
-            "line": 25,
-            "student_view_line": 25,
+            "line": 26,
+            "student_view_line": 26,
             "changed_vars": [
                 {
                     "var_name": "comp",

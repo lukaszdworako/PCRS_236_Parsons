@@ -341,33 +341,30 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 // Bind debugger buttons
                 $('#new_previous_debugger').bind('click', function () {
-                    if ((cur_line -1) >= start_line) {
+                    if (json_index > 0) {
                         last_stepped_line_debugger = cur_line;
-                        cur_line--;
-                        update_new_debugger_table(debugger_data, "prev", start_line);
+                        cur_line = debugger_data["steps"][json_index-1]["student_view_line"]-1;
+                        update_new_debugger_table(debugger_data, "prev");
                     }
                 });
 
                 $('#new_next_debugger').bind('click', function () {
-                    if (myCodeMirrors[debugger_id].lineInfo(cur_line+1) != null) {
+                    if (json_index <(debugger_data["steps"].length-1)) {
                         last_stepped_line_debugger = cur_line;
-                        cur_line++;
-                        if(json_index <(debugger_data["steps"].length-1)) {
-                            //console.log("about to call reset!");
-                            json_index++;
-                            update_new_debugger_table(debugger_data, "next", start_line);
-                        }
+                        json_index++;
+                        cur_line = debugger_data["steps"][json_index]["student_view_line"]-1;
+                        update_new_debugger_table(debugger_data, "next");
                     }
                 });
 
                 $('#new_reset_debugger').bind('click', function () {
                     last_stepped_line_debugger = cur_line;
-                    cur_line = start_line;
+                    cur_line = start_line-1;
                     json_index = 0;
                     //Clear the stack and heap tables
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
-                    update_new_debugger_table(debugger_data, "reset", start_line);
+                    update_new_debugger_table(debugger_data, "reset");
                 });
             }
 
@@ -375,22 +372,21 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             $('#name-type-section').empty();
             $('#new_debugger_table_heap').empty();
 
-            //Note: cur_line starts at 0 even though the line numbers start at 1: this is why
-            //we add 1 to cur_line when we do checking vs. JSON files below.
-            cur_line = start_line;
+            //Codemirror starts line count at 0, subtract 1 from start line so it's accurate
+            cur_line = start_line-1;
             json_index = 0;
             last_stepped_line_debugger = 0;
 
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_new_debugger_table(debugger_data, "reset", start_line);
+            update_new_debugger_table(debugger_data, "reset");
 
             $('#newvisualizerModal').modal('show');
 
         }
 
-        function update_new_debugger_table(data, update_type, start_line){
+        function update_new_debugger_table(data, update_type){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
             //If resetting, first ensure all global variables are dealt with
@@ -406,47 +402,23 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
 
             if((update_type == "next") || (update_type == "reset")) {
-                //Set j to the current json_index
-                //console.log("resetting, json index is "+json_index);
+                console.log("step:"+debugger_data["steps"][json_index]["step"]);
+                console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
+
+                add_to_name_table(debugger_data["steps"][json_index]);
                 add_to_memory_table(debugger_data["steps"][json_index]);
-                for(json_index; json_index<debugger_data["steps"].length;json_index++) {
-
-                    if((debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
-                        json_index --;
-                        break;
-                    }
-
-                    else {
-                        console.log("step:"+debugger_data["steps"][json_index]["step"]);
-                        console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
-
-                        add_to_name_table(debugger_data["steps"][json_index]);
-                        //add_to_memory_table(debugger_data["steps"][json_index]);
-                        add_to_val_list(debugger_data["steps"][json_index]);
-                    }
-                }
-                if(json_index == debugger_data["steps"].length) {
-                    json_index --;
-                }
+                add_to_val_list(debugger_data["steps"][json_index]);
             }
 
             else if(update_type == "prev") {
                 console.log("json index:"+json_index);
-                while((json_index >= 0) && (debugger_data["steps"][json_index]["student_view_line"] > (cur_line+1))) {
-                    console.log("step:"+debugger_data["steps"][json_index]["step"]);
-                    console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
-                    //Process JSON here to go backward a line
-                    remove_from_name_table(debugger_data["steps"][json_index]);
-                    remove_from_memory_table(debugger_data["steps"][json_index]);
-                    remove_from_val_list(debugger_data["steps"][json_index]);
-
-                    if (json_index > 0) {
-                        json_index--;
-                    }
-                    else {
-                        break;
-                    }
-                }
+                console.log("step:"+debugger_data["steps"][json_index]["step"]);
+                console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
+                //Process JSON here to go backward a line
+                remove_from_name_table(debugger_data["steps"][json_index]);
+                remove_from_memory_table(debugger_data["steps"][json_index]);
+                remove_from_val_list(debugger_data["steps"][json_index]);
+                json_index--;
             }
         }
 
@@ -765,7 +737,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 //Check if it's new - if so, removing it
                 if(json_step['changed_vars'][i]['new']) {
-
                     //If the variable is a pointer, only remove it if its marked to show up in the name table
                     if(!(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) || (json_step['changed_vars'][i]['is_ptr']=="name")) {
 
@@ -782,12 +753,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                         var cur_frame;
                         cur_frame = $('#names-'+table_name);
-
-                        $(table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
+                        $("#"+table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
 
                         //Check if the table is now empty from this removal, remove if so
                         table_id = '#names-'+table_name;
-                        check_rm_empty_table(table_id);
+                        check_rm_empty_table(table_name);
                     }
                 }
 
