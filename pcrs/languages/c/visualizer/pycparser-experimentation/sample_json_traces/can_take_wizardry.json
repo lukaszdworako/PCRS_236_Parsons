@@ -8,26 +8,22 @@
                 {
                     "var_name": "argc",
                     "addr": "0x100",
-                    "type": "int",
+                    "type": "long long",
                     "new": true,
                     "value": 3,
                     "invalid": false,
-                    "location": "stack",
-                    "max_size": 4
+                    "location": "static",
+                    "max_size": 8
                 },
                 {
                     "var_name": "argv",
                     "addr": "0x104",
                     "type": "char**",
                     "new": true,
-                    "value": [
-                        "can_take_wizardry",
-                        "2.5",
-                        "6"
-                    ],
+                    "value": "0x500",
                     "invalid": false,
-                    "location": "stack",
-                    "max_size": 21,
+                    "location": "static",
+                    "max_size": 4,
                     "is_ptr": "name"
                 }
             ],
@@ -46,7 +42,7 @@
                     "new": true,
                     "value": 2.5,
                     "invalid": false,
-                    "location": "stack",
+                    "location": "static",
                     "max_size": 8
                 }
             ],
@@ -65,7 +61,7 @@
                     "new": true,
                     "value": 6,
                     "invalid": false,
-                    "location": "stack",
+                    "location": "static",
                     "max_size": 4
                 }
             ],
@@ -84,7 +80,7 @@
                     "new": true,
                     "value": 2.5,
                     "invalid": false,
-                    "location": "stack",
+                    "location": "static",
                     "max_size": 8
                 },
                 {
@@ -94,7 +90,7 @@
                     "new": true,
                     "value": 6,
                     "invalid": false,
-                    "location": "stack",
+                    "location": "static",
                     "max_size": 4
                 }
             ],

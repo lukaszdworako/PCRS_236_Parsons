@@ -11,8 +11,9 @@
         {
             "step": 1,
             "line": 6,
-            "student_view_line":1, //the line that the student actually sees on the code mirror: will be different if this step is hidden
+            "student_view_line":1, //the line that the student actually sees on the code mirror: will propertybe different if this step is hidden
             // Can have either "changed_vars" or "return", should not have both
+            "hidden":true, //hidden will only exist if this step is on a line that's hidden from the student
             "changed_vars": [
                 {
                     "var_name": "",
@@ -21,7 +22,7 @@
                     "new": "",
                     "value": "",
                     "invalid": "",
-                    "location": "Stack, Heap or Static",
+                    "location": "stack, heap or static",
                     "max_size": 4, // In bytes, the largest size that this variable can be
                 }
             ],

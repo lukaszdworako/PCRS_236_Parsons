@@ -3,6 +3,10 @@
 @values-width: 70%;
 @cell-width: 17.5%;
 
+hr {
+    width: 100%;
+}
+
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -14,6 +18,8 @@
     padding: 10px;
     vertical-align: top;
     display: inline-block;
+    overflow-y: auto;
+    max-height: 800px;
 }
 
 .code-window-section {
@@ -42,6 +48,7 @@
 }
 
 .memory-map-table {
+    position: relative !important;
     width: 100%;
     float: left;
 }
@@ -89,4 +96,28 @@
 .bottom-row-clear-cell {
     .clear-memory-map-cell;
     border-top: none !important;
+}
+
+.memory-break-line {
+    border: none !important;
+    text-align: center;
+}
+
+.cell-label-td {
+    position: absolute !important;
+    padding: 0px !important;
+    border: none !important;
+    // Need to also set height, width and max-width
+    // Height should be a multiple of a cell height (default 37px)
+    // Width and max-width should be the same and should be multiples of a cell width (default @cell-width)
+}
+
+.cell-label-div {
+    display: table-cell !important;
+    text-align: center;
+    vertical-align: middle;
+    width: 10000px;
+    // This div should always be wrapped in a td.cell-label-td
+    // Need to also set height
+    // Height should be the same as the height of the wrapping td.cell-label-td
 }
