@@ -7,13 +7,13 @@
             "changed_vars": [
                 {
                     "var_name": "argc",
-                    "addr": "0x100",
+                    "addr": "0x127B",
                     "type": "long long",
                     "new": true,
-                    "value": 3,
+                    "value": 100,
                     "invalid": false,
                     "location": "static",
-                    "max_size": 8
+                    "max_size": 9
                 },
                 {
                     "var_name": "argv",
