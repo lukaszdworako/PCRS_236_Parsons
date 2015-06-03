@@ -32,6 +32,7 @@ function zeroPad (str, max) {
 function executeGenericVisualizer(option, data, newCode, newOrOld) {
     console.log("got to visualizer.js");
     var supportedVisualization = ['python', 'c'];
+    var value_list = {};
 
     if (visualizationSupported()){
         if (language == 'python') {
@@ -420,6 +421,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 remove_from_val_list(debugger_data["steps"][json_index]);
                 json_index--;
             }
+
+            console.log("value_list is: ");
+            console.log(value_list);
         }
 
 
@@ -506,7 +510,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            $('#name-type-section').append('<h4>'+table_name+'</h4> <table id="names-' +table_name+
+                            $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
                             '" class="table table-bordered" style="width: 100%; float:left;">'+
                             '<thead>'+
                                 '<tr>'+
@@ -516,7 +520,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                             '</thead>' +
                             '<tbody id="name-body-'+table_name+'">' +
                             '</tbody>' +
-                            '</table>');
+                            '</table></span>');
                         }
 
                         //Add a row to the existing name table
@@ -757,8 +761,34 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
 
         function add_to_val_list(json_step) {
-            //implement me!
+        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": ["xyz", "mzy" ...], "is_ptr": "T/F" } }
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
 
+                var val_address = json_step['changed_vars'][i]["addr"]; 
+                
+                if(json_step['changed_vars'][i]["new"]) {
+                    var is_ptr_val = false;
+                    if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
+                        is_ptr_val = true;
+                    } 
+                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val}
+                    value_list[val_address] = new_value;
+                }
+
+                //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
+                else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
+                    value_list[val_address]["value"].push("#Freed#");
+                }
+                
+                //If the variable is not new and not freed, just push the new value onto its array
+                else {
+                    value_list[val_address]["value"].push(json_step['changed_vars'][i]["value"]);
+                }
+            }
         }
 
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
@@ -793,7 +823,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                         //Check if the table is now empty from this removal, remove if so
                         table_id = '#names-'+table_name;
-                        check_rm_empty_table(table_name);
+                        check_rm_empty_table(table_id);
                     }
                 }
 
@@ -807,7 +837,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Check if there's a current frame up for this:
                     if(heap_frame.length == 0) {
                     //If not, create a whole new name table
-                        $('#name-type-section').append('<h4>Heap</h4> <table id="names-Heap"'+
+                        $('#name-type-section').append('<span id="name-table-Heap"><h4>Heap</h4> <table id="names-Heap"'+
                             'class="table table-bordered" style="width: 100%; float:left;">'+
                         '<thead>'+
                             '<tr>'+
@@ -817,7 +847,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                         '</thead>' +
                         '<tbody id="name-body-heap">' +
                         '</tbody>' +
-                        '</table>');
+                        '</table></span>');
                     }
 
                     //Add the new row to the existing heap name table
@@ -836,15 +866,32 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function remove_from_val_list(json_step) {
-            //implement me!
+        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": "xyz", "is_ptr": "T/F" } }
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
+
+                var val_address = json_step['changed_vars'][i]["addr"]; 
+                
+                if(json_step['changed_vars'][i]["new"]) {
+                    delete value_list[val_address];
+                }
+
+                //Otherwise just pop the last value off the list
+                else {
+                    value_list[val_address]["value"].pop();
+                }
+            }
         }
 
         function check_rm_empty_table(table_name) {
             //Check if a table is empty (has no rows in body)- if so, remove the whole table from the DOM
             //Call this any time a row is removed from a table
-            var row_amt = $('#'+table_name+' tr').length;
-            if (row_amt <= 1) {
-                $('#'+table_name).remove();
+            var row_amt = $(table_name+" > tbody > tr").length;
+            if (row_amt < 1) {
+                $(table_name).parent().remove();
             }
         }
 
