@@ -421,6 +421,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 remove_from_val_list(debugger_data["steps"][json_index]);
                 json_index--;
             }
+
+            console.log("value_list is: ");
+            console.log(value_list);
         }
 
 
@@ -762,23 +765,30 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             if(!json_step.hasOwnProperty('changed_vars')) {
                 return;
             }
-                //Loop through all var changes in the step
-                for(var i=0; i<json_step['changed_vars'].length; i++) {
-                    if(json_step['changed_vars'][i]["new"]) {
-                        var is_ptr_val = false;
-                        var val_address = json_step['changed_vars'][i]["addr"]; 
-                        if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
-                            is_ptr_val = true;
-                        } 
-                        new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": is_ptr_val}
-                        value_list[val_address] = new_value;
-                    }
-                    else {
-                        //If the variable is not new, just assign it to its new value, unless it was on the heap and freed
-                    }
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
+
+                var val_address = json_step['changed_vars'][i]["addr"]; 
+                
+                if(json_step['changed_vars'][i]["new"]) {
+                    var is_ptr_val = false;
+                    if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
+                        is_ptr_val = true;
+                    } 
+                    new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": is_ptr_val}
+                    value_list[val_address] = new_value;
                 }
-            console.log("Finished add to val list, new value_list is:");
-            console.log(value_list);
+
+                //Case where variable is not new, was on the heap and got freed - delete it from the list
+                else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
+                    delete value_list[val_address];
+                }
+                
+                //If the variable is not new and not freed, just assign it to its new value
+                else {
+                    value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
+                }
+            }
         }
 
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
@@ -856,7 +866,30 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function remove_from_val_list(json_step) {
-            //implement me!
+        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": "xyz", "is_ptr": "T/F" } }
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
+            //Loop through all var changes in the step
+            for(var i=0; i<json_step['changed_vars'].length; i++) {
+
+                var val_address = json_step['changed_vars'][i]["addr"]; 
+                
+                if(json_step['changed_vars'][i]["new"]) {
+                    delete value_list[val_address];
+                }
+
+                //Case where variable is not new, was on the heap and got freed in the last step- add it back to the list
+                else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
+                    new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": false}
+                    value_list[val_address] = new_value;
+                }
+                
+                //If the variable is not new and not freed, just assign it to its new value
+                else {
+                    value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
+                }
+            }
         }
 
         function check_rm_empty_table(table_name) {
