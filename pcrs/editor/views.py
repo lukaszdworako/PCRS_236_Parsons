@@ -43,6 +43,7 @@ class EditorViewMixin:
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()
+        kwargs['simpleui'] = True
         return kwargs
 
     def get_context_data(self, **kwargs):
