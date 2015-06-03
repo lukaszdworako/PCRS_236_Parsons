@@ -158,6 +158,7 @@ class PCRSUser(CustomAbstractBaseUser):
     code_style = models.CharField(max_length=7,
                                   choices=code_style_choices,
                                   default='monokai')
+    use_simpleui = models.BooleanField(default=False)
 
     is_student = models.BooleanField(default=False)
     is_ta = models.BooleanField(default=False)

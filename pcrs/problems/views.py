@@ -204,6 +204,7 @@ class SubmissionViewMixin:
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()
+        kwargs['simpleui'] = self.request.user.use_simpleui
         return kwargs
 
     def get_context_data(self, **kwargs):

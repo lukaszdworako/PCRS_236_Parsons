@@ -112,11 +112,11 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 # based on the problem class
                 module, _ = item.content_object.__module__.split('.')
                 if module.endswith('multiple_choice'):
-                    f = MCSubmissionForm(problem=problem)
+                    f = MCSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 elif module.endswith('rating'):
-                    f = RatingSubmissionForm(problem=problem)
+                    f = RatingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 else:
-                    f = ProgrammingSubmissionForm(problem=problem)
+                    f = ProgrammingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 forms[module][problem.pk] = f
         return forms
 

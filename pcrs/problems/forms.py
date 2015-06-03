@@ -49,11 +49,12 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.pop('problem', None)
+        simpleui = kwargs.pop('simpleui', False)
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
                                     css_class='green-button')
-        if problem.name != 'blank':
+        if problem.name != 'blank' and not simpleui:
             self.history_button = StrictButton('History', name='history',
                                                data_toggle="modal",
                                                data_target="#history_window_"+
