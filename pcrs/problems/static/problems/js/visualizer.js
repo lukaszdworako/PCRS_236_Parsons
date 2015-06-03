@@ -761,7 +761,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
 
         function add_to_val_list(json_step) {
-        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": "xyz", "is_ptr": "T/F" } }
+        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": ["xyz", "mzy" ...], "is_ptr": "T/F" } }
             if(!json_step.hasOwnProperty('changed_vars')) {
                 return;
             }
@@ -775,18 +775,18 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
                         is_ptr_val = true;
                     } 
-                    new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": is_ptr_val}
+                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val}
                     value_list[val_address] = new_value;
                 }
 
-                //Case where variable is not new, was on the heap and got freed - delete it from the list
+                //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
                 else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                    delete value_list[val_address];
+                    value_list[val_address]["value"].push("#Freed#");
                 }
                 
-                //If the variable is not new and not freed, just assign it to its new value
+                //If the variable is not new and not freed, just push the new value onto its array
                 else {
-                    value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
+                    value_list[val_address]["value"].push(json_step['changed_vars'][i]["value"]);
                 }
             }
         }
@@ -879,15 +879,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     delete value_list[val_address];
                 }
 
-                //Case where variable is not new, was on the heap and got freed in the last step- add it back to the list
-                else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                    new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": false}
-                    value_list[val_address] = new_value;
-                }
-                
-                //If the variable is not new and not freed, just assign it to its new value
+                //Otherwise just pop the last value off the list
                 else {
-                    value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
+                    value_list[val_address]["value"].pop();
                 }
             }
         }
