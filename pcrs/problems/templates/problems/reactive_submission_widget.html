@@ -10,7 +10,7 @@
 
         <span class="problem-score" id="{{ problem.get_uri_id }}"></span>
 
-        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+        {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             <span class="widget_controls">
             <a href="{{ problem.get_browse_submissions_url }}"><i
                     class="openfolder-icon"></i><span

@@ -11,7 +11,7 @@
 
 {#        <span class="align-right">#}
 
-        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+        {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             {% block instructor_options %}
                 <span class="widget_controls">
                     <a href="{{ problem.get_browse_submissions_url }}"><i
@@ -25,6 +25,7 @@
             {% endblock %}
         {% endif %}
 
+        {% if not user.use_simpleui %}
             <span class="problem-score" id="score-{{ item.get_uri_id }}">
                 {% if mark|default_if_none:'-' == problem.max_score %}
                     <span class="widget_complete widget_mark"
@@ -44,6 +45,7 @@
                 </span>
                 {% endif %}
             </span>
+        {% endif %}
 
 {#        </span>#}
     </h3>
