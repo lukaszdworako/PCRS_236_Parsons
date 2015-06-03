@@ -32,6 +32,7 @@ function zeroPad (str, max) {
 function executeGenericVisualizer(option, data, newCode, newOrOld) {
     console.log("got to visualizer.js");
     var supportedVisualization = ['python', 'c'];
+    var value_list = {};
 
     if (visualizationSupported()){
         if (language == 'python') {
@@ -757,8 +758,27 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
 
         function add_to_val_list(json_step) {
-            //implement me!
-
+        //value_list will contain all variables currently allocated, will look like: { "0x123": { value": "xyz", "is_ptr": "T/F" } }
+            if(!json_step.hasOwnProperty('changed_vars')) {
+                return;
+            }
+                //Loop through all var changes in the step
+                for(var i=0; i<json_step['changed_vars'].length; i++) {
+                    if(json_step['changed_vars'][i]["new"]) {
+                        var is_ptr_val = false;
+                        var val_address = json_step['changed_vars'][i]["addr"]; 
+                        if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
+                            is_ptr_val = true;
+                        } 
+                        new_value = {"value": json_step['changed_vars'][i]["value"], "is_ptr": is_ptr_val}
+                        value_list[val_address] = new_value;
+                    }
+                    else {
+                        //If the variable is not new, just assign it to its new value, unless it was on the heap and freed
+                    }
+                }
+            console.log("Finished add to val list, new value_list is:");
+            console.log(value_list);
         }
 
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
@@ -843,9 +863,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             //Check if a table is empty (has no rows in body)- if so, remove the whole table from the DOM
             //Call this any time a row is removed from a table
             var row_amt = $(table_name+" > tbody > tr").length;
-            console.log("row amount is "+row_amt);
             if (row_amt < 1) {
-                console.log("trying to remove whole thing");
                 $(table_name).parent().remove();
             }
         }
