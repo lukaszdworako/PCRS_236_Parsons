@@ -1,10 +1,14 @@
-@thick-border: #DDDDDD;
+@thick-border-color: #DDDDDD;
 @address-width: 30%;
 @values-width: 70%;
 @cell-width: 17.5%;
 
 hr {
     width: 100%;
+}
+
+tr {
+    border-right: thin solid @thick-border-color !important;
 }
 
 .title {
@@ -59,7 +63,7 @@ hr {
 
 .address-heading {
     text-align: right;
-    border-right: 2px solid @thick-border;
+    border-right: 2px solid @thick-border-color;
     width: @address-width;
 }
 
@@ -70,7 +74,7 @@ hr {
 
 .memory-map-address {
     text-align: right;
-    border-right: 2px solid @thick-border !important;
+    border-right: 2px solid @thick-border-color !important;
     width: @address-width;
 }
 
@@ -108,7 +112,7 @@ hr {
 
 .memory-break-line-addr {
     .memory-break-line;
-    border-right: 2px solid @thick-border !important;
+    border-right: 2px solid @thick-border-color !important;
 }
 
 .cell-label-td {

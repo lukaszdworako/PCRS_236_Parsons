@@ -561,11 +561,17 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function add_changed_vars_to_memory_table(json_step){
             var changed_vars = json_step.changed_vars;
             for(var i=0; i < changed_vars.length; i++) {
-                add_one_var_to_memory_table(changed_vars[i], json_step["function"]);
+
+                var calling_line = null;
+                if(json_index > 0) {
+                    calling_line = debugger_data[json_index-1]["line"];
+                }
+
+                add_one_var_to_memory_table(changed_vars[i], json_step["function"], json_step["on_entry_point"], calling_line);
             }
         }
 
-        function add_one_var_to_memory_table(changed_var, func_name) {
+        function add_one_var_to_memory_table(changed_var, func_name, on_entry_point, calling_line) {
             var var_name = changed_var["var-name"];
             var start_addr = parseInt(changed_var["addr"], 16);
             var type = changed_var["type"];
@@ -581,20 +587,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 location = "#heap-memory-map > tbody";
             } else if(location === "stack") {
                 var stack_frame_container = $("div#stack-frame-tables");
-                if(is_new) {
-                    var new_stack_frame = create_stack_frame_table("1", func_name);
-                    stack_frame_container.prepend(new_stack_frame);
-                } else {
-                    // Get the stack frame numbers of all  frames for this function
-                    var all_func_frame_numbers =  stack_frame_container.find("table[stack-function='" + func_name + "']").map(function() {
-                            return parseInt($(this).attr("stack-frame-number"));
-                        }).get();
-
-                    var highest_frame_number = Math.max.apply(null, all_func_frame_numbers);
-
-                    var new_stack_frame = create_stack_frame_table(highest_frame_number+1, func_name);
+                if(on_entry_point) {
+                    var new_stack_frame = create_stack_frame_table(calling_line, func_name);
                     stack_frame_container.prepend(new_stack_frame);
                 }
+                location = "#stack-frame-tables > table[stack-function='" + func_name + "']:first";
             }
 
             var is_array = type.indexOf("[]") >= 0;
@@ -817,7 +814,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             var tr1 = document.createElement("tr");
             var tr1_th = document.createElement("th");
             tr1_th.colSpan = "10";
-            tr1_th.innerHTML = stack_function + ": " + stack_frame_number;
+            tr1_th.innerHTML = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
 
             tr1.appendChild(tr1_th);
 
@@ -927,13 +924,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
-                var val_address = json_step['changed_vars'][i]["addr"]; 
-                
+                var val_address = json_step['changed_vars'][i]["addr"];
+
                 if(json_step['changed_vars'][i]["new"]) {
                     var is_ptr_val = false;
                     if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
                         is_ptr_val = true;
-                    } 
+                    }
                     new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val}
                     value_list[val_address] = new_value;
                 }
@@ -942,7 +939,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
                     value_list[val_address]["value"].push("#Freed#");
                 }
-                
+
                 //If the variable is not new and not freed, just push the new value onto its array
                 else {
                     value_list[val_address]["value"].push(json_step['changed_vars'][i]["value"]);
@@ -1032,8 +1029,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
-                var val_address = json_step['changed_vars'][i]["addr"]; 
-                
+                var val_address = json_step['changed_vars'][i]["addr"];
+
                 if(json_step['changed_vars'][i]["new"]) {
                     delete value_list[val_address];
                 }

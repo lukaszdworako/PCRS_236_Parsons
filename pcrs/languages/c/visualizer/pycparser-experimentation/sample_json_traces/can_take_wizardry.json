@@ -12,7 +12,7 @@
                     "new": true,
                     "value": 100,
                     "invalid": false,
-                    "location": "static",
+                    "location": "stack",
                     "max_size": 9
                 },
                 {
@@ -28,7 +28,8 @@
                 }
             ],
             "function": "main",
-            "function_decl": true
+            "function_decl": true,
+            "on_entry_point": true
         },
         {
             "step": 2,
