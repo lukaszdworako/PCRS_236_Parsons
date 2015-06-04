@@ -410,10 +410,20 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
 
+                //Case where there's changed variables
                 if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
                     add_to_name_table(debugger_data["steps"][json_index]);
                     //add_to_memory_table(debugger_data["steps"][json_index]);
                     add_to_val_list(debugger_data["steps"][json_index]);
+                }
+                //Case where it's a function return
+                else if(debugger_data["steps"][json_index].hasOwnProperty('return')) {
+                    //Implement
+                }
+                //Case where it has standard output
+                else if(debugger_data["steps"][json_index].hasOwnProperty('std_out')) {
+                    //Implement!
+                    add_to_std_out(debugger_data["steps"][json_index]);
                 }
             }
 
@@ -426,6 +436,15 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     remove_from_name_table(debugger_data["steps"][json_index]);
                     //remove_from_memory_table(debugger_data["steps"][json_index]);
                     remove_from_val_list(debugger_data["steps"][json_index]);
+                                    //Case where it's a function return
+                }
+                else if(debugger_data["steps"][json_index].hasOwnProperty('return')) {
+                    //Implement
+                }
+                //Case where it has standard output
+                else if(debugger_data["steps"][json_index].hasOwnProperty('std_out')) {
+                    //Implement!
+                    remove_from_std_out(debugger_data["steps"][json_index]);
                 }
                 json_index--;
             }
@@ -946,6 +965,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
         }
 
+        function add_to_std_out(json_step) {
+            //Implement me!
+        }
+
+
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
         //an addition is if a variable got freed on the heap in the last step, adding it back
         function remove_from_name_table(json_step) {
@@ -1034,6 +1058,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     value_list[val_address]["value"].pop();
                 }
             }
+        }
+
+        function remove_from_std_out(json_step) {
+            //Implement me!
         }
 
         function check_rm_empty_table(table_name) {
