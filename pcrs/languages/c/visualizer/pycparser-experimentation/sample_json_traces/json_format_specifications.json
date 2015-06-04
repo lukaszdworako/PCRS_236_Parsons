@@ -26,7 +26,9 @@
                     "max_size": 4, // In bytes, the largest size that this variable can be
                 }
             ],
+            "std_out": "standard output text", //This is the text printed by any standard output call in this step, if it was a std out call
             "return": 4, // This is the return value if this step is a return statement
+            "returned_function_call": "name of f'n returned from", //This is only included if the line is a return from a function call
             "function": "the function name that this step is in",
             "on_entry_point": true // This is true if we just entered a function, right before executing the first line
         }
