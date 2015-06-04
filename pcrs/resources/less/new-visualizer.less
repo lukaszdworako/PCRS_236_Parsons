@@ -7,10 +7,6 @@ hr {
     width: 100%;
 }
 
-tr {
-    border-right: thin solid @thick-border-color !important;
-}
-
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -90,19 +86,21 @@ tr {
     border-right: none !important;
 }
 
+.right-edge-clear-cell {
+    .memory-map-cell;
+    border-left: none !important;
+}
+
 .top-row-clear-cell {
-    .clear-memory-map-cell;
     border-bottom: none !important;
 }
 
 .middle-row-clear-cell {
-    .clear-memory-map-cell;
     border-top: none !important;
     border-bottom: none !important;
 }
 
 .bottom-row-clear-cell {
-    .clear-memory-map-cell;
     border-top: none !important;
 }
 

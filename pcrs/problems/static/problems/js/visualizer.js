@@ -550,6 +550,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log('Adding to memory table');
             console.log('step: ' + json_step.step);
             console.log(json_step);
+
+            if(json_step["on_entry_point"]) {
+                var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
+                var new_stack_frame = create_stack_frame_table(calling_line, json_step["function"]);
+                $("div#stack-frame-tables").prepend(new_stack_frame);
+            }
+
             if(json_step.hasOwnProperty('changed_vars')) {
                 add_changed_vars_to_memory_table(json_step);
             }
@@ -561,17 +568,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function add_changed_vars_to_memory_table(json_step){
             var changed_vars = json_step.changed_vars;
             for(var i=0; i < changed_vars.length; i++) {
-
-                var calling_line = null;
-                if(json_index > 0) {
-                    calling_line = debugger_data["steps"][json_index-1]["student_view_line"];
-                }
-
-                add_one_var_to_memory_table(changed_vars[i], json_step["function"], json_step["on_entry_point"], calling_line);
+                add_one_var_to_memory_table(changed_vars[i], json_step["function"]);
             }
         }
 
-        function add_one_var_to_memory_table(changed_var, func_name, on_entry_point, calling_line) {
+        function add_one_var_to_memory_table(changed_var, func_name) {
             var var_name = changed_var["var-name"];
             var start_addr = parseInt(changed_var["addr"], 16);
             var type = changed_var["type"];
@@ -586,11 +587,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             } else if(location === "heap") {
                 location = "#heap-memory-map > tbody";
             } else if(location === "stack") {
-                var stack_frame_container = $("div#stack-frame-tables");
-                if(on_entry_point) {
-                    var new_stack_frame = create_stack_frame_table(calling_line, func_name);
-                    stack_frame_container.prepend(new_stack_frame);
-                }
                 location = "#stack-frame-tables > table[stack-function='" + func_name + "']:first";
             }
 
@@ -697,12 +693,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             // Start from 1 because child 0 is the address column
             for(var i=1; i < 5; i++) {
                 var next_row_class = next_row_children[0].getAttribute("class");
-                if(next_row_class == "clear-memory-map-cell"
-                    || next_row_class == "top-row-clear-cell"
-                    || next_row_class == "middle-row-clear-cell"
-                    || next_row_class == "bottom-row-clear-cell"){
-
+                if(next_row_class.indexOf("clear-memory-map-cell") > 0){
                     original_row_children[i].replaceWith(next_row_children[0]);
+
                 } else if(next_row_class == "cell-label-td") {
                     // Insert first the label td, then the regular td
                     // Two inserts because we're replacing a td with colspan="2" with 2 tds with colspan="1"
@@ -769,14 +762,18 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                     // Add the data cells
                     var clarity_class = "clear-memory-map-cell";
+                    if(c == 3) {
+                        clarity_class = "right-edge-clear-cell";
+                    }
+
                     if(rows_needed > 1){
                         // First row
                         if(r == 0) {
-                            clarity_class = "top-row-clear-cell";
+                            clarity_class += " top-row-clear-cell";
                         } else if(r == rows_needed) {
-                            clarity_class = "bottom-row-clear-cell";
+                            clarity_class += " bottom-row-clear-cell";
                         } else {
-                            clarity_class = "middle-row-clear-cell";
+                            clarity_class += " middle-row-clear-cell";
                         }
                     }
 

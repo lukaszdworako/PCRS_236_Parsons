@@ -24,6 +24,7 @@
                     "invalid": "",
                     "location": "stack, heap or static",
                     "max_size": 4, // In bytes, the largest size that this variable can be
+                    "uninitialized": true,
                 }
             ],
             "std_out": "standard output text", //This is the text printed by any standard output call in this step, if it was a std out call
