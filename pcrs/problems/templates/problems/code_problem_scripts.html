@@ -24,6 +24,7 @@
 
     var language = "{{ problem.language }}";
     var problem_id = "{{ problem.pk }}";
+    var use_simpleui = "{{ request.user.use_simpleui }}";
     var visualizer = null;
 
     var happyFace = $('<img id="dynamic">').attr({
