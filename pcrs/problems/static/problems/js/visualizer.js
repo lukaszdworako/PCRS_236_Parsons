@@ -401,7 +401,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 for(var i = 0; i < global_amt; i++) {
                     //Include global vars
                     add_to_name_table(globals[i]);
-                    //add_to_memory_table(globals[i]);
+                    add_to_memory_table(globals[i]);
                     add_to_val_list(globals[i]);
                 }
             }
@@ -410,9 +410,17 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
 
+                var json_step = debugger_data["steps"][json_index];
+
+                if(json_step["on_entry_point"]) {
+                    var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
+                    var new_stack_frame = create_stack_frame_table(calling_line, json_step["function"]);
+                    $("div#stack-frame-tables").prepend(new_stack_frame);
+                }
+
                 if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
                     add_to_name_table(debugger_data["steps"][json_index]);
-                    //add_to_memory_table(debugger_data["steps"][json_index]);
+                    add_to_memory_table(debugger_data["steps"][json_index]);
                     add_to_val_list(debugger_data["steps"][json_index]);
                 }
             }
@@ -552,18 +560,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log('step: ' + json_step.step);
             console.log(json_step);
 
-            if(json_step["on_entry_point"]) {
-                var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
-                var new_stack_frame = create_stack_frame_table(calling_line, json_step["function"]);
-                $("div#stack-frame-tables").prepend(new_stack_frame);
-            }
-
-            if(json_step.hasOwnProperty('changed_vars')) {
-                add_changed_vars_to_memory_table(json_step);
-            }
-            if(json_step.hasOwnProperty('return')) {
-                add_return_to_memory_table(json_step);
-            }
+            add_changed_vars_to_memory_table(json_step);
         }
 
         function add_changed_vars_to_memory_table(json_step){
