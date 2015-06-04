@@ -401,7 +401,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 for(var i = 0; i < global_amt; i++) {
                     //Include global vars
                     add_to_name_table(globals[i]);
-                    add_to_memory_table(globals[i]);
+                    //add_to_memory_table(globals[i]);
                     add_to_val_list(globals[i]);
                 }
             }
@@ -410,9 +410,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
 
-                add_to_name_table(debugger_data["steps"][json_index]);
-                add_to_memory_table(debugger_data["steps"][json_index]);
-                add_to_val_list(debugger_data["steps"][json_index]);
+                if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
+                    add_to_name_table(debugger_data["steps"][json_index]);
+                    //add_to_memory_table(debugger_data["steps"][json_index]);
+                    add_to_val_list(debugger_data["steps"][json_index]);
+                }
             }
 
             else if(update_type == "prev") {
@@ -420,9 +422,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
                 //Process JSON here to go backward a line
-                remove_from_name_table(debugger_data["steps"][json_index]);
-                remove_from_memory_table(debugger_data["steps"][json_index]);
-                remove_from_val_list(debugger_data["steps"][json_index]);
+                if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
+                    remove_from_name_table(debugger_data["steps"][json_index]);
+                    //remove_from_memory_table(debugger_data["steps"][json_index]);
+                    remove_from_val_list(debugger_data["steps"][json_index]);
+                }
                 json_index--;
             }
 
@@ -484,9 +488,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         //Applies the most recent forward-changes of the current step to the name table: the only time this might be
         //a removal is if a variable got freed on the heap
         function add_to_name_table(json_step) {
-            if(!json_step.hasOwnProperty('changed_vars')) {
-                return;
-            }
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
@@ -915,9 +916,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function add_to_val_list(json_step) {
         //value_list will contain all variables currently allocated, will look like: { "0x123": { value": ["xyz", "mzy" ...], "is_ptr": "T/F" } }
-            if(!json_step.hasOwnProperty('changed_vars')) {
-                return;
-            }
+
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
@@ -947,9 +946,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
         //an addition is if a variable got freed on the heap in the last step, adding it back
         function remove_from_name_table(json_step) {
-            if(!json_step.hasOwnProperty('changed_vars')) {
-                return;
-            }
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
@@ -1020,9 +1016,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function remove_from_val_list(json_step) {
         //value_list will contain all variables currently allocated, will look like: { "0x123": { value": "xyz", "is_ptr": "T/F" } }
-            if(!json_step.hasOwnProperty('changed_vars')) {
-                return;
-            }
+
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
