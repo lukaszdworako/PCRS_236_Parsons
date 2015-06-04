@@ -1,5 +1,6 @@
 var memory_map_cell_height = 37; // In pixels
 var memory_map_cell_width = 17.5; // In %
+var cur_stdout = "";
 
 function zeroPad (str, max) {
   str = str.toString();
@@ -966,7 +967,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_std_out(json_step) {
-            //Implement me!
+            //cur_stdout contains the full current stdout string that's been stepped to: will append to this and refresh the stdout window
+            cur_stdout= cur_stdout.concat(json_step["std_out"]);
+            console.log("cur stdout is "+cur_stdout);
+            $("#std-out-textbox").val(cur_stdout);
         }
 
 
@@ -1061,7 +1065,10 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function remove_from_std_out(json_step) {
-            //Implement me!
+            //removes last n characters from cur_stdout
+            len_to_rm = json_step["std_out"].length;            
+            cur_stdout = cur_stdout.substring(0, cur_stdout.length - len_to_rm);
+            $("#std-out-textbox").val(cur_stdout);
         }
 
         function check_rm_empty_table(table_name) {

@@ -7,18 +7,23 @@
       <div class="pcrs-modal-body">
         <div class="table-responsive">
 
-          <div class="code-window-section">
-            <div class="title">
-              Code Window
+          <div class="viz-left-wrapper">
+            <div class="code-window-section">
+              {% include "problems_c/visualizer_code.html" %}
             </div>
-            <hr/>
 
-            {% include "problems_c/visualizer_code.html" %}
+            <div class="std-out-section">
+              <div class="title">
+                Standard Output
+              </div>
+              <hr/>
+              {% include "problems_c/visualizer_stdout.html" %}
+            </div>
           </div>
-
+          
           <div class="name-type-section">
             <div class="title">
-              Name Table
+              Name Tables
             </div>
             <hr/>
 

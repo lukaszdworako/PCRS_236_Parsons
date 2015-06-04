@@ -26,20 +26,42 @@ tr {
     max-height: 800px;
 }
 
-.code-window-section {
+.viz-left-wrapper {
     .visualizer-section;
     width: 50%;
-    min-width: 55em;
+    min-width: 30em;
+}
+
+.code-window-section {
+    .viz-left-wrapper;
+    margin: 0px;
+    width: 100%;
+    min-width: 25em;
 }
 
 #preview-code {
-    max-height: 600px;
+    max-height: 500px;
     overflow: auto;
+}
+
+.std-out-section {
+    .viz-left-wrapper;
+    margin: 0px;
+    width: 100%;
+    min-width: 25em;
+}
+
+#std-out-textbox {
+    overflow:auto;
+    width: 100%;
+    min-width: inherit;
+    background-color: white;
+    min-height: 8em;
 }
 
 .name-type-section {
     .visualizer-section;
-    min-width: 25em;
+    min-width: 10em;
     width: 23%;
 }
 
