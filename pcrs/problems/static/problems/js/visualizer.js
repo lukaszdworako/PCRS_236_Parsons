@@ -564,7 +564,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 var calling_line = null;
                 if(json_index > 0) {
-                    calling_line = debugger_data[json_index-1]["line"];
+                    calling_line = debugger_data["steps"][json_index-1]["student_view_line"];
                 }
 
                 add_one_var_to_memory_table(changed_vars[i], json_step["function"], json_step["on_entry_point"], calling_line);
