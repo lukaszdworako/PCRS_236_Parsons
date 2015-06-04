@@ -349,7 +349,10 @@ function getTestcases(div_id) {
                 if (data['results'][1] != null){
                     error_msg = data['results'][1];
                 }
-                $("#"+div_id).find("#grade-code").show();
+
+                if (use_simpleui == 'False'){
+                    $("#"+div_id).find("#grade-code").show();
+                }
 
                 var score = data['score'];
                 var max_score = data['max_score'];
