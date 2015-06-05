@@ -1,7 +1,8 @@
 @thick-border-color: #DDDDDD;
-@address-width: 30%;
-@values-width: 70%;
-@cell-width: 17.5%;
+@address-width: 35%;
+@values-width: 65%;
+@cell-width: 16.25%;
+@cell-height: 37px;
 
 hr {
     width: 100%;
@@ -35,14 +36,14 @@ hr {
 
 .name-type-section {
     .visualizer-section;
-    min-width: 25em;
-    width: 23%;
+    min-width: 22em;
+    width: 20%;
 }
 
 .memory-map-section {
     .visualizer-section;
-    min-width: 25em;
-    width: 23%;
+    min-width: 26em;
+    width: 26%;
 }
 
 .visualizer-section-heading {
@@ -104,13 +105,10 @@ hr {
     border-top: none !important;
 }
 
-.memory-break-line {
+.dot-line {
     text-align: center;
-}
-
-.memory-break-line-addr {
-    .memory-break-line;
-    border-right: 2px solid @thick-border-color !important;
+    padding: 2px !important;
+    line-height: 15px !important;
 }
 
 .cell-label-td {

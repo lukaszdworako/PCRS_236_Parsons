@@ -1,5 +1,6 @@
+// These global variables should not be modified
 var memory_map_cell_height = 37; // In pixels
-var memory_map_cell_width = 17.5; // In %
+var memory_map_cell_width = 16.25; // In %
 
 function zeroPad (str, max) {
   str = str.toString();
@@ -367,6 +368,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     cur_line = start_line-1;
                     json_index = 0;
                     //Clear the stack and heap tables
+                    $("#static-memory-map > tbody").empty();
+                    $("#heap-memory-map > tbody").empty();
+                    $("#stack-frame-tables").empty();
+
+                    // Clear the name tables
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
                     update_new_debugger_table(debugger_data, "reset");
@@ -374,6 +380,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
 
             //Clear the stack and heap tables
+            //$("#static-memory-map > tbody").empty();
+            //$("#heap-memory-map > tbody").empty();
+            //$("#stack-frame-tables").empty();
+
+            // Clear the name tables
             $('#name-type-section').empty();
             $('#new_debugger_table_heap').empty();
 
@@ -411,12 +422,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             if((update_type == "next") || (update_type == "reset")) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
-
-                if(json_step["on_entry_point"]) {
-                    var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
-                    var new_stack_frame = create_stack_frame_table(calling_line, json_step["function"]);
-                    $("div#stack-frame-tables").prepend(new_stack_frame);
-                }
 
                 //Case where there's changed variables
                 if(json_step.hasOwnProperty('changed_vars')) {
@@ -579,13 +584,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             console.log('step: ' + json_step.step);
             console.log(json_step);
 
-            add_changed_vars_to_memory_table(json_step);
-        }
-
-        function add_changed_vars_to_memory_table(json_step){
+            // Add changed_vars to memory table
             var changed_vars = json_step.changed_vars;
+            var func_name = json_step["function"];
             for(var i=0; i < changed_vars.length; i++) {
-                add_one_var_to_memory_table(changed_vars[i], json_step["function"]);
+                add_one_var_to_memory_table(changed_vars[i], func_name);
             }
         }
 
@@ -596,15 +599,24 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             var is_new = changed_var["new"];
             var value = changed_var["value"];
             var invalid = changed_var["invalid"];
-            var location = changed_var["location"];
+            var func_location = changed_var["location"];
             var cells_needed = changed_var["max_size"];
 
-            if(location === "static") {
+            var location = "";
+            if(func_location === "static") {
                 location = "#static-memory-map > tbody";
-            } else if(location === "heap") {
+            } else if(func_location === "heap") {
                 location = "#heap-memory-map > tbody";
-            } else if(location === "stack") {
-                location = "#stack-frame-tables > table[stack-function='" + func_name + "']:first";
+            } else if(func_location === "stack") {
+                var stack_frame_exists = $("#stack-frame-tables > table[stack-function='" + func_name + "']").length > 0;
+
+                if(!stack_frame_exists) {
+                    var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
+                    var new_stack_frame = create_stack_frame_table(calling_line, func_name)
+                    $("div#stack-frame-tables").prepend(new_stack_frame);
+                }
+
+                location = "#stack-frame-tables > table[stack-function='" + func_name + "']:first > tbody";
             }
 
             var is_array = type.indexOf("[]") >= 0;
@@ -640,9 +652,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                 // Remove all dot rows in between the insert_addr and after_end_addr
                 if(after_end_addr > 0) {
-                    $(location + " > tr[start-addr='" + toHexString(insert_addr) + "']").nextUntil("tr[start-addr='" + toHexString(after_end_addr) + "']").has("td.memory-break-line").remove();
+                    $(location + " > tr[start-addr='" + toHexString(insert_addr) + "']").nextUntil("tr[start-addr='" + toHexString(after_end_addr) + "']").has("td.dot-line").remove();
                 } else {
-                    $(location + " > tr[start-addr='" + toHexString(insert_addr) + "']").has("td.memory-break-line").remove();
+                    $(location + " > tr[start-addr='" + toHexString(insert_addr) + "']").has("td.dot-line").remove();
                 }
 
                 // Insert the rows here, merging as needed
@@ -651,7 +663,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     // Insert the first row
                     insert_row = $(location + " > tr[start-addr='" + toHexString(insert_addr) + "']");
                     if(insert_addr == row_start_addr){
-                        merge_rows(location, insert_addr, new_var_rows);
+                        merge_rows(insert_row, $(new_var_rows.childNodes[0]));
                     } else {
                         if((row_start_addr - insert_addr) > 4) {
                             $(create_memory_map_dot_row()).insertAfter(insert_row);
@@ -674,7 +686,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
                     var same_row = $(location + " > tr[start-addr='" + next_row_hex_addr + "']");
                     if(same_row.length) {
-                        merge_rows(location, parseInt(next_row_hex_addr,16), new_var_rows);
+                        merge_rows(same_row, next_row);
                     } else {
                         // Did not find it, append it next to the previous row
                         next_row.insertAfter(insert_row);
@@ -698,33 +710,29 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
         }
 
-        function merge_rows(location, original_row_addr, new_var_rows) {
-            original_row_addr = toHexString(original_row_addr);
-            var original_row = $(location + " > tr[start-addr='" + original_row_addr + "']'");
-            var next_row = $(new_var_rows.childNodes[0]);
+        function merge_rows(original_row, new_row) {
+            // Remove the address cell from the new row
+            new_row.children()[0].remove();
 
-            // The calls to replaceWith remove the children from the original container, which is why the 0 is always
-            // used
-            var original_row_children = original_row.children();
-            var next_row_children = next_row.children();
-            // Start from 1 because child 0 is the address column
             for(var i=1; i < 5; i++) {
-                var next_row_class = next_row_children[0].getAttribute("class");
-                if(next_row_class.indexOf("clear-memory-map-cell") > 0){
-                    original_row_children[i].replaceWith(next_row_children[0]);
 
-                } else if(next_row_class == "cell-label-td") {
+                var new_row_child_class = new_row.children()[0].getAttribute("class");
+                if(new_row_child_class.indexOf("clear-memory-map-cell") > 0){
+                    $(original_row.children()[i]).replaceWith($(new_row.children()[0]));
+
+                } else if(new_row_child_class == "cell-label-td") {
                     // Insert first the label td, then the regular td
                     // Two inserts because we're replacing a td with colspan="2" with 2 tds with colspan="1"
-                    original_row_children[i].replaceWith(next_row_children[0]);
-                    next_row_children[0].insertAfter(original_row_children[i]);
+                    $(original_row.children()[i]).replaceWith($(new_row.children()[0]));
+                    $(new_row.children()[0]).insertAfter($(original_row.children()[i]));
+
                 } else {
                     // Discard this cell, it's empty and should not overwrite the other one
-                    next_row_children[0].remove();
+                    new_row.children()[0].remove();
                 }
             }
 
-            next_row.remove();
+            new_row.remove();
         }
 
         function create_new_var_rows(start_addr, cells_needed, value, is_array) {
@@ -737,7 +745,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             if(rows_needed > 1) {
                 var start_addr_extra_cells = (start_addr % 4) == 0 ? 0 : 4 - (start_addr % 4);
-                var end_addr_extra_cells = (end_addr % 4);
+                var end_addr_extra_cells = ((end_addr+1) % 4);
                 middle_cells = (cells_needed - start_addr_extra_cells - end_addr_extra_cells);
             }
 
@@ -910,23 +918,14 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function create_memory_map_dot_row() {
             var dot_row = document.createElement("tr");
 
-            var td1 = document.createElement("td");
-            td1.className = "memory-break-line-addr";
-            td1.innerHTML = "•••";
+            var td = document.createElement("td");
+            td.className = "dot-line";
+            td.colSpan = "9";
+            td.innerHTML = "•••";
 
-            var td2 = document.createElement("td");
-            td2.className = "memory-break-line";
-            td2.colSpan = "8";
-            td2.innerHTML = "•••";
-
-            dot_row.appendChild(td1);
-            dot_row.appendChild(td2);
+            dot_row.appendChild(td);
 
             return dot_row;
-        }
-
-        function add_return_to_memory_table(json_step) {
-            // TODO: implement
         }
 
 
