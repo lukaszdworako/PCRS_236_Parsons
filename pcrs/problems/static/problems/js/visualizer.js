@@ -1,6 +1,8 @@
 var memory_map_cell_height = 37; // In pixels
 var memory_map_cell_width = 17.5; // In %
 var cur_stdout = "";
+var return_to_clr = "";
+var return_val;
 
 function zeroPad (str, max) {
   str = str.toString();
@@ -370,6 +372,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Clear the stack and heap tables
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
+                    //Clear stdout
+                    cur_stdout= "";
+                    $("#std-out-textbox").val(cur_stdout);
                     update_new_debugger_table(debugger_data, "reset");
                 });
             }
@@ -395,6 +400,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function update_new_debugger_table(data, update_type){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
+
+            //Removes any name table rows that must be removed with this step
+            $(return_to_clr).remove();
+            return_to_clr = "";
+
             //If resetting, first ensure all global variables are dealt with
             if(update_type == "reset") {
                 globals = debugger_data["global_vars"];
@@ -402,8 +412,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 for(var i = 0; i < global_amt; i++) {
                     //Include global vars
                     add_to_name_table(globals[i]);
-                    //add_to_memory_table(globals[i]);
                     add_to_val_list(globals[i]);
+                    add_to_memory_table(globals[i]);
                 }
             }
 
@@ -414,16 +424,15 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 //Case where there's changed variables
                 if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
                     add_to_name_table(debugger_data["steps"][json_index]);
-                    //add_to_memory_table(debugger_data["steps"][json_index]);
                     add_to_val_list(debugger_data["steps"][json_index]);
+                    //add_to_memory_table(debugger_data["steps"][json_index]);
                 }
                 //Case where it's a function return
-                else if(debugger_data["steps"][json_index].hasOwnProperty('return')) {
-                    //Implement
+                else if((debugger_data["steps"][json_index].hasOwnProperty('return')) || (debugger_data["steps"][json_index].hasOwnProperty('returned_fn_call'))) {
+                    add_return_name_table(debugger_data["steps"][json_index]);
                 }
                 //Case where it has standard output
                 else if(debugger_data["steps"][json_index].hasOwnProperty('std_out')) {
-                    //Implement!
                     add_to_std_out(debugger_data["steps"][json_index]);
                 }
             }
@@ -435,16 +444,15 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 //Process JSON here to go backward a line
                 if(debugger_data["steps"][json_index].hasOwnProperty('changed_vars')) {
                     remove_from_name_table(debugger_data["steps"][json_index]);
-                    //remove_from_memory_table(debugger_data["steps"][json_index]);
                     remove_from_val_list(debugger_data["steps"][json_index]);
-                                    //Case where it's a function return
+                    //remove_from_memory_table(debugger_data["steps"][json_index]);
+                    //Case where it's a function return
                 }
-                else if(debugger_data["steps"][json_index].hasOwnProperty('return')) {
-                    //Implement
+                else if(debugger_data["steps"][json_index].hasOwnProperty('return') || debugger_data["steps"][json_index].hasOwnProperty('returned_fn_call') ) {
+                    remove_return_name_table(debugger_data["steps"][json_index]);
                 }
                 //Case where it has standard output
                 else if(debugger_data["steps"][json_index].hasOwnProperty('std_out')) {
-                    //Implement!
                     remove_from_std_out(debugger_data["steps"][json_index]);
                 }
                 json_index--;
@@ -508,7 +516,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         //Applies the most recent forward-changes of the current step to the name table: the only time this might be
         //a removal is if a variable got freed on the heap
         function add_to_name_table(json_step) {
-
+            var table_name;
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
@@ -932,8 +940,45 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             return dot_row;
         }
 
-        function add_return_to_memory_table(json_step) {
-            // TODO: implement
+        function add_return_name_table(json_step) {
+            //Add the new id to return_to_clr variable, so that it gets removed from the table on next step
+            //Will always be on the stack
+            var return_data;
+            var table_name = json_step['function'];
+            var cur_frame;
+            cur_frame = $('#names-'+table_name);
+
+            console.log("adding return to name table!");
+
+            //Check if there's a current frame up for this:
+            if(cur_frame.length == 0) {
+            //If not, create a whole new name table - could be possible for a function with no vars that then returns
+                $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
+                '" class="table table-bordered" style="width: 100%; float:left;">'+
+                '<thead>'+
+                    '<tr>'+
+                    '<th width="60%">Name</th>' +
+                    '<th width="40%">Type</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody id="name-body-'+table_name+'">' +
+                '</tbody>' +
+                '</table></span>');
+            }
+
+            if(json_step.hasOwnProperty('return')) {
+                return_val = json_step["return"];
+                return_data = 'Return <'+return_val+'>';
+            }
+            else {
+                return_data = json_step["returned_fn_call"]+'<'+return_val+'>';
+            }
+
+            return_to_clr = '#'+table_name+'-return';
+            console.log("want to add to "+table_name+ " and return data is "+return_data);
+            //Add a row to the existing name table
+            $('#name-body-'+table_name).append('<tr id="'+table_name+'-return"> <td colspan="2">' + return_data + '</td>' +
+            '</tr>');
         }
 
 
@@ -977,7 +1022,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         //Applies the most recent backward-changes of the current step to the name table: the only time this might be
         //an addition is if a variable got freed on the heap in the last step, adding it back
         function remove_from_name_table(json_step) {
-
+            var table_name;
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
@@ -1063,6 +1108,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 }
             }
         }
+
+        function remove_return_name_table(json_step) {
+            // TODO: implement
+        }
+
 
         function remove_from_std_out(json_step) {
             //removes last n characters from cur_stdout
