@@ -93,7 +93,7 @@
             "step": 8,
             "line": 11,
             "student_view_line": 11,
-            "std_out":"my char array has a in it\n",
+            "std_err":"error!!!",
             "function": "main",
             "on_entry_point": false
         },
@@ -101,7 +101,7 @@
             "step": 9,
             "line": 12,
             "student_view_line": 12,
-            "std_out":"bye!\n",
+            "std_out":"my char array has a in it\n",
             "function": "main",
             "on_entry_point": false
         },
@@ -109,6 +109,22 @@
             "step": 10,
             "line": 13,
             "student_view_line": 13,
+            "std_out":"bye!\n",
+            "function": "main",
+            "on_entry_point": false
+        },
+        {
+            "step": 11,
+            "line": 14,
+            "student_view_line": 14,
+            "std_err":"some more errors\n",
+            "function": "main",
+            "on_entry_point": false
+        },
+        {
+            "step": 12,
+            "line": 15,
+            "student_view_line": 15,
             "return":0,
             "function": "main",
             "on_entry_point": false
