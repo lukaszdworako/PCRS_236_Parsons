@@ -58,7 +58,8 @@
                     "value": "junk",
                     "invalid": false,
                     "location": "stack",
-                    "max_size": 1
+                    "max_size": 1,
+                    "uninitialized": true
                 }
             ],
             "function": "main",

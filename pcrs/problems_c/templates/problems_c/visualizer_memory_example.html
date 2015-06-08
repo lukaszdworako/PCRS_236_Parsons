@@ -2,8 +2,8 @@
 <table id="static-memory-map" class="table table-bordered memory-map-table">
   <thead>
     <tr>
-        <th id="address-heading">Address</th>
-        <th id="values-heading" colspan="8">Values</th>
+        <th class="address-heading">Address</th>
+        <th class="values-heading" colspan="8">Values</th>
     </tr>
   </thead>
   <tbody>
@@ -45,7 +45,7 @@
         <td class="clear-memory-map-cell" addr="0000127F"></td>
         <td class="clear-memory-map-cell" addr="00001280" colspan="2"></td>
 
-        <td class="memory-map-cell" addr="000012781" colspan="2">'b'</td>
+        <td class="memory-map-cell" addr="00001281" colspan="2">'b'</td>
 
     </tr>
   </tbody>
@@ -57,8 +57,8 @@
 <table id="heap-memory-map" class="table table-bordered memory-map-table" style="position: relative;">
   <thead>
     <tr>
-        <th id="address-heading">Address</th>
-        <th id="values-heading" colspan="8">Values</th>
+        <th class="address-heading">Address</th>
+        <th class="values-heading" colspan="8">Values</th>
     </tr>
   </thead>
   <tbody>
@@ -71,8 +71,7 @@
         <td class="memory-map-cell" addr="00001269" colspan="2">'\n'</td>
     </tr>
     <tr>
-        <td class="memory-break-line-addr">•••</td>
-        <td class="memory-break-line" colspan="8">•••</td>
+        <td class="dot-line" colspan="9">•••</td>
     </tr>
     <tr>
         <td class="memory-map-address">0x0000227A</td>
@@ -85,26 +84,26 @@
             </div>
         </td>
 
-        <td class="top-row-clear-cell"></td>
-        <td class="top-row-clear-cell" colspan="2"></td>
-        <td class="top-row-clear-cell" colspan="2"></td>
-        <td class="top-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell top-row-clear-cell"></td>
+        <td class="clear-memory-map-cell top-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell top-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell top-row-clear-cell" colspan="2"></td>
     </tr>
     <tr>
         <td class="memory-map-address">0x0000227E</td>
 
-        <td class="middle-row-clear-cell" colspan="2"></td>
-        <td class="middle-row-clear-cell" colspan="2"></td>
-        <td class="middle-row-clear-cell" colspan="2"></td>
-        <td class="middle-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell middle-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell middle-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell middle-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell middle-row-clear-cell" colspan="2"></td>
     </tr>
     <tr>
         <td class="memory-map-address">0x00002282</td>
 
-        <td class="bottom-row-clear-cell" colspan="2"></td>
-        <td class="bottom-row-clear-cell" colspan="2"></td>
-        <td class="bottom-row-clear-cell" colspan="2"></td>
-        <td class="bottom-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell bottom-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell bottom-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell bottom-row-clear-cell" colspan="2"></td>
+        <td class="clear-memory-map-cell bottom-row-clear-cell" colspan="2"></td>
     </tr>
   </tbody>
 </table>
@@ -116,7 +115,7 @@
 <table stack-frame-number="1" stack-function="main" class="table table-bordered memory-map-table">
   <thead>
     <tr>
-        <th colspan="10">main: 1</th>
+        <th colspan="10">main</th>
     </tr>
     <tr>
         <th class="address-heading">Address</th>
@@ -143,7 +142,7 @@
   </tbody>
 </table>
 
-<table stack-frame-number="1" stack-function="is_integer" class="table table-bordered memory-map-table">
+<table style="position: absolute;" stack-frame-number="1" stack-function="is_integer" class="table table-bordered memory-map-table">
   <thead>
     <tr>
         <th colspan="10">is_integer: 1</th>
@@ -157,10 +156,10 @@
     <tr>
         <td class="memory-map-address">0x00001276</td>
 
-        <td class="memory-map-cell" colspan="2">'H'</td>
-        <td class="memory-map-cell" colspan="2">'i'</td>
+        <td class="memory-map-cell" colspan="2">\n</td>
         <td class="memory-map-cell" colspan="2">'!'</td>
-        <td class="memory-map-cell" colspan="2">'\n'</td>
+        <td class="memory-map-cell" colspan="2">'i'</td>
+        <td class="memory-map-cell" colspan="2">'H'</td>
     </tr>
     <tr>
         <td class="memory-map-address">0x0000127A</td>
