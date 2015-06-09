@@ -1,17 +1,20 @@
-@thick-border-color: #DDDDDD;
-@address-width: 35%;
-@values-width: 65%;
-@cell-width: 16.25%;
+@border-color: #DDDDDD;
+@address-width: 30%;
+@values-width: 70%;
+@cell-width: 17.5%;
 @cell-height: 37px;
+@heading-height: 38px;
 
 hr {
     width: 100%;
+    margin-top: 0px;
 }
 
 .title {
     font-size: 20px;
     font-weight: bold;
     text-align: center;
+    margin-bottom: 5px;
 }
 
 .visualizer-section {
@@ -64,8 +67,12 @@ hr {
 
 .memory-map-section {
     .visualizer-section;
-    min-width: 26em;
-    width: 26%;
+    min-width: 25em;
+    width: 23%;
+}
+
+.memory-map-section td.memory-map-cell,td.memory-map-address,td.address-width,th {
+    height: @cell-height;
 }
 
 .visualizer-section-heading {
@@ -74,15 +81,43 @@ hr {
     text-align: center;
 }
 
-.memory-map-table {
+.memory-map-table-wrapper {
     position: relative !important;
+    display: inline-block;
+}
+
+.memory-map-table {
     width: 100%;
     float: left;
 }
 
+.memory-map-cell-table {
+    .memory-map-table;
+    border: none !important;
+    position: absolute !important;
+    border-collapse: collapse;
+}
+
+.memory-map-label-table {
+    .memory-map-table;
+    position: relative !important;
+}
+
+.heading-height {
+    height: @heading-height;
+}
+
+.address-width {
+    width: @address-width;
+}
+
+.values-width {
+    width: @values-width;
+}
+
 .address-heading {
     text-align: right;
-    border-right: 2px solid @thick-border-color;
+    border-right: 2px solid @border-color !important;
     width: @address-width;
 }
 
@@ -93,7 +128,7 @@ hr {
 
 .memory-map-address {
     text-align: right;
-    border-right: 2px solid @thick-border-color !important;
+    border-right: 2px solid @border-color !important;
     width: @address-width;
 }
 
@@ -101,21 +136,25 @@ hr {
     text-align: center;
     vertical-align: middle !important;
     width: @cell-width;
+    border: thin solid @border-color;
 }
 
-.clear-memory-map-cell {
-    .memory-map-cell;
+//.crouching-table
+.hidden-cell {
+    display: none;
+}
+
+.clear-cell {
     border-left: none !important;
     border-right: none !important;
 }
 
 .right-edge-clear-cell {
-    .memory-map-cell;
     border-left: none !important;
 }
 
 .top-row-clear-cell {
-    border-bottom: none !important;
+    border-bottom: 1px solid white !important;
 }
 
 .middle-row-clear-cell {
@@ -131,23 +170,5 @@ hr {
     text-align: center;
     padding: 2px !important;
     line-height: 15px !important;
-}
-
-.cell-label-td {
-    position: absolute !important;
-    padding: 0px !important;
-    border: none !important;
-    // Need to also set height, width and max-width
-    // Height should be a multiple of a cell height (default 37px)
-    // Width and max-width should be the same and should be multiples of a cell width (default @cell-width)
-}
-
-.cell-label-div {
-    display: table-cell !important;
-    text-align: center;
-    vertical-align: middle;
-    width: 10000px;
-    // This div should always be wrapped in a td.cell-label-td
-    // Need to also set height
-    // Height should be the same as the height of the wrapping td.cell-label-td
+    height: 15px;
 }

@@ -271,6 +271,7 @@ function handleCMessages(div_id, testcases){
      * colors and font style
      */
     // Handle C warnings and exceptions
+    return;
     $('#'+div_id).find('#c_warning').remove();
     $('#'+div_id).find('#c_error').remove();
 

@@ -18,6 +18,7 @@
                     "type": "int",
                     "new": true,
                     "value": 16,
+                    "hex_value": "0x00000010",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 4
@@ -37,6 +38,7 @@
                     "type": "char",
                     "new": true,
                     "value": "a",
+                    "hex_value": "0x61",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 1
@@ -56,6 +58,7 @@
                     "type": "char",
                     "new": true,
                     "value": "junk",
+                    "hex_value": "0x00",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 1,
@@ -76,9 +79,10 @@
                     "type": "char",
                     "new": false,
                     "value": "b",
+                    "hex_value": "0x62",
                     "invalid": false,
                     "location": "stack",
-                    "max_size": 36
+                    "max_size": 1
                 }
             ],
             "function": "main",
@@ -95,6 +99,7 @@
                     "type": "long",
                     "new": true,
                     "value": 3000000000,
+                    "hex_value": "0x00000000B2D05E00",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 8
@@ -114,6 +119,7 @@
                     "type": "int*",
                     "new": true,
                     "value": "0x7fff8cfe9bcc",
+                    "hex_value": "0x00007FFF8CFE9BCC",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 8
@@ -133,6 +139,7 @@
                     "type": "int",
                     "new": false,
                     "value": 32,
+                    "hex_value": "0x00000020",
                     "invalid": false,
                     "location": "stack",
                     "max_size": 4
