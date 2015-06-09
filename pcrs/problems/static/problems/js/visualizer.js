@@ -424,12 +424,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Include global vars
                     add_to_name_table(globals[i]);
                     add_to_val_list(globals[i]);
-                    add_to_memory_table(globals[i]);
+                    //add_to_memory_table(globals[i]);
                 }
             }
 
             var json_step = debugger_data["steps"][json_index];
-
+            console.log("JSON STEP IS:");
+            console.log(json_step);
             if((update_type == "next") || (update_type == "reset")) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
@@ -438,14 +439,15 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 if(json_step.hasOwnProperty('changed_vars')) {
                     add_to_name_table(json_step);
                     add_to_val_list(json_step);
-                    add_to_memory_table(json_step);
+                    //add_to_memory_table(json_step);
                 }
                 //Case where it's a function return
-                else if((json_step.hasOwnProperty('return')) || (json_step.hasOwnProperty('returned_fn_call'))) {
+                if((json_step.hasOwnProperty('return')) || (json_step.hasOwnProperty('returned_fn_call'))) {
+                    console.log("calling add to name table func");
                     add_return_name_table(json_step);
                 }
                 //Case where it has standard output
-                else if(json_step.hasOwnProperty('std_out')) {
+                if(json_step.hasOwnProperty('std_out')) {
                     add_to_std_out(json_step);
                 }
             }
@@ -458,17 +460,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 if(json_step.hasOwnProperty('changed_vars')) {
                     remove_from_name_table(json_step);
                     remove_from_val_list(json_step);
-                    remove_from_memory_table(json_step);
+                    //remove_from_memory_table(json_step);
                     //Case where it's a function return
                 }
-                else if(json_step.hasOwnProperty('return') || json_step.hasOwnProperty('returned_fn_call') ) {
-                    remove_return_name_table(json_step);
-                }
                 //Case where it has standard output
-                else if(json_step.hasOwnProperty('std_out')) {
+                if(json_step.hasOwnProperty('std_out')) {
                     remove_from_std_out(json_step);
                 }
                 json_index--;
+                json_step = debugger_data["steps"][json_index];
+                if(json_step.hasOwnProperty('return') || json_step.hasOwnProperty('returned_fn_call') ) {
+                    //console.log("have a return, json step is ");
+                    add_return_name_table(json_step);
+                }
             }
 
             console.log("value_list is: ");
@@ -968,7 +972,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 return_data = 'Return <'+return_val+'>';
             }
             else {
-                return_data = json_step["returned_fn_call"]+'<'+return_val+'>';
+                //If this is the first time we're seeing this JSON step, the last value returned is stored in return_val and added to the JSON step
+                if(!json_step.hasOwnProperty('return_val')) {
+                    json_step["return_val"] = return_val;
+                }
+                return_data = json_step["returned_fn_call"]+' <'+json_step['return_val']+'>';
             }
 
             return_to_clr = '#'+table_name+'-return';
