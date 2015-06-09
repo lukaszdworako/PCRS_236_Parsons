@@ -30,6 +30,7 @@ def create_printf_node():
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
+
 def recurse_nodes(parent):
     print(parent)
     if parent.coord:
@@ -37,6 +38,48 @@ def recurse_nodes(parent):
     for child in parent.children():
         print(child[0])
         recurse_nodes(child[1])
+
+def new_recurse_nodes(index,parent):
+    print("parent is:")
+    print(parent)
+    print("current child is:")
+    print(parent[index])
+    if parent[index].coord:
+        print(parent[index].coord.line)
+    amt_of_children = len(parent.children)
+    for i in range(0, amt_of_children):
+        #print(child[0])
+        new_recurse_nodes(i, parent[index])
+
+
+#Splits up the AST by function, continues to recurse if a node has a compound node
+def recurse_by_function(ast):
+    amt_of_functions = len(ast.ext)
+    for i in range(0, amt_of_functions):
+        recurse_by_compound(ast.ext[i])
+
+
+def recurse_by_compound(ast_function):
+    #Note:ast.ext[0] gets the first function, .body gets the stuff under Compound, and block_items gets each group of elements under Compound
+    print(ast_function)
+    try:
+        compound_list = ast_function.body.block_items
+    except AttributeError:
+        try:
+            compound_list = ast_function.stmt.block_items
+        except AttributeError:
+            try:
+                compound_list = ast_function.iftrue.block_items
+            except:
+                try:
+                    compound_list = ast_function.iffalse.block_items
+                except:
+                    return
+    total_len = len(compound_list)
+    for i in range(0, total_len):
+        recurse_by_compound(compound_list[i])
+
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -49,7 +92,9 @@ if __name__ == "__main__":
             cpp_args=['-nostdinc','-E', r'-Iutils/fake_libc_include'])
 
     ast.show()
-    inserted_node = create_printf_node()
-    ast.show()
-    ast.ext[0].body.block_items.insert(1, inserted_node)    
-    recurse_nodes(ast)
+    print("-----------------------")
+    #inserted_node = create_printf_node()
+    #ast.ext[0].append(inserted_node)    
+    #ast.show()
+    #new_recurse_nodes(0, ast)
+    recurse_by_function(ast)
