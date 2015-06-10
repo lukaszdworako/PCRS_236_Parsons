@@ -14,7 +14,7 @@
 # License: BSD
 #-------------------------------------------------------------------------------
 import sys
-
+import pdb
 # This is not required if you've installed pycparser into
 # your site-packages/ with setup.py
 #
@@ -54,14 +54,23 @@ def new_recurse_nodes(index,parent):
 
 #Splits up the AST by function, continues to recurse if a node has a compound node
 def recurse_by_function(ast):
-    amt_of_functions = len(ast.ext)
-    for i in range(0, amt_of_functions):
-        recurse_by_compound(ast.ext[i])
+    i = 0
+    while i < len(ast.ext):
+        recurse_by_compound(ast.ext, i)
+        i+= 1
 
-
-def recurse_by_compound(ast_function):
+def recurse_by_compound(parent, index):
     #Note:ast.ext[0] gets the first function, .body gets the stuff under Compound, and block_items gets each group of elements under Compound
+    #pdb.set_trace()
+
+    #If node is a print statement we added, ignore it & return
+    if isinstance(parent[index], c_ast.FuncCall) and isinstance(parent[index].args.exprs[0], c_ast.Constant) and (parent[index].args.exprs[0].value =='"%dhello world"'):
+        return
+
+    ast_function = parent[index]
     print(ast_function)
+    print_node = create_printf_node()
+    parent.insert(index+1, print_node)
     try:
         compound_list = ast_function.body.block_items
     except AttributeError:
@@ -75,10 +84,11 @@ def recurse_by_compound(ast_function):
                     compound_list = ast_function.iffalse.block_items
                 except:
                     return
-    total_len = len(compound_list)
-    for i in range(0, total_len):
-        recurse_by_compound(compound_list[i])
-
+    #total_len = len(compound_list)
+    i = 0
+    while i < len(compound_list):
+        recurse_by_compound(compound_list, i)
+        i += 1
 
 
 if __name__ == "__main__":
@@ -98,3 +108,5 @@ if __name__ == "__main__":
     #ast.show()
     #new_recurse_nodes(0, ast)
     recurse_by_function(ast)
+    print("-----------------------")
+    ast.show()
