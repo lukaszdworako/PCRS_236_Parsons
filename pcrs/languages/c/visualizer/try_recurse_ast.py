@@ -46,16 +46,85 @@ def old_create_printf_node():
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
-def create_printf_node(parent, index, func_name, onEntry):
+def create_printf_node(parent, index, func_name, onEntry, changedVar, new):
+
+    primitive_types = \
+    {'char':'%c',
+     'signed char':'%c',
+     'unsigned char':'%c',
+     'short':'%d',
+     'short int': '%d',
+     'signed short': '%d',
+     'signed short int': '%c',
+     'unsigned short': '%u',
+     'unsigned short int': '%u',
+     'int': '%d',
+     'signed int': '%d',
+     'unsigned': '%u',
+     'unsigned int': '%u',
+     'long': '%ld',
+     'long int': '%ld',
+     'signed long': '%ld',
+     'signed long int': '%ld',
+     'unsigned long': '%lu',
+     'unsigned long int': '%lu',
+     'long long': '%lld',
+     'long long int': '%lld',
+     'signed long long': '%lld',
+     'signed long long int': '%lld',
+     'unsigned long long': '%llu',
+     'unsigned long long int': '%llu',
+     'float': '%f',
+     'double': '%f',
+     'long double': '%lf',
+     'void*': '%p',
+     'void': 'no'}
+
     add_id = c_ast.ID('printf')
+    add_id_addr = None
+    add_id_val = None
+    add_id_size = None
     line_no = (str)(item_delimiter) +"line:"+ (str)(parent[index].coord.line) + (str)(item_delimiter)
     function = (str)(item_delimiter) +"function:"+ (str)(func_name) + (str)(item_delimiter)
     on_entry = ""
     if onEntry:
         on_entry = (str)(item_delimiter) + "on_entry_point" + (str)(item_delimiter)
-    str_to_add = (str)(print_wrapper) + line_no + function + on_entry + (str)(print_wrapper) 
-    add_const = c_ast.Constant('string', str_to_add)
-    add_exprList = c_ast.ExprList([add_const])
+
+    var_info = ""
+    #This block only gets executed if there's changed vars in the node
+    if changedVar:
+
+        type_of_var = parent[index].type.type.names[0]
+
+        var_name = (str)(item_delimiter) +"var_name:"+ (str)(parent[index].name) + (str)(item_delimiter)
+        var_addr = (str)(item_delimiter) +"addr:%p" + (str)(item_delimiter)
+        var_type = (str)(item_delimiter) +"type:"+ (str)(type_of_var) + (str)(item_delimiter)
+        var_new = (str)(item_delimiter) +"new:"+ (str)(new) + (str)(item_delimiter)
+        var_size = (str)(item_delimiter) +"max_size:%zu" + (str)(item_delimiter)
+
+        #Do checking to see if the variable got initialized to a value or not
+        is_uninit = False
+        if new:
+            #pdb.set_trace()
+            if parent[index].init == None:
+                is_uninit = True
+
+        var_uninitialized = (str)(item_delimiter) +"uninitialized:" + (str)(is_uninit) + (str)(item_delimiter)
+
+        var_val = (str)(item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(item_delimiter)
+
+        var_info = var_name + var_addr +var_type + var_new + var_val + var_uninitialized + var_size
+
+        add_id_addr = c_ast.ID('&' + parent[index].name)
+        add_id_val = c_ast.ID(parent[index].name)
+        add_id_size = c_ast.ID('sizeof(' + parent[index].name+')')
+
+    str_to_add = (str)(print_wrapper) + line_no + function + on_entry + var_info +(str)(print_wrapper) 
+    add_const = c_ast.Constant('string', '"'+str_to_add+'"')
+    if add_id_addr != None:
+        add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_size])
+    else:
+        add_exprList = c_ast.ExprList([add_const])
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
@@ -144,11 +213,11 @@ def handle_nodetypes(parent, index, func_name):
 
     #Case for variable declaration
     if isinstance(parent[index], c_ast.Decl):
-        print_changed_vars(parent, index, True)
+        print_changed_vars(parent, index, func_name, True)
     
     #Case for variable assignment, if variable already exists
     elif isinstance(parent[index], c_ast.Assignment) or isinstance(parent[index], c_ast.UnaryOp):
-        print_changed_vars(parent, index, False)
+        print_changed_vars(parent, index, func_name, False)
     
     #Cases for std out and error - FIX THIS, NOT WORKING!!
     elif isinstance(parent[index], c_ast.FuncCall):
@@ -184,12 +253,12 @@ def handle_return(parent, index):
     print_node = old_create_printf_node()
     parent.insert(index+1, print_node)    
 
-def print_changed_vars(parent, index, new):
+def print_changed_vars(parent, index, func_name, new):
     #If new, this was a Declaration. Handle diff. types of declarations differently
     if new:
         #Type declaration
         if isinstance(get_decl_type(parent[index]), c_ast.TypeDecl):
-            print_node = old_create_printf_node()
+            print_node = create_printf_node(parent, index, func_name, False, True, True)
             parent.insert(index+1, print_node)
 
         #Pointer declaration
@@ -218,7 +287,7 @@ def print_stderr(parent, index):
     parent.insert(index+1, print_node)
 
 def print_func_entry(parent, index, func_name):
-    print_node = create_printf_node(parent, index, func_name, True)
+    print_node = create_printf_node(parent, index, func_name, True, False, False)
     parent.insert(index, print_node)
 
 if __name__ == "__main__":
