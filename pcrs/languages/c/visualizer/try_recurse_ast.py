@@ -15,6 +15,8 @@
 #-------------------------------------------------------------------------------
 import sys
 import pdb
+import uuid
+
 # This is not required if you've installed pycparser into
 # your site-packages/ with setup.py
 #
@@ -22,14 +24,40 @@ sys.path.extend(['.', '..'])
 
 from pycparser import parse_file, c_ast, c_generator
 
+#Global hash variables, these are what we'll use to denote different parts of our added print statements
+
+#print_wrapper will hold the pattern we'll use to identify where our print statements begin and end
+print_wrapper = uuid.uuid4().hex
+
+#item_delimiter will hold the pattern we'll use to identify where different items in a single print statement begin and end
+item_delimiter = uuid.uuid4().hex
+
+#stdout_wrapper will hold the pattern we'll print right before and after each stdout line
+stdout_wrapper = uuid.uuid4().hex
+
+#stderr_wrapper will hold the pattern we'll print right before and after each stderr line
+stderr_wrapper = uuid.uuid4().hex
+
 #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
-def create_printf_node():
+def old_create_printf_node():
     add_id = c_ast.ID('printf')
     add_const = c_ast.Constant('string', '"12345"')
     add_exprList = c_ast.ExprList([add_const])
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
+def create_printf_node(parent, index, func_name, onEntry):
+    add_id = c_ast.ID('printf')
+    line_no = (str)(item_delimiter) +"line:"+ (str)(parent[index].coord.line) + (str)(item_delimiter)
+    function = (str)(item_delimiter) +"function:"+ (str)(func_name) + (str)(item_delimiter)
+    on_entry = ""
+    if onEntry:
+        on_entry = (str)(item_delimiter) + "on_entry_point" + (str)(item_delimiter)
+    str_to_add = (str)(print_wrapper) + line_no + function + on_entry + (str)(print_wrapper) 
+    add_const = c_ast.Constant('string', str_to_add)
+    add_exprList = c_ast.ExprList([add_const])
+    new_node = c_ast.FuncCall(add_id, add_exprList)
+    return new_node
 
 def recurse_nodes(parent):
     print(parent)
@@ -61,21 +89,23 @@ def check_if_added_printf(node):
 def recurse_by_function(ast):
     i = 0
     while i < len(ast.ext):
-        recurse_by_compound(ast.ext, i)
+        func_name = None
+        if isinstance(ast.ext[i], c_ast.FuncDef):
+            func_name = ast.ext[i].decl.name
+        recurse_by_compound(ast.ext, i, func_name)
         i+= 1
 
-def recurse_by_compound(parent, index):
-    #Note:ast.ext[0] gets the first function, .body gets the stuff under Compound, and block_items gets each group of elements under Compound
+def recurse_by_compound(parent, index, func_name):
     #pdb.set_trace()
 
-    #If node is a print statement we added, ignore it & return
+    #If node is a node we added, ignore it & return TODO: add checking for hidden lines here too, don't include if hidden
     if parent[index].coord == None:
         return
 
     ast_function = parent[index]
     print(ast_function)
     print(ast_function.coord)
-    handle_nodetypes(parent, index)
+    handle_nodetypes(parent, index, func_name)
     try:
         compound_list = ast_function.body.block_items
     except AttributeError:
@@ -92,11 +122,11 @@ def recurse_by_compound(parent, index):
     #total_len = len(compound_list)
     i = 0
     while i < len(compound_list):
-        recurse_by_compound(compound_list, i)
+        recurse_by_compound(compound_list, i, func_name)
         i += 1
 
 #Takes a node, checks its type, and calls the appropriate function on it to add a print statement
-def handle_nodetypes(parent, index):
+def handle_nodetypes(parent, index, func_name):
     
     #pdb.set_trace()    
 
@@ -122,59 +152,74 @@ def handle_nodetypes(parent, index):
     
     #Cases for std out and error - FIX THIS, NOT WORKING!!
     elif isinstance(parent[index], c_ast.FuncCall):
-        if parent[index].name.name == "printf":
+        if get_funccall_funcname(parent[index]) == "printf":
             print_stdout(parent, index)
-        elif parent[index].name.name == "fprintf":
+        elif get_funccall_funcname(parent[index]) == "fprintf":
+            #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore 
             print_stderr(parent, index)
     elif isinstance(parent[index], c_ast.Return):
         if index == 0:
             handle_return(parent, index-1)
 
+    #Case for start of a function: check if it has a body and insert a print statement at the beginning
+    #of its body if so - otherwise, it's just a prototype, ignore
+    elif isinstance(parent[index], c_ast.FuncDef):
+        try:
+            print_func_entry(parent[index].body.block_items, 0, func_name)
+        except:
+            pass
+
+def get_funccall_funcname(node):
+    return node.name.name
+
+#Gets the type of Declaration of a Decl node (ie. Array, Type, Pointer, etc) 
+def get_decl_type(node):
+    return node.children()[0][1]
 
 #NOTE: one way I can check if a FuncCall is calling another f'n in the program is to use the node type finder as provided by pycparser to find all FuncDecl
 #nodes prior to recursing the tree and add the f'n names to a list, and then if I come across a FuncCall, check if it's calling a name from the list. 
 #Will do this later
 
-#NOTE x2: I will have to figure out how we can distinguish nodes we create vs. nodes we don't - checking the val of print statements, which
-#I'm currently doing, is not enough, since to check the values of arrays and stuff we'll have to create some new vars and for loops.
-        #IDEA: instead, ignore the node if the coord value is None
-
 def handle_return(parent, index):
-    print_node = create_printf_node()
+    print_node = old_create_printf_node()
     parent.insert(index+1, print_node)    
 
 def print_changed_vars(parent, index, new):
     #If new, this was a Declaration. Handle diff. types of declarations differently
     if new:
         #Type declaration
-        if isinstance(parent[index].children()[0][1], c_ast.TypeDecl):
-            print_node = create_printf_node()
+        if isinstance(get_decl_type(parent[index]), c_ast.TypeDecl):
+            print_node = old_create_printf_node()
             parent.insert(index+1, print_node)
 
         #Pointer declaration
-        elif isinstance(parent[index].children()[0][1], c_ast.PtrDecl):
-            print_node = create_printf_node()
+        elif isinstance(get_decl_type(parent[index]), c_ast.PtrDecl):
+            print_node = old_create_printf_node()
             parent.insert(index+1, print_node)
 
         #Array declaration
-        elif isinstance(parent[index].children()[0][1], c_ast.ArrayDecl):
-            print_node = create_printf_node()
+        elif isinstance(get_decl_type(parent[index]), c_ast.ArrayDecl):
+            print_node = old_create_printf_node()
             parent.insert(index+1, print_node)
     
     #Otherwise it was an assignment of an already declared var
     else:
-        print_node = create_printf_node()
+        print_node = old_create_printf_node()
         parent.insert(index+1, print_node)
 
 def print_stdout(parent, index):
     #Implement
-    print_node = create_printf_node()
+    print_node = old_create_printf_node()
     parent.insert(index+1, print_node)
 
-def print_sederr(parent, index):
+def print_stderr(parent, index):
     #Implement
-    print_node = create_printf_node()
+    print_node = old_create_printf_node()
     parent.insert(index+1, print_node)
+
+def print_func_entry(parent, index, func_name):
+    print_node = create_printf_node(parent, index, func_name, True)
+    parent.insert(index, print_node)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -191,7 +236,7 @@ if __name__ == "__main__":
     #inserted_node = create_printf_node()
     #ast.ext[0].append(inserted_node)    
     #ast.show()
-    #new_recurse_nodes(0, ast)
+    #new_recurse_nodes(0, ast)  
     recurse_by_function(ast)
     print("-----------------------")
     ast.show()
