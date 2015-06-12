@@ -27,7 +27,8 @@ class CustomAbstractBaseUser(models.Model):
     """
     This is Django AbstractBaseUser class updated to function without the pasword.
     """
-    # password = models.CharField(_('password'), max_length=128, blank=True, null=True)
+    if settings.AUTH_TYPE == 'pass':
+        password = models.CharField(_('password'), max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(_('last login'), default=timezone.now)
 
     is_active = True
@@ -61,25 +62,13 @@ class CustomAbstractBaseUser(models.Model):
         """
         return True
 
-    # def set_password(self, raw_password):
-    #        self.password = make_password(raw_password)
-    #
-    #    def check_password(self, raw_password):
-    #        """
-    #        Returns a boolean of whether the raw_password was correct. Handles
-    #        hashing formats behind the scenes.
-    #        """
-    #        def setter(raw_password):
-    #            self.set_password(raw_password)
-    #            self.save(update_fields=["password"])
-    #        return check_password(raw_password, self.password, setter)
-    #
-    #    def set_unusable_password(self):
-    #        # Sets a value that will never be a valid hash
-    #        self.password = make_password(None)
-    #
-    #    def has_usable_password(self):
-    #        return is_password_usable(self.password)
+    if settings.AUTH_TYPE == 'pass':
+        def check_password(self, raw_password):
+            """
+            Returns a boolean of whether the raw_password was correct. Handles
+            hashing formats behind the scenes.
+            """
+            return raw_password == self.password
 
     def get_full_name(self):
         raise NotImplementedError()
@@ -95,7 +84,6 @@ class PCRSUserManager(BaseUserManager):
         section id and password.
         """
         user = self.model(username=username, is_instructor=is_instructor, section_id=section_id, is_admin=is_admin)
-        # user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -104,7 +92,6 @@ class PCRSUserManager(BaseUserManager):
         Creates and saves a superuser with the given username, instructor status,
         section id and password.
         """
-        # user = self.create_user(username=username, is_instructor=is_instructor, password=password, section_id=section_id, is_admin=True, is_staff=True)
         section_id = section_id or MASTER_SECTION_ID
         user = self.create_user(username=username, is_instructor=is_instructor, section_id=section_id, is_admin=True,
                                 is_staff=True)
@@ -112,19 +99,6 @@ class PCRSUserManager(BaseUserManager):
         user.is_staff = True
         user.save(using=self._db)
         return user
-
-
-        # create user:
-        # if user is admin or is instructor:
-        # use their password
-        # else
-        # use password 1
-
-        # save
-        # take password
-        # if password has changed:
-        # hash password
-        # save user
 
     def get_students(self, active_only=False):
         """
