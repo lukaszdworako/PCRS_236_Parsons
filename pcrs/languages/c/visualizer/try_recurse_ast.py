@@ -241,6 +241,7 @@ def get_funccall_funcname(node):
 def get_decl_type(node):
     return node.children()[0][1]
 
+#Set the variables to be used in the print statements for a declaration node
 def set_decl_vars(node):
     global type_of_var
     global var_name_val
@@ -254,6 +255,21 @@ def set_decl_vars(node):
         is_uninit = True
     else:
         is_uninit = False
+
+#Set the variables to be used in the print statements for an assignment node
+def set_assign_vars(node):
+    global type_of_var
+    global var_name_val
+    global var_new_val
+    global is_uninit
+
+    #pdb.set_trace()
+
+    type_of_var = node.rvalue.type 
+    var_name_val = node.lvalue.name
+    var_new_val = False
+    is_uninit = False
+
 
 #NOTE: one way I can check if a FuncCall is calling another f'n in the program is to use the node type finder as provided by pycparser to find all FuncDecl
 #nodes prior to recursing the tree and add the f'n names to a list, and then if I come across a FuncCall, check if it's calling a name from the list. 
@@ -284,9 +300,12 @@ def print_changed_vars(parent, index, func_name, new):
     
     #Otherwise it was an assignment of an already declared var
     else:
-        print_node = old_create_printf_node()
-        #print_node = create_printf_node(parent, index, func_name, False, True, False)
-        parent.insert(index+1, print_node)
+        #Case for regular (non-pointer or anything fancy) assignment 
+        if isinstance(parent[index].lvalue, c_ast.ID):
+            set_assign_vars(parent[index])
+            #print_node = old_create_printf_node()
+            print_node = create_printf_node(parent, index, func_name, False, True)
+            parent.insert(index+1, print_node)
 
 def print_stdout(parent, index):
     #Implement
