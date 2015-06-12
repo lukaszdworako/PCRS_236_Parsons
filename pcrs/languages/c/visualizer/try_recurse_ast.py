@@ -46,7 +46,7 @@ def old_create_printf_node():
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
-def create_printf_node(parent, index, func_name, onEntry, changedVar, new):
+def create_printf_node(parent, index, func_name, onEntry, changedVar):
 
     primitive_types = \
     {'char':'%c',
@@ -93,36 +93,32 @@ def create_printf_node(parent, index, func_name, onEntry, changedVar, new):
     var_info = ""
     #This block only gets executed if there's changed vars in the node
     if changedVar:
+        #pdb.set_trace()
 
-        type_of_var = parent[index].type.type.names[0]
-
-        var_name = (str)(item_delimiter) +"var_name:"+ (str)(parent[index].name) + (str)(item_delimiter)
+        var_name = (str)(item_delimiter) +"var_name:"+ (str)(var_name_val) + (str)(item_delimiter)
         var_addr = (str)(item_delimiter) +"addr:%p" + (str)(item_delimiter)
         var_type = (str)(item_delimiter) +"type:"+ (str)(type_of_var) + (str)(item_delimiter)
-        var_new = (str)(item_delimiter) +"new:"+ (str)(new) + (str)(item_delimiter)
+        var_new = (str)(item_delimiter) +"new:"+ (str)(var_new_val) + (str)(item_delimiter)
         var_size = (str)(item_delimiter) +"max_size:%zu" + (str)(item_delimiter)
-
-        #Do checking to see if the variable got initialized to a value or not
-        is_uninit = False
-        if new:
-            #pdb.set_trace()
-            if parent[index].init == None:
-                is_uninit = True
 
         var_uninitialized = (str)(item_delimiter) +"uninitialized:" + (str)(is_uninit) + (str)(item_delimiter)
 
         var_val = (str)(item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(item_delimiter)
 
-        var_info = var_name + var_addr +var_type + var_new + var_val + var_uninitialized + var_size
+        #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
+        var_hex = (str)(item_delimiter) +"hex:%X" + (str)(item_delimiter)
 
-        add_id_addr = c_ast.ID('&' + parent[index].name)
-        add_id_val = c_ast.ID(parent[index].name)
-        add_id_size = c_ast.ID('sizeof(' + parent[index].name+')')
+        var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_uninitialized + var_size
+
+        add_id_addr = c_ast.ID('&' + var_name_val)
+        add_id_val = c_ast.ID(var_name_val)
+        add_id_hex = c_ast.ID(var_name_val)
+        add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
 
     str_to_add = (str)(print_wrapper) + line_no + function + on_entry + var_info +(str)(print_wrapper) 
     add_const = c_ast.Constant('string', '"'+str_to_add+'"')
     if add_id_addr != None:
-        add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_size])
+        add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
     else:
         add_exprList = c_ast.ExprList([add_const])
     new_node = c_ast.FuncCall(add_id, add_exprList)
@@ -245,6 +241,20 @@ def get_funccall_funcname(node):
 def get_decl_type(node):
     return node.children()[0][1]
 
+def set_decl_vars(node):
+    global type_of_var
+    global var_name_val
+    global var_new_val
+    global is_uninit
+
+    type_of_var = node.type.type.names[0] 
+    var_name_val = node.name
+    var_new_val = True
+    if node.init == None:
+        is_uninit = True
+    else:
+        is_uninit = False
+
 #NOTE: one way I can check if a FuncCall is calling another f'n in the program is to use the node type finder as provided by pycparser to find all FuncDecl
 #nodes prior to recursing the tree and add the f'n names to a list, and then if I come across a FuncCall, check if it's calling a name from the list. 
 #Will do this later
@@ -258,7 +268,8 @@ def print_changed_vars(parent, index, func_name, new):
     if new:
         #Type declaration
         if isinstance(get_decl_type(parent[index]), c_ast.TypeDecl):
-            print_node = create_printf_node(parent, index, func_name, False, True, True)
+            set_decl_vars(parent[index])
+            print_node = create_printf_node(parent, index, func_name, False, True)
             parent.insert(index+1, print_node)
 
         #Pointer declaration
@@ -274,6 +285,7 @@ def print_changed_vars(parent, index, func_name, new):
     #Otherwise it was an assignment of an already declared var
     else:
         print_node = old_create_printf_node()
+        #print_node = create_printf_node(parent, index, func_name, False, True, False)
         parent.insert(index+1, print_node)
 
 def print_stdout(parent, index):
