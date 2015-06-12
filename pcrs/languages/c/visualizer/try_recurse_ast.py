@@ -38,6 +38,12 @@ stdout_wrapper = uuid.uuid4().hex
 #stderr_wrapper will hold the pattern we'll print right before and after each stderr line
 stderr_wrapper = uuid.uuid4().hex
 
+#var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
+var_type_dict = {}
+
+#amt_after keeps track of the amount of print nodes we just added after the current node, used for returns
+amt_after = 0
+
 #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
 def old_create_printf_node():
     add_id = c_ast.ID('printf')
@@ -46,7 +52,7 @@ def old_create_printf_node():
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
-def create_printf_node(parent, index, func_name, onEntry, changedVar):
+def create_printf_node(parent, index, func_name, onEntry, changedVar, onReturn):
 
     primitive_types = \
     {'char':'%c',
@@ -84,11 +90,25 @@ def create_printf_node(parent, index, func_name, onEntry, changedVar):
     add_id_addr = None
     add_id_val = None
     add_id_size = None
+    add_return_val = None
     line_no = (str)(item_delimiter) +"line:"+ (str)(parent[index].coord.line) + (str)(item_delimiter)
     function = (str)(item_delimiter) +"function:"+ (str)(func_name) + (str)(item_delimiter)
     on_entry = ""
     if onEntry:
         on_entry = (str)(item_delimiter) + "on_entry_point" + (str)(item_delimiter)
+
+    on_return = ""
+    if onReturn:
+        #pdb.set_trace()
+        #Case where we're returning a variable value
+        if isinstance(parent[index].expr, c_ast.ID):
+            return_var_name = (str)(parent[index].expr.name)
+            return_type = (str)(var_type_dict.get(return_var_name))
+            on_return = (str)(item_delimiter) + "return:" + primitive_types.get(return_type) + (str)(item_delimiter)
+            add_return_val = c_ast.ID(return_var_name)
+        #Otherwise we're returning a constant
+        else:
+            on_return = (str)(item_delimiter) + "return:" + (str)(parent[index].expr.value) + (str)(item_delimiter)
 
     var_info = ""
     #This block only gets executed if there's changed vars in the node
@@ -115,12 +135,18 @@ def create_printf_node(parent, index, func_name, onEntry, changedVar):
         add_id_hex = c_ast.ID(var_name_val)
         add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
 
-    str_to_add = (str)(print_wrapper) + line_no + function + on_entry + var_info +(str)(print_wrapper) 
+        var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
+        var_type_dict.update(var_dict_add)
+
+    str_to_add = (str)(print_wrapper) + line_no + function + on_entry + var_info + on_return + (str)(print_wrapper) 
     add_const = c_ast.Constant('string', '"'+str_to_add+'"')
     if add_id_addr != None:
         add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
     else:
-        add_exprList = c_ast.ExprList([add_const])
+        if add_return_val != None:
+            add_exprList = c_ast.ExprList([add_const, add_return_val])
+        else:
+            add_exprList = c_ast.ExprList([add_const])
     new_node = c_ast.FuncCall(add_id, add_exprList)
     return new_node
 
@@ -192,20 +218,13 @@ def recurse_by_compound(parent, index, func_name):
 
 #Takes a node, checks its type, and calls the appropriate function on it to add a print statement
 def handle_nodetypes(parent, index, func_name):
-    
-    #pdb.set_trace()    
+    global amt_after
+    #reset amt_after
+    amt_after = 0
 
-    #If there's a node after this one, check if it's a return statement: if so, add a print statement right before it
-    #This handles every return except for if there's a function with no code prior to its return
-    try:
-        if isinstance(parent[index+1], c_ast.Return):
-            handle_return(parent, index)
-    except:
-        pass
+    #pdb.set_trace()   
 
-
-
-    #Now check for the current node's type and handle:
+    #Check for the current node's type and handle:
 
     #Case for variable declaration
     if isinstance(parent[index], c_ast.Decl):
@@ -224,7 +243,7 @@ def handle_nodetypes(parent, index, func_name):
             print_stderr(parent, index)
     elif isinstance(parent[index], c_ast.Return):
         if index == 0:
-            handle_return(parent, index-1)
+            handle_return(parent, index-1, func_name)
 
     #Case for start of a function: check if it has a body and insert a print statement at the beginning
     #of its body if so - otherwise, it's just a prototype, ignore
@@ -233,6 +252,17 @@ def handle_nodetypes(parent, index, func_name):
             print_func_entry(parent[index].body.block_items, 0, func_name)
         except:
             pass
+
+
+    print("AMT AFTER IS "+(str)(amt_after))
+    #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
+    try:
+        if isinstance(parent[index+amt_after+1], c_ast.Return):
+            print("-------IN THIS THINGY HERE")
+            handle_return(parent, index, func_name)
+    except:
+        pass
+
 
 def get_funccall_funcname(node):
     return node.name.name
@@ -275,18 +305,23 @@ def set_assign_vars(node):
 #nodes prior to recursing the tree and add the f'n names to a list, and then if I come across a FuncCall, check if it's calling a name from the list. 
 #Will do this later
 
-def handle_return(parent, index):
-    print_node = old_create_printf_node()
-    parent.insert(index+1, print_node)    
+def handle_return(parent, index, func_name):
+    #print_node = old_create_printf_node()
+    #pdb.set_trace()
+    print("IN HANDLE RETURN")
+    print_node = create_printf_node(parent, index+amt_after+1, func_name, False, False, True)
+    parent.insert(index+amt_after+1, print_node)    
 
 def print_changed_vars(parent, index, func_name, new):
+    global amt_after
     #If new, this was a Declaration. Handle diff. types of declarations differently
     if new:
         #Type declaration
         if isinstance(get_decl_type(parent[index]), c_ast.TypeDecl):
             set_decl_vars(parent[index])
-            print_node = create_printf_node(parent, index, func_name, False, True)
+            print_node = create_printf_node(parent, index, func_name, False, True, False)
             parent.insert(index+1, print_node)
+            amt_after += 1
 
         #Pointer declaration
         elif isinstance(get_decl_type(parent[index]), c_ast.PtrDecl):
@@ -304,8 +339,9 @@ def print_changed_vars(parent, index, func_name, new):
         if isinstance(parent[index].lvalue, c_ast.ID):
             set_assign_vars(parent[index])
             #print_node = old_create_printf_node()
-            print_node = create_printf_node(parent, index, func_name, False, True)
+            print_node = create_printf_node(parent, index, func_name, False, True, False)
             parent.insert(index+1, print_node)
+            amt_after += 1
 
 def print_stdout(parent, index):
     #Implement
@@ -318,8 +354,10 @@ def print_stderr(parent, index):
     parent.insert(index+1, print_node)
 
 def print_func_entry(parent, index, func_name):
+    global amt_after
     print_node = create_printf_node(parent, index, func_name, True, False, False)
     parent.insert(index, print_node)
+    amt_after += 1
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
