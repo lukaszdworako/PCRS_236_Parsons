@@ -24,6 +24,9 @@ sys.path.extend(['.', '..'])
 
 from pycparser import parse_file, c_ast, c_generator
 
+#func_list keeps track of all the function declaractions in our program
+func_list = []
+
 #Global hash variables, these are what we'll use to denote different parts of our added print statements
 
 #print_wrapper will hold the pattern we'll use to identify where our print statements begin and end
@@ -176,6 +179,16 @@ def check_if_added_printf(node):
     else:
         return False
 
+#Finds all function declarations in the AST and puts them into our function list
+def find_all_function_decl(ast):
+    i = 0
+    while i < len(ast.ext):
+        if isinstance(ast.ext[i], c_ast.FuncDef):
+            func_list.append((str)(ast.ext[i].decl.name))
+        i+=1
+    print(func_list)
+
+
 #Splits up the AST by function, continues to recurse if a node has a compound node
 def recurse_by_function(ast):
     i = 0
@@ -253,12 +266,9 @@ def handle_nodetypes(parent, index, func_name):
         except:
             pass
 
-
-    print("AMT AFTER IS "+(str)(amt_after))
     #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
     try:
         if isinstance(parent[index+amt_after+1], c_ast.Return):
-            print("-------IN THIS THINGY HERE")
             handle_return(parent, index, func_name)
     except:
         pass
@@ -301,9 +311,8 @@ def set_assign_vars(node):
     is_uninit = False
 
 
-#NOTE: one way I can check if a FuncCall is calling another f'n in the program is to use the node type finder as provided by pycparser to find all FuncDecl
-#nodes prior to recursing the tree and add the f'n names to a list, and then if I come across a FuncCall, check if it's calling a name from the list. 
-#Will do this later
+#NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
+#I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
 
 def handle_return(parent, index, func_name):
     #print_node = old_create_printf_node()
@@ -336,7 +345,8 @@ def print_changed_vars(parent, index, func_name, new):
     #Otherwise it was an assignment of an already declared var
     else:
         #Case for regular (non-pointer or anything fancy) assignment 
-        if isinstance(parent[index].lvalue, c_ast.ID):
+        #TODO: ensure this works with assignment to a diff. variable, opposed to just constant
+        if isinstance(parent[index].lvalue, c_ast.ID) and (not(isinstance(parent[index].rvalue, c_ast.FuncCall))):
             set_assign_vars(parent[index])
             #print_node = old_create_printf_node()
             print_node = create_printf_node(parent, index, func_name, False, True, False)
@@ -374,7 +384,8 @@ if __name__ == "__main__":
     #inserted_node = create_printf_node()
     #ast.ext[0].append(inserted_node)    
     #ast.show()
-    #new_recurse_nodes(0, ast)  
+    #new_recurse_nodes(0, ast) 
+    find_all_function_decl(ast)
     recurse_by_function(ast)
     print("-----------------------")
     ast.show()
