@@ -118,8 +118,9 @@ class CSpecifics():
             ret["test_val"] = execution_output
             ret["passed_test"] = False if expected_output_tmp != execution_output_tmp else True
 
-        except CompilationError:
+        except CompilationError as e:
             ret["passed_test"] = False
+            ret["exception_type"] = 'error'
             ret["test_val"] = ret["exception"]
 
         except SyntaxError as e:
