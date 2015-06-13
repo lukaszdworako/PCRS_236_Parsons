@@ -23,26 +23,12 @@ function bindDebugButton(buttonId) {
     $('#'+ buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId, "old")}, 250
+            prepareVisualizer("debug", testcaseCode, buttonId)}, 250
         );
     });
 }
 
-function bindNewDebugButton(buttonId) {
-    /**
-    * For coding problems bing a given New "Debug" button to start code visualizer
-    */
-
-    $('#'+"new"+buttonId).bind('click', function() {
-        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
-        console.log("test case code is "+ testcaseCode);
-        setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId, "new")}, 250
-        );
-    });
-}
-
-function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
+function prepareVisualizer(option, testcaseCode, buttonId) {
     /**
      * Prepare Coding problem visualizer
      */
@@ -50,10 +36,13 @@ function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
     var key = buttonId.split("_")[0];
     var problemId = key.split("-")[1];
     var newCode = myCodeMirrors[key].getValue() + "\n";
+    var newOrOld = "old";
 
     if (language == 'python') {
         newCode += (option == "viz") ? myCodeMirrors[key].getValue() : testcaseCode;
     } else if (language == 'c') {
+        console.log("test case code is "+ testcaseCode);
+        newOrOld = "new";
         newCode = addHashkey(key);
     }
     getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld);
@@ -66,7 +55,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
      */
 
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
-    executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);
+    executeGenericVisualizer("gen_execution_trace_params", postParams);
 
     console.log(newCode);
 
@@ -74,7 +63,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
+                executeGenericVisualizer("create_visualizer", data, newCode);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -680,10 +669,6 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                              ' >Trace</button></td>');
-                    newRow.append('<td class="debug"><button id="new' +
-                                   div_id +"_"+i + '" class="debugBtn" type="button"' +
-                                  ' >New Trace</button></td>');
-                    bindNewDebugButton(div_id+"_"+i);
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{
