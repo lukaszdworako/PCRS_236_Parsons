@@ -272,7 +272,7 @@ function handleCMessages(div_id, testcases){
      */
     // Handle C warnings and exceptions
     $('#'+div_id).find('#c_warning').remove();
-    $('#'+div_id).find('#c_error').remove();
+    //$('#'+div_id).find('#c_error').remove();
 
     // Find testcase with warning/error
     var bad_testcase = null;
@@ -290,6 +290,7 @@ function handleCMessages(div_id, testcases){
         }
         else if(bad_testcase.exception_type == "error"){
             class_type = 'alert alert-danger';
+            error_msg = bad_testcase.exception;
         }
         $('#'+div_id)
             .find('#alert')
@@ -398,16 +399,22 @@ function getTestcases(div_id) {
                 else if (language == 'c'){
                     // Handle C error and warning messages
                     handleCMessages(div_id, testcases);
-                    if (!isEditor){
-                        prepareGradingTable(div_id,
-                                            data['best'],
-                                            data['past_dead_line'],
-                                            data['sub_pk'],
-                                            max_score);
+                    if (error_msg == null){
+                        if (!isEditor){
+                            prepareGradingTable(div_id,
+                                                data['best'],
+                                                data['past_dead_line'],
+                                                data['sub_pk'],
+                                                max_score);
+                        }
+                        //If it's the editor, start calling virtualizer functions now
+                        else{
+                            getVisualizerComponents(clean_code, "", 9999999);
+                        }
                     }
-                    //If it's the editor, start calling virtualizer functions now
                     else{
-                        getVisualizerComponents(clean_code, "", 9999999);
+                        $("#"+div_id).find("#grade-code").hide();
+                        error_msg = null;
                     }
                 }
                 else if (language=='sql'){
