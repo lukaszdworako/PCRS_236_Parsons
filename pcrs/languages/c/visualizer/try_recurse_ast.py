@@ -47,6 +47,10 @@ var_type_dict = {}
 #amt_after keeps track of the amount of print nodes we just added after the current node, used for returns
 amt_after = 0
 
+#cur_par_index keeps track of the index we're at for the current parent. Important to be global in the case where we
+#add nodes in front of our current node, we want to be able to increase this by more than 1
+cur_par_index = 0
+
 #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
 def old_create_printf_node():
     add_id = c_ast.ID('printf')
@@ -224,10 +228,11 @@ def recurse_by_compound(parent, index, func_name):
                 except:
                     return
     #total_len = len(compound_list)
-    i = 0
-    while i < len(compound_list):
-        recurse_by_compound(compound_list, i, func_name)
-        i += 1
+    global cur_par_index
+    cur_par_index = 0
+    while cur_par_index < len(compound_list):
+        recurse_by_compound(compound_list, cur_par_index, func_name)
+        cur_par_index += 1
 
 #Takes a node, checks its type, and calls the appropriate function on it to add a print statement
 def handle_nodetypes(parent, index, func_name):
@@ -254,6 +259,15 @@ def handle_nodetypes(parent, index, func_name):
         elif get_funccall_funcname(parent[index]) == "fprintf":
             #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore 
             print_stderr(parent, index)
+
+        #Check if the function we're calling is declared in our program: if so, we want to add print statements
+        #both before and after it. Otherwise, only add a print statement after
+        elif get_funccall_funcname(parent[index]) in func_list:
+            print_funccall_in_prog(parent, index, func_name)
+        else:
+            print_funccall_not_prog(parent, index, func_name)
+
+    #Case for return
     elif isinstance(parent[index], c_ast.Return):
         if index == 0:
             handle_return(parent, index-1, func_name)
@@ -346,7 +360,8 @@ def print_changed_vars(parent, index, func_name, new):
     else:
         #Case for regular (non-pointer or anything fancy) assignment 
         #TODO: ensure this works with assignment to a diff. variable, opposed to just constant
-        if isinstance(parent[index].lvalue, c_ast.ID) and (not(isinstance(parent[index].rvalue, c_ast.FuncCall))):
+        #Also need to get this working w/ vars assigned to function calls
+        if isinstance(parent[index].lvalue, c_ast.ID) and isinstance(parent[index].rvalue, c_ast.Constant):
             set_assign_vars(parent[index])
             #print_node = old_create_printf_node()
             print_node = create_printf_node(parent, index, func_name, False, True, False)
@@ -361,6 +376,21 @@ def print_stdout(parent, index):
 def print_stderr(parent, index):
     #Implement
     print_node = old_create_printf_node()
+    parent.insert(index+1, print_node)
+
+#If calling a function declared in the program, add print statements before and after the function
+#call, so that we can highlight this line twice, once when calling, and once when returning back
+def print_funccall_in_prog(parent, index, func_name):
+    global cur_par_index
+    print_node = create_printf_node(parent, index, func_name, False, False, False)
+    parent.insert(index, print_node)
+    parent.insert(index+2, print_node)
+    cur_par_index += 1
+
+#If calling a function not declared in the progra, only add a print statement after the function call,
+#only need to highlight this line once.
+def print_funccall_not_prog(parent, index, func_name):
+    print_node = create_printf_node(parent, index, func_name, False, False, False)
     parent.insert(index+1, print_node)
 
 def print_func_entry(parent, index, func_name):
