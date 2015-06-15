@@ -282,6 +282,7 @@ def handle_nodetypes(parent, index, func_name):
 
     #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
     try:
+        #pdb.set_trace()
         if isinstance(parent[index+amt_after+1], c_ast.Return):
             handle_return(parent, index, func_name)
     except:
@@ -318,9 +319,8 @@ def set_assign_vars(node):
     global is_uninit
 
     #pdb.set_trace()
-
-    type_of_var = node.rvalue.type 
-    var_name_val = node.lvalue.name
+    var_name_val = (str)(node.lvalue.name)
+    type_of_var = (str)(var_type_dict.get(var_name_val)) 
     var_new_val = False
     is_uninit = False
 
@@ -330,10 +330,11 @@ def set_assign_vars(node):
 
 def handle_return(parent, index, func_name):
     #print_node = old_create_printf_node()
+    global amt_after
     #pdb.set_trace()
-    print("IN HANDLE RETURN")
     print_node = create_printf_node(parent, index+amt_after+1, func_name, False, False, True)
     parent.insert(index+amt_after+1, print_node)    
+    amt_after+= 1
 
 def print_changed_vars(parent, index, func_name, new):
     global amt_after
@@ -345,6 +346,16 @@ def print_changed_vars(parent, index, func_name, new):
             print_node = create_printf_node(parent, index, func_name, False, True, False)
             parent.insert(index+1, print_node)
             amt_after += 1
+            #If it's a function call declaration for a function in our program, 
+            #ensure there's a print statement in front of it too
+            #pdb.set_trace()
+            if isinstance(parent[index].init, c_ast.FuncCall) and (get_funccall_funcname(parent[index].init) in func_list):
+                global cur_par_index
+                print_node = create_printf_node(parent, index, func_name, False, False, False)
+                parent.insert(index, print_node)
+                amt_after += 1
+                cur_par_index += 1
+
 
         #Pointer declaration
         elif isinstance(get_decl_type(parent[index]), c_ast.PtrDecl):
@@ -359,39 +370,54 @@ def print_changed_vars(parent, index, func_name, new):
     #Otherwise it was an assignment of an already declared var
     else:
         #Case for regular (non-pointer or anything fancy) assignment 
-        #TODO: ensure this works with assignment to a diff. variable, opposed to just constant
         #Also need to get this working w/ vars assigned to function calls
-        if isinstance(parent[index].lvalue, c_ast.ID) and isinstance(parent[index].rvalue, c_ast.Constant):
+        if isinstance(parent[index].lvalue, c_ast.ID):
             set_assign_vars(parent[index])
             #print_node = old_create_printf_node()
             print_node = create_printf_node(parent, index, func_name, False, True, False)
             parent.insert(index+1, print_node)
             amt_after += 1
+            #If it's a function call assignment for a function in our program, 
+            #ensure there's a print statement in front of it too
+            if isinstance(parent[index].rvalue, c_ast.FuncCall) and (get_funccall_funcname(parent[index].rvalue) in func_list):
+                global cur_par_index
+                print_node = create_printf_node(parent, index, func_name, False, False, False)
+                parent.insert(index, print_node)
+                amt_after += 1
+                cur_par_index += 1
 
 def print_stdout(parent, index):
     #Implement
+    global amt_after
     print_node = old_create_printf_node()
     parent.insert(index+1, print_node)
+    amt_after += 1
 
 def print_stderr(parent, index):
     #Implement
+    global amt_after
     print_node = old_create_printf_node()
     parent.insert(index+1, print_node)
+    amt_after += 1
 
 #If calling a function declared in the program, add print statements before and after the function
 #call, so that we can highlight this line twice, once when calling, and once when returning back
 def print_funccall_in_prog(parent, index, func_name):
+    global amt_after
     global cur_par_index
     print_node = create_printf_node(parent, index, func_name, False, False, False)
     parent.insert(index, print_node)
     parent.insert(index+2, print_node)
     cur_par_index += 1
+    amt_after += 1
 
 #If calling a function not declared in the progra, only add a print statement after the function call,
 #only need to highlight this line once.
 def print_funccall_not_prog(parent, index, func_name):
+    global amt_after
     print_node = create_printf_node(parent, index, func_name, False, False, False)
     parent.insert(index+1, print_node)
+    amt_after += 1
 
 def print_func_entry(parent, index, func_name):
     global amt_after
