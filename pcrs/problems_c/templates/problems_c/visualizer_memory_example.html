@@ -1,47 +1,40 @@
-<button class="debugBtn" type="button" onclick='
-$("table.memory-map-cell-table td.memory-map-cell").toggle();
-$("table.memory-map-label-table td.memory-map-cell").toggle();
-'>
-Toggle Hex
-</button>
-
 <h3>Data</h3>
-<div class="memory-map-table-wrapper">
-    <table id="static-memory-map-cells" class="table-no-border memory-map-cell-table">
+<div id="data-memory-map" class="memory-map-table-wrapper">
+    <table class="table-no-border memory-map-cell-table">
       <thead>
         <tr>
             <th class="heading-height" colspan="5">&nbsp;</th>
         </tr>
       </thead>
       <tbody>
-        <tr start-addr="00001276">
+        <tr start-addr="00001274">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="00001276" group-id="2 1">0x48</td>
-            <td class="memory-map-cell hidden-cell" addr="00001277" group-id="3 1">0x69</td>
-            <td class="memory-map-cell hidden-cell" addr="00001278" group-id="4 1">0x21</td>
-            <td class="memory-map-cell hidden-cell" addr="00001279" group-id="5 1">0x0D</td>
+            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="00001274" group-id="2 1">0x48</td>
+            <td class="memory-map-cell hidden-cell" addr="00001275" group-id="3 1">0x69</td>
+            <td class="memory-map-cell hidden-cell" addr="00001276" group-id="4 1">0x21</td>
+            <td class="memory-map-cell hidden-cell" addr="00001277" group-id="5 1">0x0D</td>
         </tr>
-        <tr start-addr="0000127A">
+        <tr start-addr="00001278">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127A" group-id="6">0x00</td>
-            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127B" group-id="6">0x00</td>
-            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127C" group-id="6">0x33</td>
-            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="0000127D" group-id="6">0x34</td>
+            <td class="memory-map-cell hidden-cell clear-cell" addr="00001278" group-id="6">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell" addr="00001279" group-id="6">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127A" group-id="6">0x33</td>
+            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="0000127B" group-id="6">0x34</td>
         </tr>
-        <tr start-addr="0000127E">
+        <tr start-addr="0000127C">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="0000127E" group-id="7">0x61</td>
-            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127F" group-id="8">0x34</td>
-            <td class="memory-map-cell hidden-cell clear-cell" addr="00001280" group-id="9">0x32</td>
-            <td class="memory-map-cell hidden-cell" addr="00001281" group-id="10">0x62</td>
+            <td class="memory-map-cell hidden-cell right-edge-clear-cell" addr="0000127C" group-id="7">0x61</td>
+            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127D" group-id="8">0x34</td>
+            <td class="memory-map-cell hidden-cell clear-cell" addr="0000127E" group-id="9">0x32</td>
+            <td class="memory-map-cell hidden-cell" addr="0000127F" group-id="10">0x62</td>
         </tr>
       </tbody>
     </table>
     <!-- Labels -->
-    <table id="static-memory-map-labels" class="table table-bordered memory-map-label-table">
+    <table class="table table-bordered memory-map-label-table">
       <thead>
         <tr>
             <th class="address-heading">Address</th>
@@ -49,25 +42,25 @@ Toggle Hex
         </tr>
       </thead>
       <tbody>
-        <tr start-addr="00001276">
-            <td class="memory-map-address">0x00001276</td>
+        <tr start-addr="00001274">
+            <td class="memory-map-address">0x00001274</td>
 
-            <td class="memory-map-cell">'H'</td>
-            <td class="memory-map-cell">'i'</td>
-            <td class="memory-map-cell">'!'</td>
-            <td class="memory-map-cell">'\n'</td>
+            <td class="memory-map-cell label-td">'H'</td>
+            <td class="memory-map-cell label-td">'i'</td>
+            <td class="memory-map-cell label-td">'!'</td>
+            <td class="memory-map-cell label-td">'\n'</td>
         </tr>
-        <tr start-addr="0000127A">
-            <td class="memory-map-address">0x0000127A</td>
+        <tr start-addr="00001278">
+            <td class="memory-map-address">0x00001278</td>
 
-            <td class="memory-map-cell right-edge-clear-cell" colspan="4">34</td>
+            <td class="memory-map-cell right-edge-clear-cell label-td" colspan="4">34</td>
         </tr>
-        <tr start-addr="0000127E">
-            <td class="memory-map-address">0x0000127E</td>
+        <tr start-addr="0000127C">
+            <td class="memory-map-address">0x0000127C</td>
 
-            <td class="memory-map-cell">'a'</td>
-            <td class="memory-map-cell clear-cell" colspan="2">42</td>
-            <td class="memory-map-cell" colspan="2">'b'</td>
+            <td class="memory-map-cell label-td">'a'</td>
+            <td class="memory-map-cell clear-cell label-td" colspan="2">42</td>
+            <td class="memory-map-cell label-td">'b'</td>
         </tr>
       </tbody>
     </table>
@@ -76,53 +69,53 @@ Toggle Hex
 <hr/>
 
 <h3>Heap</h3>
-<div class="memory-map-table-wrapper">
-    <table id="heap-memory-map-cells" class="table-no-border memory-map-cell-table">
+<div id="heap-memory-map" class="memory-map-table-wrapper">
+    <table class="table-no-border memory-map-cell-table">
       <thead>
         <tr>
             <th class="heading-height" colspan="5">&nbsp;</th>
         </tr>
       </thead>
       <tbody>
-        <tr start-addr="00002266">
+        <tr start-addr="00001264">
             <td class="address-width"></td>
 
-            <td class="memory-map-cell hidden-cell" addr="00001266" group-id="12 11">0x48</td>
-            <td class="memory-map-cell hidden-cell" addr="00001267" group-id="13 11">0x69</td>
-            <td class="memory-map-cell hidden-cell" addr="00001268" group-id="14 11">0x21</td>
-            <td class="memory-map-cell hidden-cell" addr="00001269" group-id="15 11">0x0D</td>
+            <td class="memory-map-cell hidden-cell" addr="00001264" group-id="12 11">0x48</td>
+            <td class="memory-map-cell hidden-cell" addr="00001265" group-id="13 11">0x69</td>
+            <td class="memory-map-cell hidden-cell" addr="00001266" group-id="14 11">0x21</td>
+            <td class="memory-map-cell hidden-cell" addr="00001267" group-id="15 11">0x0D</td>
         </tr>
         <tr>
             <td class="dot-line" colspan="5">•••</td>
         </tr>
-        <tr>
+        <tr start-addr="00002274">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell" addr="0000227A" group-id="">0x0A</td>
-            <td class="memory-map-cell hidden-cell clear-cell top-row-clear-cell" addr="0000227B" group-id="16">0x00</td>
-            <td class="memory-map-cell hidden-cell clear-cell top-row-clear-cell" addr="0000227C" group-id="16">0x00</td>
-            <td class="memory-map-cell hidden-cell top-row-clear-cell right-edge-clear-cell" addr="0000227D" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell" addr="00002274" group-id="">0x0A</td>
+            <td class="memory-map-cell hidden-cell clear-cell top-row-clear-cell" addr="00002275" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell top-row-clear-cell" addr="00002276" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell top-row-clear-cell right-edge-clear-cell" addr="00002277" group-id="16">0x00</td>
         </tr>
-        <tr>
+        <tr start-addr="0002278">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="0000227E" group-id="16">0x00</td>
-            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="0000227F" group-id="16">0x00</td>
-            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="00002280" group-id="16">0x00</td>
-            <td class="memory-map-cell hidden-cell middle-row-clear-cell right-edge-clear-cell" addr="00002281" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="00002278" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="00002279" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell clear-cell middle-row-clear-cell" addr="0000227A" group-id="16">0x00</td>
+            <td class="memory-map-cell hidden-cell middle-row-clear-cell right-edge-clear-cell" addr="0000227B" group-id="16">0x00</td>
         </tr>
-        <tr>
+        <tr start-addr="0000227C">
             <td class="address-width">&nbsp;</td>
 
-            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="00002282" group-id="16">0x0F</td>
-            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="00002283" group-id="16">0x42</td>
-            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="00002284" group-id="16">0x40</td>
-            <td class="memory-map-cell hidden-cell" addr="00002285">0x0A</td>
+            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="0000227C" group-id="16">0x0F</td>
+            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="0000227D" group-id="16">0x42</td>
+            <td class="memory-map-cell hidden-cell clear-cell bottom-row-clear-cell" addr="0000227E" group-id="16">0x40</td>
+            <td class="memory-map-cell hidden-cell" addr="0000227F">0x0A</td>
         </tr>
       </tbody>
     </table>
     <!-- Labels -->
-    <table id="heap-memory-map-labels" class="table table-bordered memory-map-label-table">
+    <table class="table table-bordered memory-map-label-table">
       <thead>
         <tr>
             <th class="address-heading">Address</th>
@@ -130,36 +123,32 @@ Toggle Hex
         </tr>
       </thead>
       <tbody>
-        <tr start-addr="00002266">
-            <td class="memory-map-address">0x00002266</td>
+        <tr start-addr="00001266">
+            <td class="memory-map-address">0x00001264</td>
 
-            <td class="memory-map-cell">'H'</td>
-            <td class="memory-map-cell">'i'</td>
-            <td class="memory-map-cell">'!'</td>
-            <td class="memory-map-cell">'\n'</td>
+            <td class="memory-map-cell label-td">'H'</td>
+            <td class="memory-map-cell label-td">'i'</td>
+            <td class="memory-map-cell label-td">'!'</td>
+            <td class="memory-map-cell label-td">'\n'</td>
         </tr>
         <tr>
             <td class="dot-line" colspan="5">•••</td>
         </tr>
-        <tr>
-            <td class="memory-map-address">0x0000227A</td>
+        <tr start-addr="0000227A">
+            <td class="memory-map-address">0x00002274</td>
 
             <td class="memory-map-cell"></td>
-            <td class="memory-map-cell clear-cell top-row-clear-cell"></td>
-            <td class="memory-map-cell clear-cell top-row-clear-cell"></td>
-            <td class="memory-map-cell top-row-clear-cell right-edge-clear-cell"></td>
+            <td class="memory-map-cell top-row-clear-cell right-edge-clear-cell" colspan="3"></td>
         </tr>
-        <tr>
-            <td class="memory-map-address">0x0000227E</td>
+        <tr start-addr="0000227E">
+            <td class="memory-map-address">0x00002278</td>
 
-            <td class="memory-map-cell clear-cell middle-row-clear-cell" colspan="4">1,000,000</td>
+            <td class="memory-map-cell clear-cell middle-row-clear-cell label-td" colspan="4">1,000,000</td>
         </tr>
-        <tr>
-            <td class="memory-map-address">0x00002282</td>
+        <tr start-addr="00002282">
+            <td class="memory-map-address">0x0000227C</td>
 
-            <td class="memory-map-cell clear-cell bottom-row-clear-cell"></td>
-            <td class="memory-map-cell clear-cell bottom-row-clear-cell"></td>
-            <td class="memory-map-cell clear-cell bottom-row-clear-cell"></td>
+            <td class="memory-map-cell clear-cell bottom-row-clear-cell" colspan="3"></td>
             <td class="memory-map-cell"></td>
         </tr>
       </tbody>
@@ -170,10 +159,8 @@ Toggle Hex
 
 <h3>Stack</h3>
 <div id="stack-frame-tables">
-    <!-- <hr style="clear: both; visibility: hidden;"/> -->
-
-    <div class="memory-map-table-wrapper">
-        <table stack-frame-number="1" stack-function="main" class="table-no-border memory-map-cell-table">
+    <div class="memory-map-table-wrapper" stack-frame-number="" stack-function="main">
+        <table class="table-no-border memory-map-cell-table">
           <thead>
             <tr>
                 <th class="heading-height" colspan="5">&nbsp;</th>
@@ -183,27 +170,31 @@ Toggle Hex
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr start-addr="00001264">
                 <td class="address-width">&nbsp;</td>
 
-                <td class="memory-map-cell hidden-cell" addr="00001266" group-id="18 17">0x48</td>
-                <td class="memory-map-cell hidden-cell" addr="00001267" group-id="19 17">0x69</td>
-                <td class="memory-map-cell hidden-cell" addr="00001268" group-id="20 17">0x21</td>
-                <td class="memory-map-cell hidden-cell" addr="00001269" group-id="21 17">0x0D</td>
+                <td class="memory-map-cell hidden-cell" addr="00001264" group-id="18 17">0x48</td>
+                <td class="memory-map-cell hidden-cell" addr="00001265" group-id="19 17">0x69</td>
+                <td class="memory-map-cell hidden-cell" addr="00001266" group-id="20 17">0x21</td>
+                <td class="memory-map-cell hidden-cell" addr="00001267" group-id="21 17">0x0D</td>
             </tr>
-            <tr>
+            <tr start-addr="00001268">
                 <td class="address-width">&nbsp;</td>
 
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="00001268">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="00001269">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="0000126A">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="0000126B">0x0A</td>
             </tr>
           </tbody>
         </table>
         <!-- Labels -->
-        <table stack-frame-number="1" stack-function="main" class="table table-bordered memory-map-label-table">
+        <table class="table table-bordered memory-map-label-table">
           <thead>
+            <tr>
+                <th class="address-width sizing-header-cell"></th>
+                <th class="values-width sizing-header-cell" colspan="4"></th>
+            </tr>
             <tr>
                 <th colspan="5">main</th>
             </tr>
@@ -213,16 +204,16 @@ Toggle Hex
             </tr>
           </thead>
           <tbody>
-            <tr>
-                <td class="memory-map-address">0x00001276</td>
+            <tr start-addr="00001264">
+                <td class="memory-map-address">0x00001264</td>
 
-                <td class="memory-map-cell">'H'</td>
-                <td class="memory-map-cell">'i'</td>
-                <td class="memory-map-cell">'!'</td>
-                <td class="memory-map-cell">'\n'</td>
+                <td class="memory-map-cell label-td">'H'</td>
+                <td class="memory-map-cell label-td">'i'</td>
+                <td class="memory-map-cell label-td">'!'</td>
+                <td class="memory-map-cell label-td">'\n'</td>
             </tr>
-            <tr>
-                <td class="memory-map-address">0x0000127A</td>
+            <tr start-addr="00001268">
+                <td class="memory-map-address">0x00001268</td>
 
                 <td class="memory-map-cell"></td>
                 <td class="memory-map-cell"></td>
@@ -233,8 +224,8 @@ Toggle Hex
         </table>
     </div>
 
-    <div class="memory-map-table-wrapper">
-        <table calling-line="" stack-function="main" class="table-no-border memory-map-cell-table">
+    <div class="memory-map-table-wrapper" calling-line="1" stack-function="is_integer">
+        <table class="table-no-border memory-map-cell-table">
           <thead>
             <tr>
                 <th class="heading-height" colspan="5">&nbsp;</th>
@@ -244,28 +235,32 @@ Toggle Hex
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr start-addr="00002264">
                 <td class="address-width">&nbsp;</td>
 
-                <td class="memory-map-cell hidden-cell" addr="00001269" group-id="23 22">0x0D</td>
-                <td class="memory-map-cell hidden-cell" addr="00001268" group-id="24 22">0x21</td>
-                <td class="memory-map-cell hidden-cell" addr="00001267" group-id="25 22">0x69</td>
-                <td class="memory-map-cell hidden-cell" addr="00001266" group-id="26 22">0x48</td>
+                <td class="memory-map-cell hidden-cell" addr="00002264" group-id="23 22">0x0D</td>
+                <td class="memory-map-cell hidden-cell" addr="00002265" group-id="24 22">0x21</td>
+                <td class="memory-map-cell hidden-cell" addr="00002266" group-id="25 22">0x69</td>
+                <td class="memory-map-cell hidden-cell" addr="00002267" group-id="26 22">0x48</td>
 
             </tr>
-            <tr>
+            <tr start-addr="00002268">
                 <td class="address-width">&nbsp;</td>
 
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
-                <td class="memory-map-cell hidden-cell">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="00002268">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="00002269">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="0000226A">0x0A</td>
+                <td class="memory-map-cell hidden-cell" addr="0000226B">0x0A</td>
             </tr>
           </tbody>
         </table>
         <!-- Labels -->
-        <table calling-line="1" stack-function="is_integer" class="table table-bordered memory-map-label-table">
+        <table class="table table-bordered memory-map-label-table">
           <thead>
+            <tr>
+                <th class="address-width sizing-header-cell"></th>
+                <th class="values-width sizing-header-cell" colspan="4"></th>
+            </tr>
             <tr>
                 <th colspan="5">is_integer: 1</th>
             </tr>
@@ -275,21 +270,18 @@ Toggle Hex
             </tr>
           </thead>
           <tbody>
-            <tr>
-                <td class="memory-map-address">0x00001276</td>
+            <tr start-addr="0000226r">
+                <td class="memory-map-address">0x00002264</td>
 
-                <td class="memory-map-cell">\n</td>
-                <td class="memory-map-cell">'!'</td>
-                <td class="memory-map-cell">'i'</td>
-                <td class="memory-map-cell">'H'</td>
+                <td class="memory-map-cell label-td">\n</td>
+                <td class="memory-map-cell label-td">'!'</td>
+                <td class="memory-map-cell label-td">'i'</td>
+                <td class="memory-map-cell label-td">'H'</td>
             </tr>
-            <tr>
-                <td class="memory-map-address">0x0000127A</td>
+            <tr start-addr="00002268">
+                <td class="memory-map-address">0x00002268</td>
 
-                <td class="memory-map-cell"></td>
-                <td class="memory-map-cell"></td>
-                <td class="memory-map-cell"></td>
-                <td class="memory-map-cell"></td>
+                <td class="memory-map-cell label-td" colspan="4">Hello!</td>
             </tr>
           </tbody>
         </table>

@@ -89,6 +89,7 @@ hr {
 }
 
 .memory-map-table-wrapper {
+    width: 100%;
     position: relative !important;
     display: inline-block;
 }
@@ -96,6 +97,7 @@ hr {
 .memory-map-table {
     width: 100%;
     float: left;
+    table-layout: fixed;
 }
 
 .memory-map-cell-table {
@@ -143,6 +145,11 @@ hr {
     text-align: center;
     vertical-align: middle !important;
     width: @cell-width;
+    max-width: @cell-width;
+    min-width: @cell-width;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     border: thin solid @border-color;
 }
 
@@ -178,4 +185,9 @@ hr {
     padding: 2px !important;
     line-height: 15px !important;
     height: 15px;
+}
+
+.sizing-header-cell {
+    visibility: hidden;
+    border: none !important;
 }
