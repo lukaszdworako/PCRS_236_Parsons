@@ -1,6 +1,6 @@
 // These global variables should not be modified
 var memory_map_cell_height = 37; // In pixels
-var memory_map_cell_width = 17.5; // In %
+var memory_map_cell_width = 16.25; // In %
 var cur_stdout = "";
 var return_to_clr = "";
 var return_val;
@@ -375,7 +375,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     cur_line = start_line-1;
                     json_index = 0;
                     // Reset the memory map tables
-                    //reset_memory_tables();
+                    reset_memory_tables();
 
                     // Clear the name tables
                     $('#name-type-section').empty();
@@ -387,17 +387,12 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 });
 
                 $('#toggle-hex-button').bind('click', function () {
-                    var location = "#data-memory-map";
-                    var lbl = generate_label_table(location);
-                    console.log(lbl);
-                    $(location + " > table.memory-map-label-table > tbody").replaceWith(lbl);
-                    //$("table.memory-map-cell-table td.memory-map-cell").toggle();
-                    //$("table.memory-map-label-table td.memory-map-cell").toggle();
+                    toggle_hex();
                 });
             }
 
             // Reset the memory map tables
-            //reset_memory_tables();
+            reset_memory_tables();
 
             // Clear the name tables
             $('#name-type-section').empty();
@@ -433,7 +428,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     //Include global vars
                     add_to_name_table(globals[i]);
                     add_to_val_list(globals[i]);
-                    //add_to_memory_table(globals[i]);
+                    add_to_memory_table(globals[i]);
                 }
             }
 
@@ -448,7 +443,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 if(json_step.hasOwnProperty('changed_vars')) {
                     add_to_name_table(json_step);
                     add_to_val_list(json_step);
-                    //add_to_memory_table(json_step);
+                    add_to_memory_table(json_step);
                 }
                 //Case where it's a function return
                 if((json_step.hasOwnProperty('return')) || (json_step.hasOwnProperty('returned_fn_call'))) {
@@ -469,7 +464,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 if(json_step.hasOwnProperty('changed_vars')) {
                     remove_from_name_table(json_step);
                     remove_from_val_list(json_step);
-                    //remove_from_memory_table(json_step);
+                    remove_from_memory_table(json_step);
                     //Case where it's a function return
                 }
                 //Case where it has standard output
@@ -602,6 +597,13 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
 
         function add_to_memory_table(json_step) {
+            add_to_memory_table_only(json_step);
+            regenerate_all_label_tables();
+        }
+
+        function add_to_memory_table_only(json_step) {
+            // This function exists because while removing, we want to only add variables to the cell tables then generate labels in one go, but with adding, we have to regenerate the label tables after each step
+
             // Add changed_vars to memory table
             var changed_vars = json_step.changed_vars;
             var func_name = json_step["function"];
@@ -609,7 +611,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 add_one_var_to_memory_table(changed_vars[i], func_name);
             }
         }
-
 
         function add_one_var_to_memory_table(changed_var, func_name) {
             // Store values for possible use later
@@ -627,120 +628,96 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
 
             // Add the cell rows first
-            var new_var_cell_rows = create_new_var_cell_rows(start_addr, cells_needed, value, hex_value);
+            var new_var_cell_rows = $(create_new_var_cell_rows(start_addr, cells_needed, value, hex_value));
             var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody > tr[start-addr]").length==0;
-            insert_cell_rows(location, start_addr, cells_needed, new_var_rows, simply_append_rows);
-
-            // Generate the corresponding label table from the new cell rows and insert in proper place
-            var updated_label_table = generate_label_table(location);
-            var location_label_table = $(location + " > table.memory-map-label-table > tbody ");
-            location_label_table.replaceWith(updated_label_table);
+            insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
         }
 
-        function generate_label_table(location) {
-            // Generates the label table for the corresponding cell table at location
-            // Relies on group_id_vals to get the label values
-            var cell_table = $(location + " > table.memory-map-cell-table > tbody");
-            var updated_label_table = document.createElement("tbody");
+        function create_new_var_cell_rows(start_addr, cells_needed, value, hex_value) {
+            var end_addr = start_addr + cells_needed - 1;
+            var rows_needed = (Math.floor(end_addr/4)) - (Math.floor(start_addr/4)) + 1;
 
-            var cell_table_rows = cell_table.children();
-            var middle_rows_left = 0;
-            var on_bottom_row = false;
-            var previous_drawn_group_id = null;
-            for(i=0; i < cell_table_rows.length; i++) {
-                var current_row = $(cell_table_rows[i]);
-                var current_row_addr = parseInt(current_row.attr("start-addr"), 16);
+            // Create the rows
+            var group_id = largest_group_id;
+            largest_group_id++;
+            group_id_vals[group_id] = value;
 
-                var label_row = document.createElement("tr");
+            var cell_rows = document.createElement("div");
 
-                if(current_row.attr("class") == "dot-line") {
-                    label_row = create_memory_map_dot_row();
-                } else {
-                    label_row = create_label_base_row(current_row.attr("start-addr"));
+            var hex_val_index = 0;
+            var current_addr = start_addr;
+            var remaining_cells = cells_needed;
+            for(var r=1; r <= rows_needed; r++) {
+                var row_start_addr = current_addr - (current_addr % 4);
+                var start_cell_number = current_addr % 4;
+                var current_cell_addr = row_start_addr;
 
-                    if(middle_rows_left > 0) {
-                        // Still drawing the middle rows of a wide label, so draw a standard row with no extra tds
-                        middle_rows_left--;
-                        if(middle_rows_left == 0) {
-                            on_bottom_row = true;
-                        }
+                var cells_on_row = Math.min(remaining_cells, (4 - start_cell_number));
 
-                    } else {
-                        // Merge individual cells across this row which are part of the same group
-                        var td = null;
+                // Add the row of hex value cells
+                var cell_row = create_cell_base_row(row_start_addr);
 
-                        var c = 1;
-                        while(c < 5) {
-                            var current_cell = $(current_row.children()[c]);
-                            var current_cell_addr = parseInt(current_cell.attr("addr"), 16);
-                            var current_cell_group_id = current_cell.attr("group-id");
-                            var cells_on_row_in_group = current_cell.nextUntil("td[group-id!='" + current_cell_group_id + "']").length + 1;
+                var c = 0;
+                while(c < start_cell_number) {
+                    var cell_hex_val = "&nbsp;";
 
-                            // Finds all cells after the current one in the table, up until the first one with a diffeent group-id
-                            var contiguous_cells_in_group =
-                                current_row.parent().find("td").filter(function() {
-                                    return ($(this).attr("addr")) && (parseInt($(this).attr("addr"),16) >= current_cell_addr);
-                                }).first().nextUntil("td[group-id!='" + current_cell_group_id + "']").length + 1;
-
-                            var group_end_addr = current_cell_addr + contiguous_cells_in_group - 1;
-                            var rows_in_group = (group_end_addr - (group_end_addr % 4)) - current_row_addr + 1;
-
-                            var colspan = cells_on_row_in_group;
-                            var rowspan = 1;
-                            var group_id = current_cell_group_id;
-                            var cell_value = "&nbsp;";
-                            var clarity_classes = "";
-                            if(rows_in_group > 2) {
-                                // We have to draw a big label on the next row
-                                if(c == 1 && colspan == 4) {
-                                    // Draw the label; this is the first row of the group that spans all 4 columns
-                                    cell_value = group_id_vals[group_id];
-                                    clarity_classes = "clear-cell middle-row-clear-cell label-td"
-                                    rowspan = rows_in_group;
-                                    if((group_end_addr % 4) > 0) {
-                                        rowspan--;
-                                    }
-
-                                    middle_rows_left = rowspan - 1;
-
-                                } else {
-                                    // Draw the top row of the group
-                                    clarity_classes = "top-row-clear-cell right-edge-clear-cell";
-                                }
-
-                            } else {
-                                if(on_bottom_row) {
-                                    // Draw the bottom row
-                                    clarity_classes = "clear-cell bottom-row-clear-cell";
-                                    on_bottom_row = false;
-
-                                } else {
-                                    // Draw the label cell right now
-                                    cell_value = group_id_vals[group_id];
-                                    clarity_classes = "right-edge-clear-cell label-td";
-
-                                    if(rows_in_group == 2) {
-                                        // Set up the next row to be the bottom row
-                                        clarity_classes += " top-row-clear-cell";
-                                        on_bottom_row = true;
-                                    }
-                                }
-
-                            }
-
-                            td = create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes);
-
-                            label_row.appendChild(td);
-                            c += cells_on_row_in_group;
-                        }
-
+                    if(current_cell_addr >= start_addr) {
+                        cell_hex_val = hex_value[hex_val_index];
+                        hex_val_index++;
                     }
+
+                    var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "");
+                    cell_row.appendChild(memory_map_cell);
+
+                    current_cell_addr++;
+                    c++;
+                }
+                while(c < (start_cell_number + cells_on_row)) {
+                    // Add the data cells
+                    var clarity_classes = "clear-cell";
+                    if(c == 3) {
+                        clarity_classes = "right-edge-clear-cell";
+                    }
+
+                    if(rows_needed > 1){
+                        // First row
+                        if(r == 1) {
+                            clarity_classes += " top-row-clear-cell";
+                        } else if(r == rows_needed) {
+                            clarity_classes += " bottom-row-clear-cell";
+                        } else {
+                            clarity_classes += " middle-row-clear-cell";
+                        }
+                    }
+
+                    var memory_map_cell = create_cell_cell(current_cell_addr, group_id, hex_value[hex_val_index], clarity_classes);
+                    cell_row.appendChild(memory_map_cell)
+                    current_cell_addr++;
+                    c++;
+                    hex_val_index++;
+                }
+                while(c < 4) {
+                    var cell_hex_val = "&nbsp;";
+
+                    if(current_cell_addr <= end_addr) {
+                        cell_hex_val = hex_value[hex_val_index];
+                        hex_val_index++;
+                    }
+
+                    var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "");
+                    cell_row.appendChild(memory_map_cell);
+                    current_cell_addr++;
+                    c++;
                 }
 
-                updated_label_table.appendChild(label_row);
+                cell_rows.appendChild(cell_row);
+
+                // Advance to the next row
+                current_addr = row_start_addr + 4;
+                remaining_cells -= cells_on_row;
             }
 
-            return updated_label_table;
+            return cell_rows;
         }
 
         function insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows) {
@@ -791,7 +768,6 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                 insert_new_var_rows(location_cell_table, new_var_cell_rows, insert_addr, start_addr, after_end_addr, end_addr);
 
             }
-
         }
 
         function insert_new_var_rows(location_table, new_var_rows, insert_addr, start_addr, after_end_addr, end_addr) {
@@ -826,9 +802,9 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     while(current_row.children().length > 0) {
                         // Only cells with a group-id count as part of the actual variable, the rest are ignored
                         if(current_row.children().first().attr("group-id")) {
-                            existing_row.children()[i].replaceWith(current_row.children().first());
+                            $(existing_row.children()[i]).replaceWith(current_row.children().first());
                         } else {
-                            current_row.children().first().remove();
+                            $(current_row.children()[0]).remove();
                         }
                         i++;
                     }
@@ -839,6 +815,8 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
                     insert_row = insert_row.next();
                 }
 
+                $(new_var_rows.children()[0]).remove();
+
             }
 
             // Insert a dot row after the last address if it is too far from the next address
@@ -847,91 +825,177 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             }
         }
 
-        function create_new_var_cell_rows(start_addr, cells_needed, value, hex_value) {
-            var end_addr = start_addr + cells_needed - 1;
-            var rows_needed = (Math.floor(end_addr/4)) - (Math.floor(start_addr/4)) + 1;
-
-            // Create the rows
-            var group_id = largest_group_id;
-            largest_group_id++;
-            group_id_vals[group_id] = value;
-
-            var cell_rows = document.createElement("div");
-
-            var hex_val_index = 0;
-            var current_addr = start_addr;
-            var remaining_cells = cells_needed;
-            for(var r=1; r <= rows_needed; r++) {
-                var row_start_addr = current_addr - (current_addr % 4);
-                var start_cell_number = current_addr % 4;
-                var current_cell_addr = row_start_addr;
-
-                var cells_on_row = Math.min(remaining_cells, (4 - start_cell_number));
-
-                // Add the row of hex value cells
-                var cell_row = create_cell_base_row(row_start_addr);
-
-                var c = 0;
-                while(c < start_cell_number) {
-                    var cell_hex_val = "&nbsp;";
-
-                    if(current_cell_addr >= start_addr) {
-                        cell_hex_val = hex_value[hex_val_index];
-                        hex_val_index++;
-                    }
-
-                    var memory_map_cell = create_cell_cell(current_cell_addr, group_id, cell_hex_val, "");
-                    cell_row.appendChild(memory_map_cell);
-
-                    current_cell_addr++;
-                    c++;
-                }
-                while(c < (start_cell_number + cells_on_row)) {
-                    // Add the data cells
-                    var clarity_classes = "clear-cell";
-                    if(c == 3) {
-                        clarity_classes = "right-edge-clear-cell";
-                    }
-
-                    if(rows_needed > 1){
-                        // First row
-                        if(r == 1) {
-                            clarity_classes += " top-row-clear-cell";
-                        } else if(r == rows_needed) {
-                            clarity_classes += " bottom-row-clear-cell";
-                        } else {
-                            clarity_classes += " middle-row-clear-cell";
-                        }
-                    }
-
-                    var memory_map_cell = create_cell_cell(current_cell_addr, group_id, hex_value[hex_val_index], clarity_classes);
-                    cell_row.appendChild(memory_map_cell)
-                    current_cell_addr++;
-                    c++;
-                    hex_val_index++;
-                }
-                while(c < 4) {
-                    var cell_hex_val = "&nbsp;";
-
-                    if(current_cell_addr <= end_addr) {
-                        cell_hex_val = hex_value[hex_val_index];
-                        hex_val_index++;
-                    }
-
-                    var memory_map_cell = create_cell_cell(current_cell_addr, group_id, cell_hex_val, "");
-                    cell_row.appendChild(memory_map_cell);
-                    current_cell_addr++;
-                    c++;
-                }
-
-                cell_rows.appendChild(cell_row);
-
-                // Advance to the next row
-                current_addr = row_start_addr + 4;
-                remaining_cells -= cells_on_row;
+        function generate_label_table(location) {
+            if(!location) {
+                return;
             }
 
-            return cell_rows;
+            // Generates the label table for the corresponding cell table at location
+            // Relies on the map group_id_vals to get the label values
+            var cell_table = $(location + " > table.memory-map-cell-table > tbody");
+            var updated_label_table = document.createElement("tbody");
+
+            var cell_table_rows = cell_table.children();
+            var middle_rows_left = 0;
+            var on_bottom_row = false;
+            var in_middle = false;
+            var previous_drawn_group_id = null;
+            for(i=0; i < cell_table_rows.length; i++) {
+                var current_row = $(cell_table_rows[i]);
+                var current_row_addr = parseInt(current_row.attr("start-addr"), 16);
+
+                var label_row = document.createElement("tr");
+
+                if(current_row.find("td.dot-line").length > 0) {
+                    label_row = create_memory_map_dot_row();
+                } else {
+                    label_row = create_label_base_row(current_row.attr("start-addr"));
+
+                    if(middle_rows_left > 0) {
+                        // Still drawing the middle rows of a wide label, so draw a standard row with no extra tds
+                        middle_rows_left--;
+                        if(middle_rows_left == 0) {
+                            on_bottom_row = true;
+                        }
+
+                    } else {
+                        // Merge individual cells across this row which are part of the same group
+                        var td = null;
+
+                        var c = 1;
+                        while(c < 5) {
+                            var colspan = 1;
+                            var rowspan = 1;
+                            var group_id = "";
+                            var cell_value = "&nbsp;";
+                            var clarity_classes = "";
+                            var cells_on_row_in_group = 1;
+
+                            var current_cell = $(current_row.children()[c]);
+                            var current_cell_addr = parseInt(current_cell.attr("addr"), 16);
+                            var current_cell_group_id = current_cell.attr("group-id");
+                            if(current_cell_group_id) {
+                                cells_on_row_in_group = current_cell.nextUntil("td[group-id!='" + current_cell_group_id + "']").length + 1;
+
+                                // Finds all cells after the current one in the table, up until the first one with a diffeent group-id
+                                var group_end_addr = current_cell_addr + cells_on_row_in_group - 1;
+                                var contiguous_cells_in_group = cells_on_row_in_group;
+                                // Find how many cells are in this group if it extends past the current row
+                                if((c + cells_on_row_in_group) > 4) {
+                                    var sibling_rows = current_row.nextAll().toArray();
+                                    var sr = 0;
+                                    var bad_cell_found = false;
+
+                                    // Exit upon seeing a dot row
+                                    while((sr < sibling_rows.length)
+                                            && ($(sibling_rows[sr]).find("td.dot-line").length == 0)
+                                            && !bad_cell_found) {
+                                        $(sibling_rows[sr]).find("td.memory-map-cell").each(function() {
+                                            if(!bad_cell_found) {
+                                                if($(this).attr("group-id") == current_cell_group_id) {
+                                                    contiguous_cells_in_group++;
+                                                    group_end_addr = parseInt($(this).attr("addr") ,16)
+                                                } else {
+                                                    bad_cell_found = true;
+                                                }
+                                            }
+                                        });
+
+                                        sr++;
+                                    }
+
+                                }
+
+
+                                var rows_in_group = Math.floor(((group_end_addr - (group_end_addr % 4)) - current_row_addr) / 4) + 1;
+
+                                console.log(contiguous_cells_in_group);
+
+                                colspan = cells_on_row_in_group;
+                                group_id = current_cell_group_id;
+                                if(rows_in_group > 1) {
+                                    if(rows_in_group == 2 && !in_middle) {
+                                        // Draw the label
+                                        cell_value = group_id_vals[group_id];
+                                        clarity_classes = "clear-cell top-row-clear-cell label-td"
+                                        rowspan = rows_in_group;
+
+                                        var last_row_extra_cells = 4 - ((group_end_addr + 1) % 4);
+                                        if(last_row_extra_cells > 0) {
+                                            on_bottom_row = true;
+                                        }
+
+                                        if(c > 1 || last_row_extra_cells > 0) {
+                                            rowspan--;
+                                        }
+
+                                    } else if(c == 1 && colspan == 4) {
+                                        // Draw the label
+                                        cell_value = group_id_vals[group_id];
+                                        clarity_classes = "clear-cell middle-row-clear-cell label-td"
+                                        rowspan = rows_in_group;
+                                        if((group_end_addr % 4) > 0) {
+                                            rowspan--;
+                                        }
+
+                                        middle_rows_left = rowspan - 1;
+                                        if(middle_rows_left == 0) {
+                                            on_bottom_row = true;
+                                        }
+
+                                    } else {
+                                        // Draw the top row of the group
+                                        clarity_classes = "top-row-clear-cell right-edge-clear-cell";
+                                        in_middle = true;
+                                    }
+
+                                } else {
+                                    if(on_bottom_row) {
+                                        // Draw the bottom row
+                                        clarity_classes = "clear-cell bottom-row-clear-cell";
+                                        on_bottom_row = false;
+                                        in_middle = false;
+
+                                    } else {
+                                        // Draw the label cell right now
+                                        cell_value = group_id_vals[group_id];
+                                        clarity_classes = "right-edge-clear-cell label-td";
+                                    }
+
+                                }
+                            }
+
+                            td = create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes);
+
+                            label_row.appendChild(td);
+                            c += cells_on_row_in_group;
+                        }
+
+                    }
+                }
+
+                updated_label_table.appendChild(label_row);
+            }
+
+            return updated_label_table;
+        }
+
+        function regenerate_all_label_tables() {
+            regenerate_label_table("#data-memory-map");
+            regenerate_label_table("#heap-memory-map");
+
+            var num_stack_tables = $("#stack-frame-tables").children().length;
+            var stack_table_location = "";
+            for(var i=0; i < num_stack_tables; i++) {
+                regenerate_label_table("#stack-frame-tables > div:eq(" + i + ")");
+            }
+        }
+
+        function regenerate_label_table(location) {
+            // This function is only a helper for regenerate_all_label_tables()
+            var updated_label_table = generate_label_table(location)
+            var location_label_table = $(location + " > table.memory-map-label-table > tbody ");
+            location_label_table.replaceWith(updated_label_table);
         }
 
         function get_var_location(func_location, func_name) {
@@ -961,13 +1025,16 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             var c_thead = document.createElement("thead");
             var c_tbody = document.createElement("tbody");
 
-            var c_tr1_th = document.createElement("th");
-            c_tr1_th.colSpan = "5";
-            c_tr1_th.className = "heading-height";
-            c_tr1_th.innerHTML = "&nbsp;";
+            var c_tr1_th1 = document.createElement("th");
+            c_tr1_th1.className = "address-width sizing-header-cell";
+
+            var c_tr1_th2 = document.createElement("th");
+            c_tr1_th2.colSpan = "4";
+            c_tr1_th2.className = "values-width sizing-header-cell";
 
             var c_tr1 = document.createElement("tr");
-            c_tr1.appendChild(c_tr1_th);
+            c_tr1.appendChild(c_tr1_th1);
+            c_tr1.appendChild(c_tr1_th2);
 
             //---
 
@@ -981,8 +1048,19 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             //---
 
+            var c_tr3_th = document.createElement("th");
+            c_tr3_th.colSpan = "5";
+            c_tr3_th.className = "heading-height";
+            c_tr3_th.innerHTML = "&nbsp;";
+
+            var c_tr3 = document.createElement("tr");
+            c_tr3.appendChild(c_tr3_th);
+
+            //---
+
             c_thead.appendChild(c_tr1);
             c_thead.appendChild(c_tr2);
+            c_thead.appendChild(c_tr3);
 
             var cells_table = document.createElement("table");
             cells_table.className = "table-no-border memory-map-cell-table";
@@ -1055,14 +1133,32 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
         function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes) {
             var memory_map_cell = document.createElement("td");
-            memory_map_cell.className = "memory-map-cell hidden-cell " + clarity_classes;
+            memory_map_cell.className = "memory-map-cell hidden-cell ";// + clarity_classes;
             memory_map_cell.setAttribute("addr", toHexString(cell_addr));
             if(cell_value != "&nbsp;") {
                 memory_map_cell.setAttribute("group-id", group_id);
             }
+
+            if(cell_value && cell_value != "&nbsp;") {
+                cell_value = "0x" + cell_value;
+            }
+
+            memory_map_cell.addEventListener("mouseover", create_hover_highlight_function(group_id));
+
             memory_map_cell.innerHTML = cell_value;
 
             return memory_map_cell;
+        }
+
+        function create_hover_highlight_function(group_id) {
+            return function() {
+                console.log(group_id);
+            }
+        }
+
+        function toggle_hex() {
+            $("table.memory-map-cell-table td.memory-map-cell").toggle();
+            $("table.memory-map-label-table td.memory-map-cell").toggle();
         }
 
         function create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes) {
@@ -1109,7 +1205,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
 
             var td = document.createElement("td");
             td.className = "dot-line";
-            td.colSpan = "9";
+            td.colSpan = "5";
             td.innerHTML = "•••";
 
             dot_row.appendChild(td);
@@ -1278,9 +1374,17 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             reset_memory_tables();
 
             var last_step = json_index-1;
+            json_index = 0;
             for(var i=0; i <= last_step; i++) {
-                add_to_memory_table(debugger_data["steps"][i]);
+                var json_step = debugger_data["steps"][i];
+                if(json_step.hasOwnProperty('changed_vars')) {
+                    add_to_memory_table(json_step);
+                }
+                json_index++;
             }
+
+            // After we've inserted all the variables, we have to generate the corresponding label tables
+            regenerate_all_label_tables();
         }
 
         function remove_from_val_list(json_step) {

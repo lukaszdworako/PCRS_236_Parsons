@@ -1,7 +1,7 @@
 @border-color: #DDDDDD;
-@address-width: 30%;
-@values-width: 70%;
-@cell-width: 17.5%;
+@address-width: 35%;
+@values-width: 65%;
+@cell-width: 16.25%;
 @cell-height: 37px;
 @heading-height: 38px;
 
@@ -105,11 +105,13 @@ hr {
     border: none !important;
     position: absolute !important;
     border-collapse: collapse;
+    z-index: 100;
 }
 
 .memory-map-label-table {
     .memory-map-table;
     position: relative !important;
+    z-index: 0;
 }
 
 .heading-height {
@@ -156,6 +158,10 @@ hr {
 //.crouching-table
 .hidden-cell {
     display: none;
+    //opacity: 0;
+    //border-color: transparent;
+    position: relative;
+    z-index: 1000000;
 }
 
 .clear-cell {

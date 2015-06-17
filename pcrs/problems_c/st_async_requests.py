@@ -61,7 +61,7 @@ def new_visualizer_details(request):
 
     # Load the sample JSON file
     ret = {}
-    with open(sample_json_file_dir + 'function-returns.json') as data_file:
+    with open(sample_json_file_dir + 'asher-mockup.json') as data_file:
         ret = json.load(data_file)
 
 
