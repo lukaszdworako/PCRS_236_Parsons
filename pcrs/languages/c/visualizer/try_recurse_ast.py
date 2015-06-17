@@ -91,7 +91,9 @@ def create_printf_node(parent, index, func_name, onEntry, changedVar, onReturn):
      'double': '%f',
      'long double': '%lf',
      'void*': '%p',
-     'void': 'no'}
+     'void': 'no',
+     'string': '%s',
+     'char *': '%s'}
 
     add_id = c_ast.ID('printf')
     add_id_addr = None
@@ -130,7 +132,11 @@ def create_printf_node(parent, index, func_name, onEntry, changedVar, onReturn):
 
         var_uninitialized = (str)(item_delimiter) +"uninitialized:" + (str)(is_uninit) + (str)(item_delimiter)
 
-        var_val = (str)(item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(item_delimiter)
+        #Case where it's a pointer, not to a string: print the address it's storing
+        if (primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
+            var_val = (str)(item_delimiter) +"value:%p" + (str)(item_delimiter)
+        else:
+            var_val = (str)(item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(item_delimiter)
 
         #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
         var_hex = (str)(item_delimiter) +"hex:%X" + (str)(item_delimiter)
@@ -302,7 +308,9 @@ def set_decl_vars(node):
     global var_name_val
     global var_new_val
     global is_uninit
+    global ptr_depth
 
+    ptr_depth = 0
     type_of_var = node.type.type.names[0] 
     var_name_val = node.name
     var_new_val = True
@@ -317,12 +325,39 @@ def set_assign_vars(node):
     global var_name_val
     global var_new_val
     global is_uninit
+    global ptr_depth
 
     #pdb.set_trace()
+    ptr_depth = 0
     var_name_val = (str)(node.lvalue.name)
     type_of_var = (str)(var_type_dict.get(var_name_val)) 
     var_new_val = False
     is_uninit = False
+
+#Set the variables to be used in the print statements for a pointer declaration node
+def set_decl_ptr_vars(node):
+    global type_of_var
+    global var_name_val
+    global var_new_val
+    global is_uninit
+    global ptr_depth
+    #pdb.set_trace()
+
+    #Check how many levels of pointer this is
+    ptr_depth = 0
+    temp_node = node
+    while isinstance(temp_node.type, c_ast.PtrDecl):
+        ptr_depth += 1
+        temp_node = temp_node.type
+
+    print("ptr depth is "+(str)(ptr_depth))
+    type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth 
+    var_name_val = node.name
+    var_new_val = True
+    if node.init == None:
+        is_uninit = True
+    else:
+        is_uninit = False
 
 
 #NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
@@ -335,6 +370,14 @@ def handle_return(parent, index, func_name):
     print_node = create_printf_node(parent, index+amt_after+1, func_name, False, False, True)
     parent.insert(index+amt_after+1, print_node)    
     amt_after+= 1
+
+def add_before_fn(parent, index, func_name):
+    global cur_par_index
+    global amt_after
+    print_node = create_printf_node(parent, index, func_name, False, False, False)
+    parent.insert(index, print_node)
+    amt_after += 1
+    cur_par_index += 1
 
 def print_changed_vars(parent, index, func_name, new):
     global amt_after
@@ -350,23 +393,24 @@ def print_changed_vars(parent, index, func_name, new):
             #ensure there's a print statement in front of it too
             #pdb.set_trace()
             if isinstance(parent[index].init, c_ast.FuncCall) and (get_funccall_funcname(parent[index].init) in func_list):
-                global cur_par_index
-                print_node = create_printf_node(parent, index, func_name, False, False, False)
-                parent.insert(index, print_node)
-                amt_after += 1
-                cur_par_index += 1
-
+                add_before_fn(parent, index, func_name)
 
         #Pointer declaration
         elif isinstance(get_decl_type(parent[index]), c_ast.PtrDecl):
-            print_node = old_create_printf_node()
+            #pdb.set_trace()
+            set_decl_ptr_vars(parent[index])
+            print_node = create_printf_node(parent, index, func_name, False, True, False)
             parent.insert(index+1, print_node)
+            amt_after += 1
+            if isinstance(parent[index].init, c_ast.FuncCall) and (get_funccall_funcname(parent[index].init) in func_list):
+                add_before_fn(parent, index, func_name)
 
         #Array declaration
         elif isinstance(get_decl_type(parent[index]), c_ast.ArrayDecl):
             print_node = old_create_printf_node()
             parent.insert(index+1, print_node)
-    
+            amt_after += 1
+
     #Otherwise it was an assignment of an already declared var
     else:
         #Case for regular (non-pointer or anything fancy) assignment 
@@ -380,11 +424,7 @@ def print_changed_vars(parent, index, func_name, new):
             #If it's a function call assignment for a function in our program, 
             #ensure there's a print statement in front of it too
             if isinstance(parent[index].rvalue, c_ast.FuncCall) and (get_funccall_funcname(parent[index].rvalue) in func_list):
-                global cur_par_index
-                print_node = create_printf_node(parent, index, func_name, False, False, False)
-                parent.insert(index, print_node)
-                amt_after += 1
-                cur_par_index += 1
+                add_before_fn(parent, index, func_name)
 
 def print_stdout(parent, index):
     #Implement
