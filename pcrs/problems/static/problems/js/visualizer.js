@@ -41,7 +41,7 @@ function toHexString(hexnum) {
  *
  */
 
-function executeGenericVisualizer(option, data, newCode, newOrOld) {
+function executeGenericVisualizer(option, data, newCode) {
     console.log("got to visualizer.js");
     var supportedVisualization = ['python', 'c'];
     var value_list = {};
@@ -51,7 +51,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
             return executePythonVisualizer(option, data);
         }
         else if (language == 'c') {
-            return executeCVisualizer(option, data, newCode, newOrOld);
+            return executeCVisualizer(option, data, newCode);
         }
     }else{
         alert("No support for visualization available!");
@@ -233,10 +233,11 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         }
     }
 
-    function executeCVisualizer(option, data, newCode, newOrOld) {
+    function executeCVisualizer(option, data, newCode) {
     /**
      * C visualizer representation.
      */
+        var newOrOld = "new";     // By default, use the new vis
         console.log(data);
         switch(option) {
 
@@ -281,7 +282,7 @@ function executeGenericVisualizer(option, data, newCode, newOrOld) {
         function createVisualizer(data, newCode) {
             /**
              * Verify trace does not contain errors and create visualizer,
-             * othervise don't enter visualization mode.
+             * otherwise don't enter visualization mode.
              */
 
 
