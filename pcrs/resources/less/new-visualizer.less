@@ -105,13 +105,13 @@ hr {
     border: none !important;
     position: absolute !important;
     border-collapse: collapse;
-    z-index: 100;
+    z-index: 0;
 }
 
 .memory-map-label-table {
     .memory-map-table;
     position: relative !important;
-    z-index: 0;
+    z-index: 100;
 }
 
 .heading-height {
@@ -128,11 +128,13 @@ hr {
 
 .address-heading {
     text-align: right;
-    border-right: 2px solid @border-color !important;
+    padding-right: 0px;
     width: @address-width;
 }
 
 .values-heading {
+    padding-left: 0px;
+    border-left: 2px solid @border-color !important;
     text-align: center;
     width: @values-width;
 }
@@ -161,7 +163,7 @@ hr {
     //opacity: 0;
     //border-color: transparent;
     position: relative;
-    z-index: 1000000;
+    //z-index: 1000000;
 }
 
 .clear-cell {
@@ -193,7 +195,6 @@ hr {
     height: 15px;
 }
 
-.sizing-header-cell {
-    visibility: hidden;
-    border: none !important;
+.highlight {
+    background-color: rgba(210,250,205, 0.5);
 }

@@ -1,5 +1,6 @@
 // These global variables should not be modified
 var memory_map_cell_height = 37; // In pixels
+var address_width = 35 // In %
 var memory_map_cell_width = 16.25; // In %
 var cur_stdout = "";
 var return_to_clr = "";
@@ -8,6 +9,7 @@ var return_val;
 // These global variables will change throughout the program
 var largest_group_id;
 var group_id_vals = {};
+var group_id_start_addrs = {};
 
 function zeroPad (str, max) {
   str = str.toString();
@@ -584,6 +586,11 @@ function executeGenericVisualizer(option, data, newCode) {
                             '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
                             '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
                         '</tr>');
+
+                        $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']").hover(
+                            create_hover_highlight_function_names(),
+                            create_hover_unhighlight_function_names()
+                            );
                     }
                 }
 
@@ -642,6 +649,7 @@ function executeGenericVisualizer(option, data, newCode) {
             var group_id = largest_group_id;
             largest_group_id++;
             group_id_vals[group_id] = value;
+            group_id_start_addrs[group_id] = start_addr;
 
             var cell_rows = document.createElement("div");
 
@@ -1026,16 +1034,39 @@ function executeGenericVisualizer(option, data, newCode) {
             var c_thead = document.createElement("thead");
             var c_tbody = document.createElement("tbody");
 
-            var c_tr1_th1 = document.createElement("th");
-            c_tr1_th1.className = "address-width sizing-header-cell";
+            //---
 
-            var c_tr1_th2 = document.createElement("th");
-            c_tr1_th2.colSpan = "4";
-            c_tr1_th2.className = "values-width sizing-header-cell";
+            var c_col_size_1 = document.createElement("col");
+            c_col_size_1.setAttribute("width", address_width + "%");
+            var c_col_size_2 = document.createElement("col");
+            c_col_size_2.setAttribute("width", memory_map_cell_width + "%");
+            var c_col_size_3 = document.createElement("col");
+            c_col_size_3.setAttribute("width", memory_map_cell_width + "%");
+            var c_col_size_4 = document.createElement("col");
+            c_col_size_4.setAttribute("width", memory_map_cell_width + "%");
+            var c_col_size_5 = document.createElement("col");
+            c_col_size_5.setAttribute("width", memory_map_cell_width + "%");
+
+            var l_col_size_1 = document.createElement("col");
+            l_col_size_1.setAttribute("width", address_width + "%");
+            var l_col_size_2 = document.createElement("col");
+            l_col_size_2.setAttribute("width", memory_map_cell_width + "%");
+            var l_col_size_3 = document.createElement("col");
+            l_col_size_3.setAttribute("width", memory_map_cell_width + "%");
+            var l_col_size_4 = document.createElement("col");
+            l_col_size_4.setAttribute("width", memory_map_cell_width + "%");
+            var l_col_size_5 = document.createElement("col");
+            l_col_size_5.setAttribute("width", memory_map_cell_width + "%");
+
+            //---
+
+            var c_tr1_th = document.createElement("th");
+            c_tr1_th.colSpan = "5";
+            c_tr1_th.className = "heading-height";
+            c_tr1_th.innerHTML = "&nbsp;";
 
             var c_tr1 = document.createElement("tr");
-            c_tr1.appendChild(c_tr1_th1);
-            c_tr1.appendChild(c_tr1_th2);
+            c_tr1.appendChild(c_tr1_th);
 
             //---
 
@@ -1049,22 +1080,16 @@ function executeGenericVisualizer(option, data, newCode) {
 
             //---
 
-            var c_tr3_th = document.createElement("th");
-            c_tr3_th.colSpan = "5";
-            c_tr3_th.className = "heading-height";
-            c_tr3_th.innerHTML = "&nbsp;";
-
-            var c_tr3 = document.createElement("tr");
-            c_tr3.appendChild(c_tr3_th);
-
-            //---
-
             c_thead.appendChild(c_tr1);
             c_thead.appendChild(c_tr2);
-            c_thead.appendChild(c_tr3);
 
             var cells_table = document.createElement("table");
             cells_table.className = "table-no-border memory-map-cell-table";
+            cells_table.appendChild(c_col_size_1);
+            cells_table.appendChild(c_col_size_2);
+            cells_table.appendChild(c_col_size_3);
+            cells_table.appendChild(c_col_size_4);
+            cells_table.appendChild(c_col_size_5);
             cells_table.appendChild(c_thead);
             cells_table.appendChild(c_tbody);
 
@@ -1072,18 +1097,6 @@ function executeGenericVisualizer(option, data, newCode) {
             // Create the labels table
             var l_thead = document.createElement("thead");
             var l_tbody = document.createElement("tbody");
-
-            // These cells created for sizing the columns, since table-layout: fixed is needed to prevent overflowing content in tds but it otherwise messes up proper column sizing
-            var l_sizing_th1 = document.createElement("th");
-            l_sizing_th1.className = "address-width sizing-header-cell";
-
-            var l_sizing_th2 = document.createElement("th");
-            l_sizing_th2.className = "values-width sizing-header-cell";
-            l_sizing_th2.colSpan = "4";
-
-            var l_sizing_tr = document.createElement("tr");
-            l_sizing_tr.appendChild(l_sizing_th1);
-            l_sizing_tr.appendChild(l_sizing_th2);
 
             //---
 
@@ -1111,11 +1124,15 @@ function executeGenericVisualizer(option, data, newCode) {
 
             //---
 
-            l_thead.appendChild(l_sizing_tr)
             l_thead.appendChild(l_tr1);
             l_thead.appendChild(l_tr2);
 
             var labels_table = document.createElement("table");
+            labels_table.appendChild(l_col_size_1);
+            labels_table.appendChild(l_col_size_2);
+            labels_table.appendChild(l_col_size_3);
+            labels_table.appendChild(l_col_size_4);
+            labels_table.appendChild(l_col_size_5);
             labels_table.className = "table table-bordered memory-map-label-table";
             labels_table.appendChild(l_thead);
             labels_table.appendChild(l_tbody);
@@ -1144,22 +1161,9 @@ function executeGenericVisualizer(option, data, newCode) {
                 cell_value = "0x" + cell_value;
             }
 
-            memory_map_cell.addEventListener("mouseover", create_hover_highlight_function(group_id));
-
             memory_map_cell.innerHTML = cell_value;
 
             return memory_map_cell;
-        }
-
-        function create_hover_highlight_function(group_id) {
-            return function() {
-                console.log(group_id);
-            }
-        }
-
-        function toggle_hex() {
-            $("table.memory-map-cell-table td.memory-map-cell").toggle();
-            $("table.memory-map-label-table td.memory-map-cell").toggle();
         }
 
         function create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes) {
@@ -1167,10 +1171,21 @@ function executeGenericVisualizer(option, data, newCode) {
             memory_map_cell.className = "memory-map-cell " + clarity_classes;
             memory_map_cell.colSpan = colspan;
             memory_map_cell.rowSpan = rowspan;
+
             if(cell_value != "&nbsp;") {
                 memory_map_cell.setAttribute("group-id", group_id);
             }
             memory_map_cell.innerHTML = cell_value;
+
+            if(group_id) {
+                var group_start_addr = group_id_start_addrs[group_id];
+                memory_map_cell.setAttribute("group-start-addr", "0x" + toHexString(group_start_addr));
+
+                $(memory_map_cell).hover(
+                    create_hover_highlight_function_memory(group_id),
+                    create_hover_unhighlight_function_memory(group_id)
+                    );
+            }
 
             return memory_map_cell;
         }
@@ -1212,6 +1227,59 @@ function executeGenericVisualizer(option, data, newCode) {
             dot_row.appendChild(td);
 
             return dot_row;
+        }
+
+        function toggle_hex() {
+            $("table.memory-map-cell-table td.memory-map-cell").toggle();
+            $("table.memory-map-label-table td.memory-map-cell").toggle();
+        }
+
+        function create_hover_highlight_function_memory(group_id) {
+            return function() {
+                var group_start_addr = group_id_start_addrs[group_id];
+                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
+
+                var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
+
+                console.log("Group " + group_id + " starts at address: " + hex_group_start_addr);
+
+                $(this).addClass("highlight");
+                name_table_row.addClass("highlight");
+            }
+        }
+
+        function create_hover_unhighlight_function_memory(group_id) {
+            return function() {
+                var group_start_addr = group_id_start_addrs[group_id];
+                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
+
+                var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
+
+                $(this).removeClass("highlight");
+                name_table_row.removeClass("highlight");
+            }
+        }
+
+        function create_hover_highlight_function_names() {
+            return function() {
+                var group_start_addr = $(this).attr("data-address");
+
+                var memory_map_group = $("#stack-frame-tables td[group-start-addr='" + group_start_addr + "']");
+
+                $(this).addClass("highlight");
+                memory_map_group.addClass("highlight");
+            }
+        }
+
+        function create_hover_unhighlight_function_names() {
+            return function() {
+                var group_start_addr = $(this).attr("data-address");
+
+                var memory_map_group = $("#stack-frame-tables td[group-start-addr='" + group_start_addr + "']");
+
+                $(this).removeClass("highlight");
+                memory_map_group.removeClass("highlight");
+            }
         }
 
         function add_return_name_table(json_step) {
