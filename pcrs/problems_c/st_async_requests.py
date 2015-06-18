@@ -40,6 +40,8 @@ def visualizer_details(request):
         # Create a language instance
         gen = CSpecifics(add_params['user'], clean_code)
 
+        print("GEN IS :")
+        print(gen)
         #PROBLEM HERE---
         ret = gen.get_exec_trace(clean_code, add_params)
 
