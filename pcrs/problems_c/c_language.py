@@ -119,8 +119,9 @@ class CSpecifics():
             ret["test_val"] = execution_output
             ret["passed_test"] = False if expected_output_tmp != execution_output_tmp else True
 
-        except CompilationError:
+        except CompilationError as e:
             ret["passed_test"] = False
+            ret["exception_type"] = 'error'
             ret["test_val"] = ret["exception"]
 
         except SyntaxError as e:
@@ -145,6 +146,7 @@ class CSpecifics():
             #    os.remove(temp_runtime_error_file)
             #except OSError:
             #    pass
+            # print(ret["exception_type"] + ": " + ret["exception"])
             return ret
 
     def compile_source_code(self, user, user_script, deny_warning=False):

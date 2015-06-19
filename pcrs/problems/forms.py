@@ -1,6 +1,6 @@
 from crispy_forms.bootstrap import StrictButton
 from crispy_forms.layout import Submit, HTML, ButtonHolder, Div, Layout, \
-    Fieldset, Button
+    Fieldset, Button, Row
 from django import forms
 from django.utils.timezone import now
 
@@ -53,16 +53,17 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
-                                    css_class='green-button')
+                                    css_class='green-button-right')
         if problem.name != 'blank' and not simpleui:
-            self.history_button = StrictButton('History', name='history',
-                                               data_toggle="modal",
-                                               data_target="#history_window_"+
-                                                problem.get_problem_type_name()+
-                                                           "-{}".format(problem.pk),
-                                               css_class='reg-button')
+            history_css = 'reg-button'
         else:
-            self.history_button = None
+            history_css = 'reg-button hidden'
+        self.history_button = StrictButton('History', name='history',
+                                           data_toggle="modal",
+                                           data_target="#history_window_"+
+                                           problem.get_problem_type_name()+
+                                                   "-{}".format(problem.pk),
+                                           css_class=history_css)
 
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
@@ -75,11 +76,8 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = problem.starter_code
-        self.helper.layout = Layout(
-            Fieldset('', 'submission'),
-            self.history_button,
-            ButtonHolder(self.submit_button, css_class='pull-right')
-        )
+        layout_fields = (Fieldset('', 'submission'), Row(self.history_button, self.submit_button))
+        self.helper.layout = Layout(*layout_fields)
 
 
 def remove_tag(tag_open, tag_close, source_code):

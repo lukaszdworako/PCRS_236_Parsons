@@ -29,10 +29,13 @@ def is_course_staff(user):
 
 
 def check_authorization(username, password):
-    ''' Return True if user is authized on the university level, False othervise. '''
-    if settings.AUTH_TYPE == 'none':
+    ''' Return True if user can be authorized and False otherwise.
+    '''
+    # AUTH_TYPE 'shibboleth' does not use this function
+    if settings.AUTH_TYPE in ('none', 'pass'):
+        # 'none' does no authentication, 'pass' will authenticate on user object creation
         return True
-
+    # else settings.AUTH_TYPE == 'pwauth'
     pwauth = subprocess.Popen("/usr/sbin/pwauth", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               close_fds=True)
     try:
@@ -48,14 +51,19 @@ def login_django(request, username):
     logger = logging.getLogger('activity.logging')
     logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
                 str(username) + " | Log in")
-    # password-based authorization was provided at university level,
-    # just create a user object.
-    # user = authenticate(username=username, password=password)
-    user = authenticate(username=username)
 
-    if user is None and settings.AUTOENROLL:
-        user = users.models.PCRSUser.objects.create_user(username, False, section_id='123')
+    if settings.AUTH_TYPE == 'pass':
+        # Note that AUTOENROLL is not enabled for 'pass' auth type
         user = authenticate(username=username)
+        if user:
+            auth = user.check_password(request.POST.get('password', ''))
+            if not auth:
+                user = None
+    else:  # AUTH_TYPEs 'none', 'pwauth', and 'shibboleth'
+        user = authenticate(username=username)
+        if user is None and settings.AUTOENROLL:
+            user = users.models.PCRSUser.objects.create_user(username, False, section_id='123')
+            user = authenticate(username=username)
 
     if user is None:
         # Automatic accounts not set up or creation failed.
@@ -69,7 +77,7 @@ def login_django(request, username):
         login(request, user)
         return HttpResponseRedirect(redirect_link)
 
-    # Actions is user cannot be logged in.
+    # Actions if user cannot be logged in.
     if settings.AUTH_TYPE == 'shibboleth':
         # redirect user letting them know they do not belong to this server
         redirect_link = settings.SITE_PREFIX + '/usernotfound.html'
@@ -90,14 +98,14 @@ def login_view(request):
     if request.user and request.user.is_authenticated():
         return HttpResponseRedirect(NEXT or settings.SITE_PREFIX + '/content/quests')
 
+    # AUTH_TYPE 'shibboleth' uses an environment variable instead of check_authorization
     if settings.AUTH_TYPE == "shibboleth":
-        # user authenticated through shibboleth
         username = os.environ["utorid"]
         response = login_django(request, username)
         if response:
             return response
 
-    # settings.AUTH_TYPE == 'none' or settings.AUTH_TYPE == 'pwauth'
+    # AUTH_TYPEs 'pwauth', 'pass', and 'none'
     elif request.POST:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
@@ -112,6 +120,7 @@ def login_view(request):
                 if response:
                     return response
 
+    # Failed logins and GET requests
     context = {'NEXT': NEXT, 'NOTIFICATION': NOTIFICATION}
     context.update(csrf(request))
     return render_to_response('users/login.html', context)

@@ -180,6 +180,15 @@ class Submission(AbstractSubmission):
         split_pattern = re.compile(r'(([0-9]+):[0-9]+:\s(?:warning:|error:))')
         tuple_of_delims = split_pattern.findall(program_exception)
 
+        if len(tuple_of_delims) == 0:   # probably an ld: undefined reference
+            exception = "Compilation or linking error: usually caused by a missing symbol"
+            index = program_exception.find("undefined reference")
+            if index != -1:
+                start = program_exception[index:].find("`")
+                stop = program_exception[index:].find("'")
+                exception += " ({0})".format(program_exception[index + start + 1: index + stop])
+            return exception
+      
         msg_delim = [str(cur_tuple[0]) for cur_tuple in tuple_of_delims]
 
         split_warning = re.split(r'[0-9]+:[0-9]+:\s(?:warning:|error:)', program_exception)
