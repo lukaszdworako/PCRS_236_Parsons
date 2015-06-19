@@ -4,6 +4,7 @@ import datetime
 from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_GROUPID
 from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
+import string
 
 class CSpecifics():
     """ Representation of C language:
@@ -224,6 +225,13 @@ class CSpecifics():
             pass
         self.compiled = False
 
+    def split_by_delim(self, str_to_split, delim1, delim2):
+        newlist = str_to_split.split(delim1)
+        print(newlist)
+        for item in newlist:
+            newlist2 =(str)(item).split(delim2)
+            print(newlist2) 
+
     def get_exec_trace(self, user_script, add_params):
         """ Return dictionary ret containing all variables results.
             ret has the following mapping:
@@ -252,18 +260,29 @@ class CSpecifics():
         #Each element of stack trace contains a dictionary for a 
         #function in the code(one element per function, ie. stacktrace[0] 
         #is the main function, etc)
-        stack_trace = c_visualizer.build_stacktrace(user_script)
-        logger.info("gets here 2")
-        for item in stack_trace:
-            logger.info(item)
+        
+        #stack_trace = c_visualizer.build_stacktrace(user_script)
+        #logger.info("gets here 2")
+        #for item in stack_trace:
+        #    logger.info(item)
+        
+
+
         # Change original source code with the proper printf (debug)
-        mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
+        #mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
+        print(user_script)
+        
+        mod_user_script = c_visualizer.add_printf(user_script)
+
         logger.info("here 3")
         # Compile and run the modified source code and remove compiled file
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
+        print(code_output.get("test_val"))
+
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
-            return c_visualizer.get_visualizer_enconding(code_output)
+            self.split_by_delim((str)(code_output.get("test_val")), c_visualizer.print_wrapper, c_visualizer.item_delimiter)
+            #return split_code TODO: RETURN THIS ONCE SAVED IN A LIST
         else:
             # Return error to user
             return code_output

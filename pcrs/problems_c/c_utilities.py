@@ -58,21 +58,3 @@ def process_code_tags(problem_id, user_submission, starter_code):
 
 
     return mod_submission
-
-
-'''
-Replace preprocessor directives with empty lines to allow pycparser to parse the file correctly
-'''
-def remove_preprocessor_directives(user_script):
-    lines = user_script.split('\n')
-    new_lines = [clear_directive_line(l) for l in lines]
-    new_user_script = '\n'.join(new_lines)
-
-    return new_user_script
-
-
-def clear_directive_line(line):
-    if ('_Generic' in line) or ('#include' in line):
-        return '\r'
-    else:
-        return line

@@ -16,6 +16,9 @@ class CVisualizer:
         self.user = user
         self.temp_path = temp_path
         self.date_time = str((datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds())
+
+        #List if removed lines from the start of the c program, to be put back in later
+        self.removed_lines = []
         #func_list keeps track of all the function declaractions in our program
         self.func_list = []
 
@@ -50,6 +53,27 @@ class CVisualizer:
         add_exprList = c_ast.ExprList([add_const])
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
+
+
+
+    '''
+    Replace preprocessor directives with empty lines to allow pycparser to parse the file correctly
+    '''
+    def remove_preprocessor_directives(self, user_script):
+        lines = user_script.split('\n')
+        new_lines = [self.clear_directive_line(l) for l in lines]
+        new_user_script = '\n'.join(new_lines)
+
+        return new_user_script
+
+
+    def clear_directive_line(self, line):
+        if ('_Generic' in line) or ('#include' in line):
+            self.removed_lines.append(line)
+            return '\r'
+        else:
+            return line
+
 
     def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn):
 
@@ -455,6 +479,11 @@ class CVisualizer:
 
 
     def add_printf(self, user_script):
+
+        stripped_user_script = self.remove_preprocessor_directives(user_script)
+        print("STRIPPED USER SCRIPT IS -------")
+        print(stripped_user_script)
+
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
         try:
@@ -466,7 +495,7 @@ class CVisualizer:
                 os.makedirs(os.path.dirname(temp_c_file))
                 f = open(temp_c_file, 'w')
 
-            f.write(user_script)
+            f.write(stripped_user_script)
             f.close()
 
         except Exception as e:
@@ -492,3 +521,4 @@ class CVisualizer:
         # print("-----------------------")
         generator = c_generator.CGenerator()
         print(generator.visit(ast))
+        return generator.visit(ast)
