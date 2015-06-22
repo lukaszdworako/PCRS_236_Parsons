@@ -1,318 +1,524 @@
 from languages.c.visualizer.cg_stacktrace_functions import *
 import problems_c.models
 import logging
+import pdb
+import uuid
+import sys
+import os
+import datetime
+sys.path.extend(['.', '..'])
+from pycparser import parse_file, c_ast, c_generator
+
 
 class CVisualizer:
-    """ Representation of C language in the visualizer platform
-        * running tests
-    """
-    primitive_types = \
-        [{'char': '%c'},
-         {'signed char': '%d -> %c'},
-         {'unsigned char': '%u -> %c'},
-         {'short': '%d'},
-         {'short int': '%d'},
-         {'signed short': '%d'},
-         {'signed short int': '%c'},
-         {'unsigned short': '%u'},
-         {'unsigned short int': '%u'},
-         {'int': '%d'},
-         {'signed int': '%d'},
-         {'unsigned': '%u'},
-         {'unsigned int': '%u'},
-         {'long': '%ld'},
-         {'long int': '%ld'},
-         {'signed long': '%ld'},
-         {'signed long int': '%ld'},
-         {'unsigned long': '%lu'},
-         {'unsigned long int': '%lu'},
-         {'long long': '%lld'},
-         {'long long int': '%lld'},
-         {'signed long long': '%lld'},
-         {'signed long long int': '%lld'},
-         {'unsigned long long': '%llu'},
-         {'unsigned long long int': '%llu'},
-         {'float': '%f'},
-         {'double': '%f'},
-         {'long double': '%lf'},
-         {'void*': '%p'},
-         {'void': 'no'}]
 
     def __init__(self, user, temp_path):
         self.user = user
         self.temp_path = temp_path
+        self.date_time = str((datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds())
 
-        # Printf hashkey to detect valid output
-        self.key = hash_string((str(self.user) + str(get_current_date())).encode("utf-8"))
+        #List if removed lines from the start of the c program, to be put back in later
+        self.removed_lines = []
+        #func_list keeps track of all the function declaractions in our program
+        self.func_list = []
 
-    def build_stacktrace(self, user_script):
-        logger = logging.getLogger('activity.logging')
-        logger.info("in stacktrace user script is "+user_script+"DONE")
-        user_script = remove_string_constant(user_script)
-        user_script = remove_all_comments(user_script)
-        logger.info("before it crashes user script is "+user_script+" DONE")
-        extra_scape_sequence_list, user_script = add_break_line_after_token(user_script, [";", "{", "}"])
-        for thngy in extra_scape_sequence_list:
-            logger.info("extra scape sequence contains "+(str)(thngy))
-        logger.info(" and user script is "+user_script+" done ")
-        # Process C source code
-        stacktrace = []  # Stacktrace data structure
-        line = ""  # Current source code line
-        inside_function = False  # Program is examining the inside of a function
-        analyze_declaration = False  # Program is examining a function/variable declaration
-        line_count = 1
-        declaration_type = ""  # Function/variable type
-        other_brackets = 1
-        function_brackets = []
-        function_bracket_open_line = 0  # Function inner bracket open
-        #function_bracket_close_line = 0  # Function inner bracket close
-        for char in user_script:
-            logger.info("-"+char+"-")
-            if char == '\n':
+        #Global hash variables, these are what we'll use to denote different parts of our added print statements
 
-                # Search for variables and functions
-                if not analyze_declaration:
-                    declaration_type = search_dictionary(self.primitive_types, line)
-                    if declaration_type != "":
-                        analyze_declaration = True
-                    elif not inside_function:
-                        line = ""
+        #print_wrapper will hold the pattern we'll use to identify where our print statements begin and end
+        self.print_wrapper = uuid.uuid4().hex
 
-                if analyze_declaration:
-                    # Function declaration
-                    if '(' in line and ')' in line and '{' in line and not inside_function:
-                        dic = {'declaration': 'function', 'type': declaration_type,
-                               'name': format_function_name(line, declaration_type),
-                               'line_begin': line_count, 'scope': 'global', 'function_calls': [],
-                               'return': [], 'variables': get_variables_details_func_signature(line, line_count)}
-                        logger.info("GOT DIC")
-                        stacktrace.append(dic.copy())
-                        inside_function = True
-                        analyze_declaration = False
-                        line = ""
-                    # Prototype declaration
-                    elif is_function_prototype(line):
-                        line = ""
-                        analyze_declaration = False
-                    # Variable declaration
-                    elif ';':
-                        # Variable declaration inside function
-                        if inside_function:
-                            for local_var in get_variables_details(line, declaration_type):
-                                malloc = False
-                                if "malloc" in line:
-                                    malloc = True
-                                stacktrace[len(stacktrace)-1]['variables'].\
-                                    append({line_count: [{local_var[0]: local_var[1]}, \
-                                                         get_variable_location_inside_function(function_brackets),
-                                                         {"malloc": malloc}]})
-                            analyze_declaration = False
-                        # Variable declaration outside function
-                        elif not inside_function:
-                            malloc = False
-                            if "malloc" in line:
-                                malloc = True
-                            for global_var in get_variables_details(line, declaration_type):
-                                dic = {'declaration': 'variable', 'type': global_var[0],
-                                        'name': global_var[1], 'line': line_count,
-                                        'scope': 'global', 'malloc': malloc}
-                                stacktrace.append(dic.copy())
-                            analyze_declaration = False
-                            line = ""
+        #item_delimiter will hold the pattern we'll use to identify where different items in a single print statement begin and end
+        self.item_delimiter = uuid.uuid4().hex
 
-                # Analyse attributes inside function, end of the function and other function calls
-                if inside_function:
-                    #pdb.set_trace()
-                    # Treat return statement as variable
-                    if line.find("return") > -1:
-                        malloc = False
-                        if "malloc" in line:
-                            malloc = True
-                        stacktrace[len(stacktrace)-1]['return'].append(line_count)
-                        stacktrace[len(stacktrace)-1]['variables'].\
-                            append({line_count:
-                                   {'return': {stacktrace[len(stacktrace)-1]['type']: get_return_variable(line)}, 'malloc': malloc
-                                    }})
-                    # Function calls
-                    if is_function_call(line) and not analyze_declaration and\
-                       search_dictionary(self.primitive_types, remove_bracket_value_range(line, "(", ")")) == "":
-                        stacktrace[len(stacktrace)-1]['function_calls'].extend(get_function_call(line, line_count)[::-1])
+        #stdout_wrapper will hold the pattern we'll print right before and after each stdout line
+        self.stdout_wrapper = uuid.uuid4().hex
 
-                    # Language statement (if, else, for)
-                    if is_language_statement(line):
-                        line = ""
-                        analyze_declaration = False
+        #stderr_wrapper will hold the pattern we'll print right before and after each stderr line
+        self.stderr_wrapper = uuid.uuid4().hex
 
-                    # Clean line and verify end of function
-                    if line.find(";") > -1 or line.find("{") > -1 or line.find("}") > -1:
-                        if line.find("{") > -1:
-                            function_bracket_open_line = line_count
-                            other_brackets += 1
-                        if line.find("}") > -1:
-                            function_bracket_close_line = line_count
-                            function_brackets.append((function_bracket_open_line, function_bracket_close_line))
-                            function_bracket_open_line = 0
-                            other_brackets -= 1
-                        # Function end
-                        if other_brackets == 0:
-                            stacktrace[len(stacktrace)-1]['line_end'] = line_count
-                            del function_brackets[-1]  # Delete end of function bracket
-                            stacktrace[len(stacktrace)-1]['brackets'] = function_brackets
-                            inside_function = False
-                            other_brackets = 1
-                        analyze_declaration = False
-                        line = ""
+        #var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
+        self.var_type_dict = {}
 
-                # Do not consider extra line breaks added on source code pre processing
-                if line_count in extra_scape_sequence_list:
-                    extra_scape_sequence_list.remove(line_count)
-                    line_count -= 1
+        #amt_after keeps track of the amount of print nodes we just added after the current node, used for returns
+        self.amt_after = 0
 
-                line_count += 1
+        #cur_par_index keeps track of the index we're at for the current parent. Important to be global in the case where we
+        #add nodes in front of our current node, we want to be able to increase this by more than 1
+        self.cur_par_index = 0
+
+        #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
+    def old_create_printf_node(self):
+        add_id = c_ast.ID('printf')
+        add_const = c_ast.Constant('string', '"12345"')
+        add_exprList = c_ast.ExprList([add_const])
+        new_node = c_ast.FuncCall(add_id, add_exprList)
+        return new_node
+
+
+
+    '''
+    Replace preprocessor directives with empty lines to allow pycparser to parse the file correctly
+    '''
+    def remove_preprocessor_directives(self, user_script):
+        lines = user_script.split('\n')
+        new_lines = [self.clear_directive_line(l) for l in lines]
+        new_user_script = '\n'.join(new_lines)
+
+        return new_user_script
+
+
+    def clear_directive_line(self, line):
+        if ('_Generic' in line) or ('#include' in line):
+            self.removed_lines.append(line)
+            return '\r'
+        else:
+            return line
+
+
+    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn):
+
+        primitive_types = \
+        {'char':'%c',
+         'signed char':'%c',
+         'unsigned char':'%c',
+         'short':'%d',
+         'short int': '%d',
+         'signed short': '%d',
+         'signed short int': '%c',
+         'unsigned short': '%u',
+         'unsigned short int': '%u',
+         'int': '%d',
+         'signed int': '%d',
+         'unsigned': '%u',
+         'unsigned int': '%u',
+         'long': '%ld',
+         'long int': '%ld',
+         'signed long': '%ld',
+         'signed long int': '%ld',
+         'unsigned long': '%lu',
+         'unsigned long int': '%lu',
+         'long long': '%lld',
+         'long long int': '%lld',
+         'signed long long': '%lld',
+         'signed long long int': '%lld',
+         'unsigned long long': '%llu',
+         'unsigned long long int': '%llu',
+         'float': '%f',
+         'double': '%f',
+         'long double': '%lf',
+         'void*': '%p',
+         'void': 'no',
+         'string': '%s',
+         'char *': '%s'}
+
+        add_id = c_ast.ID('printf')
+        add_id_addr = None
+        add_id_val = None
+        add_id_size = None
+        add_return_val = None
+        line_no = (str)(self.item_delimiter) +"line:"+ (str)(parent[index].coord.line) + (str)(self.item_delimiter)
+        function = (str)(self.item_delimiter) +"function:"+ (str)(func_name) + (str)(self.item_delimiter)
+        on_entry = ""
+        if onEntry:
+            on_entry = (str)(self.item_delimiter) + "on_entry_point" + (str)(self.item_delimiter)
+
+        on_return = ""
+        if onReturn:
+            #pdb.set_trace()
+            #Case where we're returning a variable value
+            if isinstance(parent[index].expr, c_ast.ID):
+                return_var_name = (str)(parent[index].expr.name)
+                return_type = (str)(self.var_type_dict.get(return_var_name))
+                on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type) + (str)(self.item_delimiter)
+                add_return_val = c_ast.ID(return_var_name)
+            #Otherwise we're returning a constant
             else:
-                line += char
+                on_return = (str)(self.item_delimiter) + "return:" + (str)(parent[index].expr.value) + (str)(self.item_delimiter)
 
-        return stacktrace
+        var_info = ""
+        #This block only gets executed if there's changed vars in the node
+        if changedVar:
+            #pdb.set_trace()
 
-    def change_code_for_debbug(self, stacktrace, user_script):
-        # Build printf statements for every single function line
-        print_stack = []
-        for res in stacktrace:
-            if res['declaration'] == 'function':
-                line = res['line_begin']
-                print_list_func = get_global_printf_list(stacktrace, line, self.key, self.primitive_types)
-                while line <= int(res['line_end']):
-                    print_list_func = get_local_printf_list(stacktrace, line, res['name'], print_list_func, self.key,
-                                                            self.primitive_types)
-                    line += 1
-                print_stack.append({(res['line_begin'], res['line_end']): print_list_func})
+            var_name = (str)(self.item_delimiter) +"var_name:"+ (str)(var_name_val) + (str)(self.item_delimiter)
+            var_addr = (str)(self.item_delimiter) +"addr:%p" + (str)(self.item_delimiter)
+            var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var) + (str)(self.item_delimiter)
+            var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val) + (str)(self.item_delimiter)
+            var_size = (str)(self.item_delimiter) +"max_size:%zu" + (str)(self.item_delimiter)
 
-        logger = logging.getLogger('activity.logging')
-        logger.info("inside change for debug")
+            var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit) + (str)(self.item_delimiter)
 
-        # Include printf inside source code for compilation
-        line_count = 1
-        index = 0
-        index_last_semicolon = 0
-        script_size = len(user_script)
-        print_inline_num = 0
-        while index < script_size:
-            line = remove_string_constant(user_script[index_last_semicolon: index+1])
-            # Find end of statement to print object
-            if line.find(";") > -1:
-                # Find break lines and count
-                last_line = line_count
-                line_count += len(list(find_all_occurrences(line, '\n')))
-                for function in print_stack:
-                    for function_line, print_details in function.items():
-                        # Check if line is in print range
-                        if line_count in range(function_line[0], function_line[1]+1):
-                            append_line = ""
-                            inline_functions_num = count_line_declarations(print_details, line_count)
-                            if line_count != last_line:
-                                print_inline_num = 0
-                            # Find out if it is a inline declaration
-                            line_start = line.rfind('{')+1 if line.rfind('{') > -1 else 0
-                            if inline_functions_num > 1 and \
-                               search_dictionary(self.primitive_types, line[line_start:].strip()) != "":
-                                print_inline_num += 1
-                            print_inline_num_tmp = print_inline_num
-                            for print_statement in print_details:
-                                for line_start, print_string in print_statement.items():
-                                    # Return statements
-                                    if str(line_start) == 'return':
-                                        if str(line_count) in print_string:
-                                            print_string_tmp = print_string[str(line_count)].replace("<line>",
-                                                                                                     str(line_count))
-                                            #append_line += print_string_tmp
-                                    # Other statements
-                                    elif line_count >= int(line_start):
-                                        if inline_functions_num > 1 and print_inline_num_tmp == 0:
-                                            break
-                                        print_string_tmp = print_string.replace("<line>", str(line_count))
-                                        append_line += print_string_tmp
-                                        if line_count == int(line_start):
-                                            print_inline_num_tmp -= 1
-                            user_script = insert_substring_in_string(user_script, append_line, index+1)
-                            script_size += len(append_line)
-                            index += len(append_line)
-                    index_last_semicolon = index+1  # Jump to next character after the semicolom
-            index += 1
+            #Case where it's a pointer, not to a string: print the address it's storing
+            if (primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
+                var_val = (str)(self.item_delimiter) +"value:%p" + (str)(self.item_delimiter)
+            else:
+                var_val = (str)(self.item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(self.item_delimiter)
 
-        # include the standard input/output library
-        user_script = insert_substring_in_string(user_script, "#include <stdio.h>\n", 0)
+            #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
+            var_hex = (str)(self.item_delimiter) +"hex:%X" + (str)(self.item_delimiter)
 
-        return user_script
+            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_uninitialized + var_size
 
-    def get_visualizer_enconding(self, code_output):
+            add_id_addr = c_ast.ID('&' + var_name_val)
+            add_id_val = c_ast.ID(var_name_val)
+            add_id_hex = c_ast.ID(var_name_val)
+            add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
 
-        import re
-        import copy
+            var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
+            self.var_type_dict.update(var_dict_add)
 
-        import pdb
+        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return + (str)(self.print_wrapper) 
+        add_const = c_ast.Constant('string', '"'+str_to_add+'"')
+        if add_id_addr != None:
+            add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
+        else:
+            if add_return_val != None:
+                add_exprList = c_ast.ExprList([add_const, add_return_val])
+            else:
+                add_exprList = c_ast.ExprList([add_const])
+        new_node = c_ast.FuncCall(add_id, add_exprList)
+        return new_node
 
+
+    # def recurse_nodes(self, parent):
+    #     print(parent)
+    #     if parent.coord:
+    #         print(parent.coord.line)
+    #     for child in parent.children():
+    #         print(child[0])
+    #         self.recurse_nodes(child[1])
+
+    # def new_recurse_nodes(self, index, parent):
+    #     print("parent is:")
+    #     print(parent)
+    #     print("current child is:")
+    #     print(parent[index])
+    #     if parent[index].coord:
+    #         print(parent[index].coord.line)
+    #     amt_of_children = len(parent.children)
+    #     for i in range(0, amt_of_children):
+    #         #print(child[0])
+    #         self.new_recurse_nodes(i, parent[index])
+
+    #Finds all function declarations in the AST and puts them into our function list
+    def find_all_function_decl(self, ast):
+        i = 0
+        while i < len(ast.ext):
+            if isinstance(ast.ext[i], c_ast.FuncDef):
+                self.func_list.append((str)(ast.ext[i].decl.name))
+            i+=1
+        print(self.func_list)
+
+
+    #Splits up the AST by function, continues to recurse if a node has a compound node
+    def recurse_by_function(self, ast):
+        i = 0
+        while i < len(ast.ext):
+            func_name = None
+            if isinstance(ast.ext[i], c_ast.FuncDef):
+                func_name = ast.ext[i].decl.name
+            self.recurse_by_compound(ast.ext, i, func_name)
+            i+= 1
+
+    def recurse_by_compound(self, parent, index, func_name):
         #pdb.set_trace()
 
-        r = re.compile("\("+self.key+"\)"+'(.*?)'+"\("+self.key+"\)")
-        visualizer_trace = []
-        line_num = ""
+        #If node is a node we added, ignore it & return TODO: add checking for hidden lines here too, don't include if hidden
+        if parent[index].coord == None:
+            return
 
-        lines_info = code_output['test_val'].split('\n')
-        lines_info = [line for line in lines_info if line != '']
+        ast_function = parent[index]
+        print(ast_function)
+        print(ast_function.coord)
+        self.handle_nodetypes(parent, index, func_name)
+        try:
+            compound_list = ast_function.body.block_items
+        except AttributeError:
+            try:
+                compound_list = ast_function.stmt.block_items
+            except AttributeError:
+                try:
+                    compound_list = ast_function.iftrue.block_items
+                except:
+                    try:
+                        compound_list = ast_function.iffalse.block_items
+                    except:
+                        return
+        #total_len = len(compound_list)
+        #global cur_par_index
+        self.cur_par_index = 0
+        while self.cur_par_index < len(compound_list):
+            self.recurse_by_compound(compound_list, self.cur_par_index, func_name)
+            self.cur_par_index += 1
 
-        malloc_values_list = []
+    #Takes a node, checks its type, and calls the appropriate function on it to add a print statement
+    def handle_nodetypes(self, parent, index, func_name):
+        #global amt_after
+        #reset amt_after
+        self.amt_after = 0
 
-        j = -1
-        for i in range(len(lines_info)):
+        #pdb.set_trace()   
 
-            line = lines_info[i]
-            ret = r.search(line)
-            if ret:
-                values = ret.group(1)
-                values_list = values.split(";")
-                if '*' in values_list[2]:
-                    values_list[2] = values_list[2][1:]
-                    values_list[1] += '*'
-                    # Check for malloc variables
+        #Check for the current node's type and handle:
 
-                    not_in_mem = True
-                    for x in range(len(malloc_values_list)):
-                        if malloc_values_list[x][3] == values_list[3]:
-                            not_in_mem = False
-                            malloc_value = copy.deepcopy(values_list)
-                            malloc_values_list[x][5] = malloc_value[5]
-                            break
-                    if values_list[6] == 'True' and not_in_mem:
-                        valid_update = True
-                        for x in range(len(malloc_values_list)):
-                            if malloc_values_list[x][2] == values_list[2] and\
-                               malloc_values_list[x][7] == values_list[7] and\
-                               malloc_values_list[x][8] == values_list[8]:
-                                valid_update = False
-                                break
-                        if valid_update:
-                            malloc_value = copy.deepcopy(values_list)
-                            malloc_values_list.append(malloc_value)
-                    values_list[6] = 'False'
+        #Case for variable declaration
+        if isinstance(parent[index], c_ast.Decl):
+            self.print_changed_vars(parent, index, func_name, True)
+        
+        #Case for variable assignment, if variable already exists
+        elif isinstance(parent[index], c_ast.Assignment) or isinstance(parent[index], c_ast.UnaryOp):
+            self.print_changed_vars(parent, index, func_name, False)
+        
+        #Cases for std out and error - FIX THIS, NOT WORKING!!
+        elif isinstance(parent[index], c_ast.FuncCall):
+            if self.get_funccall_funcname(parent[index]) == "printf":
+                self.print_stdout(parent, index)
+            elif self.get_funccall_funcname(parent[index]) == "fprintf":
+                #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore 
+                self.print_stderr(parent, index)
 
-                if line_num == values_list[0]:
-                    visualizer_trace[j].append(values_list)
-                else:
-                    line_num = values_list[0]
-                    j += 1
-                    visualizer_trace.append([values_list])
-                    if j > 0:
-                        for x in range(len(malloc_values_list)):
-                            malloc_value = copy.deepcopy(malloc_values_list[x])
-                            malloc_value[0] = copy.deepcopy(visualizer_trace[j-1][0][0])
-                            visualizer_trace[j-1].append(malloc_value)
+            #Check if the function we're calling is declared in our program: if so, we want to add print statements
+            #both before and after it. Otherwise, only add a print statement after
+            elif self.get_funccall_funcname(parent[index]) in self.func_list:
+                self.print_funccall_in_prog(parent, index, func_name)
+            else:
+                self.print_funccall_not_prog(parent, index, func_name)
 
-        for x in range(len(malloc_values_list)):
-            malloc_value = copy.deepcopy(malloc_values_list[x])
-            malloc_value[0] = copy.deepcopy(visualizer_trace[j][0][0])
-            visualizer_trace[j].append(malloc_value)
+        #Case for return
+        elif isinstance(parent[index], c_ast.Return):
+            if index == 0:
+                self.handle_return(parent, index-1, func_name)
+
+        #Case for start of a function: check if it has a body and insert a print statement at the beginning
+        #of its body if so - otherwise, it's just a prototype, ignore
+        elif isinstance(parent[index], c_ast.FuncDef):
+            try:
+                self.print_func_entry(parent[index].body.block_items, 0, func_name)
+            except:
+                pass
+
+        #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
+        try:
+            #pdb.set_trace()
+            if isinstance(parent[index+self.amt_after+1], c_ast.Return):
+                self.handle_return(parent, index, func_name)
+        except:
+            pass
 
 
-        print(visualizer_trace)
-        return visualizer_trace
+    def get_funccall_funcname(self, node):
+        return node.name.name
 
+    #Gets the type of Declaration of a Decl node (ie. Array, Type, Pointer, etc) 
+    def get_decl_type(self, node):
+        return node.children()[0][1]
+
+    #Set the variables to be used in the print statements for a declaration node
+    def set_decl_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+
+        ptr_depth = 0
+        type_of_var = node.type.type.names[0] 
+        var_name_val = node.name
+        var_new_val = True
+        if node.init == None:
+            is_uninit = True
+        else:
+            is_uninit = False
+
+    #Set the variables to be used in the print statements for an assignment node
+    def set_assign_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+
+        #pdb.set_trace()
+        ptr_depth = 0
+        var_name_val = (str)(node.lvalue.name)
+        type_of_var = (str)(self.var_type_dict.get(var_name_val)) 
+        var_new_val = False
+        is_uninit = False
+
+    #Set the variables to be used in the print statements for a pointer declaration node
+    def set_decl_ptr_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        #pdb.set_trace()
+
+        #Check how many levels of pointer this is
+        ptr_depth = 0
+        temp_node = node
+        while isinstance(temp_node.type, c_ast.PtrDecl):
+            ptr_depth += 1
+            temp_node = temp_node.type
+
+        print("ptr depth is "+(str)(ptr_depth))
+        type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth 
+        var_name_val = node.name
+        var_new_val = True
+        if node.init == None:
+            is_uninit = True
+        else:
+            is_uninit = False
+
+
+    #NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
+    #I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
+
+    def handle_return(self, parent, index, func_name):
+        #print_node = old_create_printf_node()
+        #global amt_after
+        #pdb.set_trace()
+        print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True)
+        parent.insert(index+self.amt_after+1, print_node)    
+        self.amt_after+= 1
+
+    def add_before_fn(self, parent, index, func_name):
+        #global cur_par_index
+        #global amt_after
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        parent.insert(index, print_node)
+        self.amt_after += 1
+        self.cur_par_index += 1
+
+    def print_changed_vars(self, parent, index, func_name, new):
+        #global amt_after
+        #If new, this was a Declaration. Handle diff. types of declarations differently
+        if new:
+            #Type declaration
+            if isinstance(self.get_decl_type(parent[index]), c_ast.TypeDecl):
+                self.set_decl_vars(parent[index])
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                parent.insert(index+1, print_node)
+                self.amt_after += 1
+                #If it's a function call declaration for a function in our program, 
+                #ensure there's a print statement in front of it too
+                #pdb.set_trace()
+                if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
+                    self.add_before_fn(parent, index, func_name)
+
+            #Pointer declaration
+            elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
+                #pdb.set_trace()
+                self.set_decl_ptr_vars(parent[index])
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                parent.insert(index+1, print_node)
+                self.amt_after += 1
+                if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
+                    self.add_before_fn(parent, index, func_name)
+
+            #Array declaration
+            elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
+                print_node = self.old_create_printf_node()
+                parent.insert(index+1, print_node)
+                self.amt_after += 1
+
+        #Otherwise it was an assignment of an already declared var
+        else:
+            #Case for regular (non-pointer or anything fancy) assignment 
+            #Also need to get this working w/ vars assigned to function calls
+            if isinstance(parent[index].lvalue, c_ast.ID):
+                self.set_assign_vars(parent[index])
+                #print_node = old_create_printf_node()
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                parent.insert(index+1, print_node)
+                self.amt_after += 1
+                #If it's a function call assignment for a function in our program, 
+                #ensure there's a print statement in front of it too
+                if isinstance(parent[index].rvalue, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].rvalue) in self.func_list):
+                    self.add_before_fn(parent, index, func_name)
+
+    def print_stdout(self, parent, index):
+        #Implement
+        #global amt_after
+        print_node = self.old_create_printf_node()
+        parent.insert(index+1, print_node)
+        self.amt_after += 1
+
+    def print_stderr(self, parent, index):
+        #Implement
+        #global amt_after
+        print_node = self.old_create_printf_node()
+        parent.insert(index+1, print_node)
+        self.amt_after += 1
+
+    #If calling a function declared in the program, add print statements before and after the function
+    #call, so that we can highlight this line twice, once when calling, and once when returning back
+    def print_funccall_in_prog(self, parent, index, func_name):
+        #global amt_after
+        #global cur_par_index
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        parent.insert(index, print_node)
+        parent.insert(index+2, print_node)
+        self.cur_par_index += 1
+        self.amt_after += 1
+
+    #If calling a function not declared in the progra, only add a print statement after the function call,
+    #only need to highlight this line once.
+    def print_funccall_not_prog(self, parent, index, func_name):
+        #global amt_after
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        parent.insert(index+1, print_node)
+        self.amt_after += 1
+
+    def print_func_entry(self, parent, index, func_name):
+        #global amt_after
+        print_node = self.create_printf_node(parent, index, func_name, True, False, False)
+        parent.insert(index, print_node)
+        self.amt_after += 1
+
+
+
+    def add_printf(self, user_script):
+
+        stripped_user_script = self.remove_preprocessor_directives(user_script)
+        print("STRIPPED USER SCRIPT IS -------")
+        print(stripped_user_script)
+
+        #Need to save user_script in a temp file so that we can run it
+        temp_c_file = self.temp_path + self.user + self.date_time + ".c"
+        try:
+            # Creating the C file, and create the temp directory if it doesn't exist
+            try:
+                f = open(temp_c_file, 'w')
+            except OSError:
+                # Create temp directory if it doesn't exist
+                os.makedirs(os.path.dirname(temp_c_file))
+                f = open(temp_c_file, 'w')
+
+            f.write(stripped_user_script)
+            f.close()
+
+        except Exception as e:
+            print("ERROR with user file pre-processing")
+            return
+
+        ast = parse_file(temp_c_file, use_cpp=True,
+        cpp_path='gcc',
+        cpp_args=['-nostdinc','-E', r'-Iutils/fake_libc_include'])
+        
+        try:
+            os.remove(temp_c_file)
+        except OSError:
+            pass
+
+        ast.show()
+
+        #print("-----------------------")
+        self.find_all_function_decl(ast)
+        self.recurse_by_function(ast)
+        # print("-----------------------")
+        ast.show()
+        # print("-----------------------")
+        generator = c_generator.CGenerator()
+        print(generator.visit(ast))
+        return generator.visit(ast)
