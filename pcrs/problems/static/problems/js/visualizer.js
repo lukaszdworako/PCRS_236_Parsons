@@ -10,6 +10,7 @@ var return_val;
 var largest_group_id;
 var group_id_vals = {};
 var group_id_start_addrs = {};
+var hex_mode_on = false;
 
 function zeroPad (str, max) {
   str = str.toString();
@@ -1004,6 +1005,12 @@ function executeGenericVisualizer(option, data, newCode) {
             // This function is only a helper for regenerate_all_label_tables()
             var updated_label_table = generate_label_table(location)
             var location_label_table = $(location + " > table.memory-map-label-table > tbody ");
+
+            // Hide the new table if hex mode is on
+            if(hex_mode_on) {
+                $(updated_label_table).find("td.memory-map-cell").hide();
+            }
+
             location_label_table.replaceWith(updated_label_table);
         }
 
@@ -1151,13 +1158,11 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes) {
             var memory_map_cell = document.createElement("td");
-            memory_map_cell.className = "memory-map-cell hidden-cell ";// + clarity_classes;
+            memory_map_cell.className = "memory-map-cell " + (hex_mode_on ? "" : "hidden-cell ");// + clarity_classes;
             memory_map_cell.setAttribute("addr", toHexString(cell_addr));
-            if(cell_value != "&nbsp;") {
-                memory_map_cell.setAttribute("group-id", group_id);
-            }
 
             if(cell_value && cell_value != "&nbsp;") {
+                memory_map_cell.setAttribute("group-id", group_id);
                 cell_value = "0x" + cell_value;
             }
 
@@ -1230,6 +1235,7 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function toggle_hex() {
+            hex_mode_on = !hex_mode_on;
             $("table.memory-map-cell-table td.memory-map-cell").toggle();
             $("table.memory-map-label-table td.memory-map-cell").toggle();
         }
