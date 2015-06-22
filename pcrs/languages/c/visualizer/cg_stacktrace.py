@@ -116,11 +116,11 @@ class CVisualizer:
         add_id_val = None
         add_id_size = None
         add_return_val = None
-        line_no = (str)(self.item_delimiter) +"line:"+ (str)(parent[index].coord.line) + (str)(self.item_delimiter)
-        function = (str)(self.item_delimiter) +"function:"+ (str)(func_name) + (str)(self.item_delimiter)
+        line_no = "line:"+ (str)(parent[index].coord.line)
+        function = (str)(self.item_delimiter) +"function:"+ (str)(func_name)
         on_entry = ""
         if onEntry:
-            on_entry = (str)(self.item_delimiter) + "on_entry_point" + (str)(self.item_delimiter)
+            on_entry = (str)(self.item_delimiter) + "on_entry_point:True"
 
         on_return = ""
         if onReturn:
@@ -129,33 +129,33 @@ class CVisualizer:
             if isinstance(parent[index].expr, c_ast.ID):
                 return_var_name = (str)(parent[index].expr.name)
                 return_type = (str)(self.var_type_dict.get(return_var_name))
-                on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type) + (str)(self.item_delimiter)
+                on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type)
                 add_return_val = c_ast.ID(return_var_name)
             #Otherwise we're returning a constant
             else:
-                on_return = (str)(self.item_delimiter) + "return:" + (str)(parent[index].expr.value) + (str)(self.item_delimiter)
+                on_return = (str)(self.item_delimiter) + "return:" + (str)(parent[index].expr.value)
 
         var_info = ""
         #This block only gets executed if there's changed vars in the node
         if changedVar:
             #pdb.set_trace()
 
-            var_name = (str)(self.item_delimiter) +"var_name:"+ (str)(var_name_val) + (str)(self.item_delimiter)
-            var_addr = (str)(self.item_delimiter) +"addr:%p" + (str)(self.item_delimiter)
-            var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var) + (str)(self.item_delimiter)
-            var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val) + (str)(self.item_delimiter)
-            var_size = (str)(self.item_delimiter) +"max_size:%zu" + (str)(self.item_delimiter)
+            var_name = (str)(self.item_delimiter) +"var_name:"+ (str)(var_name_val)
+            var_addr = (str)(self.item_delimiter) +"addr:%p"
+            var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var)
+            var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val)
+            var_size = (str)(self.item_delimiter) +"max_size:%zu"
 
-            var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit) + (str)(self.item_delimiter)
+            var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
             #Case where it's a pointer, not to a string: print the address it's storing
             if (primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
-                var_val = (str)(self.item_delimiter) +"value:%p" + (str)(self.item_delimiter)
+                var_val = (str)(self.item_delimiter) +"value:%p"
             else:
-                var_val = (str)(self.item_delimiter) +"value:" + primitive_types.get(type_of_var)+ (str)(self.item_delimiter)
+                var_val = (str)(self.item_delimiter) +"value:" + primitive_types.get(type_of_var)
 
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
-            var_hex = (str)(self.item_delimiter) +"hex:%X" + (str)(self.item_delimiter)
+            var_hex = (str)(self.item_delimiter) +"hex_value:%X"
 
             var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_uninitialized + var_size
 
@@ -167,7 +167,7 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
-        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return + (str)(self.print_wrapper) 
+        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return 
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
             add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
