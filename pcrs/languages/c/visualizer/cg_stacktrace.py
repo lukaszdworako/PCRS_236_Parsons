@@ -31,10 +31,12 @@ class CVisualizer:
         self.item_delimiter = uuid.uuid4().hex
 
         #stdout_wrapper will hold the pattern we'll print right before and after each stdout line
-        self.stdout_wrapper = uuid.uuid4().hex
+        self.stdout_wrapper_before = uuid.uuid4().hex
+        self.stdout_wrapper_after = uuid.uuid4().hex
 
         #stderr_wrapper will hold the pattern we'll print right before and after each stderr line
-        self.stderr_wrapper = uuid.uuid4().hex
+        self.stderr_wrapper_before = uuid.uuid4().hex
+        self.stderr_wrapper_after = uuid.uuid4().hex
 
         #var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
         self.var_type_dict = {}
@@ -146,6 +148,7 @@ class CVisualizer:
             var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var)
             var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val)
             var_size = (str)(self.item_delimiter) +"max_size:%zu"
+            var_location = (str)(self.item_delimiter) +"location:stack"
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
@@ -158,7 +161,7 @@ class CVisualizer:
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
             var_hex = (str)(self.item_delimiter) +"hex_value:%X"
 
-            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_uninitialized + var_size
+            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_location +var_uninitialized + var_size
 
             add_id_addr = c_ast.ID('&' + var_name_val)
             add_id_val = c_ast.ID(var_name_val)
@@ -294,7 +297,9 @@ class CVisualizer:
         #of its body if so - otherwise, it's just a prototype, ignore
         elif isinstance(parent[index], c_ast.FuncDef):
             try:
-                self.print_func_entry(parent[index].body.block_items, 0, func_name)
+                if parent[index].body.block_items != None:
+                    #pdb.set_trace()
+                    self.print_func_entry(parent, index, func_name)
             except:
                 pass
 
@@ -440,17 +445,23 @@ class CVisualizer:
 
     def print_stdout(self, parent, index):
         #Implement
-        #global amt_after
-        print_node = self.old_create_printf_node()
-        parent.insert(index+1, print_node)
-        self.amt_after += 1
+        print("")
+        # print_node = self.create_printf_hash_node(self.stdout_wrapper_before)
+        # parent.insert(index, print_node)
+        # print_node = self.create_printf_hash_node(self.stdout_wrapper_after)
+        # parent.insert(index+2, print_node)
+        # self.cur_par_index += 2
+        # self.amt_after += 1
 
     def print_stderr(self, parent, index):
         #Implement
-        #global amt_after
-        print_node = self.old_create_printf_node()
-        parent.insert(index+1, print_node)
-        self.amt_after += 1
+        print("")
+        # print_node = self.create_printf_hash_node(self.stderr_wrapper_before)
+        # parent.insert(index, print_node)
+        # print_node = self.create_printf_hash_node(self.stderr_wrapper_after)
+        # parent.insert(index+2, print_node)
+        # self.cur_par_index += 2
+        # self.amt_after += 1
 
     #If calling a function declared in the program, add print statements before and after the function
     #call, so that we can highlight this line twice, once when calling, and once when returning back
@@ -460,7 +471,7 @@ class CVisualizer:
         print_node = self.create_printf_node(parent, index, func_name, False, False, False)
         parent.insert(index, print_node)
         parent.insert(index+2, print_node)
-        self.cur_par_index += 1
+        self.cur_par_index += 2
         self.amt_after += 1
 
     #If calling a function not declared in the progra, only add a print statement after the function call,
@@ -474,9 +485,8 @@ class CVisualizer:
     def print_func_entry(self, parent, index, func_name):
         #global amt_after
         print_node = self.create_printf_node(parent, index, func_name, True, False, False)
-        parent.insert(index, print_node)
+        parent[index].body.block_items.insert(0, print_node)
         self.amt_after += 1
-
 
 
     def add_printf(self, user_script):
