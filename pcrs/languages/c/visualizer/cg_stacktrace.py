@@ -88,6 +88,7 @@ class CVisualizer:
          'unsigned short': '%u',
          'unsigned short int': '%u',
          'int': '%d',
+         'int *': '%p',
          'signed int': '%d',
          'unsigned': '%u',
          'unsigned int': '%u',
@@ -106,7 +107,7 @@ class CVisualizer:
          'float': '%f',
          'double': '%f',
          'long double': '%lf',
-         'void*': '%p',
+         'void *': '%p',
          'void': 'no',
          'string': '%s',
          'char *': '%s'}
@@ -167,7 +168,7 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
-        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return 
+        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
             add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
@@ -228,8 +229,8 @@ class CVisualizer:
             return
 
         ast_function = parent[index]
-        print(ast_function)
-        print(ast_function.coord)
+        #print(ast_function)
+        #print(ast_function.coord)
         self.handle_nodetypes(parent, index, func_name)
         try:
             compound_list = ast_function.body.block_items
@@ -257,24 +258,24 @@ class CVisualizer:
         #reset amt_after
         self.amt_after = 0
 
-        #pdb.set_trace()   
+        #pdb.set_trace()
 
         #Check for the current node's type and handle:
 
         #Case for variable declaration
         if isinstance(parent[index], c_ast.Decl):
             self.print_changed_vars(parent, index, func_name, True)
-        
+
         #Case for variable assignment, if variable already exists
         elif isinstance(parent[index], c_ast.Assignment) or isinstance(parent[index], c_ast.UnaryOp):
             self.print_changed_vars(parent, index, func_name, False)
-        
+
         #Cases for std out and error - FIX THIS, NOT WORKING!!
         elif isinstance(parent[index], c_ast.FuncCall):
             if self.get_funccall_funcname(parent[index]) == "printf":
                 self.print_stdout(parent, index)
             elif self.get_funccall_funcname(parent[index]) == "fprintf":
-                #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore 
+                #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore
                 self.print_stderr(parent, index)
 
             #Check if the function we're calling is declared in our program: if so, we want to add print statements
@@ -309,7 +310,7 @@ class CVisualizer:
     def get_funccall_funcname(self, node):
         return node.name.name
 
-    #Gets the type of Declaration of a Decl node (ie. Array, Type, Pointer, etc) 
+    #Gets the type of Declaration of a Decl node (ie. Array, Type, Pointer, etc)
     def get_decl_type(self, node):
         return node.children()[0][1]
 
@@ -322,7 +323,7 @@ class CVisualizer:
         global ptr_depth
 
         ptr_depth = 0
-        type_of_var = node.type.type.names[0] 
+        type_of_var = node.type.type.names[0]
         var_name_val = node.name
         var_new_val = True
         if node.init == None:
@@ -341,7 +342,7 @@ class CVisualizer:
         #pdb.set_trace()
         ptr_depth = 0
         var_name_val = (str)(node.lvalue.name)
-        type_of_var = (str)(self.var_type_dict.get(var_name_val)) 
+        type_of_var = (str)(self.var_type_dict.get(var_name_val))
         var_new_val = False
         is_uninit = False
 
@@ -361,8 +362,8 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.type
 
-        print("ptr depth is "+(str)(ptr_depth))
-        type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth 
+        #print("ptr depth is "+(str)(ptr_depth))
+        type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth
         var_name_val = node.name
         var_new_val = True
         if node.init == None:
@@ -379,7 +380,7 @@ class CVisualizer:
         #global amt_after
         #pdb.set_trace()
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True)
-        parent.insert(index+self.amt_after+1, print_node)    
+        parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
 
     def add_before_fn(self, parent, index, func_name):
@@ -400,7 +401,7 @@ class CVisualizer:
                 print_node = self.create_printf_node(parent, index, func_name, False, True, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
-                #If it's a function call declaration for a function in our program, 
+                #If it's a function call declaration for a function in our program,
                 #ensure there's a print statement in front of it too
                 #pdb.set_trace()
                 if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
@@ -424,7 +425,7 @@ class CVisualizer:
 
         #Otherwise it was an assignment of an already declared var
         else:
-            #Case for regular (non-pointer or anything fancy) assignment 
+            #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
             if isinstance(parent[index].lvalue, c_ast.ID):
                 self.set_assign_vars(parent[index])
@@ -432,7 +433,7 @@ class CVisualizer:
                 print_node = self.create_printf_node(parent, index, func_name, False, True, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
-                #If it's a function call assignment for a function in our program, 
+                #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].rvalue) in self.func_list):
                     self.add_before_fn(parent, index, func_name)
@@ -481,8 +482,8 @@ class CVisualizer:
     def add_printf(self, user_script):
 
         stripped_user_script = self.remove_preprocessor_directives(user_script)
-        print("STRIPPED USER SCRIPT IS -------")
-        print(stripped_user_script)
+        #print("STRIPPED USER SCRIPT IS -------")
+        #print(stripped_user_script)
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
@@ -505,20 +506,20 @@ class CVisualizer:
         ast = parse_file(temp_c_file, use_cpp=True,
         cpp_path='gcc',
         cpp_args=['-nostdinc','-E', r'-Iutils/fake_libc_include'])
-        
+
         try:
             os.remove(temp_c_file)
         except OSError:
             pass
 
-        ast.show()
+        #ast.show()
 
         #print("-----------------------")
         self.find_all_function_decl(ast)
         self.recurse_by_function(ast)
         # print("-----------------------")
-        ast.show()
+        #ast.show()
         # print("-----------------------")
         generator = c_generator.CGenerator()
-        print(generator.visit(ast))
+        #print(generator.visit(ast))
         return generator.visit(ast)

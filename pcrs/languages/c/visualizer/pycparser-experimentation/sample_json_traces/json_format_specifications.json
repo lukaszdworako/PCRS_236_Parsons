@@ -12,7 +12,7 @@
         {
             "step": 1,
             "line": 6,
-            "student_view_line":1, //the line that the student actually sees on the code mirror: will propertybe different if this step is hidden
+            "student_view_line":1, //the line that the student actually sees on the code mirror: will probably be different if this step is hidden
             // Can have either "changed_vars" or "return", should not have both
             "changed_vars": [
                 {

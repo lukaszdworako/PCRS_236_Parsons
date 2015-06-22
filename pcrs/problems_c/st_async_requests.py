@@ -86,11 +86,11 @@ def new_visualizer_details(request):
         #PROBLEM HERE---
         ret = gen.get_exec_trace(clean_code, add_params)
 
-    except Exception as e:
+    except ZeroDivisionError as e:
         ret['exception'] = str(e)
 
-    json_output = json.dumps(ret, indent=None)
 
+    json_output = json.dumps(ret, indent=None)
     return HttpResponse(json_output)
 
 

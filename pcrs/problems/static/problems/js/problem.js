@@ -23,12 +23,26 @@ function bindDebugButton(buttonId) {
     $('#'+ buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId)}, 250
+            prepareVisualizer("debug", testcaseCode, buttonId, "old")}, 250
         );
     });
 }
 
-function prepareVisualizer(option, testcaseCode, buttonId) {
+function bindNewDebugButton(buttonId) {
+    /**
+    * For coding problems bing a given New "Debug" button to start code visualizer
+    */
+
+    $('#'+"new"+buttonId).bind('click', function() {
+        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
+        console.log("test case code is "+ testcaseCode);
+        setTimeout(function(){
+            prepareVisualizer("debug", testcaseCode, buttonId, "new")}, 250
+        );
+    });
+}
+
+function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
     /**
      * Prepare Coding problem visualizer
      */
@@ -36,13 +50,10 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
     var key = buttonId.split("_")[0];
     var problemId = key.split("-")[1];
     var newCode = myCodeMirrors[key].getValue() + "\n";
-    var newOrOld = "old";
 
     if (language == 'python') {
         newCode += (option == "viz") ? myCodeMirrors[key].getValue() : testcaseCode;
     } else if (language == 'c') {
-        console.log("test case code is "+ testcaseCode);
-        newOrOld = "new";
         newCode = addHashkey(key);
     }
     getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld);
@@ -55,7 +66,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
      */
 
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
-    executeGenericVisualizer("gen_execution_trace_params", postParams);
+    executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);
 
     console.log(newCode);
 
@@ -63,7 +74,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data, newCode);
+                executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -261,7 +272,7 @@ function handleCMessages(div_id, testcases){
      */
     // Handle C warnings and exceptions
     $('#'+div_id).find('#c_warning').remove();
-    //$('#'+div_id).find('#c_error').remove();
+    $('#'+div_id).find('#c_error').remove();
 
     // Find testcase with warning/error
     var bad_testcase = null;
@@ -279,7 +290,6 @@ function handleCMessages(div_id, testcases){
         }
         else if(bad_testcase.exception_type == "error"){
             class_type = 'alert alert-danger';
-            error_msg = bad_testcase.exception;
         }
         $('#'+div_id)
             .find('#alert')
@@ -388,22 +398,16 @@ function getTestcases(div_id) {
                 else if (language == 'c'){
                     // Handle C error and warning messages
                     handleCMessages(div_id, testcases);
-                    if (error_msg == null){
-                        if (!isEditor){
-                            prepareGradingTable(div_id,
-                                                data['best'],
-                                                data['past_dead_line'],
-                                                data['sub_pk'],
-                                                max_score);
-                        }
-                        //If it's the editor, start calling virtualizer functions now
-                        else{
-                            getVisualizerComponents(clean_code, "", 9999999);
-                        }
+                    if (!isEditor){
+                        prepareGradingTable(div_id,
+                                            data['best'],
+                                            data['past_dead_line'],
+                                            data['sub_pk'],
+                                            max_score);
                     }
+                    //If it's the editor, start calling virtualizer functions now
                     else{
-                        $("#"+div_id).find("#grade-code").hide();
-                        error_msg = null;
+                        getVisualizerComponents(clean_code, "", 9999999);
                     }
                 }
                 else if (language=='sql'){
@@ -669,6 +673,10 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                newRow.append('<td class="debug"><button id="' +
 	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                              ' >Trace</button></td>');
+                    newRow.append('<td class="debug"><button id="new' +
+                                   div_id +"_"+i + '" class="debugBtn" type="button"' +
+                                  ' >New Trace</button></td>');
+                    bindNewDebugButton(div_id+"_"+i);
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{

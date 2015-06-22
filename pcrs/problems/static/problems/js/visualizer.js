@@ -1453,7 +1453,7 @@ function executeGenericVisualizer(option, data, newCode) {
             for(var i=0; i <= last_step; i++) {
                 var json_step = debugger_data["steps"][i];
                 if(json_step.hasOwnProperty('changed_vars')) {
-                    add_to_memory_table(json_step);
+                    add_to_memory_table_only(json_step);
                 }
                 json_index++;
             }

@@ -188,7 +188,7 @@ class Submission(AbstractSubmission):
                 stop = program_exception[index:].find("'")
                 exception += " ({0})".format(program_exception[index + start + 1: index + stop])
             return exception
-      
+
         msg_delim = [str(cur_tuple[0]) for cur_tuple in tuple_of_delims]
 
         split_warning = re.split(r'[0-9]+:[0-9]+:\s(?:warning:|error:)', program_exception)

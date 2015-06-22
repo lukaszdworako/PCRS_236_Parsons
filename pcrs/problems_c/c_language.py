@@ -1,10 +1,14 @@
-import os
+import os, sys
 import subprocess
 import datetime
 from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_GROUPID
 from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
 import string
+from pprint import pprint
+
+class CompilationError(Exception):
+    pass
 
 class CSpecifics():
     """ Representation of C language:
@@ -25,6 +29,9 @@ class CSpecifics():
     def __init__(self, username, submission):
         self.username = username
         self.submission = submission
+
+        # Get the size of an address on this machine
+        self.max_addr_size = 8 if (sys.maxsize > 2**32) else 4
 
     def run_test_visualizer(self, test_input, username, source_code, deny_warnings=True):
         self.username = username
@@ -227,13 +234,6 @@ class CSpecifics():
             pass
         self.compiled = False
 
-    def split_by_delim(self, str_to_split, delim1, delim2):
-        newlist = str_to_split.split(delim1)
-        print(newlist)
-        for item in newlist:
-            newlist2 =(str)(item).split(delim2)
-            print(newlist2) 
-
     def get_exec_trace(self, user_script, add_params):
         """ Return dictionary ret containing all variables results.
             ret has the following mapping:
@@ -241,7 +241,7 @@ class CSpecifics():
             'trace' -> program trace.
         """
         logger = logging.getLogger('activity.logging')
-        
+
         user = add_params['user']
         temp_path = os.getcwd()
         test_input = add_params['test_case']
@@ -259,40 +259,114 @@ class CSpecifics():
         c_visualizer = CVisualizer(user, temp_path)
         logger.info("gets here 1")
         # Build initial stack with functions and variables data
-        #Each element of stack trace contains a dictionary for a 
-        #function in the code(one element per function, ie. stacktrace[0] 
+        #Each element of stack trace contains a dictionary for a
+        #function in the code(one element per function, ie. stacktrace[0]
         #is the main function, etc)
-        
+
         #stack_trace = c_visualizer.build_stacktrace(user_script)
         #logger.info("gets here 2")
         #for item in stack_trace:
         #    logger.info(item)
-        
+
 
 
         # Change original source code with the proper printf (debug)
         #mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
-        print(user_script)
-        
+        #print(user_script)
+
         mod_user_script = c_visualizer.add_printf(user_script)
 
         logger.info("here 3")
         # Compile and run the modified source code and remove compiled file
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
-        print(code_output.get("test_val"))
+        #print(code_output.get("test_val"))
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
-            self.split_by_delim((str)(code_output.get("test_val")), c_visualizer.print_wrapper, c_visualizer.item_delimiter)
-            #return split_code TODO: RETURN THIS ONCE SAVED IN A LIST
+            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer.print_wrapper, c_visualizer.item_delimiter)
+            return json_output
+
         else:
             # Return error to user
-            return code_output
+            return {"error": code_output}
 
     def get_download_mimetype(self):
         """ Return string with mimetype. """
         return 'text/x-c'
 
 
-class CompilationError(Exception):
-    pass
+
+    def hex_pad(self, value, length):
+        # Length is in bytes
+        return ("0x" + value.zfill(length*2)).lower();
+
+    def code_output_to_json(self, code_output, block_delim, print_delim):
+        """ Convert the code output into a dictionary to be converted into a JSON file """
+
+        json_output = { "global_vars": [], "steps": [] }
+
+        current_step_number = 0
+        current_line = None
+        current_step = {}
+
+
+        # Split the output into blocks of print statements
+        print_blocks = code_output.split(block_delim)
+        for print_statement in filter(None, print_blocks):
+            # Make a dictionary out of all of parts of the line
+            line_info_list = print_statement.split(print_delim)
+            line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
+
+
+            # If we're on a new line, save the current step and start new one
+            if line_info['line'] != current_line:
+                if current_step:
+                    json_output["steps"].append(current_step)
+
+                current_line = int(line_info['line'])
+                current_step_number = current_step_number + 1
+                current_step = {
+                    "step": current_step_number,
+                    "line": current_line,
+                    "student_view_line": current_line, # TODO: Adjust correctly
+                    "function": line_info['function']
+                    }
+
+
+            if 'return' in line_info:
+                # Add a "return" info
+                current_step['return'] = line_info['return']
+
+            elif 'on_entry_point' in line_info:
+                # Add a info for the entry point of a function
+                current_step['on_entry_point'] = True
+
+            elif 'var_name' in line_info:
+                # There is a variable to add to changed_vars
+                if not 'changed_vars' in current_step:
+                    current_step['changed_vars'] = []
+
+                # Pad each hex value to the length of max_size
+                # Arbitrarily chosen size of 8 bytes for anything without a max_size specified
+                max_size = int(line_info['max_size']) if ('max_size' in line_info) else 8
+
+                current_var = dict(line_info)
+                del(current_var['line'])
+                del(current_var['function'])
+
+
+                current_var['addr'] = self.hex_pad(line_info['addr'][2:], self.max_addr_size)
+                current_var['hex_value'] = self.hex_pad(line_info['hex_value'], max_size)
+
+                # Pointers values must always be as wide as an address
+                if '*' in current_var['type']:
+                    current_var['value'] = self.hex_pad(current_var['value'][2:], self.max_addr_size)
+
+
+                current_step['changed_vars'].append(current_var)
+
+
+
+        json_output["steps"].append(current_step)
+        pprint(json_output)
+        return json_output
