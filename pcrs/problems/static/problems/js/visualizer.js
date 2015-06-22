@@ -627,7 +627,7 @@ function executeGenericVisualizer(option, data, newCode) {
             var value = changed_var["value"];
             var hex_value = changed_var["hex_value"].match(/.{1,2}/g).slice(1); // Turn into array of 1-byte hex values
             var func_location = changed_var["location"];
-            var cells_needed = changed_var["max_size"];
+            var cells_needed = parseInt(changed_var["max_size"]);
 
             var location = get_var_location(func_location, func_name);
 
@@ -638,7 +638,14 @@ function executeGenericVisualizer(option, data, newCode) {
 
             // Add the cell rows first
             var new_var_cell_rows = $(create_new_var_cell_rows(start_addr, cells_needed, value, hex_value));
-            var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody > tr[start-addr]").length==0;
+
+            // Append at the end if this address is greater than any currently in the table
+            var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody td[addr]").filter(function() {
+                    return parseInt($(this).attr('addr'), 16) > start_addr;
+
+            }).length == 0;
+            console.log("Simply append: ", simply_append_rows);
+
             insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
         }
 

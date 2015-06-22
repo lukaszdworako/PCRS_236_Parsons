@@ -77,7 +77,7 @@ class CVisualizer:
             return line
 
 
-    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn):
+    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onStdOut, onStdErr):
 
         primitive_types = \
         {'char':'%c',
@@ -124,6 +124,14 @@ class CVisualizer:
         on_entry = ""
         if onEntry:
             on_entry = (str)(self.item_delimiter) + "on_entry_point:True"
+
+        std_out = ""
+        if onStdOut:
+            std_out = (str)(self.item_delimiter) + "std_out:True"
+
+        std_err = ""
+        if onStdErr:
+            std_err = (str)(self.item_delimiter) + "std_err:True"
 
         on_return = ""
         if onReturn:
@@ -183,6 +191,14 @@ class CVisualizer:
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
 
+
+    #Creates a printf node that just contains the value of hash_val in it
+    def create_printf_hash_node(self, hash_val):
+        add_id = c_ast.ID('printf')
+        add_const = c_ast.Constant('string', '"'+(str)(hash_val)+'"')
+        add_exprList = c_ast.ExprList([add_const])
+        new_node = c_ast.FuncCall(add_id, add_exprList)
+        return new_node
 
     # def recurse_nodes(self, parent):
     #     print(parent)
@@ -276,7 +292,7 @@ class CVisualizer:
         #Cases for std out and error - FIX THIS, NOT WORKING!!
         elif isinstance(parent[index], c_ast.FuncCall):
             if self.get_funccall_funcname(parent[index]) == "printf":
-                self.print_stdout(parent, index)
+                self.print_stdout(parent, index, func_name)
             elif self.get_funccall_funcname(parent[index]) == "fprintf":
                 #TODO: add a check to ensure it's getting directed to stderr, or stdout, otherwise ignore
                 self.print_stderr(parent, index)
@@ -376,7 +392,6 @@ class CVisualizer:
         else:
             is_uninit = False
 
-
     #NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
     #I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
 
@@ -391,7 +406,7 @@ class CVisualizer:
     def add_before_fn(self, parent, index, func_name):
         #global cur_par_index
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
         parent.insert(index, print_node)
         self.amt_after += 1
         self.cur_par_index += 1
@@ -403,7 +418,7 @@ class CVisualizer:
             #Type declaration
             if isinstance(self.get_decl_type(parent[index]), c_ast.TypeDecl):
                 self.set_decl_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
                 #If it's a function call declaration for a function in our program,
@@ -416,7 +431,7 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 #pdb.set_trace()
                 self.set_decl_ptr_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
                 if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
@@ -435,7 +450,7 @@ class CVisualizer:
             if isinstance(parent[index].lvalue, c_ast.ID):
                 self.set_assign_vars(parent[index])
                 #print_node = old_create_printf_node()
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
                 #If it's a function call assignment for a function in our program,
@@ -443,48 +458,51 @@ class CVisualizer:
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].rvalue) in self.func_list):
                     self.add_before_fn(parent, index, func_name)
 
-    def print_stdout(self, parent, index):
+    def print_stdout(self, parent, index, func_name):
         #Implement
-        print("")
-        # print_node = self.create_printf_hash_node(self.stdout_wrapper_before)
-        # parent.insert(index, print_node)
-        # print_node = self.create_printf_hash_node(self.stdout_wrapper_after)
-        # parent.insert(index+2, print_node)
-        # self.cur_par_index += 2
-        # self.amt_after += 1
+        #pdb.set_trace()
+        print_node = self.create_printf_hash_node(self.stdout_wrapper_before)
+        parent.insert(index, print_node)
+        print_node = self.create_printf_hash_node(self.stdout_wrapper_after)
+        parent.insert(index+2, print_node)
+        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, True, False)
+        parent.insert(index, print_node)
+        self.cur_par_index += 3
+        self.amt_after += 3
 
-    def print_stderr(self, parent, index):
+    def print_stderr(self, parent, index, func_name):
         #Implement
-        print("")
-        # print_node = self.create_printf_hash_node(self.stderr_wrapper_before)
-        # parent.insert(index, print_node)
-        # print_node = self.create_printf_hash_node(self.stderr_wrapper_after)
-        # parent.insert(index+2, print_node)
-        # self.cur_par_index += 2
-        # self.amt_after += 1
+        print_node = self.create_printf_hash_node(self.stderr_wrapper_before)
+        parent.insert(index, print_node)
+        print_node = self.create_printf_hash_node(self.stderr_wrapper_after)
+        parent.insert(index+2, print_node)
+        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, True)
+        parent.insert(index, print_node)
+        self.cur_par_index += 3
+        self.amt_after += 3
 
     #If calling a function declared in the program, add print statements before and after the function
     #call, so that we can highlight this line twice, once when calling, and once when returning back
     def print_funccall_in_prog(self, parent, index, func_name):
         #global amt_after
         #global cur_par_index
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
         parent.insert(index, print_node)
         parent.insert(index+2, print_node)
         self.cur_par_index += 2
-        self.amt_after += 1
+        self.amt_after += 2
 
     #If calling a function not declared in the progra, only add a print statement after the function call,
     #only need to highlight this line once.
     def print_funccall_not_prog(self, parent, index, func_name):
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
     def print_func_entry(self, parent, index, func_name):
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, True, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False)
         parent[index].body.block_items.insert(0, print_node)
         self.amt_after += 1
 
