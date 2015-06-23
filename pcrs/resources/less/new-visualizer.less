@@ -1,7 +1,7 @@
 @border-color: #DDDDDD;
-@address-width: 35%;
-@values-width: 65%;
-@cell-width: 16.25%;
+@address-width: 40%;
+@values-width: 60%;
+@cell-width: 15%;
 @cell-height: 37px;
 @heading-height: 38px;
 
@@ -68,17 +68,22 @@ hr {
 
 .name-type-section {
     .visualizer-section;
-    min-width: 10em;
-    width: 23%;
+    min-width: 20em;
+    width: 20%;
 }
 
 .memory-map-section {
     .visualizer-section;
-    min-width: 25em;
-    width: 23%;
+    min-width: 29em;
+    width: 26%;
 }
 
-.memory-map-section td.memory-map-cell,td.memory-map-address,td.address-width,th {
+.memory-map-section
+    td.memory-map-cell,
+    td.memory-map-address,
+    td.address-width,
+    th {
+
     height: @cell-height;
 }
 
@@ -141,22 +146,27 @@ hr {
     width: @values-width;
 }
 
-.memory-map-address {
-    text-align: right;
-    vertical-align: middle !important;
+.hide-overflow {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.memory-map-address {
+    .hide-overflow;
+    text-align: right;
+    vertical-align: middle !important;
     border-right: 2px solid @border-color !important;
     width: @address-width;
 }
 
 .memory-map-cell {
+    .hide-overflow;
     text-align: center;
+    width: @cell-width;
+    min-width: @cell-width;
+    max-width: @cell-width;
     vertical-align: middle !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     border: thin solid @border-color;
 }
 

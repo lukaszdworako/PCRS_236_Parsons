@@ -1,7 +1,7 @@
 // These global variables should not be modified
 var memory_map_cell_height = 37; // In pixels
-var address_width = 35 // In %
-var memory_map_cell_width = 16.25; // In %
+var address_width = 40 // In %
+var memory_map_cell_width = 15; // In %
 var cur_stdout = "";
 var return_to_clr = "";
 var return_val;
@@ -585,8 +585,8 @@ function executeGenericVisualizer(option, data, newCode) {
                         //Add a row to the existing name table
                         $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
                             json_step['changed_vars'][i]['addr']+'">' +
-                            '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                            '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                            '<td class="var-name hide-overflow" title="' + json_step['changed_vars'][i]['var_name'] + '">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                            '<td class="var-type hide-overflow" title="' + json_step['changed_vars'][i]['type'] + '">' + json_step['changed_vars'][i]['type'] + '</td>' +
                         '</tr>');
 
                         $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']").hover(
@@ -948,6 +948,8 @@ function executeGenericVisualizer(option, data, newCode) {
                                             clarity_classes += " top-row-clear-cell "
                                         }
 
+                                        middle_rows_left = rowspan - 1;
+
                                     } else if(c == 1 && colspan == 4) {
                                         // Draw the label
                                         cell_value = group_id_vals[group_id];
@@ -1087,13 +1089,18 @@ function executeGenericVisualizer(option, data, newCode) {
 
             //---
 
-            var c_tr2_th = document.createElement("th");
-            c_tr2_th.colSpan = "5";
-            c_tr2_th.className = "heading-height";
-            c_tr2_th.innerHTML = "&nbsp;";
+            var c_tr2_th1 = document.createElement("th");
+            c_tr2_th1.className = "heading-height";
+            c_tr2_th1.innerHTML = "&nbsp;";
+
+            var c_tr2_th2 = document.createElement("th");
+            c_tr2_th2.className = "heading-height";
+            c_tr2_th2.colSpan = "4";
+            c_tr2_th2.innerHTML = "&nbsp;";
 
             var c_tr2 = document.createElement("tr");
-            c_tr2.appendChild(c_tr2_th);
+            c_tr2.appendChild(c_tr2_th1);
+            c_tr2.appendChild(c_tr2_th2);
 
             //---
 
@@ -1228,7 +1235,7 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function create_label_base_row(start_addr) {
-            var hex_start_addr = "0x" + toHexString(start_addr);
+            var hex_start_addr = toHexString(start_addr);
             var memory_map_row = document.createElement("tr");
             memory_map_row.setAttribute("start-addr", hex_start_addr);
 
@@ -1460,8 +1467,8 @@ function executeGenericVisualizer(option, data, newCode) {
                     //Add the new row to the existing heap name table
                     $('#name-body-heap').append('<tr id="heap-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
                         json_step['changed_vars'][i]['addr']+'">' +
-                        '<td class="var-name">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                        '<td class="var-type">' + json_step['changed_vars'][i]['type'] + '</td>' +
+                        '<td class="var-name hide-overflow" title="' + json_step['changed_vars'][i]['var_name'] + '">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
+                        '<td class="var-type hide-overflow" title="' + json_step['changed_vars'][i]['type'] + '">' + json_step['changed_vars'][i]['type'] + '</td>' +
                     '</tr>');
                 }
             }
