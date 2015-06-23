@@ -96,6 +96,7 @@ hr {
 
 .memory-map-table {
     width: 100%;
+    min-width: 100%;
     float: left;
     table-layout: fixed;
 }
@@ -104,14 +105,13 @@ hr {
     .memory-map-table;
     border: none !important;
     position: absolute !important;
-    border-collapse: collapse;
     z-index: 0;
 }
 
 .memory-map-label-table {
     .memory-map-table;
     position: relative !important;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .heading-height {
@@ -119,10 +119,12 @@ hr {
 }
 
 .address-width {
+    padding-right: 0px;
     width: @address-width;
 }
 
 .values-width {
+    padding-left: 0px;
     width: @values-width;
 }
 
@@ -141,6 +143,10 @@ hr {
 
 .memory-map-address {
     text-align: right;
+    vertical-align: middle !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     border-right: 2px solid @border-color !important;
     width: @address-width;
 }
@@ -148,9 +154,6 @@ hr {
 .memory-map-cell {
     text-align: center;
     vertical-align: middle !important;
-    width: @cell-width;
-    max-width: @cell-width;
-    min-width: @cell-width;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

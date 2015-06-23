@@ -10,6 +10,7 @@ var return_val;
 var largest_group_id;
 var group_id_vals = {};
 var group_id_start_addrs = {};
+var start_addrs_to_group_id = {};
 var hex_mode_on = false;
 
 function zeroPad (str, max) {
@@ -18,7 +19,7 @@ function zeroPad (str, max) {
 }
 
 function toHexString(hexnum) {
-    return zeroPad(hexnum.toString(16), 8);
+    return zeroPad(hexnum.toString(16), 16);
 }
 
 /**
@@ -658,6 +659,7 @@ function executeGenericVisualizer(option, data, newCode) {
             largest_group_id++;
             group_id_vals[group_id] = value;
             group_id_start_addrs[group_id] = start_addr;
+            start_addrs_to_group_id[start_addr] = group_id;
 
             var cell_rows = document.createElement("div");
 
@@ -894,7 +896,7 @@ function executeGenericVisualizer(option, data, newCode) {
                             if(current_cell_group_id) {
                                 cells_on_row_in_group = current_cell.nextUntil("td[group-id!='" + current_cell_group_id + "']").length + 1;
 
-                                // Finds all cells after the current one in the table, up until the first one with a diffeent group-id
+                                // Finds all cells after the current one in the table, up until the first one with a different group-id
                                 var group_end_addr = current_cell_addr + cells_on_row_in_group - 1;
                                 var contiguous_cells_in_group = cells_on_row_in_group;
                                 // Find how many cells are in this group if it extends past the current row
@@ -926,7 +928,6 @@ function executeGenericVisualizer(option, data, newCode) {
 
                                 var rows_in_group = Math.floor(((group_end_addr - (group_end_addr % 4)) - current_row_addr) / 4) + 1;
 
-                                console.log(contiguous_cells_in_group);
 
                                 colspan = cells_on_row_in_group;
                                 group_id = current_cell_group_id;
@@ -934,16 +935,17 @@ function executeGenericVisualizer(option, data, newCode) {
                                     if(rows_in_group == 2 && !in_middle) {
                                         // Draw the label
                                         cell_value = group_id_vals[group_id];
-                                        clarity_classes = "clear-cell top-row-clear-cell label-td"
+                                        clarity_classes = "label-td"
                                         rowspan = rows_in_group;
 
-                                        var last_row_extra_cells = 4 - ((group_end_addr + 1) % 4);
+                                        var last_row_extra_cells = ((group_end_addr%4) + 1) % 4;
                                         if(last_row_extra_cells > 0) {
                                             on_bottom_row = true;
                                         }
 
                                         if(c > 1 || last_row_extra_cells > 0) {
                                             rowspan--;
+                                            clarity_classes += " top-row-clear-cell "
                                         }
 
                                     } else if(c == 1 && colspan == 4) {
@@ -1016,6 +1018,7 @@ function executeGenericVisualizer(option, data, newCode) {
             // Hide the new table if hex mode is on
             if(hex_mode_on) {
                 $(updated_label_table).find("td.memory-map-cell").hide();
+                $(updated_label_table).css("z-index", 0)
             }
 
             location_label_table.replaceWith(updated_label_table);
@@ -1175,6 +1178,13 @@ function executeGenericVisualizer(option, data, newCode) {
 
             memory_map_cell.innerHTML = cell_value;
 
+            if(group_id) {
+                $(memory_map_cell).hover(
+                    create_hover_highlight_function_memory(group_id),
+                    create_hover_unhighlight_function_memory(group_id)
+                    );
+            }
+
             return memory_map_cell;
         }
 
@@ -1188,6 +1198,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 memory_map_cell.setAttribute("group-id", group_id);
             }
             memory_map_cell.innerHTML = cell_value;
+            memory_map_cell.setAttribute("title", cell_value);
 
             if(group_id) {
                 var group_start_addr = group_id_start_addrs[group_id];
@@ -1203,26 +1214,28 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function create_cell_base_row(start_addr){
-            start_addr = toHexString(start_addr);
+            var hex_start_addr = "0x" + toHexString(start_addr);
             var memory_map_row = document.createElement("tr");
-            memory_map_row.setAttribute("start-addr", start_addr);
+            memory_map_row.setAttribute("start-addr", hex_start_addr);
 
             var td = document.createElement("td");
-            td.className = "address-width";
+            td.className = "address-heading";
             td.innerHTML = "&nbsp;";
+            td.setAttribute("title", hex_start_addr);
             memory_map_row.appendChild(td);
 
             return memory_map_row;
         }
 
         function create_label_base_row(start_addr) {
-            start_addr = toHexString(start_addr);
+            var hex_start_addr = "0x" + toHexString(start_addr);
             var memory_map_row = document.createElement("tr");
-            memory_map_row.setAttribute("start-addr", start_addr);
+            memory_map_row.setAttribute("start-addr", hex_start_addr);
 
             var td = document.createElement("td");
             td.className = "memory-map-address";
-            td.innerHTML = "0x" + start_addr;
+            td.innerHTML = hex_start_addr;
+            td.setAttribute("title", hex_start_addr);
             memory_map_row.appendChild(td);
 
             return memory_map_row;
@@ -1243,8 +1256,15 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function toggle_hex() {
             hex_mode_on = !hex_mode_on;
+
+            // Have to bring out the right table to the front, to allow hovering
             $("table.memory-map-cell-table td.memory-map-cell").toggle();
+            var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
+            $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
+
             $("table.memory-map-label-table td.memory-map-cell").toggle();
+            var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
+            $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
         }
 
         function create_hover_highlight_function_memory(group_id) {
@@ -1254,9 +1274,8 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
 
-                console.log("Group " + group_id + " starts at address: " + hex_group_start_addr);
-
-                $(this).addClass("highlight");
+                // Highlight all cells and labels of this group, and the corresponding row in the name table
+                $("#stack-frame-tables td[group-id='" + group_id + "']").addClass("highlight");
                 name_table_row.addClass("highlight");
             }
         }
@@ -1268,16 +1287,20 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
 
-                $(this).removeClass("highlight");
+                $("#stack-frame-tables td[group-id='" + group_id + "']").removeClass("highlight");
                 name_table_row.removeClass("highlight");
             }
         }
 
         function create_hover_highlight_function_names() {
             return function() {
-                var group_start_addr = $(this).attr("data-address");
+                var group_start_addr = parseInt($(this).attr("data-address"), 16);
+                var group_id = start_addrs_to_group_id[group_start_addr];
 
-                var memory_map_group = $("#stack-frame-tables td[group-start-addr='" + group_start_addr + "']");
+                var memory_map_group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+
+                console.log("Group id: ", group_id);
+                console.log("Cells matched: ", memory_map_group[0]);
 
                 $(this).addClass("highlight");
                 memory_map_group.addClass("highlight");
@@ -1286,9 +1309,10 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function create_hover_unhighlight_function_names() {
             return function() {
-                var group_start_addr = $(this).attr("data-address");
+                var group_start_addr = parseInt($(this).attr("data-address"), 16);
+                var group_id = start_addrs_to_group_id[group_start_addr];
 
-                var memory_map_group = $("#stack-frame-tables td[group-start-addr='" + group_start_addr + "']");
+                var memory_map_group = $("#stack-frame-tables td[group-id='" + group_id + "']");
 
                 $(this).removeClass("highlight");
                 memory_map_group.removeClass("highlight");
@@ -1445,7 +1469,7 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function reset_memory_tables() {
-            largest_group_id = 0;
+            largest_group_id = 1; // Not 0 because it would fail a check for adding the highlight functions
             $("#data-memory-map tbody").empty();
             $("#heap-memory-map tbody").empty();
             $("#stack-frame-tables").empty();
