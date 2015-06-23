@@ -300,6 +300,13 @@ class CSpecifics():
         # Length is in bytes
         return ("0x" + value.zfill(length*2)).lower();
 
+    def convert_bool_strs(self, line_info):
+        for k,v in line_info.items():
+            if v.lower() == "true":
+                line_info[k] = True
+            elif v.lower() == "false":
+                line_info[k] = False
+
     def code_output_to_json(self, code_output, block_delim, print_delim):
         """ Convert the code output into a dictionary to be converted into a JSON file """
 
@@ -351,6 +358,7 @@ class CSpecifics():
                 max_size = int(line_info['max_size']) if ('max_size' in line_info) else 8
 
                 current_var = dict(line_info)
+                self.convert_bool_strs(current_var)
                 del(current_var['line'])
                 del(current_var['function'])
 
@@ -362,11 +370,9 @@ class CSpecifics():
                 if '*' in current_var['type']:
                     current_var['value'] = self.hex_pad(current_var['value'][2:], self.max_addr_size)
 
-
                 current_step['changed_vars'].append(current_var)
 
 
 
         json_output["steps"].append(current_step)
-        pprint(json_output)
         return json_output

@@ -76,7 +76,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
             problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = problem.starter_code
-        layout_fields = (Fieldset('', 'submission'), Row(self.history_button, self.submit_button))
+        layout_fields = (Fieldset('', 'submission'), Div(self.history_button, self.submit_button))
         self.helper.layout = Layout(*layout_fields)
 
 

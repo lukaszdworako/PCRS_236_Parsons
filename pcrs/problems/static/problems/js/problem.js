@@ -670,9 +670,9 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
 	            if (testcaseInput != null){
-	                newRow.append('<td class="debug"><button id="' +
-	                               div_id +"_"+i + '" class="debugBtn" type="button"' +
-	                              ' >Trace</button></td>');
+	                // newRow.append('<td class="debug"><button id="' +
+	                //                div_id +"_"+i + '" class="debugBtn" type="button"' +
+	                //               ' >Trace</button></td>');
                     newRow.append('<td class="debug"><button id="new' +
                                    div_id +"_"+i + '" class="debugBtn" type="button"' +
                                   ' >New Trace</button></td>');
