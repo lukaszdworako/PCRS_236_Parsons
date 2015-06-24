@@ -30,14 +30,6 @@ class CVisualizer:
         #item_delimiter will hold the pattern we'll use to identify where different items in a single print statement begin and end
         self.item_delimiter = uuid.uuid4().hex
 
-        #stdout_wrapper will hold the pattern we'll print right before and after each stdout line
-        self.stdout_wrapper_before = uuid.uuid4().hex
-        self.stdout_wrapper_after = uuid.uuid4().hex
-
-        #stderr_wrapper will hold the pattern we'll print right before and after each stderr line
-        self.stderr_wrapper_before = uuid.uuid4().hex
-        self.stderr_wrapper_after = uuid.uuid4().hex
-
         #var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
         self.var_type_dict = {}
 
@@ -127,11 +119,11 @@ class CVisualizer:
 
         std_out = ""
         if onStdOut:
-            std_out = (str)(self.item_delimiter) + "std_out:True"
+            std_out = (str)(self.item_delimiter) + "std_out:"
 
         std_err = ""
         if onStdErr:
-            std_err = (str)(self.item_delimiter) + "std_err:True"
+            std_err = (str)(self.item_delimiter) + "std_err:"
 
         on_return = ""
         if onReturn:
@@ -183,7 +175,7 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
-        str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return
+        str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
             add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
@@ -457,27 +449,16 @@ class CVisualizer:
 
 
     def print_stdout(self, parent, index, func_name):
-        #Implement
-        #pdb.set_trace()
-        print_node = self.create_printf_hash_node(self.stdout_wrapper_before)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, True, False)
         parent.insert(index, print_node)
-        print_node = self.create_printf_hash_node(self.stdout_wrapper_after)
-        parent.insert(index+2, print_node)
-        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, True, False)
-        parent.insert(index, print_node)
-        self.cur_par_index += 3
-        self.amt_after += 3
+        self.cur_par_index += 1
+        self.amt_after += 1
 
     def print_stderr(self, parent, index, func_name):
-        #Implement
-        print_node = self.create_printf_hash_node(self.stderr_wrapper_before)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, True)
         parent.insert(index, print_node)
-        print_node = self.create_printf_hash_node(self.stderr_wrapper_after)
-        parent.insert(index+2, print_node)
-        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, False, True)
-        parent.insert(index, print_node)
-        self.cur_par_index += 3
-        self.amt_after += 3
+        self.cur_par_index += 1
+        self.amt_after += 1
 
     #If calling a function declared in the program, add print statements before and after the function
     #call, so that we can highlight this line twice, once when calling, and once when returning back
