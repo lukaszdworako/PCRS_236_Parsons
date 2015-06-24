@@ -1550,7 +1550,7 @@ function executeGenericVisualizer(option, data, newCode) {
             //removes last n characters from cur_stdout
             len_to_rm = json_step["std_out"].length;
             cur_stdout = cur_stdout.substring(0, cur_stdout.length - len_to_rm);
-            $("#std-out-textbox").val(cur_stdout);
+            $("#std-out-textbox").html(cur_stdout);
         }
 
         function check_rm_empty_table(table_name) {
