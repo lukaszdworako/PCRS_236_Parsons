@@ -606,7 +606,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            add_table_frame(table_name);
+                            add_name_table_frame(table_name);
                         }
 
                         //Add a row to the existing name table
@@ -633,10 +633,13 @@ function executeGenericVisualizer(option, data, newCode) {
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
         }
 
-        function add_table_frame(table_name) {
-            $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
+        function add_name_table_frame(table_name) {
+            $('#name-type-section').prepend('<span id="name-table-'+table_name+'"> <table id="names-' +table_name+
             '" class="table table-bordered" style="width: 100%; float:left;">'+
             '<thead>'+
+                '<tr>'+
+                 '<th colSpan=2>'+table_name + '</th>'+
+                '</tr>'+
                 '<tr>'+
                 '<th width="60%">Name</th>' +
                 '<th width="40%">Type</th>' +
@@ -655,7 +658,7 @@ function executeGenericVisualizer(option, data, newCode) {
             //Check if there's a current frame up for this:
             if(cur_frame.length == 0) {
             //If not, create a whole new name table
-                add_table_frame(table_name);
+                add_name_table_frame(table_name);
             }
         }
 
@@ -1393,7 +1396,7 @@ function executeGenericVisualizer(option, data, newCode) {
             //Check if there's a current frame up for this:
             if(cur_frame.length == 0) {
             //If not, create a whole new name table - could be possible for a function with no vars that then returns
-                $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
+                $('#name-type-section').prepend('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
                 '" class="table table-bordered" style="width: 100%; float:left;">'+
                 '<thead>'+
                     '<tr>'+
@@ -1506,7 +1509,7 @@ function executeGenericVisualizer(option, data, newCode) {
                     //Check if there's a current frame up for this:
                     if(heap_frame.length == 0) {
                     //If not, create a whole new name table
-                        $('#name-type-section').append('<span id="name-table-Heap"><h4>Heap</h4> <table id="names-Heap"'+
+                        $('#name-type-section').prepend('<span id="name-table-Heap"><h4>Heap</h4> <table id="names-Heap"'+
                             'class="table table-bordered" style="width: 100%; float:left;">'+
                         '<thead>'+
                             '<tr>'+
