@@ -76,8 +76,8 @@ class CVisualizer:
         else:
             return line
 
-
-    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onStdOut, onStdErr):
+    #RetFnCall means it just returned from a previous function call
+    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onRetFnCall, onStdOut, onStdErr):
 
         primitive_types = \
         {'char':'%c',
@@ -146,6 +146,10 @@ class CVisualizer:
             else:
                 on_return = (str)(self.item_delimiter) + "return:" + (str)(parent[index].expr.value)
 
+        returning_func = ""
+        if onRetFnCall:
+            returning_func = (str)(self.item_delimiter) + "returned_fn_call:" + (str)(returning_from)
+
         var_info = ""
         #This block only gets executed if there's changed vars in the node
         if changedVar:
@@ -179,7 +183,7 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
-        str_to_add = (str)(self.print_wrapper) + line_no + function + on_entry + var_info + on_return
+        str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
             add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
@@ -300,7 +304,7 @@ class CVisualizer:
             #Check if the function we're calling is declared in our program: if so, we want to add print statements
             #both before and after it. Otherwise, only add a print statement after
             elif self.get_funccall_funcname(parent[index]) in self.func_list:
-                self.print_funccall_in_prog(parent, index, func_name)
+                self.print_funccall_in_prog(parent, index, func_name, self.get_funccall_funcname(parent[index]))
             else:
                 self.print_funccall_not_prog(parent, index, func_name)
 
@@ -323,6 +327,7 @@ class CVisualizer:
         try:
             #pdb.set_trace()
             if isinstance(parent[index+self.amt_after+1], c_ast.Return):
+                print("RETURN CASE")
                 self.handle_return(parent, index, func_name)
         except:
             pass
@@ -392,6 +397,11 @@ class CVisualizer:
         else:
             is_uninit = False
 
+    #Pass in the function call node and get the ID to see the name of the function we're calling
+    def set_fn_returning_from(self, func_ret_name):
+        global returning_from
+        returning_from = (str)(func_ret_name)
+
     #NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
     #I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
 
@@ -399,17 +409,22 @@ class CVisualizer:
         #print_node = old_create_printf_node()
         #global amt_after
         #pdb.set_trace()
-        print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True)
+        print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
 
     def add_before_fn(self, parent, index, func_name):
         #global cur_par_index
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
         parent.insert(index, print_node)
         self.amt_after += 1
         self.cur_par_index += 1
+
+    def add_after_fn(self, parent, index, func_name, isReturning):
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False)
+        parent.insert(index+1, print_node)
+        self.amt_after += 1
 
     def print_changed_vars(self, parent, index, func_name, new):
         #global amt_after
@@ -417,21 +432,23 @@ class CVisualizer:
         if new:
             #Type declaration
             if isinstance(self.get_decl_type(parent[index]), c_ast.TypeDecl):
+                
                 self.set_decl_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
-                parent.insert(index+1, print_node)
-                self.amt_after += 1
                 #If it's a function call declaration for a function in our program,
                 #ensure there's a print statement in front of it too
                 #pdb.set_trace()
                 if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
+                    self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
+                    self.add_after_fn(parent, index, func_name, True)
                     self.add_before_fn(parent, index, func_name)
+                else:
+                    self.add_after_fn(parent, index, func_name, False)
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 #pdb.set_trace()
                 self.set_decl_ptr_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
                 if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
@@ -449,14 +466,15 @@ class CVisualizer:
             #Also need to get this working w/ vars assigned to function calls
             if isinstance(parent[index].lvalue, c_ast.ID):
                 self.set_assign_vars(parent[index])
-                #print_node = old_create_printf_node()
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False)
-                parent.insert(index+1, print_node)
-                self.amt_after += 1
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].rvalue) in self.func_list):
+                    self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
+                    self.add_after_fn(parent, index, func_name, True)
                     self.add_before_fn(parent, index, func_name)
+                else:
+                    self.add_after_fn(parent, index, func_name, False)
+
 
     def print_stdout(self, parent, index, func_name):
         #Implement
@@ -465,7 +483,7 @@ class CVisualizer:
         parent.insert(index, print_node)
         print_node = self.create_printf_hash_node(self.stdout_wrapper_after)
         parent.insert(index+2, print_node)
-        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, True, False)
+        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, True, False)
         parent.insert(index, print_node)
         self.cur_par_index += 3
         self.amt_after += 3
@@ -476,18 +494,20 @@ class CVisualizer:
         parent.insert(index, print_node)
         print_node = self.create_printf_hash_node(self.stderr_wrapper_after)
         parent.insert(index+2, print_node)
-        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, True)
+        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, False, False, True)
         parent.insert(index, print_node)
         self.cur_par_index += 3
         self.amt_after += 3
 
     #If calling a function declared in the program, add print statements before and after the function
     #call, so that we can highlight this line twice, once when calling, and once when returning back
-    def print_funccall_in_prog(self, parent, index, func_name):
+    def print_funccall_in_prog(self, parent, index, func_name, func_ret_from):
         #global amt_after
         #global cur_par_index
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
         parent.insert(index, print_node)
+        self.set_fn_returning_from(func_ret_from)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, True, False, False)
         parent.insert(index+2, print_node)
         self.cur_par_index += 2
         self.amt_after += 2
@@ -496,13 +516,13 @@ class CVisualizer:
     #only need to highlight this line once.
     def print_funccall_not_prog(self, parent, index, func_name):
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
     def print_func_entry(self, parent, index, func_name):
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False)
         parent[index].body.block_items.insert(0, print_node)
         self.amt_after += 1
 
@@ -540,14 +560,14 @@ class CVisualizer:
         except OSError:
             pass
 
-        #ast.show()
+        ast.show()
 
-        #print("-----------------------")
+        print("-----------------------")
         self.find_all_function_decl(ast)
         self.recurse_by_function(ast)
-        # print("-----------------------")
-        #ast.show()
-        # print("-----------------------")
+        print("-----------------------")
+        ast.show()
+        print("-----------------------")
         generator = c_generator.CGenerator()
         #print(generator.visit(ast))
         return generator.visit(ast)
