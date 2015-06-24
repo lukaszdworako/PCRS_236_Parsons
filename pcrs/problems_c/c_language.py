@@ -5,7 +5,9 @@ from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_
 from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
 import string
+
 from pprint import pprint
+import pdb
 
 class CompilationError(Exception):
     pass
@@ -317,6 +319,9 @@ class CSpecifics():
         current_step = {}
 
 
+        pprint(code_output)
+        pdb.set_trace()
+
         # Split the output into blocks of print statements
         print_blocks = code_output.split(block_delim)
         for print_statement in filter(None, print_blocks):
@@ -340,15 +345,24 @@ class CSpecifics():
                     }
 
 
+
+
             if 'return' in line_info:
                 # Add a "return" info
                 current_step['return'] = line_info['return']
+                del(line_info['return'])
 
-            elif 'on_entry_point' in line_info:
+            if 'on_entry_point' in line_info:
                 # Add a info for the entry point of a function
                 current_step['on_entry_point'] = True
+                del(line_info['on_entry_point'])
 
-            elif 'var_name' in line_info:
+            if 'returned_fn_call' in line_info:
+                # Add info for returning from a function call
+                current_step['returned_fn_call'] = line_info['returned_fn_call']
+                del(line_info['returned_fn_call'])
+
+            if 'var_name' in line_info:
                 # There is a variable to add to changed_vars
                 if not 'changed_vars' in current_step:
                     current_step['changed_vars'] = []

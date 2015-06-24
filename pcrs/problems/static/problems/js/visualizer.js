@@ -444,6 +444,11 @@ function executeGenericVisualizer(option, data, newCode) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
 
+                if(json_step.hasOwnProperty('on_entry_point')) {
+                    // Create the empty table even before any variables get assigned
+                    get_var_location('stack', json_step['function']);
+                }
+
                 //Case where there's changed variables
                 if(json_step.hasOwnProperty('changed_vars')) {
                     add_to_name_table(json_step);
@@ -455,6 +460,12 @@ function executeGenericVisualizer(option, data, newCode) {
                     console.log("calling add to name table func");
                     add_return_name_table(json_step);
                 }
+
+                if(json_step.hasOwnProperty('returned_fn_call')) {
+                    // Remove the previous stack frame of this function
+                    $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
+                }
+
                 //Case where it has standard output
                 if(json_step.hasOwnProperty('std_out')) {
                     add_to_std_out(json_step);
@@ -1279,7 +1290,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 var group_start_addr = group_id_start_addrs[group_id];
                 var hex_group_start_addr = "0x" + toHexString(group_start_addr);
 
-                var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
+                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
 
                 // Highlight all cells and labels of this group, and the corresponding row in the name table
                 $("#stack-frame-tables td[group-id='" + group_id + "']").addClass("highlight");
@@ -1292,7 +1303,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 var group_start_addr = group_id_start_addrs[group_id];
                 var hex_group_start_addr = "0x" + toHexString(group_start_addr);
 
-                var name_table_row = $("#names-main tr[data-address='" + hex_group_start_addr + "']");
+                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
 
                 $("#stack-frame-tables td[group-id='" + group_id + "']").removeClass("highlight");
                 name_table_row.removeClass("highlight");
@@ -1490,6 +1501,17 @@ function executeGenericVisualizer(option, data, newCode) {
             json_index = 0;
             for(var i=0; i <= last_step; i++) {
                 var json_step = debugger_data["steps"][i];
+
+                if(json_step.hasOwnProperty('on_entry_point')) {
+                    // Create the empty table even before any variables get assigned
+                    get_var_location('stack', json_step['function']);
+                }
+
+                if(json_step.hasOwnProperty('returned_fn_call')) {
+                    // Remove the previous stack frame of this function
+                    $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
+                }
+
                 if(json_step.hasOwnProperty('changed_vars')) {
                     add_to_memory_table_only(json_step);
                 }
