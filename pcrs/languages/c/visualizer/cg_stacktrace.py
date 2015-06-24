@@ -204,26 +204,6 @@ class CVisualizer:
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
 
-    # def recurse_nodes(self, parent):
-    #     print(parent)
-    #     if parent.coord:
-    #         print(parent.coord.line)
-    #     for child in parent.children():
-    #         print(child[0])
-    #         self.recurse_nodes(child[1])
-
-    # def new_recurse_nodes(self, index, parent):
-    #     print("parent is:")
-    #     print(parent)
-    #     print("current child is:")
-    #     print(parent[index])
-    #     if parent[index].coord:
-    #         print(parent[index].coord.line)
-    #     amt_of_children = len(parent.children)
-    #     for i in range(0, amt_of_children):
-    #         #print(child[0])
-    #         self.new_recurse_nodes(i, parent[index])
-
     #Finds all function declarations in the AST and puts them into our function list
     def find_all_function_decl(self, ast):
         i = 0
@@ -515,16 +495,27 @@ class CVisualizer:
     #If calling a function not declared in the progra, only add a print statement after the function call,
     #only need to highlight this line once.
     def print_funccall_not_prog(self, parent, index, func_name):
-        #global amt_after
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
     def print_func_entry(self, parent, index, func_name):
-        #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False)
-        parent[index].body.block_items.insert(0, print_node)
-        self.amt_after += 1
+        #Check if the node contains a param list: if so, add the params as changed (declared) vars
+        if isinstance(parent[index].decl.type.args, c_ast.ParamList):
+            #pdb.set_trace()
+            #Loop through all the variables in the header, each of them will be handled as a declaration node
+            header_vars = parent[index].decl.type.args.params
+            for i in range(0, len(header_vars)):
+                self.set_decl_vars(header_vars[i])                
+                print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False)
+                parent[index].body.block_items.insert(0, print_node)
+                self.amt_after += 1
+
+        #Otherwise just set a print node with no changed vars
+        else: 
+            print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False)
+            parent[index].body.block_items.insert(0, print_node)
+            self.amt_after += 1
 
 
     def add_printf(self, user_script):
