@@ -330,8 +330,9 @@ class CSpecifics():
             line_info_list = print_statement.split(print_delim)
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
 
+
             # If we reach a new line, save the current step and start new one
-            if line_info['line'] != current_line:
+            if int(line_info['line']) != current_line:
                 if current_step:
                     json_output["steps"].append(current_step)
 

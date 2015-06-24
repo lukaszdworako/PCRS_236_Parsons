@@ -1,7 +1,7 @@
 // These global variables should not be modified
 var memory_map_cell_height = 37; // In pixels
-var address_width = 40 // In %
-var memory_map_cell_width = 15; // In %
+var address_width = 45 // In %
+var memory_map_cell_width = 13.75; // In %
 var cur_stdout = "";
 var return_to_clr = "";
 var return_val;
@@ -387,7 +387,7 @@ function executeGenericVisualizer(option, data, newCode) {
                     $('#new_debugger_table_heap').empty();
                     //Clear stdout
                     cur_stdout= "";
-                    $("#std-out-textbox").val(cur_stdout);
+                    $("#std-out-textbox").html(cur_stdout);
                     update_new_debugger_table(debugger_data, "reset");
                 });
 
@@ -402,6 +402,9 @@ function executeGenericVisualizer(option, data, newCode) {
             // Clear the name tables
             $('#name-type-section').empty();
             $('#new_debugger_table_heap').empty();
+
+            cur_stdout= "";
+            $("#std-out-textbox").html(cur_stdout);
 
             //Codemirror starts line count at 0, subtract 1 from start line so it's accurate
             cur_line = start_line-1;
