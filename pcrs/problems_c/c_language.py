@@ -5,6 +5,7 @@ from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_
 from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
 import string
+import re
 
 from pprint import pprint
 import pdb
@@ -285,7 +286,7 @@ class CSpecifics():
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
-            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer.print_wrapper, c_visualizer.item_delimiter)
+            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer)
             return json_output
 
         else:
@@ -309,18 +310,18 @@ class CSpecifics():
             elif v.lower() == "false":
                 line_info[k] = False
 
-    def code_output_to_json(self, code_output, block_delim, print_delim):
+    def code_output_to_json(self, code_output, c_visualizer):
         """ Convert the code output into a dictionary to be converted into a JSON file """
+
+        block_delim = c_visualizer.print_wrapper
+        print_delim = c_visualizer.item_delimiter
+
 
         json_output = { "global_vars": [], "steps": [] }
 
         current_step_number = 0
         current_line = None
         current_step = {}
-
-
-        pprint(code_output)
-        pdb.set_trace()
 
         # Split the output into blocks of print statements
         print_blocks = code_output.split(block_delim)
@@ -329,8 +330,7 @@ class CSpecifics():
             line_info_list = print_statement.split(print_delim)
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
 
-
-            # If we're on a new line, save the current step and start new one
+            # If we reach a new line, save the current step and start new one
             if line_info['line'] != current_line:
                 if current_step:
                     json_output["steps"].append(current_step)
@@ -345,7 +345,15 @@ class CSpecifics():
                     }
 
 
+            if 'std_out' in line_info:
+                # Add stdout information
+                current_step['std_out'] = line_info['std_out']
+                del(line_info['std_out'])
 
+            if 'std_err' in line_info:
+                # Add stderr information
+                current_step['std_err'] = line_info['std_err']
+                del(line_info['std_err'])
 
             if 'return' in line_info:
                 # Add a "return" info
@@ -386,7 +394,8 @@ class CSpecifics():
 
                 current_step['changed_vars'].append(current_var)
 
-
-
+        # Append the last step
         json_output["steps"].append(current_step)
+
+        pprint(json_output)
         return json_output

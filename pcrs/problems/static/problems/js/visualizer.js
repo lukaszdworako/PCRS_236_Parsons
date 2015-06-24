@@ -462,7 +462,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 }
 
                 if(json_step.hasOwnProperty('returned_fn_call')) {
-                    // Remove the previous stack frame of this function
+                    // Remove the previous stack frame and name table of this function
                     $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
                 }
 
@@ -1413,9 +1413,9 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function add_to_std_out(json_step) {
             //cur_stdout contains the full current stdout string that's been stepped to: will append to this and refresh the stdout window
-            cur_stdout= cur_stdout.concat(json_step["std_out"]);
-            console.log("cur stdout is "+cur_stdout);
-            $("#std-out-textbox").val(cur_stdout);
+            cur_stdout = cur_stdout.concat(json_step["std_out"]);
+            console.log("cur stdout is " + cur_stdout);
+            $("#std-out-textbox").html(cur_stdout);
         }
 
 
