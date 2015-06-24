@@ -7,6 +7,8 @@ var return_to_clr = "";
 var return_val;
 //Function we've most recently returned from
 var most_recently_returned = "";
+//Function we've most recently entered: keep track of this for if we hit prev
+var most_recently_entered = "";
 
 // These global variables will change throughout the program
 var largest_group_id;
@@ -453,6 +455,8 @@ function executeGenericVisualizer(option, data, newCode) {
                     // Create the empty table even before any variables get assigned
                     get_var_location('stack', json_step['function']);
                     add_first_name_table(json_step);
+                    $("#name-table-"+json_step['function']).show()
+                    most_recently_entered = json_step['function'];
                 }
 
                 //Case where there's changed variables
@@ -504,6 +508,17 @@ function executeGenericVisualizer(option, data, newCode) {
                     // Remove the previous stack frame and name table of this function
                     $("#name-table-"+most_recently_returned).show();
                 }
+                if(most_recently_entered != "") {
+                    $("#name-table-"+most_recently_entered).hide();
+                    most_recently_entered = "";
+                }
+                if(json_step.hasOwnProperty('on_entry_point')) {
+                    most_recently_entered = json_step['function'];
+                }
+            }
+
+            if((most_recently_entered != "") && (!json_step.hasOwnProperty('on_entry_point'))) {
+                most_recently_entered = "";
             }
 
             console.log("value_list is: ");
