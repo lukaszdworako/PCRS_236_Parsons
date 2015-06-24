@@ -394,6 +394,9 @@ function executeGenericVisualizer(option, data, newCode) {
                 $('#toggle-hex-button').bind('click', function () {
                     toggle_hex();
                 });
+
+                $('#data-minimizer').bind('click', create_minimize_function("data-memory-map"));
+                $('#heap-minimizer').bind('click', create_minimize_function("heap-memory-map"));
             }
 
             // Reset the memory map tables
@@ -1140,7 +1143,18 @@ function executeGenericVisualizer(option, data, newCode) {
 
             var l_tr1_th = document.createElement("th");
             l_tr1_th.colSpan = "5";
-            l_tr1_th.innerHTML = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
+
+            var minimizer = document.createElement("a");
+            minimizer.href = "#";
+            minimizer.className = "small-minimizer";
+            minimizer.addEventListener('click', stack_table_minimize_function);
+            minimizer.innerHTML = "[-]";
+
+            var table_title = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
+
+            l_tr1_th.appendChild(minimizer);
+            $(l_tr1_th).append(table_title);
+
 
             var l_tr1 = document.createElement("tr");
             l_tr1.appendChild(l_tr1_th);
@@ -1286,6 +1300,28 @@ function executeGenericVisualizer(option, data, newCode) {
             $("table.memory-map-label-table td.memory-map-cell").toggle();
             var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
             $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
+        }
+
+        function create_minimize_function(div_id) {
+            return function() {
+                if($(this).html() == "[-]") {
+                    $(this).html("[+]");
+                } else {
+                    $(this).html("[-]");
+                }
+
+                $("#" + div_id + " tbody").fadeToggle();
+            }
+        }
+
+        function stack_table_minimize_function() {
+            if($(this).html() == "[-]") {
+                $(this).html("[+]");
+            } else {
+                $(this).html("[-]");
+            }
+
+            $(this).parents("div.memory-map-table-wrapper").find("tbody").fadeToggle();
         }
 
         function create_hover_highlight_function_memory(group_id) {
