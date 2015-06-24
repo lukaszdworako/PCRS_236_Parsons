@@ -5,6 +5,8 @@ var memory_map_cell_width = 13.75; // In %
 var cur_stdout = "";
 var return_to_clr = "";
 var return_val;
+//Function we've most recently returned from
+var most_recently_returned = "";
 
 // These global variables will change throughout the program
 var largest_group_id;
@@ -450,6 +452,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(json_step.hasOwnProperty('on_entry_point')) {
                     // Create the empty table even before any variables get assigned
                     get_var_location('stack', json_step['function']);
+                    add_first_name_table(json_step);
                 }
 
                 //Case where there's changed variables
@@ -466,6 +469,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 if(json_step.hasOwnProperty('returned_fn_call')) {
                     // Remove the previous stack frame and name table of this function
+                    $("#name-table-"+most_recently_returned).hide();
                     $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
                 }
 
@@ -495,6 +499,10 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(json_step.hasOwnProperty('return') || json_step.hasOwnProperty('returned_fn_call') ) {
                     //console.log("have a return, json step is ");
                     add_return_name_table(json_step);
+                }
+                if(json_step.hasOwnProperty('return')) {
+                    // Remove the previous stack frame and name table of this function
+                    $("#name-table-"+most_recently_returned).show();
                 }
             }
 
@@ -583,17 +591,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         //Check if there's a current frame up for this:
                         if(cur_frame.length == 0) {
                         //If not, create a whole new name table
-                            $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
-                            '" class="table table-bordered" style="width: 100%; float:left;">'+
-                            '<thead>'+
-                                '<tr>'+
-                                '<th width="60%">Name</th>' +
-                                '<th width="40%">Type</th>' +
-                                '</tr>' +
-                            '</thead>' +
-                            '<tbody id="name-body-'+table_name+'">' +
-                            '</tbody>' +
-                            '</table></span>');
+                            add_table_frame(table_name);
                         }
 
                         //Add a row to the existing name table
@@ -614,11 +612,38 @@ function executeGenericVisualizer(option, data, newCode) {
                 else if ((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
                         //Remove this var from table
                         $('#Heap-'+json_step['changed_vars'][i]['var_name']).remove();
-                        check_rm_empty_table("names-Heap");
+                        //check_rm_empty_table("names-Heap");
                 }
             }
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
         }
+
+        function add_table_frame(table_name) {
+            $('#name-type-section').append('<span id="name-table-'+table_name+'"> <h4>'+table_name+'</h4> <table id="names-' +table_name+
+            '" class="table table-bordered" style="width: 100%; float:left;">'+
+            '<thead>'+
+                '<tr>'+
+                '<th width="60%">Name</th>' +
+                '<th width="40%">Type</th>' +
+                '</tr>' +
+            '</thead>' +
+            '<tbody id="name-body-'+table_name+'">' +
+            '</tbody>' +
+            '</table></span>');
+        }
+
+        function add_first_name_table(json_step) {
+            table_name = json_step['function'];
+            var cur_frame;
+            cur_frame = $('#names-'+table_name);
+
+            //Check if there's a current frame up for this:
+            if(cur_frame.length == 0) {
+            //If not, create a whole new name table
+                add_table_frame(table_name);
+            }
+        }
+
 
         function add_to_memory_table(json_step) {
             add_to_memory_table_only(json_step);
@@ -1369,6 +1394,7 @@ function executeGenericVisualizer(option, data, newCode) {
             if(json_step.hasOwnProperty('return')) {
                 return_val = json_step["return"];
                 return_data = 'Return <'+return_val+'>';
+                most_recently_returned = json_step['function'];
             }
             else {
                 //If this is the first time we're seeing this JSON step, the last value returned is stored in return_val and added to the JSON step
@@ -1451,7 +1477,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
                         //Check if the table is now empty from this removal, remove if so
                         table_id = '#names-'+table_name;
-                        check_rm_empty_table(table_id);
+                        //check_rm_empty_table(table_id);
                     }
                 }
 
@@ -1542,10 +1568,6 @@ function executeGenericVisualizer(option, data, newCode) {
                     value_list[val_address]["value"].pop();
                 }
             }
-        }
-
-        function remove_return_name_table(json_step) {
-            // TODO: implement
         }
 
 
