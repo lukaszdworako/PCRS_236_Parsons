@@ -277,7 +277,8 @@ class CVisualizer:
 
         #Case for return
         elif isinstance(parent[index], c_ast.Return):
-            if index == 0:
+            #pdb.set_trace()
+            if index == 2:
                 self.handle_return(parent, index-1, func_name)
 
         #Case for start of a function: check if it has a body and insert a print statement at the beginning
@@ -374,7 +375,6 @@ class CVisualizer:
     def handle_return(self, parent, index, func_name):
         #print_node = old_create_printf_node()
         #global amt_after
-        #pdb.set_trace()
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
