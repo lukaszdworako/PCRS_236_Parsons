@@ -19,8 +19,8 @@ class CVisualizer:
 
         #List if removed lines from the start of the c program, to be put back in later
         self.removed_lines = []
-        #func_list keeps track of all the function declaractions in our program
-        self.func_list = []
+        #func_list keeps track of all the function declaractions in our program and their type
+        self.func_list = {}
 
         #Global hash variables, these are what we'll use to denote different parts of our added print statements
 
@@ -127,16 +127,9 @@ class CVisualizer:
 
         on_return = ""
         if onReturn:
-            #pdb.set_trace()
-            #Case where we're returning a variable value
-            if isinstance(parent[index].expr, c_ast.ID):
-                return_var_name = (str)(parent[index].expr.name)
-                return_type = (str)(self.var_type_dict.get(return_var_name))
-                on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type)
-                add_return_val = c_ast.ID(return_var_name)
-            #Otherwise we're returning a constant
-            else:
-                on_return = (str)(self.item_delimiter) + "return:" + (str)(parent[index].expr.value)
+            return_type = self.func_list.get(func_name)
+            on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type)
+            add_return_val = parent[index].expr;
 
         returning_func = ""
         if onRetFnCall:
@@ -201,7 +194,9 @@ class CVisualizer:
         i = 0
         while i < len(ast.ext):
             if isinstance(ast.ext[i], c_ast.FuncDef):
-                self.func_list.append((str)(ast.ext[i].decl.name))
+                #pdb.set_trace()
+                var_dict_add = {(str)(ast.ext[i].decl.name):(str)(ast.ext[i].decl.type.type.type.names[0])}
+                self.func_list.update(var_dict_add)
             i+=1
         print(self.func_list)
 
@@ -275,14 +270,15 @@ class CVisualizer:
 
             #Check if the function we're calling is declared in our program: if so, we want to add print statements
             #both before and after it. Otherwise, only add a print statement after
-            elif self.get_funccall_funcname(parent[index]) in self.func_list:
+            elif (str)(self.get_funccall_funcname(parent[index])) in self.func_list:
                 self.print_funccall_in_prog(parent, index, func_name, self.get_funccall_funcname(parent[index]))
             else:
                 self.print_funccall_not_prog(parent, index, func_name)
 
         #Case for return
         elif isinstance(parent[index], c_ast.Return):
-            if index == 0:
+            #pdb.set_trace()
+            if index == 2:
                 self.handle_return(parent, index-1, func_name)
 
         #Case for start of a function: check if it has a body and insert a print statement at the beginning
@@ -290,7 +286,6 @@ class CVisualizer:
         elif isinstance(parent[index], c_ast.FuncDef):
             try:
                 if parent[index].body.block_items != None:
-                    #pdb.set_trace()
                     self.print_func_entry(parent, index, func_name)
             except:
                 pass
@@ -380,7 +375,6 @@ class CVisualizer:
     def handle_return(self, parent, index, func_name):
         #print_node = old_create_printf_node()
         #global amt_after
-        #pdb.set_trace()
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
@@ -409,7 +403,7 @@ class CVisualizer:
                 #If it's a function call declaration for a function in our program,
                 #ensure there's a print statement in front of it too
                 #pdb.set_trace()
-                if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
+                if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
                     self.add_after_fn(parent, index, func_name, True)
                     self.add_before_fn(parent, index, func_name)
@@ -423,7 +417,7 @@ class CVisualizer:
                 print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
-                if isinstance(parent[index].init, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].init) in self.func_list):
+                if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.add_before_fn(parent, index, func_name)
 
             #Array declaration
@@ -440,7 +434,7 @@ class CVisualizer:
                 self.set_assign_vars(parent[index])
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
-                if isinstance(parent[index].rvalue, c_ast.FuncCall) and (self.get_funccall_funcname(parent[index].rvalue) in self.func_list):
+                if isinstance(parent[index].rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
                     self.add_after_fn(parent, index, func_name, True)
                     self.add_before_fn(parent, index, func_name)
@@ -485,6 +479,7 @@ class CVisualizer:
         if isinstance(parent[index].decl.type.args, c_ast.ParamList):
             #pdb.set_trace()
             #Loop through all the variables in the header, each of them will be handled as a declaration node
+            #pdb.set_trace()
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
                 self.set_decl_vars(header_vars[i])                
