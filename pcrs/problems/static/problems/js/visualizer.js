@@ -1372,28 +1372,41 @@ function executeGenericVisualizer(option, data, newCode) {
             $(this).parents("div.memory-map-table-wrapper").find("tbody").fadeToggle();
         }
 
+        function find_elements_to_highlight(group_id) {
+            var elements_to_highlight = [];
+
+            var group_start_addr = group_id_start_addrs[group_id];
+            var hex_group_start_addr = "0x" + toHexString(group_start_addr);
+            var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
+            elements_to_highlight.push(name_table_row);
+
+            var group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+            elements_to_highlight.push(group);
+
+            // TODO: If it's a pointer, find all things down the chain of pointers and add them to the array
+
+            return elements_to_highlight;
+        }
+
         function create_hover_highlight_function_memory(group_id) {
             return function() {
-                var group_start_addr = group_id_start_addrs[group_id];
-                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
+                var elements_to_highlight = find_elements_to_highlight(group_id);
 
-                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
-
-                // Highlight all cells and labels of this group, and the corresponding row in the name table
-                $("#stack-frame-tables td[group-id='" + group_id + "']").addClass("highlight");
-                name_table_row.addClass("highlight");
+                var num_elements = elements_to_highlight.length;
+                for(var i = 0; i < num_elements; i++) {
+                    elements_to_highlight[i].addClass("highlight");
+                }
             }
         }
 
         function create_hover_unhighlight_function_memory(group_id) {
             return function() {
-                var group_start_addr = group_id_start_addrs[group_id];
-                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
+                var elements_to_highlight = find_elements_to_highlight(group_id);
 
-                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
-
-                $("#stack-frame-tables td[group-id='" + group_id + "']").removeClass("highlight");
-                name_table_row.removeClass("highlight");
+                var num_elements = elements_to_highlight.length;
+                for(var i = 0; i < num_elements; i++) {
+                    elements_to_highlight[i].removeClass("highlight");
+                }
             }
         }
 

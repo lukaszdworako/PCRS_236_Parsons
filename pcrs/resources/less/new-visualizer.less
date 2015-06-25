@@ -3,7 +3,7 @@
 @values-width: 55%;
 @cell-width: 13.75%;
 @cell-height: 37px;
-@heading-height: 38px;
+@heading-height: 39px;
 
 hr {
     width: 100%;
@@ -30,13 +30,6 @@ hr {
     .visualizer-section;
     width: 50%;
     min-width: 30em;
-}
-
-.code-window-section {
-    .viz-left-wrapper;
-    margin: 0px;
-    width: 100%;
-    min-width: 25em;
 }
 
 #preview-code {
@@ -76,6 +69,13 @@ hr {
     color: red;
 }
 
+.code-window-section {
+    .viz-left-wrapper;
+    margin: 0px;
+    width: 100%;
+    min-width: 25em;
+}
+
 .name-type-section {
     .visualizer-section;
     min-width: 20em;
@@ -84,7 +84,7 @@ hr {
 
 .memory-map-section {
     .visualizer-section;
-    min-width: 29em;
+    min-width: 407px;
     width: 26%;
 }
 
@@ -123,7 +123,6 @@ hr {
 
 .memory-map-cell-table {
     .memory-map-table;
-    border: none !important;
     position: absolute !important;
     z-index: 0;
 }
@@ -140,6 +139,7 @@ hr {
 
 .address-width {
     padding-right: 0px;
+    padding-left: 0px;
     width: @address-width;
 }
 
@@ -182,16 +182,21 @@ hr {
     min-width: @cell-width;
     max-width: @cell-width;
     vertical-align: middle !important;
-    border: thin solid @border-color;
+    border: 1px solid @border-color !important;
+}
+
+.memory-map-cell-table .memory-map-cell {
+    border-left: none !important;
+}
+
+.memory-map-cell-table .address-heading {
+    border-right: none !important;
 }
 
 //.crouching-table
 .hidden-cell {
     display: none;
-    //opacity: 0;
-    //border-color: transparent;
     position: relative;
-    //z-index: 1000000;
 }
 
 .clear-cell {
