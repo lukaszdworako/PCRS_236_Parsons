@@ -1190,8 +1190,13 @@ function executeGenericVisualizer(option, data, newCode) {
             var minimizer = document.createElement("a");
             minimizer.href = "#";
             minimizer.className = "small-minimizer";
-            minimizer.addEventListener('click', stack_table_minimize_function);
-            minimizer.innerHTML = "[-]";
+
+            var minimizer_span = document.createElement("span");
+            minimizer_span.className = "minimizer-span";
+            minimizer_span.innerHTML = "[-]";
+            minimizer_span.addEventListener('click', stack_table_minimize_function);
+
+            minimizer.appendChild(minimizer_span)
 
             var table_title = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
 

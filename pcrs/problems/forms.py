@@ -13,7 +13,7 @@ class BaseProblemForm(CrispyFormMixin):
                         'href="{{ object.get_absolute_url }}/clear">'
                         'Clear submissions</a>')
     save_button = Submit('submit', 'Save', css_class='green-button-right')
-    attempt_button = Submit('attempt', 'Attempt', css_class='green-button-right')
+    attempt_button = Submit('attempt', 'Save & Attempt', css_class='green-button-right')
 
     save_and_add = Submit('submit', 'Save and add testcases',
                            css_class='green-button-right',

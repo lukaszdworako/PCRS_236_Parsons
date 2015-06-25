@@ -97,6 +97,11 @@ hr {
     height: @cell-height;
 }
 
+.name-type-section th[colspan="2"],
+.memory-map-section th[colspan="5"] {
+    font-size: 12pt;
+}
+
 .visualizer-section-heading {
     padding-left: 5px;
     padding-right: 5px;
@@ -223,13 +228,26 @@ hr {
 }
 
 .minimizer {
+    text-decoration: none !important;
     font-size: 15px;
     padding: 0px;
     margin-right: 5px;
+    height: 100%;
+    display: table;
     float: left;
 }
 
 .small-minimizer {
     .minimizer;
-    font-size: 10px;
+    font-size: 12px;
+}
+
+.minimizer-span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+h3 .minimizer {
+    // If someone can figure out a better way to vertically center this godforsaken, hellspawned anchor, please do it
+    transform: translateY(21%);
 }
