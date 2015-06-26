@@ -13,6 +13,41 @@ from pycparser import parse_file, c_ast, c_generator
 class CVisualizer:
 
     def __init__(self, user, temp_path):
+        self.primitive_types = \
+        {'char':'%c',
+         'signed char':'%c',
+         'unsigned char':'%c',
+         'short':'%d',
+         'short int': '%d',
+         'signed short': '%d',
+         'signed short int': '%c',
+         'unsigned short': '%u',
+         'unsigned short int': '%u',
+         'int': '%d',
+         'int *': '%p',
+         'signed int': '%d',
+         'unsigned': '%u',
+         'unsigned int': '%u',
+         'long': '%ld',
+         'long int': '%ld',
+         'signed long': '%ld',
+         'signed long int': '%ld',
+         'unsigned long': '%lu',
+         'unsigned long int': '%lu',
+         'long long': '%lld',
+         'long long int': '%lld',
+         'signed long long': '%lld',
+         'signed long long int': '%lld',
+         'unsigned long long': '%llu',
+         'unsigned long long int': '%llu',
+         'float': '%f',
+         'double': '%f',
+         'long double': '%lf',
+         'void *': '%p',
+         'void': 'no',
+         'string': '%s',
+         'char *': '%s'}
+
         self.user = user
         self.temp_path = temp_path
         self.date_time = str((datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds())
@@ -32,6 +67,10 @@ class CVisualizer:
 
         #var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
         self.var_type_dict = {}
+
+        #ptr_dict will hold a dictionary of all the pointer names we've seen, and the amt of levels of pointers
+        #ie: int **ptr_name would be {ptr_name:2}
+        self.ptr_dict = {}
 
         #amt_after keeps track of the amount of print nodes we just added after the current node, used for returns
         self.amt_after = 0
@@ -71,41 +110,6 @@ class CVisualizer:
     #RetFnCall means it just returned from a previous function call
     def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onRetFnCall, onStdOut, onStdErr):
 
-        primitive_types = \
-        {'char':'%c',
-         'signed char':'%c',
-         'unsigned char':'%c',
-         'short':'%d',
-         'short int': '%d',
-         'signed short': '%d',
-         'signed short int': '%c',
-         'unsigned short': '%u',
-         'unsigned short int': '%u',
-         'int': '%d',
-         'int *': '%p',
-         'signed int': '%d',
-         'unsigned': '%u',
-         'unsigned int': '%u',
-         'long': '%ld',
-         'long int': '%ld',
-         'signed long': '%ld',
-         'signed long int': '%ld',
-         'unsigned long': '%lu',
-         'unsigned long int': '%lu',
-         'long long': '%lld',
-         'long long int': '%lld',
-         'signed long long': '%lld',
-         'signed long long int': '%lld',
-         'unsigned long long': '%llu',
-         'unsigned long long int': '%llu',
-         'float': '%f',
-         'double': '%f',
-         'long double': '%lf',
-         'void *': '%p',
-         'void': 'no',
-         'string': '%s',
-         'char *': '%s'}
-
         add_id = c_ast.ID('printf')
         add_id_addr = None
         add_id_val = None
@@ -128,7 +132,7 @@ class CVisualizer:
         on_return = ""
         if onReturn:
             return_type = self.func_list.get(func_name)
-            on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type)
+            on_return = (str)(self.item_delimiter) + "return:" + self.primitive_types.get(return_type)
             add_return_val = parent[index].expr;
 
         returning_func = ""
@@ -149,11 +153,13 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
-            #Case where it's a pointer, not to a string: print the address it's storing
-            if (primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
-                var_val = (str)(self.item_delimiter) +"value:%p"
-            else:
-                var_val = (str)(self.item_delimiter) +"value:" + primitive_types.get(type_of_var)
+            # #Case where it's a pointer, not to a string: print the address it's storing
+            # if (self.primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
+            #     var_val = (str)(self.item_delimiter) +"value:%p"
+            # else:
+            #     var_val = (str)(self.item_delimiter) +"value:" + self.primitive_types.get(type_of_var)
+
+            var_val = (str)(self.item_delimiter) +"value:" + (str)(var_typerep)
 
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
             var_hex = (str)(self.item_delimiter) +"hex_value:%X"
@@ -168,6 +174,7 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
+        #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
@@ -314,9 +321,11 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
 
         ptr_depth = 0
         type_of_var = node.type.type.names[0]
+        var_typerep = self.primitive_types.get(type_of_var)
         var_name_val = node.name
         var_new_val = True
         if node.init == None:
@@ -331,11 +340,13 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
 
         #pdb.set_trace()
         ptr_depth = 0
         var_name_val = (str)(node.lvalue.name)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
+        var_typerep = self.primitive_types.get(type_of_var)
         var_new_val = False
         is_uninit = False
 
@@ -346,6 +357,7 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
         #pdb.set_trace()
 
         #Check how many levels of pointer this is
