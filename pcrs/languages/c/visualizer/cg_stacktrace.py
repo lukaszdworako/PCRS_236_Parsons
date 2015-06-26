@@ -166,7 +166,7 @@ class CVisualizer:
 
             var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_location +var_uninitialized + var_size
 
-            add_id_addr = c_ast.ID('&' + var_name_val)
+            add_id_addr = c_ast.ID('&(' + var_name_val+')')
             add_id_val = c_ast.ID(var_name_val)
             add_id_hex = c_ast.ID(var_name_val)
             add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
@@ -369,12 +369,36 @@ class CVisualizer:
 
         #print("ptr depth is "+(str)(ptr_depth))
         type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth
+
+        var_typerep = "%p"
         var_name_val = node.name
+
+        ptr_dict_add = {(str)(var_name_val):(int)(ptr_depth)}
+        self.ptr_dict.update(ptr_dict_add)
+
         var_new_val = True
         if node.init == None:
             is_uninit = True
         else:
             is_uninit = False
+
+    def set_heap_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global var_typerep
+        #pdb.set_trace()
+
+        ptr_depth = self.ptr_dict.get((str)(node.name))
+
+        type_of_var = (str)(self.var_type_dict.get((str)(node.name)))#.replace("*", "").strip()
+
+        var_typerep = self.primitive_types.get(type_of_var)
+        var_name_val = '*'*ptr_depth+(str)(node.name)
+
+        var_new_val = False
+        is_uninit = True
 
     #Pass in the function call node and get the ID to see the name of the function we're calling
     def set_fn_returning_from(self, func_ret_name):
@@ -429,6 +453,17 @@ class CVisualizer:
                 print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
+                #Case for malloc
+                try:
+                    if parent[index].init.name.name == 'malloc':
+                        #pdb.set_trace()
+                        self.set_heap_vars(parent[index])
+                        print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False)
+                        parent.insert(index+1+self.amt_after, print_node)
+                        self.amt_after += 1
+                except:
+                    pass
+
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.add_before_fn(parent, index, func_name)
 
