@@ -435,8 +435,8 @@ class CVisualizer:
         self.amt_after += 1
         self.cur_par_index += 1
 
-    def add_after_fn(self, parent, index, func_name, isReturning):
-        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, False, False)
+    def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap):
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, isPtr, isHeap)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
@@ -453,31 +453,33 @@ class CVisualizer:
                 #pdb.set_trace()
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
-                    self.add_after_fn(parent, index, func_name, True)
+                    self.add_after_node(parent, index, func_name, True, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_fn(parent, index, func_name, False)
+                    self.add_after_node(parent, index, func_name, False, False, False)
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
-                #pdb.set_trace()
                 self.set_decl_ptr_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, True, False)
-                parent.insert(index+1, print_node)
-                self.amt_after += 1
-                #Case for malloc
-                try:
-                    if parent[index].init.name.name == 'malloc':
-                        #pdb.set_trace()
-                        self.set_heap_vars(parent[index])
-                        print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, True)
-                        parent.insert(index+1+self.amt_after, print_node)
-                        self.amt_after += 1
-                except:
-                    pass
-
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
+                    pdb.set_trace()
+                    self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
+                    self.add_after_node(parent, index, func_name, False, True, False)
                     self.add_before_fn(parent, index, func_name)
+
+                else:
+                    self.add_after_node(parent, index, func_name, False, True, False)
+            
+                    #Case for malloc, won't be mallocing inside a function header
+                    try:
+                        if parent[index].init.name.name == 'malloc':
+                            #pdb.set_trace()
+                            self.set_heap_vars(parent[index])
+                            print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, True)
+                            parent.insert(index+1+self.amt_after, print_node)
+                            self.amt_after += 1
+                    except:
+                        pass
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
@@ -495,10 +497,10 @@ class CVisualizer:
                 #ensure there's a print statement in front of it too
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
-                    self.add_after_fn(parent, index, func_name, True)
+                    self.add_after_node(parent, index, func_name, True, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_fn(parent, index, func_name, False)
+                    self.add_after_node(parent, index, func_name, False, False, False)
 
 
     def print_stdout(self, parent, index, func_name):
@@ -541,8 +543,14 @@ class CVisualizer:
             #pdb.set_trace()
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
-                self.set_decl_vars(header_vars[i])                
-                print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, False, False)
+                if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
+                    #pdb.set_trace()
+                    self.set_decl_ptr_vars(header_vars[i])
+                    header_var_ptr = True
+                else:               
+                    self.set_decl_vars(header_vars[i])
+                    header_var_ptr = False 
+                print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, header_var_ptr, False)
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
 
