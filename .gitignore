@@ -6,3 +6,4 @@ __pycache__
 CACHE
 node_modules
 venv
+pcrs*.c
