@@ -1497,10 +1497,12 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 if(json_step['changed_vars'][i]["new"]) {
                     var is_ptr_val = false;
+                    var ptr_size = null;
                     if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
                         is_ptr_val = true;
+                        ptr_size = json_step['changed_vars'][i]['ptr_size'];
                     }
-                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val}
+                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size}
                     value_list[val_address] = new_value;
                 }
 
