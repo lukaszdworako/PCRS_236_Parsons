@@ -549,6 +549,7 @@ class CVisualizer:
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
+        print("TEMP PATH IS -------"+(str)(self.temp_path))
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
@@ -585,3 +586,5 @@ class CVisualizer:
         generator = c_generator.CGenerator()
         #print(generator.visit(ast))
         return generator.visit(ast)
+
+
