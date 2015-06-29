@@ -168,7 +168,7 @@ class CVisualizer:
             var_is_ptr = ""
             var_ptr_size = ""
             if isPtr:
-                var_is_ptr = (str)(self.item_delimiter) + "is_ptr:True"
+                var_is_ptr = (str)(self.item_delimiter) + "is_ptr:name"
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%zu"
                 add_id_ptr_size = c_ast.ID('sizeof(' + pointing_to_type +')')
 
