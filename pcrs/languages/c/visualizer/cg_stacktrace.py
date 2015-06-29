@@ -381,7 +381,7 @@ class CVisualizer:
 
         #print("ptr depth is "+(str)(ptr_depth))
         type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth
-        pointing_to_type = (str)(temp_node.type.type.names[0]) + '*'
+        pointing_to_type = (str)(temp_node.type.type.names[0]) + ' ' + '*'*(ptr_depth-1)
         var_typerep = "%p"
         var_name_val = node.name
 
