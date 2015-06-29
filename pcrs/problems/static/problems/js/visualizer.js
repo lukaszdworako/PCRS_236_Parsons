@@ -23,7 +23,7 @@ function zeroPad (str, max) {
 }
 
 function toHexString(hexnum) {
-    return "0x" + zeroPad(hexnum.toString(16), 16);
+    return zeroPad(hexnum.toString(16), 16);
 }
 
 /**
@@ -839,7 +839,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(after_end_addr > 0) {
                     location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").nextUntil("tr[start-addr='" + toHexString(after_end_addr) + "']").has("td.dot-line").remove();
                 } else {
-                    location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").siblings().has("td.dot-line").remove();
+                    location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").has("td.dot-line").remove();
                 }
 
 
@@ -1083,13 +1083,6 @@ function executeGenericVisualizer(option, data, newCode) {
                 $(updated_label_table).css("z-index", 0)
             }
 
-            var label_table_hidden = location_label_table.is(":hidden");
-            console.log("Hidden: ", location_label_table.is(":hidden"));
-            if(label_table_hidden) {
-                $(updated_label_table).hide();
-                $(updated_label_table).find("thead > tr:nth-child(2)").hide();
-            }
-
             location_label_table.replaceWith(updated_label_table);
         }
 
@@ -1292,7 +1285,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
             if(group_id) {
                 var group_start_addr = group_id_start_addrs[group_id];
-                memory_map_cell.setAttribute("group-start-addr", toHexString(group_start_addr));
+                memory_map_cell.setAttribute("group-start-addr", "0x" + toHexString(group_start_addr));
 
                 $(memory_map_cell).hover(
                     create_hover_highlight_function_memory(group_id),
@@ -1304,12 +1297,12 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function create_cell_base_row(start_addr){
-            var hex_start_addr = toHexString(start_addr);
+            var hex_start_addr = "0x" + toHexString(start_addr);
             var memory_map_row = document.createElement("tr");
             memory_map_row.setAttribute("start-addr", hex_start_addr);
 
             var td = document.createElement("td");
-            td.className = "address-width";
+            td.className = "address-heading";
             td.innerHTML = "&nbsp;";
             td.setAttribute("title", hex_start_addr);
             memory_map_row.appendChild(td);
@@ -1317,7 +1310,8 @@ function executeGenericVisualizer(option, data, newCode) {
             return memory_map_row;
         }
 
-        function create_label_base_row(hex_start_addr) {
+        function create_label_base_row(start_addr) {
+            var hex_start_addr = toHexString(start_addr);
             var memory_map_row = document.createElement("tr");
             memory_map_row.setAttribute("start-addr", hex_start_addr);
 
@@ -1376,44 +1370,30 @@ function executeGenericVisualizer(option, data, newCode) {
             }
 
             $(this).parents("div.memory-map-table-wrapper").find("tbody").fadeToggle();
-            $(this).parents("div.memory-map-table-wrapper").find("thead > tr:nth-child(2)").fadeToggle();
-        }
-
-        function find_elements_to_highlight(group_id) {
-            var elements_to_highlight = [];
-
-            var group_start_addr = group_id_start_addrs[group_id];
-            var hex_group_start_addr = toHexString(group_start_addr);
-            var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
-            elements_to_highlight.push(name_table_row);
-
-            var group = $("#stack-frame-tables td[group-id='" + group_id + "']");
-            elements_to_highlight.push(group);
-
-            // TODO: If it's a pointer, find all things down the chain of pointers and add them to the array
-
-            return elements_to_highlight;
         }
 
         function create_hover_highlight_function_memory(group_id) {
             return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
+                var group_start_addr = group_id_start_addrs[group_id];
+                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
 
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].addClass("highlight");
-                }
+                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
+
+                // Highlight all cells and labels of this group, and the corresponding row in the name table
+                $("#stack-frame-tables td[group-id='" + group_id + "']").addClass("highlight");
+                name_table_row.addClass("highlight");
             }
         }
 
         function create_hover_unhighlight_function_memory(group_id) {
             return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
+                var group_start_addr = group_id_start_addrs[group_id];
+                var hex_group_start_addr = "0x" + toHexString(group_start_addr);
 
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].removeClass("highlight");
-                }
+                var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
+
+                $("#stack-frame-tables td[group-id='" + group_id + "']").removeClass("highlight");
+                name_table_row.removeClass("highlight");
             }
         }
 
@@ -1423,6 +1403,9 @@ function executeGenericVisualizer(option, data, newCode) {
                 var group_id = start_addrs_to_group_id[group_start_addr];
 
                 var memory_map_group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+
+                console.log("Group id: ", group_id);
+                console.log("Cells matched: ", memory_map_group[0]);
 
                 $(this).addClass("highlight");
                 memory_map_group.addClass("highlight");
@@ -1502,7 +1485,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         is_ptr_val = true;
                         ptr_size = json_step['changed_vars'][i]['ptr_size'];
                     }
-                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size}
+                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
                     value_list[val_address] = new_value;
                 }
 
