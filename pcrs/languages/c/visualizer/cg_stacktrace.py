@@ -502,20 +502,22 @@ class CVisualizer:
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
+        print(self.temp_path)
+        print(temp_c_file)
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
                 f = open(temp_c_file, 'w')
             except OSError:
                 # Create temp directory if it doesn't exist
-                os.makedirs(os.path.dirname(temp_c_file))
+                os.makedirs(os.path.dirname(self.temp_path))
                 f = open(temp_c_file, 'w')
 
             f.write(stripped_user_script)
             f.close()
 
         except Exception as e:
-            print("ERROR with user file pre-processing")
+            print("ERROR with user file pre-processing: {0}".format(e))
             return
 
         ast = parse_file(temp_c_file, use_cpp=True,

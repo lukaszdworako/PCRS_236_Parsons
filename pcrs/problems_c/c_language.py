@@ -246,7 +246,6 @@ class CSpecifics():
         logger = logging.getLogger('activity.logging')
 
         user = add_params['user']
-        temp_path = os.getcwd()
         test_input = add_params['test_case']
         deny_warnings = True
 
@@ -259,7 +258,7 @@ class CSpecifics():
         if ret['exception_type'] != 'warning' and ret['exception'] != ' ':
             return {'trace': None, 'exception': ret["exception"]}
 
-        c_visualizer = CVisualizer(user, temp_path)
+        c_visualizer = CVisualizer(user, self.temp_path)
         logger.info("gets here 1")
         # Build initial stack with functions and variables data
         #Each element of stack trace contains a dictionary for a
