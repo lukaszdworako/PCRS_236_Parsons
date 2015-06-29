@@ -1393,7 +1393,7 @@ function executeGenericVisualizer(option, data, newCode) {
             // Loop until we reach a non-pointer
             var elem_info = value_list[hex_group_start_addr];
             while(elem_info && elem_info['is_ptr']) {
-                var ptr_val = toHexString(elem_info['value']);
+                var ptr_val = elem_info['value'];
                 var ptr_size = elem_info['ptr_size'];
 
                 // TODO: Add all the following cells up to ptr_size
@@ -1403,15 +1403,17 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(pointed_cell.length > 0) {
                     // Get all following cells
                     var parent_wrapper = pointed_cell.parents("div.memory-map-table-wrapper");
-                    var following_cells = parent_wrapper.find(".memory-map-cell-table td").filter(function() {
-                        return (parseInt($(this).attr("addr"), 16) >= parseInt(ptr_val, 16))
-                                || ($(this).hasClass("dot-line"))
+                    var all_cells = parent_wrapper.find(".memory-map-cell-table td.memory-map-cell, .memory-map-cell-table td.dot-line");
+                    var current_cell_ind = find_index(all_cells.toArray(), function(cell) {
+                        return $(cell).attr("addr") == ptr_val;
                     });
+
+                    var following_cells = all_cells.slice(current_cell_ind);
 
                     // Truncate to maximum size first, then remove all cells before the first dot row
                     var cells_to_highlight = following_cells.slice(0, ptr_size);
                     var sliceIndex = find_index(cells_to_highlight, is_dot_row);
-                    if(sliceIndex > 0) {
+                    if(sliceIndex >= 0) {
                         cells_to_highlight = cells_to_highlight.slice(0, sliceIndex);
                     }
 
@@ -1421,7 +1423,7 @@ function executeGenericVisualizer(option, data, newCode) {
                     cells_to_highlight = cells_to_highlight.toArray();
                     for(var i = 0; i < cells_to_highlight.length; i++) {
                         var this_cell = $(cells_to_highlight[i]);
-                        var extra_group_id = start_addrs_to_group_id[this_cell.attr("addr")];
+                        var extra_group_id = start_addrs_to_group_id[parseInt(this_cell.attr("addr"), 16)];
                         if(extra_group_id) {
                             elements_to_highlight.push($("div.memory-map-section td[group-id='"+extra_group_id+"']"));
                         }
@@ -1476,10 +1478,12 @@ function executeGenericVisualizer(option, data, newCode) {
                 var group_start_addr = parseInt($(this).attr("data-address"), 16);
                 var group_id = start_addrs_to_group_id[group_start_addr];
 
-                var memory_map_group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+                var elements_to_highlight = find_elements_to_highlight(group_id);
 
-                $(this).addClass("highlight");
-                memory_map_group.addClass("highlight");
+                var num_elements = elements_to_highlight.length;
+                for(var i = 0; i < num_elements; i++) {
+                    elements_to_highlight[i].addClass("highlight");
+                }
             }
         }
 
@@ -1488,10 +1492,12 @@ function executeGenericVisualizer(option, data, newCode) {
                 var group_start_addr = parseInt($(this).attr("data-address"), 16);
                 var group_id = start_addrs_to_group_id[group_start_addr];
 
-                var memory_map_group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+                var elements_to_highlight = find_elements_to_highlight(group_id);
 
-                $(this).removeClass("highlight");
-                memory_map_group.removeClass("highlight");
+                var num_elements = elements_to_highlight.length;
+                for(var i = 0; i < num_elements; i++) {
+                    elements_to_highlight[i].removeClass("highlight");
+                }
             }
         }
 
@@ -1546,15 +1552,15 @@ function executeGenericVisualizer(option, data, newCode) {
 
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
-
-                var val_address = toHexString(json_step['changed_vars'][i]["addr"]);
-
+                var val_address = json_step['changed_vars'][i]["addr"];
+                var ptr_size = null;
                 if(json_step['changed_vars'][i]["new"]) {
                     var is_ptr_val = false;
                     if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
                         is_ptr_val = true;
+                        ptr_size = json_step['changed_vars'][i]['ptr_size'];
                     }
-                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val}
+                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
                     value_list[val_address] = new_value;
                 }
 

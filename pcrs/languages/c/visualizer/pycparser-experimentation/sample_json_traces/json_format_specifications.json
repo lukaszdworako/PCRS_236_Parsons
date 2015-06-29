@@ -25,6 +25,8 @@
                     "invalid": "",
                     "location": "stack, heap or static",
                     "max_size": 4, // In bytes, the largest size that this variable can be
+                    "is_ptr": true, //Whether or not it is a pointer
+                    "ptr_size": 8, //The size of the thing the pointer is pointing to
                     "uninitialized": true //Only there if the variable is not initialized
                 }
             ],

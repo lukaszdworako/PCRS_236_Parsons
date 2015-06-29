@@ -246,7 +246,6 @@ class CSpecifics():
         logger = logging.getLogger('activity.logging')
 
         user = add_params['user']
-        temp_path = os.getcwd()
         test_input = add_params['test_case']
         deny_warnings = True
 
@@ -259,7 +258,7 @@ class CSpecifics():
         if ret['exception_type'] != 'warning' and ret['exception'] != ' ':
             return {'trace': None, 'exception': ret["exception"]}
 
-        c_visualizer = CVisualizer(user, temp_path)
+        c_visualizer = CVisualizer(user, self.temp_path)
         logger.info("gets here 1")
         # Build initial stack with functions and variables data
         #Each element of stack trace contains a dictionary for a
@@ -279,7 +278,9 @@ class CSpecifics():
 
         mod_user_script = c_visualizer.add_printf(user_script)
 
-        logger.info("here 3")
+        logger.info("--------------")
+        print(mod_user_script)
+        logger.info("--------------")
         # Compile and run the modified source code and remove compiled file
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
         #print(code_output.get("test_val"))
@@ -290,7 +291,8 @@ class CSpecifics():
             return json_output
 
         else:
-            # Return error to user
+            # Return error to user, we will remove this once we put to production
+            #TODO: Compiler is letting users declare function header variables with no type, but this messes up visualizer - change this to restrict!!! - Julianna
             return {"error": code_output}
 
     def get_download_mimetype(self):
@@ -329,7 +331,7 @@ class CSpecifics():
             # Make a dictionary out of all of parts of the line
             line_info_list = print_statement.split(print_delim)
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
-
+            print(line_info)
 
             # If we reach a new line, save the current step and start new one
             if int(line_info['line']) != current_line:

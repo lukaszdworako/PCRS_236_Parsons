@@ -13,6 +13,41 @@ from pycparser import parse_file, c_ast, c_generator
 class CVisualizer:
 
     def __init__(self, user, temp_path):
+        self.primitive_types = \
+        {'char':'%c',
+         'signed char':'%c',
+         'unsigned char':'%c',
+         'short':'%d',
+         'short int': '%d',
+         'signed short': '%d',
+         'signed short int': '%c',
+         'unsigned short': '%u',
+         'unsigned short int': '%u',
+         'int': '%d',
+         'int *': '%p',
+         'signed int': '%d',
+         'unsigned': '%u',
+         'unsigned int': '%u',
+         'long': '%ld',
+         'long int': '%ld',
+         'signed long': '%ld',
+         'signed long int': '%ld',
+         'unsigned long': '%lu',
+         'unsigned long int': '%lu',
+         'long long': '%lld',
+         'long long int': '%lld',
+         'signed long long': '%lld',
+         'signed long long int': '%lld',
+         'unsigned long long': '%llu',
+         'unsigned long long int': '%llu',
+         'float': '%f',
+         'double': '%f',
+         'long double': '%lf',
+         'void *': '%p',
+         'void': 'no',
+         'string': '%s',
+         'char *': '%s'}
+
         self.user = user
         self.temp_path = temp_path
         self.date_time = str((datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds())
@@ -32,6 +67,10 @@ class CVisualizer:
 
         #var_type_dict will hold a dictionary of all the variables we've seen, and their types - used for return val printing
         self.var_type_dict = {}
+
+        #ptr_dict will hold a dictionary of all the pointer names we've seen, and the amt of levels of pointers
+        #ie: int **ptr_name would be {ptr_name:2}
+        self.ptr_dict = {}
 
         #amt_after keeps track of the amount of print nodes we just added after the current node, used for returns
         self.amt_after = 0
@@ -69,48 +108,14 @@ class CVisualizer:
             return line
 
     #RetFnCall means it just returned from a previous function call
-    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onRetFnCall, onStdOut, onStdErr):
-
-        primitive_types = \
-        {'char':'%c',
-         'signed char':'%c',
-         'unsigned char':'%c',
-         'short':'%d',
-         'short int': '%d',
-         'signed short': '%d',
-         'signed short int': '%c',
-         'unsigned short': '%u',
-         'unsigned short int': '%u',
-         'int': '%d',
-         'int *': '%p',
-         'signed int': '%d',
-         'unsigned': '%u',
-         'unsigned int': '%u',
-         'long': '%ld',
-         'long int': '%ld',
-         'signed long': '%ld',
-         'signed long int': '%ld',
-         'unsigned long': '%lu',
-         'unsigned long int': '%lu',
-         'long long': '%lld',
-         'long long int': '%lld',
-         'signed long long': '%lld',
-         'signed long long int': '%lld',
-         'unsigned long long': '%llu',
-         'unsigned long long int': '%llu',
-         'float': '%f',
-         'double': '%f',
-         'long double': '%lf',
-         'void *': '%p',
-         'void': 'no',
-         'string': '%s',
-         'char *': '%s'}
+    def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onRetFnCall, onStdOut, onStdErr, isPtr, onHeap):
 
         add_id = c_ast.ID('printf')
         add_id_addr = None
         add_id_val = None
         add_id_size = None
         add_return_val = None
+        add_id_ptr_size = None
         line_no = "line:"+ (str)(parent[index].coord.line)
         function = (str)(self.item_delimiter) +"function:"+ (str)(func_name)
         on_entry = ""
@@ -128,7 +133,7 @@ class CVisualizer:
         on_return = ""
         if onReturn:
             return_type = self.func_list.get(func_name)
-            on_return = (str)(self.item_delimiter) + "return:" + primitive_types.get(return_type)
+            on_return = (str)(self.item_delimiter) + "return:" + self.primitive_types.get(return_type)
             add_return_val = parent[index].expr;
 
         returning_func = ""
@@ -149,18 +154,27 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
-            #Case where it's a pointer, not to a string: print the address it's storing
-            if (primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
-                var_val = (str)(self.item_delimiter) +"value:%p"
-            else:
-                var_val = (str)(self.item_delimiter) +"value:" + primitive_types.get(type_of_var)
+            # #Case where it's a pointer, not to a string: print the address it's storing
+            # if (self.primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
+            #     var_val = (str)(self.item_delimiter) +"value:%p"
+            # else:
+            #     var_val = (str)(self.item_delimiter) +"value:" + self.primitive_types.get(type_of_var)
+
+            var_val = (str)(self.item_delimiter) +"value:" + (str)(var_typerep)
 
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
             var_hex = (str)(self.item_delimiter) +"hex_value:%X"
 
-            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_location +var_uninitialized + var_size
+            var_is_ptr = ""
+            var_ptr_size = ""
+            if isPtr:
+                var_is_ptr = (str)(self.item_delimiter) + "is_ptr:name"
+                var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%zu"
+                add_id_ptr_size = c_ast.ID('sizeof(' + pointing_to_type +')')
 
-            add_id_addr = c_ast.ID('&' + var_name_val)
+            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size
+
+            add_id_addr = c_ast.ID('&(' + var_name_val+')')
             add_id_val = c_ast.ID(var_name_val)
             add_id_hex = c_ast.ID(var_name_val)
             add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
@@ -168,10 +182,14 @@ class CVisualizer:
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
+        #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
         if add_id_addr != None:
-            add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
+            if add_id_ptr_size != None:
+                add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size, add_id_ptr_size])
+            else:
+                add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size])
         else:
             if add_return_val != None:
                 add_exprList = c_ast.ExprList([add_const, add_return_val])
@@ -314,9 +332,11 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
 
         ptr_depth = 0
         type_of_var = node.type.type.names[0]
+        var_typerep = self.primitive_types.get(type_of_var)
         var_name_val = node.name
         var_new_val = True
         if node.init == None:
@@ -331,11 +351,13 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
 
         #pdb.set_trace()
         ptr_depth = 0
         var_name_val = (str)(node.lvalue.name)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
+        var_typerep = self.primitive_types.get(type_of_var)
         var_new_val = False
         is_uninit = False
 
@@ -346,6 +368,8 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global ptr_depth
+        global var_typerep
+        global pointing_to_type
         #pdb.set_trace()
 
         #Check how many levels of pointer this is
@@ -357,12 +381,36 @@ class CVisualizer:
 
         #print("ptr depth is "+(str)(ptr_depth))
         type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth
+        pointing_to_type = (str)(temp_node.type.type.names[0]) + '*'
+        var_typerep = "%p"
         var_name_val = node.name
+
+        ptr_dict_add = {(str)(var_name_val):(int)(ptr_depth)}
+        self.ptr_dict.update(ptr_dict_add)
+
         var_new_val = True
         if node.init == None:
             is_uninit = True
         else:
             is_uninit = False
+
+    def set_heap_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global var_typerep
+        #pdb.set_trace()
+
+        ptr_depth = self.ptr_dict.get((str)(node.name))
+
+        type_of_var = (str)(self.var_type_dict.get((str)(node.name)))#.replace("*", "").strip()
+
+        var_typerep = self.primitive_types.get(type_of_var)
+        var_name_val = '*'*ptr_depth+(str)(node.name)
+
+        var_new_val = False
+        is_uninit = True
 
     #Pass in the function call node and get the ID to see the name of the function we're calling
     def set_fn_returning_from(self, func_ret_name):
@@ -375,20 +423,20 @@ class CVisualizer:
     def handle_return(self, parent, index, func_name):
         #print_node = old_create_printf_node()
         #global amt_after
-        print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False)
+        print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
 
     def add_before_fn(self, parent, index, func_name):
         #global cur_par_index
         #global amt_after
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False)
         parent.insert(index, print_node)
         self.amt_after += 1
         self.cur_par_index += 1
 
     def add_after_fn(self, parent, index, func_name, isReturning):
-        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, False, False)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
@@ -414,9 +462,20 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 #pdb.set_trace()
                 self.set_decl_ptr_vars(parent[index])
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, True, False)
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
+                #Case for malloc
+                try:
+                    if parent[index].init.name.name == 'malloc':
+                        #pdb.set_trace()
+                        self.set_heap_vars(parent[index])
+                        print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, True)
+                        parent.insert(index+1+self.amt_after, print_node)
+                        self.amt_after += 1
+                except:
+                    pass
+
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.add_before_fn(parent, index, func_name)
 
@@ -443,13 +502,13 @@ class CVisualizer:
 
 
     def print_stdout(self, parent, index, func_name):
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, True, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, True, False, False, False)
         parent.insert(index, print_node)
         self.cur_par_index += 1
         self.amt_after += 1
 
     def print_stderr(self, parent, index, func_name):
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, True)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, True, False, False)
         parent.insert(index, print_node)
         self.cur_par_index += 1
         self.amt_after += 1
@@ -459,10 +518,10 @@ class CVisualizer:
     def print_funccall_in_prog(self, parent, index, func_name, func_ret_from):
         #global amt_after
         #global cur_par_index
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False)
         parent.insert(index, print_node)
         self.set_fn_returning_from(func_ret_from)
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, True, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, True, False, False, False, False)
         parent.insert(index+2, print_node)
         self.cur_par_index += 2
         self.amt_after += 2
@@ -470,7 +529,7 @@ class CVisualizer:
     #If calling a function not declared in the progra, only add a print statement after the function call,
     #only need to highlight this line once.
     def print_funccall_not_prog(self, parent, index, func_name):
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False)
         parent.insert(index+1, print_node)
         self.amt_after += 1
 
@@ -483,13 +542,13 @@ class CVisualizer:
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
                 self.set_decl_vars(header_vars[i])                
-                print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False)
+                print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, False, False)
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
 
         #Otherwise just set a print node with no changed vars
         else: 
-            print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False)
+            print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False, False, False)
             parent[index].body.block_items.insert(0, print_node)
             self.amt_after += 1
 
@@ -502,20 +561,21 @@ class CVisualizer:
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
+        print("TEMP PATH IS -------"+(str)(self.temp_path))
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
                 f = open(temp_c_file, 'w')
             except OSError:
                 # Create temp directory if it doesn't exist
-                os.makedirs(os.path.dirname(temp_c_file))
+                os.makedirs(os.path.dirname(self.temp_path))
                 f = open(temp_c_file, 'w')
 
             f.write(stripped_user_script)
             f.close()
 
         except Exception as e:
-            print("ERROR with user file pre-processing")
+            print("ERROR with user file pre-processing: {0}".format(e))
             return
 
         ast = parse_file(temp_c_file, use_cpp=True,
@@ -538,3 +598,5 @@ class CVisualizer:
         generator = c_generator.CGenerator()
         #print(generator.visit(ast))
         return generator.visit(ast)
+
+
