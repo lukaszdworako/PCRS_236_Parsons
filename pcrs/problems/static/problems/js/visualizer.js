@@ -1084,7 +1084,6 @@ function executeGenericVisualizer(option, data, newCode) {
             }
 
             var label_table_hidden = location_label_table.is(":hidden");
-            console.log("Hidden: ", location_label_table.is(":hidden"));
             if(label_table_hidden) {
                 $(updated_label_table).hide();
                 $(updated_label_table).find("thead > tr:nth-child(2)").hide();
@@ -1387,12 +1386,67 @@ function executeGenericVisualizer(option, data, newCode) {
             var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
             elements_to_highlight.push(name_table_row);
 
-            var group = $("#stack-frame-tables td[group-id='" + group_id + "']");
+            var group = $("div.memory-map-section td[group-id='" + group_id + "']");
             elements_to_highlight.push(group);
 
-            // TODO: If it's a pointer, find all things down the chain of pointers and add them to the array
+            // If it's a pointer, find all things down the chain of pointers and add them to the array
+            // Loop until we reach a non-pointer
+            var elem_info = value_list[hex_group_start_addr];
+            while(elem_info && elem_info['is_ptr']) {
+                var ptr_val = toHexString(elem_info['value']);
+                var ptr_size = elem_info['ptr_size'];
+
+                // TODO: Add all the following cells up to ptr_size
+                // Get the cell it's pointing to
+                var pointed_cell = $("div.memory-map-section td[addr='" + ptr_val + "']");
+
+                if(pointed_cell.length > 0) {
+                    // Get all following cells
+                    var parent_wrapper = pointed_cell.parents("div.memory-map-table-wrapper");
+                    var following_cells = parent_wrapper.find(".memory-map-cell-table td").filter(function() {
+                        return (parseInt($(this).attr("addr"), 16) >= parseInt(ptr_val, 16))
+                                || ($(this).hasClass("dot-line"))
+                    });
+
+                    // Truncate to maximum size first, then remove all cells before the first dot row
+                    var cells_to_highlight = following_cells.slice(0, ptr_size);
+                    var sliceIndex = find_index(cells_to_highlight, is_dot_row);
+                    if(sliceIndex > 0) {
+                        cells_to_highlight = cells_to_highlight.slice(0, sliceIndex);
+                    }
+
+                    elements_to_highlight.push(cells_to_highlight);
+
+                    // Highlight the groups this pointer points to, if it does point to any
+                    cells_to_highlight = cells_to_highlight.toArray();
+                    for(var i = 0; i < cells_to_highlight.length; i++) {
+                        var this_cell = $(cells_to_highlight[i]);
+                        var extra_group_id = start_addrs_to_group_id[this_cell.attr("addr")];
+                        if(extra_group_id) {
+                            elements_to_highlight.push($("div.memory-map-section td[group-id='"+extra_group_id+"']"));
+                        }
+                    }
+                }
+
+                // Attempt to follow the pointer chain
+                elem_info = value_list[ptr_val];
+
+            }
 
             return elements_to_highlight;
+        }
+
+        function find_index(array, is_true) {
+            for (var i = 0; i < array.length; i++) {
+                if(is_true(array[i])) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function is_dot_row(td) {
+            return $(td).hasClass("dot-line");
         }
 
         function create_hover_highlight_function_memory(group_id) {
@@ -1493,7 +1547,7 @@ function executeGenericVisualizer(option, data, newCode) {
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
-                var val_address = json_step['changed_vars'][i]["addr"];
+                var val_address = toHexString(json_step['changed_vars'][i]["addr"]);
 
                 if(json_step['changed_vars'][i]["new"]) {
                     var is_ptr_val = false;
@@ -1633,7 +1687,7 @@ function executeGenericVisualizer(option, data, newCode) {
             //Loop through all var changes in the step
             for(var i=0; i<json_step['changed_vars'].length; i++) {
 
-                var val_address = json_step['changed_vars'][i]["addr"];
+                var val_address = toHexString(json_step['changed_vars'][i]["addr"]);
 
                 if(json_step['changed_vars'][i]["new"]) {
                     delete value_list[val_address];
