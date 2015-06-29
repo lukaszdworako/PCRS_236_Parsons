@@ -502,8 +502,6 @@ class CVisualizer:
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
-        print(self.temp_path)
-        print(temp_c_file)
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
