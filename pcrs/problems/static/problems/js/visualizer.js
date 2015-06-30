@@ -441,9 +441,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 global_amt = globals.length;
                 for(var i = 0; i < global_amt; i++) {
                     //Include global vars
-                    add_to_name_table(globals[i]);
-                    add_to_val_list(globals[i]);
-                    add_to_memory_table(globals[i]);
+                    add_var_to_all_tables(globals[i]);
                 }
             }
 
@@ -464,9 +462,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 //Case where there's changed variables
                 if(json_step.hasOwnProperty('changed_vars')) {
-                    add_to_name_table(json_step);
-                    add_to_val_list(json_step);
-                    add_to_memory_table(json_step);
+                    add_var_to_all_tables(json_step);
                 }
                 //Case where it's a function return
                 if((json_step.hasOwnProperty('return')) || (json_step.hasOwnProperty('returned_fn_call'))) {
@@ -526,6 +522,13 @@ function executeGenericVisualizer(option, data, newCode) {
 
             console.log("value_list is: ");
             console.log(value_list);
+        }
+
+        function add_var_to_all_tables(new_var) {
+            // Have to add to memory table first to update the start_addrs_to_group_id table, which the name table uses
+            add_to_memory_table(new_var);
+            add_to_name_table(new_var);
+            add_to_val_list(new_var);
         }
 
 
@@ -619,9 +622,14 @@ function executeGenericVisualizer(option, data, newCode) {
                             '<td class="var-type hide-overflow" title="' + json_step['changed_vars'][i]['type'] + '">' + json_step['changed_vars'][i]['type'] + '</td>' +
                         '</tr>');
 
-                        $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']").hover(
-                            create_hover_highlight_function_names(),
-                            create_hover_unhighlight_function_names()
+
+                        var name_row = $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']");
+
+                        var group_start_addr = parseInt(name_row.attr("data-address"), 16);
+                        var name_row_group_id = start_addrs_to_group_id[group_start_addr];
+                        name_row.hover(
+                            create_hover_highlight_function(name_row_group_id),
+                            create_hover_unhighlight_function(name_row_group_id)
                             );
                     }
                 }
@@ -678,7 +686,11 @@ function executeGenericVisualizer(option, data, newCode) {
             var changed_vars = json_step.changed_vars;
             var func_name = json_step["function"];
             for(var i=0; i < changed_vars.length; i++) {
-                add_one_var_to_memory_table(changed_vars[i], func_name);
+                if(changed_vars[i]["value"].constructor === Array) {
+                    // TODO: Treat each value in the array as its own variable and insert individually
+                } else {
+                    add_one_var_to_memory_table(changed_vars[i], func_name);
+                }
             }
         }
 
@@ -1269,8 +1281,8 @@ function executeGenericVisualizer(option, data, newCode) {
 
             if(group_id) {
                 $(memory_map_cell).hover(
-                    create_hover_highlight_function_memory(group_id),
-                    create_hover_unhighlight_function_memory(group_id)
+                    create_hover_highlight_function(group_id),
+                    create_hover_unhighlight_function(group_id)
                     );
             }
 
@@ -1294,8 +1306,8 @@ function executeGenericVisualizer(option, data, newCode) {
                 memory_map_cell.setAttribute("group-start-addr", toHexString(group_start_addr));
 
                 $(memory_map_cell).hover(
-                    create_hover_highlight_function_memory(group_id),
-                    create_hover_unhighlight_function_memory(group_id)
+                    create_hover_highlight_function(group_id),
+                    create_hover_unhighlight_function(group_id)
                     );
             }
 
@@ -1378,16 +1390,59 @@ function executeGenericVisualizer(option, data, newCode) {
             $(this).parents("div.memory-map-table-wrapper").find("thead > tr:nth-child(2)").fadeToggle();
         }
 
+        function is_dot_row(td) {
+            return $(td).hasClass("dot-line");
+        }
+
+        function create_hover_highlight_function(group_id) {
+            return function() {
+                var elements_to_highlight = find_elements_to_highlight(group_id);
+                var main_elements = elements_to_highlight["main"];
+                var extra_elements = elements_to_highlight["extra"];
+
+                var num_elements = main_elements.length;
+                for(var i = 0; i < num_elements; i++) {
+                    main_elements[i].addClass("highlight outside-border");
+                }
+
+                num_elements = extra_elements.length;
+                for(var i = 0; i < num_elements; i++) {
+                    extra_elements[i].addClass("highlight");
+                }
+            }
+        }
+
+        function create_hover_unhighlight_function(group_id) {
+            return function() {
+                var elements_to_highlight = find_elements_to_highlight(group_id);
+                var main_elements = elements_to_highlight["main"];
+                var extra_elements = elements_to_highlight["extra"];
+
+                var num_elements = main_elements.length;
+                for(var i = 0; i < num_elements; i++) {
+                    main_elements[i].removeClass("highlight outside-border");
+                }
+
+                num_elements = extra_elements.length;
+                for(var i = 0; i < num_elements; i++) {
+                    extra_elements[i].removeClass("highlight");
+                }
+            }
+        }
+
         function find_elements_to_highlight(group_id) {
-            var elements_to_highlight = [];
+            // The first pair has to be distinguished so it can be applied a different style
+            var elements_to_highlight = {}
+            var main_elements_to_highlight = [];
+            var extra_elements_to_highlight = [];
 
             var group_start_addr = group_id_start_addrs[group_id];
             var hex_group_start_addr = toHexString(group_start_addr);
             var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
-            elements_to_highlight.push(name_table_row);
+            main_elements_to_highlight.push(name_table_row);
 
             var group = $("div.memory-map-section td[group-id='" + group_id + "']");
-            elements_to_highlight.push(group);
+            main_elements_to_highlight.push(group);
 
             // If it's a pointer, find all things down the chain of pointers and add them to the array
             // Loop until we reach a non-pointer
@@ -1396,7 +1451,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 var ptr_val = elem_info['value'];
                 var ptr_size = elem_info['ptr_size'];
 
-                // TODO: Add all the following cells up to ptr_size
+                // Add all the following cells up to ptr_size
                 // Get the cell it's pointing to
                 var pointed_cell = $("div.memory-map-section td[addr='" + ptr_val + "']");
 
@@ -1417,7 +1472,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         cells_to_highlight = cells_to_highlight.slice(0, sliceIndex);
                     }
 
-                    elements_to_highlight.push(cells_to_highlight);
+                    extra_elements_to_highlight.push(cells_to_highlight);
 
                     // Highlight the groups this pointer points to, if it does point to any
                     cells_to_highlight = cells_to_highlight.toArray();
@@ -1425,7 +1480,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         var this_cell = $(cells_to_highlight[i]);
                         var extra_group_id = start_addrs_to_group_id[parseInt(this_cell.attr("addr"), 16)];
                         if(extra_group_id) {
-                            elements_to_highlight.push($("div.memory-map-section td[group-id='"+extra_group_id+"']"));
+                            extra_elements_to_highlight.push($("div.memory-map-section td[group-id='"+extra_group_id+"']"));
                         }
                     }
                 }
@@ -1435,6 +1490,9 @@ function executeGenericVisualizer(option, data, newCode) {
 
             }
 
+
+            elements_to_highlight["main"] = main_elements_to_highlight;
+            elements_to_highlight["extra"] = extra_elements_to_highlight;
             return elements_to_highlight;
         }
 
@@ -1445,60 +1503,6 @@ function executeGenericVisualizer(option, data, newCode) {
                 }
             }
             return -1;
-        }
-
-        function is_dot_row(td) {
-            return $(td).hasClass("dot-line");
-        }
-
-        function create_hover_highlight_function_memory(group_id) {
-            return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].addClass("highlight");
-                }
-            }
-        }
-
-        function create_hover_unhighlight_function_memory(group_id) {
-            return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].removeClass("highlight");
-                }
-            }
-        }
-
-        function create_hover_highlight_function_names() {
-            return function() {
-                var group_start_addr = parseInt($(this).attr("data-address"), 16);
-                var group_id = start_addrs_to_group_id[group_start_addr];
-
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].addClass("highlight");
-                }
-            }
-        }
-
-        function create_hover_unhighlight_function_names() {
-            return function() {
-                var group_start_addr = parseInt($(this).attr("data-address"), 16);
-                var group_id = start_addrs_to_group_id[group_start_addr];
-
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-
-                var num_elements = elements_to_highlight.length;
-                for(var i = 0; i < num_elements; i++) {
-                    elements_to_highlight[i].removeClass("highlight");
-                }
-            }
         }
 
         function add_return_name_table(json_step) {

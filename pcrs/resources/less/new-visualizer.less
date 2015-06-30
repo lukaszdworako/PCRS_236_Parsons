@@ -108,9 +108,9 @@ hr {
     text-align: center;
 }
 
-.memory-map-table-wrapper {
+div.memory-map-table-wrapper {
     width: 100%;
-    position: relative !important;
+    position: relative;
     display: inline-block;
 }
 
@@ -121,15 +121,15 @@ hr {
     table-layout: fixed;
 }
 
-.memory-map-cell-table {
+table.memory-map-cell-table {
     .memory-map-table;
-    position: absolute !important;
+    position: absolute;
     z-index: 0;
 }
 
-.memory-map-label-table {
+table.memory-map-label-table {
     .memory-map-table;
-    position: relative !important;
+    position: relative;
     z-index: 1000;
 }
 
@@ -154,9 +154,9 @@ hr {
     width: @address-width;
 }
 
-.values-heading {
+th.values-heading {
     padding-left: 0px;
-    border-left: 2px solid @border-color !important;
+    border-left: 2px solid @border-color;
     text-align: center;
     width: @values-width;
 }
@@ -167,30 +167,30 @@ hr {
     white-space: nowrap;
 }
 
-.memory-map-address {
+td.memory-map-address {
     .hide-overflow;
     text-align: right;
-    vertical-align: middle !important;
-    border-right: 2px solid @border-color !important;
+    vertical-align: middle;
+    border-right: 2px solid @border-color;
     width: @address-width;
 }
 
-.memory-map-cell {
+div.memory-map-table-wrapper td.memory-map-cell {
     .hide-overflow;
     text-align: center;
     width: @cell-width;
     min-width: @cell-width;
     max-width: @cell-width;
-    vertical-align: middle !important;
-    border: 1px solid @border-color !important;
+    vertical-align: middle;
+    border: 1px solid @border-color;
 }
 
-.memory-map-cell-table .memory-map-cell {
-    border-left: none !important;
+table.memory-map-cell-table .memory-map-cell {
+    border-left: none;
 }
 
-.memory-map-cell-table .address-heading {
-    border-right: none !important;
+table.memory-map-cell-table .address-heading {
+    border-right: none;
 }
 
 //.crouching-table
@@ -199,33 +199,34 @@ hr {
     position: relative;
 }
 
-.clear-cell {
-    border-left: none !important;
-    border-right: none !important;
+td.clear-cell {
+    border-left: none;
+    border-right: none;
 }
 
-.right-edge-clear-cell {
-    border-left: none !important;
+td.right-edge-clear-cell {
+    border-left: none;
 }
 
-.top-row-clear-cell {
-    border-bottom: 1px solid white !important;
+td.top-row-clear-cell {
+    border-bottom: 1px solid white;
 }
 
-.middle-row-clear-cell {
-    border-top: none !important;
-    border-bottom: none !important;
+td.middle-row-clear-cell {
+    border-top: none;
+    border-bottom: none;
 }
 
-.bottom-row-clear-cell {
-    border-top: none !important;
+td.bottom-row-clear-cell {
+    border-top: none;
 }
 
-.dot-line {
+div.memory-map-table-wrapper td.dot-line {
     text-align: center;
-    padding: 2px !important;
-    line-height: 15px !important;
+    padding: 2px;
+    line-height: 15px;
     height: 15px;
+    margin-bottom: 1px;
 }
 
 .highlight {
@@ -233,7 +234,7 @@ hr {
 }
 
 .minimizer {
-    text-decoration: none !important;
+    text-decoration: none;
     font-size: 15px;
     padding: 0px;
     margin-right: 5px;
@@ -242,7 +243,11 @@ hr {
     float: left;
 }
 
-.small-minimizer {
+a.minimizer {
+    .minimizer;
+}
+
+a.small-minimizer {
     .minimizer;
     font-size: 12px;
 }
@@ -255,4 +260,8 @@ hr {
 h3 .minimizer {
     // If someone can figure out a better way to vertically center this godforsaken, hellspawned anchor, please do it
     transform: translateY(21%);
+}
+
+div.memory-map-table-wrapper td.outside-border, tr.outside-border {
+    border: 2px double skyblue;
 }
