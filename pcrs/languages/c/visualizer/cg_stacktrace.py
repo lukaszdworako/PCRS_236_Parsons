@@ -358,6 +358,9 @@ class CVisualizer:
         var_name_val = (str)(node.lvalue.name)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
         var_typerep = self.primitive_types.get(type_of_var)
+        #This should only happen if it's a pointer and we can't find its type
+        if var_typerep == None:
+            var_typerep = '%p'
         var_new_val = False
         is_uninit = False
 
@@ -393,6 +396,40 @@ class CVisualizer:
             is_uninit = True
         else:
             is_uninit = False
+
+    def set_assign_ptr_vars(self, node):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        global var_typerep
+
+        #pdb.set_trace()
+        ptr_depth = 0
+        temp_node = node.lvalue
+        while isinstance(temp_node, c_ast.UnaryOp):
+            ptr_depth += 1
+            temp_node = temp_node.expr
+
+        var_name_val = '*'*ptr_depth+(str)(temp_node.name) 
+
+        #ie, int ** if that's what this pointer is
+        unstripped_vartype = (str)(self.var_type_dict.get(temp_node.name))
+
+        #ie, int if that's what this pointer is pointing to at the end
+        stripped_vartype = unstripped_vartype.replace("*", "").strip()
+
+        #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
+        if ptr_depth == self.ptr_dict.get(temp_node.name):
+            var_typerep = self.primitive_types.get(stripped_vartype)
+        else:
+            var_typerep = '%p'
+
+        type_of_var = unstripped_vartype.replace("*", "", ptr_depth)
+        
+        var_new_val = False
+        is_uninit = False        
 
     def set_heap_vars(self, node):
         global type_of_var
@@ -492,16 +529,25 @@ class CVisualizer:
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
             if isinstance(parent[index].lvalue, c_ast.ID):
+                #pdb.set_trace()
                 self.set_assign_vars(parent[index])
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
+                if parent[index].lvalue.name in self.ptr_dict:
+                    ptr_assign = True
+                else:
+                    ptr_assign = False
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
-                    self.add_after_node(parent, index, func_name, True, False, False)
+                    self.add_after_node(parent, index, func_name, True, ptr_assign, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_node(parent, index, func_name, False, False, False)
+                    self.add_after_node(parent, index, func_name, False, ptr_assign, False)
 
+            #Case for pointer assignment with stars in front, ie. *ptr = 3
+            elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
+                self.set_assign_ptr_vars(parent[index])
+                self.add_after_node(parent, index, func_name, False, True, False)       
 
     def print_stdout(self, parent, index, func_name):
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, True, False, False, False)
