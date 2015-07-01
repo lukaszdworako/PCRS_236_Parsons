@@ -8,6 +8,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import (BaseUserManager)
 import content.models
 from pcrs.models import AbstractSelfAwareModel
+from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 
 from django.db.models.signals import post_syncdb
 from django.dispatch import receiver
@@ -63,12 +64,35 @@ class CustomAbstractBaseUser(models.Model):
         return True
 
     if settings.AUTH_TYPE == 'pass':
+        def set_password(self, raw_password):
+            self.password = make_password(raw_password)
+
         def check_password(self, raw_password):
             """
             Returns a boolean of whether the raw_password was correct. Handles
             hashing formats behind the scenes.
             """
             return raw_password == self.password
+
+        # Using a raw password for development -- database is set up with raw passwords.
+        '''def check_password(self, raw_password):
+            """
+            Return a boolean of whether the raw_password was correct. Handles
+            hashing formats behind the scenes.
+            """
+            def setter(raw_password):
+                self.set_password(raw_password)
+                self.save(update_fields=["password"])
+            return check_password(raw_password, self.password, setter)
+        '''
+
+        def set_unusable_password(self):
+            # Set a value that will never be a valid hash
+            self.password = make_password(None)
+
+        def has_usable_password(self):
+            return is_password_usable(self.password)
+
 
     def get_full_name(self):
         raise NotImplementedError()
