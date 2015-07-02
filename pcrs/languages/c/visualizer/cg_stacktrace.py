@@ -132,9 +132,10 @@ class CVisualizer:
 
         on_return = ""
         if onReturn:
+            #return_type contains function's return type (ie, int main(); would be int) 
             return_type = self.func_list.get(func_name)
-            on_return = (str)(self.item_delimiter) + "return:" + self.primitive_types.get(return_type)
-            add_return_val = parent[index].expr;
+            on_return = (str)(self.item_delimiter) + "return:" + (str)(self.primitive_types.get(return_type))
+            add_return_val = c_ast.ID((str)(return_node_name));
 
         returning_func = ""
         if onRetFnCall:
@@ -143,7 +144,6 @@ class CVisualizer:
         var_info = ""
         #This block only gets executed if there's changed vars in the node
         if changedVar:
-            #pdb.set_trace()
 
             var_name = (str)(self.item_delimiter) +"var_name:"+ (str)(var_name_val)
             var_addr = (str)(self.item_delimiter) +"addr:%p"
@@ -154,16 +154,10 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
-            # #Case where it's a pointer, not to a string: print the address it's storing
-            # if (self.primitive_types.get(type_of_var) == None) and (ptr_depth > 0):
-            #     var_val = (str)(self.item_delimiter) +"value:%p"
-            # else:
-            #     var_val = (str)(self.item_delimiter) +"value:" + self.primitive_types.get(type_of_var)
-
             var_val = (str)(self.item_delimiter) +"value:" + (str)(var_typerep)
 
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
-            var_hex = (str)(self.item_delimiter) +"hex_value:%X"
+            var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
 
             var_is_ptr = ""
             var_ptr_size = ""
@@ -185,7 +179,7 @@ class CVisualizer:
         #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
-        if add_id_addr != None:
+        if add_id_addr != None: 
             if add_id_ptr_size != None:
                 add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size, add_id_ptr_size])
             else:
@@ -212,7 +206,6 @@ class CVisualizer:
         i = 0
         while i < len(ast.ext):
             if isinstance(ast.ext[i], c_ast.FuncDef):
-                #pdb.set_trace()
                 var_dict_add = {(str)(ast.ext[i].decl.name):(str)(ast.ext[i].decl.type.type.type.names[0])}
                 self.func_list.update(var_dict_add)
             i+=1
@@ -230,7 +223,6 @@ class CVisualizer:
             i+= 1
 
     def recurse_by_compound(self, parent, index, func_name):
-        #pdb.set_trace()
 
         #If node is a node we added, ignore it & return TODO: add checking for hidden lines here too, don't include if hidden
         if parent[index].coord == None:
@@ -266,8 +258,6 @@ class CVisualizer:
         #reset amt_after
         self.amt_after = 0
 
-        #pdb.set_trace()
-
         #Check for the current node's type and handle:
 
         #Case for variable declaration
@@ -295,7 +285,6 @@ class CVisualizer:
 
         #Case for return
         elif isinstance(parent[index], c_ast.Return):
-            #pdb.set_trace()
             if index == 2:
                 self.handle_return(parent, index-1, func_name)
 
@@ -310,7 +299,6 @@ class CVisualizer:
 
         #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
         try:
-            #pdb.set_trace()
             if isinstance(parent[index+self.amt_after+1], c_ast.Return):
                 print("RETURN CASE")
                 self.handle_return(parent, index, func_name)
@@ -353,7 +341,6 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
-        #pdb.set_trace()
         ptr_depth = 0
         var_name_val = (str)(node.lvalue.name)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
@@ -373,7 +360,6 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
         global pointing_to_type
-        #pdb.set_trace()
 
         #Check how many levels of pointer this is
         ptr_depth = 0
@@ -406,7 +392,6 @@ class CVisualizer:
         global var_typerep
         global pointing_to_type
 
-        #pdb.set_trace()
         ptr_depth = 0
         temp_node = node.lvalue
         while isinstance(temp_node, c_ast.UnaryOp):
@@ -439,7 +424,6 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global var_typerep
-        #pdb.set_trace()
 
         ptr_depth = self.ptr_dict.get((str)(node.name))
 
@@ -456,12 +440,33 @@ class CVisualizer:
         global returning_from
         returning_from = (str)(func_ret_name)
 
+    def create_return_val_node(self, parent, index, func_name):
+        global return_node_name
+        #pdb.set_trace()
+        add_return_val = parent[index].expr;
+        return_type = self.func_list.get(func_name)
+        return_node = self.create_new_var_node(return_type, add_return_val)
+        return_node_name = return_node.name
+        parent.insert(index, return_node)
+        self.amt_after += 1
+
+    #Creates a new variable node and sets it equal to whatever value is
+    def create_new_var_node(self, val_type, value_node, var_name=None):
+        #Have the option to pass in a specific variable name - otherwise we name it something random ourselves
+        if var_name == None:
+            var_name = "temp_var" + (str)(uuid.uuid4().hex)
+        new_ID_type = c_ast.IdentifierType([val_type])
+        new_type_node = c_ast.TypeDecl(var_name, [], new_ID_type)
+        new_var_node = c_ast.Decl(var_name, [], [], [], new_type_node, value_node, None)
+        return new_var_node
+
     #NOTE: TODO: add statements when making any funccall and returned from a FuncCall in our program
     #I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
 
     def handle_return(self, parent, index, func_name):
-        #print_node = old_create_printf_node()
-        #global amt_after
+        #First create a new variable above the return statement which contains the return value
+        self.create_return_val_node(parent, index+self.amt_after+1, func_name)
+        #pdb.set_trace() 
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
@@ -485,11 +490,9 @@ class CVisualizer:
         if new:
             #Type declaration
             if isinstance(self.get_decl_type(parent[index]), c_ast.TypeDecl):
-                
                 self.set_decl_vars(parent[index])
                 #If it's a function call declaration for a function in our program,
                 #ensure there's a print statement in front of it too
-                #pdb.set_trace()
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
                     self.add_after_node(parent, index, func_name, True, False, False)
@@ -501,7 +504,7 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 self.set_decl_ptr_vars(parent[index])
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
-                    pdb.set_trace()
+                    #pdb.set_trace()
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
                     self.add_after_node(parent, index, func_name, False, True, False)
                     self.add_before_fn(parent, index, func_name)
@@ -512,7 +515,6 @@ class CVisualizer:
                     #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].init.name.name == 'malloc':
-                            #pdb.set_trace()
                             self.set_heap_vars(parent[index])
                             print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, True)
                             parent.insert(index+1+self.amt_after, print_node)
@@ -531,7 +533,6 @@ class CVisualizer:
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
             if isinstance(parent[index].lvalue, c_ast.ID):
-                #pdb.set_trace()
                 self.set_assign_vars(parent[index])
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
@@ -586,13 +587,10 @@ class CVisualizer:
     def print_func_entry(self, parent, index, func_name):
         #Check if the node contains a param list: if so, add the params as changed (declared) vars
         if isinstance(parent[index].decl.type.args, c_ast.ParamList):
-            #pdb.set_trace()
             #Loop through all the variables in the header, each of them will be handled as a declaration node
-            #pdb.set_trace()
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
-                    #pdb.set_trace()
                     self.set_decl_ptr_vars(header_vars[i])
                     header_var_ptr = True
                 else:               
