@@ -13,8 +13,13 @@ var most_recently_entered = "";
 // These global variables will change throughout the program
 var largest_group_id;
 var group_id_vals = {};
-var group_id_start_addrs = {};
-var start_addrs_to_group_id = {};
+
+var group_id_to_start_addr = {};
+var start_addr_to_group_id = {};
+
+var var_name_to_group_id = {};
+var group_id_to_var_name = {};
+
 var hex_mode_on = false;
 
 function zeroPad (str, max) {
@@ -22,8 +27,9 @@ function zeroPad (str, max) {
   return str.length < max ? zeroPad("0" + str, max) : str;
 }
 
-function toHexString(hexnum) {
-    return "0x" + zeroPad(hexnum.toString(16), 16);
+function toHexString(hexnum, max) {
+    max = typeof max !== 'undefined' ? max : 16;
+    return "0x" + zeroPad(hexnum.toString(16), max);
 }
 
 /**
@@ -414,22 +420,35 @@ function executeGenericVisualizer(option, data, newCode) {
             $("#std-out-textbox").html(cur_stdout);
 
             //Codemirror starts line count at 0, subtract 1 from start line so it's accurate
-            cur_line = start_line-1;
-            json_index = 0;
-            last_stepped_line_debugger = 0;
+            cur_line = start_line-2;
+            json_index = -1;
+            last_stepped_line_debugger = -1;
 
             myCodeMirrors[debugger_id].setValue(codeToShow);
 
             // Initialize debugger for the first time
-            update_new_debugger_table(debugger_data, "reset");
+            //update_new_debugger_table(debugger_data, "reset");
 
             $('#newvisualizerModal').modal('show');
 
+            add_hover_to_code();
+
+        }
+
+        function add_hover_to_code() {
+            $('div.code-window-section span.cm-variable').each(function() {
+                $(this).on({
+                    mouseenter: create_hover_highlight_function_code(),
+                    mouseleave: create_hover_unhighlight_function_code()
+                });
+            });
         }
 
         function update_new_debugger_table(data, update_type){
             myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
             myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
+
+            add_hover_to_code();
 
             //Removes any name table rows that must be removed with this step
             $(return_to_clr).remove();
@@ -448,7 +467,7 @@ function executeGenericVisualizer(option, data, newCode) {
             var json_step = debugger_data["steps"][json_index];
             console.log("JSON STEP IS:");
             console.log(json_step);
-            if((update_type == "next") || (update_type == "reset")) {
+            if((update_type == "next")) {
                 console.log("step:"+debugger_data["steps"][json_index]["step"]);
                 console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
 
@@ -473,7 +492,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(json_step.hasOwnProperty('returned_fn_call')) {
                     // Remove the previous stack frame and name table of this function
                     $("#name-table-"+most_recently_returned).hide();
-                    $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
+                    remove_stack_table(json_step['returned_fn_call'])
                 }
 
                 //Case where it has standard output
@@ -525,7 +544,7 @@ function executeGenericVisualizer(option, data, newCode) {
         }
 
         function add_var_to_all_tables(new_var) {
-            // Have to add to memory table first to update the start_addrs_to_group_id table, which the name table uses
+            // Have to add to memory table first to update the start_addr_to_group_id table, which the name table uses
             add_to_memory_table(new_var);
             add_to_name_table(new_var);
             add_to_val_list(new_var);
@@ -600,7 +619,8 @@ function executeGenericVisualizer(option, data, newCode) {
                             table_name = json_step['function'];
                         }
                         else if (json_step['changed_vars'][i]['location'] == "heap") {
-                            table_name = 'Heap';
+                            // Ignore heap variables because they don't have a name table
+                            continue;
                         }
                         else {
                             table_name = 'Data';
@@ -626,7 +646,7 @@ function executeGenericVisualizer(option, data, newCode) {
                         var name_row = $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']");
 
                         var group_start_addr = parseInt(name_row.attr("data-address"), 16);
-                        var name_row_group_id = start_addrs_to_group_id[group_start_addr];
+                        var name_row_group_id = start_addr_to_group_id[group_start_addr];
                         name_row.hover(
                             create_hover_highlight_function(name_row_group_id),
                             create_hover_unhighlight_function(name_row_group_id)
@@ -696,11 +716,13 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function add_one_var_to_memory_table(changed_var, func_name) {
             // Store values for possible use later
+            var var_name = changed_var["var_name"];
             var start_addr = parseInt(changed_var["addr"], 16);
             var value = changed_var["value"];
             var hex_value = changed_var["hex_value"].match(/.{1,2}/g).slice(1); // Turn into array of 1-byte hex values
             var func_location = changed_var["location"];
             var cells_needed = parseInt(changed_var["max_size"]);
+            var is_new = Boolean(changed_var["new"]);
 
             var location = get_var_location(func_location, func_name);
 
@@ -709,8 +731,25 @@ function executeGenericVisualizer(option, data, newCode) {
                 return;
             }
 
+            // Figure out the variable's group_id
+            var group_id;
+            if(is_new) {
+                group_id = largest_group_id;
+                largest_group_id++;
+                group_id_vals[group_id] = value;
+
+                group_id_to_start_addr[group_id] = start_addr;
+                start_addr_to_group_id[start_addr] = group_id;
+
+                var_name_to_group_id[var_name] = group_id;
+                group_id_to_var_name[group_id] = var_name;
+            } else {
+                // Find it in the tables
+                group_id = var_name_to_group_id[var_name];
+            }
+
             // Add the cell rows first
-            var new_var_cell_rows = $(create_new_var_cell_rows(start_addr, cells_needed, value, hex_value));
+            var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value));
 
             // Append at the end if this address is greater than any currently in the table
             var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody td[addr]").filter(function() {
@@ -722,17 +761,11 @@ function executeGenericVisualizer(option, data, newCode) {
             insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
         }
 
-        function create_new_var_cell_rows(start_addr, cells_needed, value, hex_value) {
+        function create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value) {
             var end_addr = start_addr + cells_needed - 1;
             var rows_needed = (Math.floor(end_addr/4)) - (Math.floor(start_addr/4)) + 1;
 
             // Create the rows
-            var group_id = largest_group_id;
-            largest_group_id++;
-            group_id_vals[group_id] = value;
-            group_id_start_addrs[group_id] = start_addr;
-            start_addrs_to_group_id[start_addr] = group_id;
-
             var cell_rows = document.createElement("div");
 
             var hex_val_index = 0;
@@ -851,7 +884,7 @@ function executeGenericVisualizer(option, data, newCode) {
                 if(after_end_addr > 0) {
                     location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").nextUntil("tr[start-addr='" + toHexString(after_end_addr) + "']").has("td.dot-line").remove();
                 } else {
-                    location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").siblings().has("td.dot-line").remove();
+                    location_cell_table.find(" > tr[start-addr='" + toHexString(insert_addr) + "']").nextAll().has("td.dot-line").remove();
                 }
 
 
@@ -1092,7 +1125,8 @@ function executeGenericVisualizer(option, data, newCode) {
             // Hide the new table if hex mode is on
             if(hex_mode_on) {
                 $(updated_label_table).find("td.memory-map-cell").hide();
-                $(updated_label_table).css("z-index", 0)
+                $(location + " > table.memory-map-label-table").css("z-index", 0);
+                $(location + " > table.memory-map-cell-table").css("z-index", 1000);
             }
 
             var label_table_hidden = location_label_table.is(":hidden");
@@ -1106,7 +1140,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function get_var_location(func_location, func_name) {
             var location = "";
-            if(func_location === "static") {
+            if(func_location === "data") {
                 location = "#data-memory-map";
             } else if(func_location === "heap") {
                 location = "#heap-memory-map";
@@ -1274,7 +1308,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
             if(cell_value && cell_value != "&nbsp;") {
                 memory_map_cell.setAttribute("group-id", group_id);
-                cell_value = "0x" + cell_value;
+                cell_value = toHexString(cell_value, 2);
             }
 
             memory_map_cell.innerHTML = cell_value;
@@ -1302,7 +1336,7 @@ function executeGenericVisualizer(option, data, newCode) {
             memory_map_cell.setAttribute("title", cell_value);
 
             if(group_id) {
-                var group_start_addr = group_id_start_addrs[group_id];
+                var group_start_addr = group_id_to_start_addr[group_id];
                 memory_map_cell.setAttribute("group-start-addr", toHexString(group_start_addr));
 
                 $(memory_map_cell).hover(
@@ -1396,39 +1430,64 @@ function executeGenericVisualizer(option, data, newCode) {
 
         function create_hover_highlight_function(group_id) {
             return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-                var main_elements = elements_to_highlight["main"];
-                var extra_elements = elements_to_highlight["extra"];
-
-                var num_elements = main_elements.length;
-                for(var i = 0; i < num_elements; i++) {
-                    main_elements[i].addClass("highlight outside-border");
-                }
-
-                num_elements = extra_elements.length;
-                for(var i = 0; i < num_elements; i++) {
-                    extra_elements[i].addClass("highlight");
-                }
+                highlight_all_related(group_id, true);
             }
         }
 
         function create_hover_unhighlight_function(group_id) {
             return function() {
-                var elements_to_highlight = find_elements_to_highlight(group_id);
-                var main_elements = elements_to_highlight["main"];
-                var extra_elements = elements_to_highlight["extra"];
+                highlight_all_related(group_id, false);
+            }
+        }
 
-                var num_elements = main_elements.length;
-                for(var i = 0; i < num_elements; i++) {
+        function create_hover_highlight_function_code() {
+            return function() {
+                // Find the group that this variable belongs to, if any, and highlight all related elements
+                var var_name = $(this).html();
+                var group_id = var_name_to_group_id[var_name];
+
+                if(group_id) {
+                    highlight_all_related(group_id, true);
+                }
+            }
+        }
+
+        function create_hover_unhighlight_function_code() {
+            return function() {
+                // Find the group that this variable belongs to, if any, and highlight all related elements
+                var_name = $(this).html();
+                var group_id = var_name_to_group_id[var_name];
+
+                if(group_id) {
+                    highlight_all_related(group_id, false);
+                }
+            }
+        }
+
+        function highlight_all_related(group_id, add_class) {
+            var elements_to_highlight = find_elements_to_highlight(group_id);
+            var main_elements = elements_to_highlight["main"];
+            var extra_elements = elements_to_highlight["extra"];
+
+            var num_elements = main_elements.length;
+            for(var i = 0; i < num_elements; i++) {
+                if(add_class) {
+                    main_elements[i].addClass("highlight outside-border");
+                } else {
                     main_elements[i].removeClass("highlight outside-border");
                 }
+            }
 
-                num_elements = extra_elements.length;
-                for(var i = 0; i < num_elements; i++) {
+            num_elements = extra_elements.length;
+            for(var i = 0; i < num_elements; i++) {
+                if(add_class) {
+                    extra_elements[i].addClass("highlight");
+                } else {
                     extra_elements[i].removeClass("highlight");
                 }
             }
         }
+
 
         function find_elements_to_highlight(group_id) {
             // The first pair has to be distinguished so it can be applied a different style
@@ -1436,13 +1495,19 @@ function executeGenericVisualizer(option, data, newCode) {
             var main_elements_to_highlight = [];
             var extra_elements_to_highlight = [];
 
-            var group_start_addr = group_id_start_addrs[group_id];
+            var group_start_addr = group_id_to_start_addr[group_id];
             var hex_group_start_addr = toHexString(group_start_addr);
             var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
             main_elements_to_highlight.push(name_table_row);
 
             var group = $("div.memory-map-section td[group-id='" + group_id + "']");
             main_elements_to_highlight.push(group);
+
+            var var_name = group_id_to_var_name[group_id];
+            var code_span = $("div.code-window-section span.cm-variable").filter(function() {
+                return $(this).html() == var_name;
+            });
+            extra_elements_to_highlight.push(code_span);
 
             // If it's a pointer, find all things down the chain of pointers and add them to the array
             // Loop until we reach a non-pointer
@@ -1478,7 +1543,7 @@ function executeGenericVisualizer(option, data, newCode) {
                     cells_to_highlight = cells_to_highlight.toArray();
                     for(var i = 0; i < cells_to_highlight.length; i++) {
                         var this_cell = $(cells_to_highlight[i]);
-                        var extra_group_id = start_addrs_to_group_id[parseInt(this_cell.attr("addr"), 16)];
+                        var extra_group_id = start_addr_to_group_id[parseInt(this_cell.attr("addr"), 16)];
                         if(extra_group_id) {
                             extra_elements_to_highlight.push($("div.memory-map-section td[group-id='"+extra_group_id+"']"));
                         }
@@ -1605,7 +1670,8 @@ function executeGenericVisualizer(option, data, newCode) {
                             table_name = json_step['function'];
                         }
                         else if (json_step['changed_vars'][i]['location'] == "heap") {
-                            table_name = 'Heap';
+                            // Ignore heap variables because they don't have a name table
+                            continue;
                         }
                         else {
                             table_name = 'Data';
@@ -1620,42 +1686,12 @@ function executeGenericVisualizer(option, data, newCode) {
                         //check_rm_empty_table(table_id);
                     }
                 }
-
-                //If not new, will only be adding it if on the heap table and it was freed in the most recent step
-                else if ((json_step['changed_vars'][i]['location']) == "heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                    //Add this var to the table
-
-                    //Check if table exists: either create heap table, or add to heap table
-                    var heap_frame = $('#names-Heap');
-
-                    //Check if there's a current frame up for this:
-                    if(heap_frame.length == 0) {
-                    //If not, create a whole new name table
-                        $('#name-type-section').prepend('<span id="name-table-Heap"><h4>Heap</h4> <table id="names-Heap"'+
-                            'class="table table-bordered" style="width: 100%; float:left;">'+
-                        '<thead>'+
-                            '<tr>'+
-                            '<th width="60%">Name</th>' +
-                            '<th width="40%">Type</th>' +
-                            '</tr>' +
-                        '</thead>' +
-                        '<tbody id="name-body-heap">' +
-                        '</tbody>' +
-                        '</table></span>');
-                    }
-
-                    //Add the new row to the existing heap name table
-                    $('#name-body-heap').append('<tr id="heap-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
-                        json_step['changed_vars'][i]['addr']+'">' +
-                        '<td class="var-name hide-overflow" title="' + json_step['changed_vars'][i]['var_name'] + '">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                        '<td class="var-type hide-overflow" title="' + json_step['changed_vars'][i]['type'] + '">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                    '</tr>');
-                }
             }
             //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
         }
 
         function reset_memory_tables() {
+            var_name_to_group_id = {};
             largest_group_id = 1; // Not 0 because it would fail a check for adding the highlight functions
             $("#data-memory-map tbody").empty();
             $("#heap-memory-map tbody").empty();
@@ -1678,7 +1714,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 if(json_step.hasOwnProperty('returned_fn_call')) {
                     // Remove the previous stack frame of this function
-                    $("#stack-frame-tables div[stack-function='" + json_step['returned_fn_call'] + "']:first").remove();
+                    remove_stack_table(json_step['returned_fn_call']);
                 }
 
                 if(json_step.hasOwnProperty('changed_vars')) {
@@ -1689,6 +1725,29 @@ function executeGenericVisualizer(option, data, newCode) {
 
             // After we've inserted all the variables, we have to generate the corresponding label tables
             regenerate_all_label_tables();
+        }
+
+        function remove_stack_table(stack_function) {
+            var stack_table = $("#stack-frame-tables div[stack-function='" + stack_function + "']:first");
+            var group_ids = stack_table.find("table.memory-map-label-table td.memory-map-cell").map(function() {
+                return $(this).attr("group-id");
+            }).get();
+
+            // Remove all the relevant elements in the maps
+            var len = group_ids.length;
+            for(var i = 0; i < len; i++) {
+                var group_id = group_ids[i];
+                var start_addr = group_id_to_start_addr[group_ids];
+                var var_name = group_id_to_var_name[group_id];
+
+                delete start_addr_to_group_id[start_addr];
+                delete group_id_to_start_addr[group_id];
+
+                delete var_name_to_group_id[var_name];
+                delete group_id_to_var_name[group_id];
+            }
+
+            stack_table.remove();
         }
 
         function remove_from_val_list(json_step) {

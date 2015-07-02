@@ -391,9 +391,7 @@ class CSpecifics():
                 current_var['addr'] = self.hex_pad(line_info['addr'][2:], self.max_addr_size)
                 current_var['hex_value'] = self.hex_pad(line_info['hex_value'], max_size)
 
-                # Pointers values must always be as wide as an address
-                if '*' in current_var['type']:
-                    current_var['value'] = self.hex_pad(current_var['value'][2:], self.max_addr_size)
+                current_var['value'] = self.parse_value(current_var['value'], current_var['type'])
 
                 current_step['changed_vars'].append(current_var)
 
@@ -402,3 +400,20 @@ class CSpecifics():
 
         pprint(json_output)
         return json_output
+
+
+    """ Convert a list of values into the correct format """
+    def parse_value(self, value, value_type):
+        # Currently only handles arrays
+        if("[]" in value_type):
+            # Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
+            return value
+            pass
+        else:
+            # Pointers values must always be as wide as an address
+            if '*' in value_type:
+                value = self.hex_pad(value[2:], self.max_addr_size)
+
+            # If not a pointer, return the value as is
+            return value
+
