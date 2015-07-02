@@ -171,7 +171,7 @@ class ReactiveContentPageData(ContentPageView, View):
         items = [
             item.content_object.serialize()
             for item in ContentSequenceItem.objects.filter(content_page=page)
-                        .prefetch_related('content_object').all()
+                        .prefetch_related('content_object').all() if item
         ]
 
         scores = {}
