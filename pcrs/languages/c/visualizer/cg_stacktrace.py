@@ -79,6 +79,10 @@ class CVisualizer:
         #add nodes in front of our current node, we want to be able to increase this by more than 1
         self.cur_par_index = 0
 
+        #malloc_size_var_name is the name of the variable we'll be using to keep track of the size of any mallocs in the c code
+        #We will just declare it as global to start
+        self.malloc_size_var_name = "malloc_size"+(str)(uuid.uuid4().hex)
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -425,6 +429,11 @@ class CVisualizer:
         global is_uninit
         global var_typerep
 
+        pdb.set_trace() 
+
+        #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
+        #then add to the size variable what the exprlist under the malloc funccall is.
+
         ptr_depth = self.ptr_dict.get((str)(node.name))
 
         type_of_var = (str)(self.var_type_dict.get((str)(node.name)))#.replace("*", "").strip()
@@ -642,15 +651,25 @@ class CVisualizer:
             pass
 
         ast.show()
-
         print("-----------------------")
+
+        #Finding all functions in the program so we can save them in a list
         self.find_all_function_decl(ast)
+
+        #Initializing a malloc size variable in the code 
+        malloc_size_var = self.create_new_var_node("int", None, self.malloc_size_var_name)
+        ast.ext.insert(0, malloc_size_var)
+
+        #Going through each function and adding all the print statements
         self.recurse_by_function(ast)
+
         print("-----------------------")
         ast.show()
         print("-----------------------")
+
+        #Turning the new ast back into C code
         generator = c_generator.CGenerator()
-        #print(generator.visit(ast))
+
         return generator.visit(ast)
 
 
