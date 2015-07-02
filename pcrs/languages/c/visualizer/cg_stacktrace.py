@@ -404,6 +404,7 @@ class CVisualizer:
         global is_uninit
         global ptr_depth
         global var_typerep
+        global pointing_to_type
 
         #pdb.set_trace()
         ptr_depth = 0
@@ -413,13 +414,14 @@ class CVisualizer:
             temp_node = temp_node.expr
 
         var_name_val = '*'*ptr_depth+(str)(temp_node.name) 
-
         #ie, int ** if that's what this pointer is
         unstripped_vartype = (str)(self.var_type_dict.get(temp_node.name))
 
         #ie, int if that's what this pointer is pointing to at the end
         stripped_vartype = unstripped_vartype.replace("*", "").strip()
 
+        pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
+        
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
         if ptr_depth == self.ptr_dict.get(temp_node.name):
             var_typerep = self.primitive_types.get(stripped_vartype)
