@@ -378,6 +378,22 @@ function executeGenericVisualizer(option, data, newCode) {
                         last_stepped_line_debugger = cur_line;
                         cur_line = debugger_data["steps"][json_index-1]["student_view_line"]-1;
                         update_new_debugger_table(debugger_data, "prev");
+                    } else {
+                        last_stepped_line_debugger = cur_line;
+                        cur_line = start_line-2;
+                        json_index = -1;
+                        // Reset the memory map tables
+                        reset_memory_tables();
+
+                        // Clear the name tables
+                        $('#name-type-section').empty();
+                        $('#new_debugger_table_heap').empty();
+                        //Clear stdout
+                        cur_stdout= "";
+                        $("#std-out-textbox").html(cur_stdout);
+                        myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
+
+                        myCodeMirrors[debugger_id].setValue(codeToShow);
                     }
                 });
 
@@ -392,8 +408,8 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 $('#new_reset_debugger').bind('click', function () {
                     last_stepped_line_debugger = cur_line;
-                    cur_line = start_line-1;
-                    json_index = 0;
+                    cur_line = start_line-2;
+                    json_index = -1;
                     // Reset the memory map tables
                     reset_memory_tables();
 
@@ -403,7 +419,9 @@ function executeGenericVisualizer(option, data, newCode) {
                     //Clear stdout
                     cur_stdout= "";
                     $("#std-out-textbox").html(cur_stdout);
-                    update_new_debugger_table(debugger_data, "reset");
+                    myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
+
+                    myCodeMirrors[debugger_id].setValue(codeToShow);
                 });
 
                 $('#toggle-hex-button').bind('click', function () {
@@ -430,9 +448,6 @@ function executeGenericVisualizer(option, data, newCode) {
             last_stepped_line_debugger = -1;
 
             myCodeMirrors[debugger_id].setValue(codeToShow);
-
-            // Initialize debugger for the first time
-            //update_new_debugger_table(debugger_data, "reset");
 
             $('#newvisualizerModal').modal('show');
 
@@ -729,7 +744,7 @@ function executeGenericVisualizer(option, data, newCode) {
             var cells_needed = parseInt(changed_var["max_size"]);
             var is_new = Boolean(changed_var["new"]);
 
-            var location = get_var_location(func_location, func_name);
+            var location = get_var_location(func_location, func_name, start_addr);
 
             // Don't continue if we have nowhere to add the variable, to prevent the browser hanging indefinitely
             if(!location){
@@ -1145,11 +1160,21 @@ function executeGenericVisualizer(option, data, newCode) {
             location_label_table.replaceWith(updated_label_table);
         }
 
-        function get_var_location(func_location, func_name) {
+        function get_var_location(func_location, func_name, start_addr) {
+            var exists_in_data = false;
+            var exists_in_heap = false;
+
+            if(typeof start_addr !== 'undefined') {
+                // Check if it already exists in the heap or data section
+                start_addr = toHexString(start_addr);
+                exists_in_data = $("div#data-memory-map tr[start-addr='" + start_addr + "']").length > 0;
+                exists_in_heap = $("div#heap-memory-map tr[start-addr='" + start_addr + "']").length > 0;
+            }
+
             var location = "";
-            if(func_location === "data") {
+            if(func_location === "data" || exists_in_data) {
                 location = "#data-memory-map";
-            } else if(func_location === "heap") {
+            } else if(func_location === "heap" || exists_in_heap) {
                 location = "#heap-memory-map";
             } else if(func_location === "stack") {
                 var stack_frame_exists = $("#stack-frame-tables > div[stack-function='" + func_name + "']").length > 0;
