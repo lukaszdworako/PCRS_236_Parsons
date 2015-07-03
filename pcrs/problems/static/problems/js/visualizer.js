@@ -29,7 +29,12 @@ function zeroPad (str, max) {
 
 function toHexString(hexnum, max) {
     max = typeof max !== 'undefined' ? max : 16;
-    return "0x" + zeroPad(hexnum.toString(16), max);
+    var str_hex_num = hexnum.toString(16);
+    if(str_hex_num.indexOf("0x") === 0) {
+        str_hex_num = str_hex_num.substr(2);
+    }
+
+    return "0x" + zeroPad(str_hex_num, max);
 }
 
 /**
@@ -1768,6 +1773,8 @@ function executeGenericVisualizer(option, data, newCode) {
                 //Otherwise just pop the last value off the list
                 else {
                     value_list[val_address]["history"].pop();
+                    var history = value_list[val_address]["history"];
+                    value_list[val_address]["value"] = history[history.length-1];
                 }
             }
         }
