@@ -83,9 +83,6 @@ class CVisualizer:
         #We will just declare it as global to start
         self.malloc_size_var_name = "malloc_size"+(str)(uuid.uuid4().hex)
 
-        #heap_list is a list of all the things pointing to memory on the heap, to be used for the location attribute
-        self.heap_list = []
-
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -456,7 +453,7 @@ class CVisualizer:
 
         self.set_malloc_size_var(parent, index, malloc_node)
 
-        var_new_val = False
+        var_new_val = True
         is_uninit = True
 
 
@@ -714,5 +711,3 @@ class CVisualizer:
         generator = c_generator.CGenerator()
 
         return generator.visit(ast)
-
-
