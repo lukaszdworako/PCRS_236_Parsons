@@ -736,17 +736,19 @@ function executeGenericVisualizer(option, data, newCode) {
             if(is_new) {
                 group_id = largest_group_id;
                 largest_group_id++;
-                group_id_vals[group_id] = value;
-
-                group_id_to_start_addr[group_id] = start_addr;
-                start_addr_to_group_id[start_addr] = group_id;
-
-                var_name_to_group_id[var_name] = group_id;
-                group_id_to_var_name[group_id] = var_name;
             } else {
                 // Find it in the tables
                 group_id = var_name_to_group_id[var_name];
             }
+
+            // Update all the relevant info maps
+            group_id_vals[group_id] = value;
+
+            group_id_to_start_addr[group_id] = start_addr;
+            start_addr_to_group_id[start_addr] = group_id;
+
+            var_name_to_group_id[var_name] = group_id;
+            group_id_to_var_name[group_id] = var_name;
 
             // Add the cell rows first
             var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value));
@@ -1629,18 +1631,19 @@ function executeGenericVisualizer(option, data, newCode) {
                         is_ptr_val = true;
                         ptr_size = json_step['changed_vars'][i]['ptr_size'];
                     }
-                    new_value = {"value": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
+                    new_value = {"value": json_step['changed_vars'][i]["value"], "history": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
                     value_list[val_address] = new_value;
                 }
 
                 //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
                 else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                    value_list[val_address]["value"].push("#Freed#");
+                    value_list[val_address]["history"].push("#Freed#");
                 }
 
-                //If the variable is not new and not freed, just push the new value onto its array
+                //If the variable is not new and not freed, just push the new value onto its history array and update its current value
                 else {
-                    value_list[val_address]["value"].push(json_step['changed_vars'][i]["value"]);
+                    value_list[val_address]["history"].push(json_step['changed_vars'][i]["value"]);
+                    value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
                 }
             }
         }
@@ -1764,7 +1767,7 @@ function executeGenericVisualizer(option, data, newCode) {
 
                 //Otherwise just pop the last value off the list
                 else {
-                    value_list[val_address]["value"].pop();
+                    value_list[val_address]["history"].pop();
                 }
             }
         }
