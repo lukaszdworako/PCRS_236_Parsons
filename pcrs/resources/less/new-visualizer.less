@@ -26,11 +26,40 @@ hr {
     max-height: 800px;
 }
 
-.viz-left-wrapper {
+.code-window-section {
     .visualizer-section;
     width: 50%;
-    min-width: 30em;
-    min-width: 610px;
+    min-width: 740px;
+    margin: 0px;
+}
+
+.name-type-section {
+    .visualizer-section;
+    min-width: 328px;
+    width: 20%;
+}
+
+.memory-map-section {
+    .visualizer-section;
+    min-width: 412px;
+    width: 26%;
+}
+
+.memory-map-section td {
+    font-family: monospace;
+}
+
+.memory-map-section
+    td.memory-map-cell,
+    td.memory-map-address,
+    td.address-width,
+    th {
+
+    height: @cell-height;
+}
+
+.name-type-section td {
+    font-family: monospace;
 }
 
 #preview-code {
@@ -39,18 +68,9 @@ hr {
 }
 
 .std-out-section {
-    .viz-left-wrapper;
     margin: 0px;
     width: 100%;
     min-width: 25em;
-}
-
-.name-type-section td {
-    font-family: monospace;
-}
-
-.memory-map-section td {
-    font-family: monospace;
 }
 
 #std-out-textbox {
@@ -68,33 +88,6 @@ hr {
 
 .std_err {
     color: red;
-}
-
-.code-window-section {
-    .viz-left-wrapper;
-    margin: 0px;
-    width: 100%;
-}
-
-.name-type-section {
-    .visualizer-section;
-    min-width: 20em;
-    width: 20%;
-}
-
-.memory-map-section {
-    .visualizer-section;
-    min-width: 412px;
-    width: 26%;
-}
-
-.memory-map-section
-    td.memory-map-cell,
-    td.memory-map-address,
-    td.address-width,
-    th {
-
-    height: @cell-height;
 }
 
 .name-type-section th[colspan="2"],
