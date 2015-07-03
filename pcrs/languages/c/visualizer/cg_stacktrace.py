@@ -154,7 +154,16 @@ class CVisualizer:
             var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var)
             var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val)
             var_size = (str)(self.item_delimiter) +"max_size:%zu"
-            var_location = (str)(self.item_delimiter) +"location:stack"
+
+            #If on the stack, size is just the sizeof the variable name and location is stack
+            location_info = "stack"
+            add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
+            #If on the heap, need to save the size of the thing we malloced in a separate variable since we can't do sizeof on heap
+            if onHeap:
+                location_info = "heap"
+                add_id_size = c_ast.ID(self.malloc_size_var_name)
+
+            var_location = (str)(self.item_delimiter) +"location:"+location_info
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
@@ -175,8 +184,7 @@ class CVisualizer:
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
             add_id_val = c_ast.ID(var_name_val)
             add_id_hex = c_ast.ID(var_name_val)
-            add_id_size = c_ast.ID('sizeof(' + var_name_val+')')
-
+            
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
@@ -422,27 +430,41 @@ class CVisualizer:
         var_new_val = False
         is_uninit = False        
 
-    def set_heap_vars(self, node):
+
+    #node is the assign or decl 
+    def set_heap_vars(self, parent, index, node_name, malloc_node):
         global type_of_var
         global var_name_val
         global var_new_val
         global is_uninit
         global var_typerep
 
-        pdb.set_trace() 
+        #pdb.set_trace() 
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
 
-        ptr_depth = self.ptr_dict.get((str)(node.name))
+        ptr_depth = self.ptr_dict.get((str)(node_name))
 
-        type_of_var = (str)(self.var_type_dict.get((str)(node.name)))#.replace("*", "").strip()
+        type_of_var = (str)(self.var_type_dict.get((str)(node_name)))
+        stripped_vartype = type_of_var.replace("*", "").strip()
+        var_typerep = self.primitive_types.get(stripped_vartype)
+        var_name_val = '*'*ptr_depth+(str)(node_name)
 
-        var_typerep = self.primitive_types.get(type_of_var)
-        var_name_val = '*'*ptr_depth+(str)(node.name)
+        self.set_malloc_size_var(parent, index, malloc_node)
 
         var_new_val = False
         is_uninit = True
+
+
+    #Insert an assignment node, assigning the malloc size var to be the size that was malloced
+    def set_malloc_size_var(self, parent, index, malloc_node):
+        malloc_name_ID = c_ast.ID(self.malloc_size_var_name)
+        malloc_exprlist = c_ast.ExprList(malloc_node.args.exprs)
+        malloc_size_assign = c_ast.Assignment('=', malloc_name_ID, malloc_exprlist)
+        parent.insert(index, malloc_size_assign)
+        self.cur_par_index += 1
+        self.amt_after += 1
 
     #Pass in the function call node and get the ID to see the name of the function we're calling
     def set_fn_returning_from(self, func_ret_name):
@@ -451,7 +473,6 @@ class CVisualizer:
 
     def create_return_val_node(self, parent, index, func_name):
         global return_node_name
-        #pdb.set_trace()
         add_return_val = parent[index].expr;
         return_type = self.func_list.get(func_name)
         return_node = self.create_new_var_node(return_type, add_return_val)
@@ -474,8 +495,7 @@ class CVisualizer:
 
     def handle_return(self, parent, index, func_name):
         #First create a new variable above the return statement which contains the return value
-        self.create_return_val_node(parent, index+self.amt_after+1, func_name)
-        #pdb.set_trace() 
+        self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
@@ -513,7 +533,6 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 self.set_decl_ptr_vars(parent[index])
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
-                    #pdb.set_trace()
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
                     self.add_after_node(parent, index, func_name, False, True, False)
                     self.add_before_fn(parent, index, func_name)
@@ -524,9 +543,10 @@ class CVisualizer:
                     #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].init.name.name == 'malloc':
-                            self.set_heap_vars(parent[index])
-                            print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, True)
-                            parent.insert(index+1+self.amt_after, print_node)
+                            #pdb.set_trace()
+                            self.set_heap_vars(parent, index, parent[index].name, parent[index].init)
+                            print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True)
+                            parent.insert(index+1+self.amt_after, print_node)  
                             self.amt_after += 1
                     except:
                         pass
@@ -539,6 +559,7 @@ class CVisualizer:
 
         #Otherwise it was an assignment of an already declared var
         else:
+            #pdb.set_trace()
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
             if isinstance(parent[index].lvalue, c_ast.ID):
