@@ -83,6 +83,9 @@ class CVisualizer:
         #We will just declare it as global to start
         self.malloc_size_var_name = "malloc_size"+(str)(uuid.uuid4().hex)
 
+        #heap_list is a list of all the things pointing to memory on the heap, to be used for the location attribute
+        self.heap_list = []
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -208,7 +211,7 @@ class CVisualizer:
     #Creates a printf node that just contains the value of hash_val in it
     def create_printf_hash_node(self, hash_val):
         add_id = c_ast.ID('printf')
-        add_const = c_ast.Constant('string', '"'+(str)(hash_val)+'"')
+        add_const = c_ast.Constant('string', '"'+(  str)(hash_val)+'"')
         add_exprList = c_ast.ExprList([add_const])
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
@@ -577,10 +580,22 @@ class CVisualizer:
                 else:
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False)
 
+                    #pdb.set_trace()
+                     #Case for malloc, won't be mallocing inside a function header
+                    try:
+                        if parent[index].rvalue.name.name == 'malloc':
+                            #pdb.set_trace()
+                            self.set_heap_vars(parent, index, parent[index].lvalue.name, parent[index].rvalue)
+                            print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True)
+                            parent.insert(index+1+self.amt_after, print_node)  
+                            self.amt_after += 1
+                    except:
+                        pass
+
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
                 self.set_assign_ptr_vars(parent[index])
-                self.add_after_node(parent, index, func_name, False, True, False)       
+                self.add_after_node(parent, index, func_name, False, True, False)
 
     def print_stdout(self, parent, index, func_name):
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, True, False, False, False)
