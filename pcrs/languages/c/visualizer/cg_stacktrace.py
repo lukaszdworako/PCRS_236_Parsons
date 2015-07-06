@@ -83,6 +83,10 @@ class CVisualizer:
         #We will just declare it as global to start
         self.malloc_size_var_name = "malloc_size"+(str)(uuid.uuid4().hex)
 
+        #global_print_nodes will contain a list of ast print nodes that we must insert at the beginning of the main function. We come
+        #across these through global declarations, but can only insert them in main 
+        self.global_print_nodes = []
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -122,6 +126,7 @@ class CVisualizer:
         add_id_ptr_size = None
         line_no = "line:"+ (str)(parent[index].coord.line)
         function = (str)(self.item_delimiter) +"function:"+ (str)(func_name)
+        
         on_entry = ""
         if onEntry:
             on_entry = (str)(self.item_delimiter) + "on_entry_point:True"
@@ -163,6 +168,11 @@ class CVisualizer:
                 location_info = "heap"
                 add_id_size = c_ast.ID(self.malloc_size_var_name)
 
+            is_global = ""
+            if func_name == None:
+                location_info = "data"
+                is_global = (str)(self.item_delimiter) +"global:True"
+
             var_location = (str)(self.item_delimiter) +"location:"+location_info
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
@@ -179,7 +189,7 @@ class CVisualizer:
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%zu"
                 add_id_ptr_size = c_ast.ID('sizeof(' + pointing_to_type +')')
 
-            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size
+            var_info = var_name + var_addr +var_type + var_new + var_val + var_hex + is_global +var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size
 
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
             add_id_val = c_ast.ID(var_name_val)
@@ -231,6 +241,12 @@ class CVisualizer:
             func_name = None
             if isinstance(ast.ext[i], c_ast.FuncDef):
                 func_name = ast.ext[i].decl.name
+
+                #Add the list of global print nodes to the beginning of the main function before we continue
+                if func_name == "main":
+                    for node_num in range(0, len(self.global_print_nodes)):
+                        (ast.ext)[i].body.block_items.insert(node_num, self.global_print_nodes[node_num])
+
             self.recurse_by_compound(ast.ext, i, func_name)
             i+= 1
 
@@ -510,8 +526,12 @@ class CVisualizer:
 
     def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap):
         print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, isPtr, isHeap)
-        parent.insert(index+1, print_node)
-        self.amt_after += 1
+        #Case for global variables
+        if func_name == None:
+            self.global_print_nodes.append(print_node)
+        else:
+            parent.insert(index+1, print_node)
+            self.amt_after += 1
 
     def print_changed_vars(self, parent, index, func_name, new):
         #global amt_after
