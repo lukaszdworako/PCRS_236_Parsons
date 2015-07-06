@@ -935,7 +935,7 @@ function executeCVisualizer(option, data, newCode) {
 
         // Hide the new table if hex mode is on
         if(hex_mode_on) {
-            $(updated_label_table).find("td.memory-map-cell").hide();
+            $(updated_label_table).find("tr").hide();
             $(location + " > table.memory-map-label-table").css("z-index", 0);
             $(location + " > table.memory-map-cell-table").css("z-index", 1000);
         }
@@ -1041,7 +1041,7 @@ function executeCVisualizer(option, data, newCode) {
         c_thead.appendChild(c_tr2);
 
         var cells_table = document.createElement("table");
-        cells_table.className = "table-no-border memory-map-cell-table";
+        cells_table.className = " table table-bordered memory-map-cell-table"; //table-no-border
         cells_table.appendChild(c_col_size_1);
         cells_table.appendChild(c_col_size_2);
         cells_table.appendChild(c_col_size_3);
@@ -1124,7 +1124,7 @@ function executeCVisualizer(option, data, newCode) {
 
     function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes) {
         var memory_map_cell = document.createElement("td");
-        memory_map_cell.className = "memory-map-cell " + (hex_mode_on ? "" : "hidden-cell ");// + clarity_classes;
+        memory_map_cell.className = "memory-map-cell ";// + clarity_classes;
         memory_map_cell.setAttribute("addr", toHexString(cell_addr));
 
         if(cell_value && cell_value != "&nbsp;") {
@@ -1172,11 +1172,12 @@ function executeCVisualizer(option, data, newCode) {
     function create_cell_base_row(start_addr){
         var hex_start_addr = toHexString(start_addr);
         var memory_map_row = document.createElement("tr");
+        memory_map_row.className =  (hex_mode_on ? "" : "hidden-row ")
         memory_map_row.setAttribute("start-addr", hex_start_addr);
 
         var td = document.createElement("td");
-        td.className = "address-width";
-        td.innerHTML = "&nbsp;";
+        td.className = "memory-map-address";
+        td.innerHTML = hex_start_addr;
         td.setAttribute("title", hex_start_addr);
         memory_map_row.appendChild(td);
 
@@ -1213,11 +1214,11 @@ function executeCVisualizer(option, data, newCode) {
         hex_mode_on = !hex_mode_on;
 
         // Have to bring out the right table to the front, to allow hovering
-        $("table.memory-map-cell-table td.memory-map-cell").toggle();
+        $("table.memory-map-cell-table tbody > tr").css("visibility", (hex_mode_on ? "visible" : "hidden"));
         var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
         $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
 
-        $("table.memory-map-label-table td.memory-map-cell").toggle();
+        $("table.memory-map-label-table tbody > tr").css("visibility", (hex_mode_on ? "hidden" : "visible"));
         var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
         $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
     }
