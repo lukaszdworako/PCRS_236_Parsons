@@ -935,15 +935,18 @@ function executeCVisualizer(option, data, newCode) {
 
         // Hide the new table if hex mode is on
         if(hex_mode_on) {
-            $(updated_label_table).find("tr").hide();
+            $(updated_label_table).find("tr").css("visibility", "hidden");
             $(location + " > table.memory-map-label-table").css("z-index", 0);
             $(location + " > table.memory-map-cell-table").css("z-index", 1000);
+
+            if($(location + " > table.memory-map-label-table thead tr").length > 1) {
+                $(location + " > table.memory-map-label-table thead tr:nth-child(1)").css("visibility", "hidden");
+            }
         }
 
         var label_table_hidden = location_label_table.is(":hidden");
         if(label_table_hidden) {
             $(updated_label_table).hide();
-            $(updated_label_table).find("thead > tr:nth-child(2)").hide();
         }
 
         location_label_table.replaceWith(updated_label_table);
@@ -982,6 +985,8 @@ function executeCVisualizer(option, data, newCode) {
 
 
     function create_stack_frame_table(stack_frame_number, stack_function) {
+        var table_title = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
+
         // Create the cells table
         var c_thead = document.createElement("thead");
         var c_tbody = document.createElement("tbody");
@@ -1015,9 +1020,12 @@ function executeCVisualizer(option, data, newCode) {
         var c_tr1_th = document.createElement("th");
         c_tr1_th.colSpan = "5";
         c_tr1_th.className = "heading-height";
-        c_tr1_th.innerHTML = "&nbsp;";
+
+        c_tr1_th.appendChild(create_minimizer());
+        $(c_tr1_th).append(table_title);
 
         var c_tr1 = document.createElement("tr");
+        c_tr1.style.visibility = (hex_mode_on ? "" : "hidden");
         c_tr1.appendChild(c_tr1_th);
 
         //---
@@ -1060,20 +1068,7 @@ function executeCVisualizer(option, data, newCode) {
         var l_tr1_th = document.createElement("th");
         l_tr1_th.colSpan = "5";
 
-        var minimizer = document.createElement("a");
-        minimizer.href = "#";
-        minimizer.className = "small-minimizer";
-
-        var minimizer_span = document.createElement("span");
-        minimizer_span.className = "minimizer-span";
-        minimizer_span.innerHTML = "[-]";
-        minimizer_span.addEventListener('click', stack_table_minimize_function);
-
-        minimizer.appendChild(minimizer_span)
-
-        var table_title = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
-
-        l_tr1_th.appendChild(minimizer);
+        l_tr1_th.appendChild(create_minimizer());
         $(l_tr1_th).append(table_title);
 
 
@@ -1120,6 +1115,21 @@ function executeCVisualizer(option, data, newCode) {
         stack_frame_table_wrapper.appendChild(labels_table);
 
         return stack_frame_table_wrapper;
+    }
+
+    function create_minimizer() {
+        var minimizer = document.createElement("a");
+        minimizer.href = "#";
+        minimizer.className = "small-minimizer";
+
+        var minimizer_span = document.createElement("span");
+        minimizer_span.className = "minimizer-span";
+        minimizer_span.innerHTML = "[-]";
+        minimizer_span.addEventListener('click', stack_table_minimize_function);
+
+        minimizer.appendChild(minimizer_span)
+
+        return minimizer;
     }
 
     function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes) {
@@ -1215,10 +1225,12 @@ function executeCVisualizer(option, data, newCode) {
 
         // Have to bring out the right table to the front, to allow hovering
         $("table.memory-map-cell-table tbody > tr").css("visibility", (hex_mode_on ? "visible" : "hidden"));
+        $("div#stack-frame-tables table.memory-map-cell-table thead tr:nth-child(1)").css("visibility", (hex_mode_on ? "visible" : "hidden"));
         var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
         $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
 
         $("table.memory-map-label-table tbody > tr").css("visibility", (hex_mode_on ? "hidden" : "visible"));
+        $("div#stack-frame-tables table.memory-map-label-table thead tr:nth-child(1)").css("visibility", (hex_mode_on ? "hidden" : "visible"));
         var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
         $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
     }
@@ -1226,24 +1238,24 @@ function executeCVisualizer(option, data, newCode) {
     function create_minimize_function(div_id) {
         return function() {
             if($(this).html() == "[-]") {
-                $(this).html("[+]");
+                $(this).parents("div.memory-map-table-wrapper").find("a span.minimizer-span").html("[+]");
             } else {
-                $(this).html("[-]");
+                $(this).parents("div.memory-map-table-wrapper").find("a span.minimizer-span").html("[-]");
             }
 
-            $("#" + div_id + " tbody").fadeToggle();
+            $("#" + div_id + " tbody").fadeToggle("fast");
         }
     }
 
     function stack_table_minimize_function() {
         if($(this).html() == "[-]") {
-            $(this).html("[+]");
+            $(this).parents("div.memory-map-table-wrapper").find("a span.minimizer-span").html("[+]");
         } else {
-            $(this).html("[-]");
+            $(this).parents("div.memory-map-table-wrapper").find("a span.minimizer-span").html("[-]");
         }
 
-        $(this).parents("div.memory-map-table-wrapper").find("tbody").fadeToggle();
-        $(this).parents("div.memory-map-table-wrapper").find("thead > tr:nth-child(2)").fadeToggle();
+        $(this).parents("div.memory-map-table-wrapper").find("tbody").fadeToggle("fast");
+        $(this).parents("div.memory-map-table-wrapper").find("thead > tr:nth-child(2)").fadeToggle("fast");
     }
 
     function is_dot_row(td) {
