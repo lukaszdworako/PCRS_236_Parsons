@@ -2,9 +2,10 @@
 {
     "global_vars": [
         {
-            "name": "the name of this global variable",
+            "var_name": "the name of this global variable",
             "value": "the value of this global variable",
-            "location": "Stack, Heap or Static"
+            "location": "Data",
+            "addr": "",
         }
     ],
 

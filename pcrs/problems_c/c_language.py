@@ -312,6 +312,40 @@ class CSpecifics():
             elif v.lower() == "false":
                 line_info[k] = False
 
+    """ Convert a list of values into the correct format """
+    def parse_value(self, value, value_type):
+        # Currently only handles arrays
+        if("[]" in value_type):
+            # TODO: Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
+            return value
+            pass
+        else:
+            # Pointers values must always be as wide as an address
+            if '*' in value_type:
+                value = self.hex_pad(value[2:], self.max_addr_size)
+
+            # If not a pointer, return the value as is
+            return value
+
+    def parse_var(self, line_info):
+        current_var = dict(line_info)
+
+        # Pad each hex value to the length of max_size
+        # Arbitrarily chosen size of 8 bytes for anything without a max_size specified
+        max_size = int(current_var['max_size']) if ('max_size' in current_var) else 8
+
+        self.convert_bool_strs(current_var)
+        del(current_var['line'])
+        del(current_var['function'])
+
+
+        current_var['addr'] = self.hex_pad(current_var['addr'][2:], self.max_addr_size)
+        current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
+
+        current_var['value'] = self.parse_value(current_var['value'], current_var['type'])
+
+        return current_var
+
     def code_output_to_json(self, code_output, c_visualizer):
         """ Convert the code output into a dictionary to be converted into a JSON file """
 
@@ -319,7 +353,11 @@ class CSpecifics():
         print_delim = c_visualizer.item_delimiter
 
 
-        json_output = { "global_vars": [], "steps": [] }
+        json_output = {
+            "global_vars": [],
+            "steps": []
+        }
+
 
         current_step_number = 0
         current_line = None
@@ -333,87 +371,63 @@ class CSpecifics():
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
             print(line_info)
 
-            # If we reach a new line, save the current step and start new one
-            if int(line_info['line']) != current_line:
-                if current_step:
-                    json_output["steps"].append(current_step)
+            if 'global' in line_info:
+                current_var = self.parse_var(line_info)
+                json_output["global_vars"].append(current_var)
 
-                current_line = int(line_info['line'])
-                current_step_number = current_step_number + 1
-                current_step = {
-                    "step": current_step_number,
-                    "line": current_line,
-                    "student_view_line": current_line, # TODO: Adjust correctly
-                    "function": line_info['function']
-                    }
+            else:
+                # If we reach a new line, save the current step and start new one
+                if int(line_info['line']) != current_line:
+                    if current_step:
+                        json_output["steps"].append(current_step)
 
-
-            if 'std_out' in line_info:
-                # Add stdout information
-                current_step['std_out'] = line_info['std_out']
-                del(line_info['std_out'])
-
-            if 'std_err' in line_info:
-                # Add stderr information
-                current_step['std_err'] = line_info['std_err']
-                del(line_info['std_err'])
-
-            if 'return' in line_info:
-                # Add a "return" info
-                current_step['return'] = line_info['return']
-                del(line_info['return'])
-
-            if 'on_entry_point' in line_info:
-                # Add a info for the entry point of a function
-                current_step['on_entry_point'] = True
-                del(line_info['on_entry_point'])
-
-            if 'returned_fn_call' in line_info:
-                # Add info for returning from a function call
-                current_step['returned_fn_call'] = line_info['returned_fn_call']
-                del(line_info['returned_fn_call'])
-
-            if 'var_name' in line_info:
-                # There is a variable to add to changed_vars
-                if not 'changed_vars' in current_step:
-                    current_step['changed_vars'] = []
-
-                # Pad each hex value to the length of max_size
-                # Arbitrarily chosen size of 8 bytes for anything without a max_size specified
-                max_size = int(line_info['max_size']) if ('max_size' in line_info) else 8
-
-                current_var = dict(line_info)
-                self.convert_bool_strs(current_var)
-                del(current_var['line'])
-                del(current_var['function'])
+                    current_line = int(line_info['line'])
+                    current_step_number = current_step_number + 1
+                    current_step = {
+                        "step": current_step_number,
+                        "line": current_line,
+                        "student_view_line": current_line, # TODO: Adjust correctly
+                        "function": line_info['function']
+                        }
 
 
-                current_var['addr'] = self.hex_pad(line_info['addr'][2:], self.max_addr_size)
-                current_var['hex_value'] = self.hex_pad(line_info['hex_value'], max_size)
+                if 'std_out' in line_info:
+                    # Add stdout information
+                    current_step['std_out'] = line_info['std_out']
+                    del(line_info['std_out'])
 
-                current_var['value'] = self.parse_value(current_var['value'], current_var['type'])
+                if 'std_err' in line_info:
+                    # Add stderr information
+                    current_step['std_err'] = line_info['std_err']
+                    del(line_info['std_err'])
 
-                current_step['changed_vars'].append(current_var)
+                if 'return' in line_info:
+                    # Add a "return" info
+                    current_step['return'] = line_info['return']
+                    del(line_info['return'])
+
+                if 'on_entry_point' in line_info:
+                    # Add a info for the entry point of a function
+                    current_step['on_entry_point'] = True
+                    del(line_info['on_entry_point'])
+
+                if 'returned_fn_call' in line_info:
+                    # Add info for returning from a function call
+                    current_step['returned_fn_call'] = line_info['returned_fn_call']
+                    del(line_info['returned_fn_call'])
+
+                if 'var_name' in line_info:
+                    # There is a variable to add to changed_vars
+                    if not 'changed_vars' in current_step:
+                        current_step['changed_vars'] = []
+
+
+                    current_var = self.parse_var(line_info)
+
+                    current_step['changed_vars'].append(current_var)
 
         # Append the last step
         json_output["steps"].append(current_step)
 
         pprint(json_output)
         return json_output
-
-
-    """ Convert a list of values into the correct format """
-    def parse_value(self, value, value_type):
-        # Currently only handles arrays
-        if("[]" in value_type):
-            # Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
-            return value
-            pass
-        else:
-            # Pointers values must always be as wide as an address
-            if '*' in value_type:
-                value = self.hex_pad(value[2:], self.max_addr_size)
-
-            # If not a pointer, return the value as is
-            return value
-

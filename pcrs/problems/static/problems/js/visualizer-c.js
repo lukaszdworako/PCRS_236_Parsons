@@ -46,7 +46,6 @@ function executeCVisualizer(option, data, newCode) {
  * C visualizer representation.
  */
     var newOrOld = "new";     // By default, use the new vis
-    console.log(data);
     switch(option) {
 
         case "create_visualizer":
@@ -93,10 +92,7 @@ function executeCVisualizer(option, data, newCode) {
          * otherwise don't enter visualization mode.
          */
 
-
-        console.log("new code is "+newCode);
         debugger_data = data;
-        console.log("data is "+debugger_data)
 
         if(!c_debugger_load) {
             c_debugger_load = true;
@@ -145,9 +141,7 @@ function executeCVisualizer(option, data, newCode) {
          * Verify trace does not contain errors and create visualizer,
          * othervise don't enter visualization mode.
          */
-        console.log("new code is "+newCode);
         debugger_data = data;
-        console.log(debugger_data);
         var removedLines;
         var start_line = debugger_data["steps"][0]["student_view_line"];
 
@@ -175,6 +169,7 @@ function executeCVisualizer(option, data, newCode) {
                     reset_memory_tables();
 
                     // Clear the name tables
+                    $('#name-table-data tbody').empty();
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
                     //Clear stdout
@@ -203,6 +198,7 @@ function executeCVisualizer(option, data, newCode) {
                 reset_memory_tables();
 
                 // Clear the name tables
+                $('#name-table-data tbody').empty();
                 $('#name-type-section').empty();
                 $('#new_debugger_table_heap').empty();
                 //Clear stdout
@@ -211,6 +207,8 @@ function executeCVisualizer(option, data, newCode) {
                 myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
 
                 myCodeMirrors[debugger_id].setValue(codeToShow);
+
+                add_globals();
             });
 
             $('#toggle-hex-button').bind('click', function () {
@@ -242,6 +240,8 @@ function executeCVisualizer(option, data, newCode) {
 
         add_hover_to_code();
 
+        add_globals();
+
     }
 
     function add_hover_to_code() {
@@ -263,23 +263,8 @@ function executeCVisualizer(option, data, newCode) {
         $(return_to_clr).remove();
         return_to_clr = "";
 
-        //If resetting, first ensure all global variables are dealt with
-        if(update_type == "reset") {
-            globals = debugger_data["global_vars"];
-            global_amt = globals.length;
-            for(var i = 0; i < global_amt; i++) {
-                //Include global vars
-                add_var_to_all_tables(globals[i]);
-            }
-        }
-
         var json_step = debugger_data["steps"][json_index];
-        console.log("JSON STEP IS:");
-        console.log(json_step);
         if((update_type == "next")) {
-            console.log("step:"+debugger_data["steps"][json_index]["step"]);
-            console.log("in next, cur line is "+cur_line+"and json index is "+json_index);
-
             if(json_step.hasOwnProperty('on_entry_point')) {
                 // Create the empty table even before any variables get assigned
                 get_var_location('stack', json_step['function']);
@@ -290,11 +275,10 @@ function executeCVisualizer(option, data, newCode) {
 
             //Case where there's changed variables
             if(json_step.hasOwnProperty('changed_vars')) {
-                add_var_to_all_tables(json_step);
+                add_step_to_all_tables(json_step);
             }
             //Case where it's a function return
             if((json_step.hasOwnProperty('return')) || (json_step.hasOwnProperty('returned_fn_call'))) {
-                console.log("calling add to name table func");
                 add_return_name_table(json_step);
             }
 
@@ -311,9 +295,6 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         else if(update_type == "prev") {
-            console.log("json index:"+json_index);
-            console.log("step:"+json_step["step"]);
-            console.log("in prev, cur line is "+cur_line+"and json index is "+json_index);
             //Process JSON here to go backward a line
             if(json_step.hasOwnProperty('changed_vars')) {
                 remove_from_name_table(json_step);
@@ -328,7 +309,6 @@ function executeCVisualizer(option, data, newCode) {
             json_index--;
             json_step = debugger_data["steps"][json_index];
             if(json_step.hasOwnProperty('return') || json_step.hasOwnProperty('returned_fn_call') ) {
-                //console.log("have a return, json step is ");
                 add_return_name_table(json_step);
             }
             if(json_step.hasOwnProperty('return')) {
@@ -347,16 +327,28 @@ function executeCVisualizer(option, data, newCode) {
         if((most_recently_entered != "") && (!json_step.hasOwnProperty('on_entry_point'))) {
             most_recently_entered = "";
         }
-
-        console.log("value_list is: ");
-        console.log(value_list);
     }
 
-    function add_var_to_all_tables(new_var) {
+    function add_step_to_all_tables(json_step) {
         // Have to add to memory table first to update the start_addr_to_group_id table, which the name table uses
-        add_to_memory_table(new_var);
-        add_to_name_table(new_var);
-        add_to_val_list(new_var);
+        add_to_memory_table(json_step);
+        add_to_name_table(json_step);
+        add_to_val_list(json_step);
+    }
+
+    function add_globals() {
+        globals = debugger_data["global_vars"];
+        global_amt = globals.length;
+        for(var i = 0; i < global_amt; i++) {
+            //Include global vars
+            var global_var = globals[i];
+            add_one_var_to_memory_table(global_var);
+            add_one_var_to_name_table(global_var);
+            add_one_var_to_val_list(global_var);
+        }
+
+        // Draw the label tables after all variables have been added
+        regenerate_all_label_tables();
     }
 
 
@@ -365,12 +357,7 @@ function executeCVisualizer(option, data, newCode) {
         $('#debugger_table_stack').empty();
         $('#debugger_table_heap').empty();
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
-        console.log("down here data is <below> while debugger index is at "+debugger_index);
-        console.log(data);
         for(var i = 0; i < data[debugger_index].length; i++) {
-
-            console.log(data[debugger_index][i]);
-
             myCodeMirrors[debugger_id].addLineClass(parseInt(data[debugger_index][i][0]-1), '', 'CodeMirror-activeline-background');
 
             if(data[debugger_index][i][6] != "True") {
@@ -416,61 +403,64 @@ function executeCVisualizer(option, data, newCode) {
         var table_name;
         //Loop through all var changes in the step
         for(var i=0; i<json_step['changed_vars'].length; i++) {
-
-            //Check if it's new - if so, adding it
-            if(json_step['changed_vars'][i]['new']) {
-
-                //If the variable is a pointer, only add it if its marked to show up in the name table
-                if(!(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) || (json_step['changed_vars'][i]['is_ptr']=="name")) {
-
-                    //Check if it's in the stack, heap, or data to decide what we're looking for
-                    if(json_step['changed_vars'][i]['location'] == "stack") {
-                        table_name = json_step['function'];
-                    }
-                    else if (json_step['changed_vars'][i]['location'] == "heap") {
-                        // Ignore heap variables because they don't have a name table
-                        continue;
-                    }
-                    else {
-                        table_name = 'Data';
-                    }
-
-                    var cur_frame;
-                    cur_frame = $('#names-'+table_name);
-
-                    //Check if there's a current frame up for this:
-                    if(cur_frame.length == 0) {
-                    //If not, create a whole new name table
-                        add_name_table_frame(table_name);
-                    }
-
-                    //Add a row to the existing name table
-                    $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+json_step['changed_vars'][i]['var_name']+'" data-address="'+
-                        json_step['changed_vars'][i]['addr']+'">' +
-                        '<td class="var-name hide-overflow" title="' + json_step['changed_vars'][i]['var_name'] + '">' + json_step['changed_vars'][i]['var_name'] + '</td>' +
-                        '<td class="var-type hide-overflow" title="' + json_step['changed_vars'][i]['type'] + '">' + json_step['changed_vars'][i]['type'] + '</td>' +
-                    '</tr>');
-
-
-                    var name_row = $('#name-body-'+table_name + " tr[id='"+table_name+'-'+json_step['changed_vars'][i]['var_name']+"']");
-
-                    var group_start_addr = parseInt(name_row.attr("data-address"), 16);
-                    var name_row_group_id = start_addr_to_group_id[group_start_addr];
-                    name_row.hover(
-                        create_hover_highlight_function(name_row_group_id),
-                        create_hover_unhighlight_function(name_row_group_id)
-                        );
-                }
-            }
-
-            //If not new, will only be deleting it if on the heap table (verify this)
-            else if ((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                    //Remove this var from table
-                    $('#Heap-'+json_step['changed_vars'][i]['var_name']).remove();
-                    //check_rm_empty_table("names-Heap");
-            }
+            add_one_var_to_name_table(json_step['changed_vars'][i], json_step['function']);
         }
         //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
+    }
+
+    function add_one_var_to_name_table(changed_var, func_name) {
+        //Check if it's new - if so, adding it
+        if(changed_var['new']) {
+
+            //If the variable is a pointer, only add it if its marked to show up in the name table
+            if(!(changed_var.hasOwnProperty('is_ptr')) || (changed_var['is_ptr']=="name")) {
+
+                //Check if it's in the stack, heap, or data to decide what we're looking for
+                if(changed_var['location'] == "stack") {
+                    table_name = func_name;
+                }
+                else if (changed_var['location'] == "heap") {
+                    // Ignore heap variables because they don't have a name table
+                    return;
+                }
+                else {
+                    table_name = 'data';
+                }
+
+                var cur_frame;
+                cur_frame = $('#names-'+table_name);
+
+                //Check if there's a current frame up for this:
+                if(cur_frame.length == 0) {
+                //If not, create a whole new name table
+                    add_name_table_frame(table_name);
+                }
+
+                //Add a row to the existing name table
+                $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+changed_var['var_name']+'" data-address="'+
+                    changed_var['addr']+'">' +
+                    '<td class="var-name hide-overflow" title="' + changed_var['var_name'] + '">' + changed_var['var_name'] + '</td>' +
+                    '<td class="var-type hide-overflow" title="' + changed_var['type'] + '">' + changed_var['type'] + '</td>' +
+                '</tr>');
+
+
+                var name_row = $('#name-body-'+table_name + " tr[id='"+table_name+'-'+changed_var['var_name']+"']");
+
+                var group_start_addr = parseInt(name_row.attr("data-address"), 16);
+                var name_row_group_id = start_addr_to_group_id[group_start_addr];
+                name_row.hover(
+                    create_hover_highlight_function(name_row_group_id),
+                    create_hover_unhighlight_function(name_row_group_id)
+                    );
+            }
+        }
+
+        //If not new, will only be deleting it if on the heap table (verify this)
+        else if ((changed_var['location']) == "Heap" && (changed_var.hasOwnProperty('freed'))) {
+                //Remove this var from table
+                $('#Heap-'+changed_var['var_name']).remove();
+                //check_rm_empty_table("names-Heap");
+        }
     }
 
     function add_name_table_frame(table_name) {
@@ -515,11 +505,7 @@ function executeCVisualizer(option, data, newCode) {
         var changed_vars = json_step.changed_vars;
         var func_name = json_step["function"];
         for(var i=0; i < changed_vars.length; i++) {
-            if(changed_vars[i]["value"].constructor === Array) {
-                // TODO: Treat each value in the array as its own variable and insert individually
-            } else {
-                add_one_var_to_memory_table(changed_vars[i], func_name);
-            }
+            add_one_var_to_memory_table(changed_vars[i], func_name);
         }
     }
 
@@ -538,6 +524,10 @@ function executeCVisualizer(option, data, newCode) {
         // Don't continue if we have nowhere to add the variable, to prevent the browser hanging indefinitely
         if(!location){
             return;
+        }
+
+        if(value.constructor === Array) {
+            // TODO: Treat each value in the array as its own variable and insert individually
         }
 
         // Figure out the variable's group_id
@@ -567,7 +557,6 @@ function executeCVisualizer(option, data, newCode) {
                 return parseInt($(this).attr('addr'), 16) > start_addr;
 
         }).length == 0;
-        console.log("Simply append: ", simply_append_rows);
 
         insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
     }
@@ -1412,8 +1401,6 @@ function executeCVisualizer(option, data, newCode) {
         var cur_frame;
         cur_frame = $('#names-'+table_name);
 
-        console.log("adding return to name table!");
-
         //Check if there's a current frame up for this:
         if(cur_frame.length == 0) {
         //If not, create a whole new name table - could be possible for a function with no vars that then returns
@@ -1444,7 +1431,6 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         return_to_clr = '#'+table_name+'-return';
-        console.log("want to add to "+table_name+ " and return data is "+return_data);
         //Add a row to the existing name table
         $('#name-body-'+table_name).append('<tr id="'+table_name+'-return"> <td colspan="2">' + return_data + '</td>' +
         '</tr>');
@@ -1455,35 +1441,38 @@ function executeCVisualizer(option, data, newCode) {
 
         //Loop through all var changes in the step
         for(var i=0; i<json_step['changed_vars'].length; i++) {
-            var val_address = json_step['changed_vars'][i]["addr"];
-            var ptr_size = null;
-            if(json_step['changed_vars'][i]["new"]) {
-                var is_ptr_val = false;
-                if(json_step['changed_vars'][i].hasOwnProperty('is_ptr')) {
-                    is_ptr_val = true;
-                    ptr_size = json_step['changed_vars'][i]['ptr_size'];
-                }
-                new_value = {"value": json_step['changed_vars'][i]["value"], "history": [json_step['changed_vars'][i]["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
-                value_list[val_address] = new_value;
-            }
+            add_one_var_to_val_list(json_step['changed_vars'][i]);
+        }
+    }
 
-            //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
-            else if((json_step['changed_vars'][i]['location']) == "Heap" && (json_step['changed_vars'][i].hasOwnProperty('freed'))) {
-                value_list[val_address]["history"].push("#Freed#");
+    function add_one_var_to_val_list(changed_var) {
+        var val_address = changed_var["addr"];
+        var ptr_size = null;
+        if(changed_var["new"]) {
+            var is_ptr_val = false;
+            if(changed_var.hasOwnProperty('is_ptr')) {
+                is_ptr_val = true;
+                ptr_size = changed_var['ptr_size'];
             }
+            new_value = {"value": changed_var["value"], "history": [changed_var["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
+            value_list[val_address] = new_value;
+        }
 
-            //If the variable is not new and not freed, just push the new value onto its history array and update its current value
-            else {
-                value_list[val_address]["history"].push(json_step['changed_vars'][i]["value"]);
-                value_list[val_address]["value"] = json_step['changed_vars'][i]["value"];
-            }
+        //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
+        else if((changed_var['location']) == "Heap" && (changed_var.hasOwnProperty('freed'))) {
+            value_list[val_address]["history"].push("#Freed#");
+        }
+
+        //If the variable is not new and not freed, just push the new value onto its history array and update its current value
+        else {
+            value_list[val_address]["history"].push(changed_var["value"]);
+            value_list[val_address]["value"] = changed_var["value"];
         }
     }
 
     function add_to_std_out(json_step) {
         //cur_stdout contains the full current stdout string that's been stepped to: will append to this and refresh the stdout window
         cur_stdout = cur_stdout.concat(json_step["std_out"]);
-        console.log("cur stdout is " + cur_stdout);
         $("#std-out-textbox").html(cur_stdout);
     }
 
@@ -1509,7 +1498,7 @@ function executeCVisualizer(option, data, newCode) {
                         continue;
                     }
                     else {
-                        table_name = 'Data';
+                        table_name = 'data';
                     }
 
                     var cur_frame;
@@ -1536,6 +1525,13 @@ function executeCVisualizer(option, data, newCode) {
     function remove_from_memory_table(json_step) {
         // Nuke all memory tables and rebuild them up to the previous step
         reset_memory_tables();
+
+        // Readd the global variables just to the memory map; the name table and value list are handles separately
+        globals = debugger_data["global_vars"];
+        global_amt = globals.length;
+        for(var i = 0; i < global_amt; i++) {
+            add_one_var_to_memory_table(globals[i]);
+        }
 
         var last_step = json_index-1;
         json_index = 0;
