@@ -1213,15 +1213,28 @@ function executeCVisualizer(option, data, newCode) {
         hex_mode_on = !hex_mode_on;
 
         // Have to bring out the right table to the front, to allow hovering
-        $("table.memory-map-cell-table tbody > tr").css("visibility", (hex_mode_on ? "visible" : "hidden"));
-        $("div#stack-frame-tables table.memory-map-cell-table thead tr:nth-child(1)").css("visibility", (hex_mode_on ? "visible" : "hidden"));
-        var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
-        $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
+        if(hex_mode_on) {
+            $("table.memory-map-cell-table tbody > tr").removeClass("hidden-row");
+            $("div#stack-frame-tables table.memory-map-cell-table thead tr:nth-child(1)").css("visibility", "visible");
+            var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
+            $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
 
-        $("table.memory-map-label-table tbody > tr").css("visibility", (hex_mode_on ? "hidden" : "visible"));
-        $("div#stack-frame-tables table.memory-map-label-table thead tr:nth-child(1)").css("visibility", (hex_mode_on ? "hidden" : "visible"));
-        var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
-        $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
+            $("table.memory-map-label-table tbody > tr").addClass("hidden-row");
+            $("div#stack-frame-tables table.memory-map-label-table thead tr:nth-child(1)").css("visibility", "hidden");
+            var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
+            $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
+
+        } else {
+            $("table.memory-map-cell-table tbody > tr").addClass("hidden-row");
+            $("div#stack-frame-tables table.memory-map-cell-table thead tr:nth-child(1)").css("visibility", "hidden");
+            var cell_table_z = parseInt($("table.memory-map-cell-table").css("z-index"));
+            $("table.memory-map-cell-table").css("z-index", cell_table_z == 1000 ? 0 : 1000);
+
+            $("table.memory-map-label-table tbody > tr").removeClass("hidden-row");
+            $("div#stack-frame-tables table.memory-map-label-table thead tr:nth-child(1)").css("visibility", "visible");
+            var label_table_z = parseInt($("table.memory-map-label-table").css("z-index"));
+            $("table.memory-map-label-table").css("z-index", label_table_z == 1000 ? 0 : 1000);
+        }
     }
 
     function create_minimize_function(div_id) {
