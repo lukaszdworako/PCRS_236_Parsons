@@ -7,12 +7,13 @@ from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView, View)
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime
-from problems.forms import ProgrammingSubmissionForm
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin
+
+from problems.forms import EditorForm
 import problems_c.models as c_models
 import problems_python.models as python_models
 
@@ -87,7 +88,7 @@ class EditorView(ProtectedViewMixin, EditorViewMixin, SingleObjectMixin,
     Create a submission for a problem.
     """
     pType = None
-    form_class = ProgrammingSubmissionForm
+    form_class = EditorForm
     object = None
 
 class EditorAsyncView(EditorViewMixin, SingleObjectMixin,

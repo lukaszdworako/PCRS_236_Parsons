@@ -45,6 +45,20 @@ class BaseProblemForm(CrispyFormMixin):
                                     ButtonHolder(*self.buttons))
 
 
+class EditorForm(CrispyFormMixin, forms.Form):
+    code_box = forms.CharField(widget=forms.Textarea())
+
+    def __init__(self, *args, **kwargs):
+        problem = kwargs.pop('problem', None)
+        simpleui = kwargs.pop('simpleui', False)
+        super().__init__(*args, **kwargs)
+
+        self.trace_button = Submit('Trace', value='Trace', css_class='debugBtn pull-right')
+        self.fields['code_box'].initial = ''
+        layout_fields = (Fieldset('', 'code_box'), Div(self.trace_button))
+        self.helper.layout = Layout(*layout_fields)
+
+
 class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
