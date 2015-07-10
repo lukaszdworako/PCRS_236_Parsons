@@ -250,18 +250,20 @@ function addHashkey(div_id){
      * where the student code starts and ends
      */
     var line_count = myCodeMirrors[div_id].lineCount();
+    var hash_code = CryptoJS.SHA1(div_id.split("-")[1]);
     var code = "";
     var wrapClass;
     var i;
     for (i = 0; i < line_count; i++){
         wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
         if (wrapClass == 'CodeMirror-studentline-background')
-            code += CryptoJS.SHA1(div_id.split("-")[1]);
+            code += hash_code;
         else
             code += myCodeMirrors[div_id].getLine(i);
         code += '\n';
     }
-    return code.substring(0, code.length-1);
+    code += hash_code;
+    return code;
 }
 
 function handleCMessages(div_id, testcases){
@@ -845,11 +847,9 @@ function removeTags(source_code){
         }
         else if((line.split("[student_code]").length - 1) > 0){
             student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-            source_code += '\n';
         }
         else if((line.split("[/student_code]").length - 1) > 0) {
             student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-            source_code += '\n';
         }else {
             source_code += lines[i] + '\n';
         }

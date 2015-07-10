@@ -251,16 +251,14 @@
                 }
                 if(remove_line == false && line != " ") {
                     if(student_code_start == true) {
-                        source_code += '';
                         student_code_start = false;
                     }
                     else if(student_code_end == true){
-                        source_code += '';
                         student_code_end = false;
                     }else {
                         source_code += cmh_list[id_starter_code_field].getLine(i);
                     }
-                    if (i < line_end) {
+                    if (i > line_begin && i < line_end) {
                         source_code += '\n';
                     }
                 }

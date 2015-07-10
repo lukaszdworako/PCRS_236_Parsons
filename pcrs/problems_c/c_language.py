@@ -6,6 +6,8 @@ from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
 import string
 import re
+from operator import mul
+import ast
 
 from pprint import pprint
 import pdb
@@ -300,6 +302,8 @@ class CSpecifics():
         return 'text/x-c'
 
 
+    def to_hex(self, dec_num):
+        return hex_pad(hex(dec_num)[2:], 8)
 
     def hex_pad(self, value, length):
         # Length is in bytes
@@ -313,11 +317,55 @@ class CSpecifics():
                 line_info[k] = False
 
     """ Convert a list of values into the correct format """
-    def parse_value(self, value, value_type):
-        # Currently only handles arrays
+    def parse_value(self, current_var, sizes_by_level):
+        value = current_var['value']
+        hex_value = current_var['hex_value']
+        value_type = current_var['type']
+
+        # Collapse spaces to judge the type accurately
+        value_type = value_type.replace(" ", "")
+
+        # Currently only handles arrays, not structs
         if("[]" in value_type):
             # TODO: Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
-            return value
+            # Find at which level we are and go down one level
+            level = value_type.count("[]")
+            next_type = value_type.replace("[]","",1)
+            start_addr = int(current_var["addr"], 16)
+
+            # The last one in the array is the base array size
+            base_size = sizes_by_level[len(sizes_by_level)-1]
+
+            # Multiply the rest of the sizes to get the size of an element at this level
+            level_size = reduce(mul, sizes_by_level[0+(level-1):], 1)
+
+            # Turn everything inside the opening and closing brackets into an array
+            ar_values = value
+            ar_hex_values = hex_value
+
+            # Create an array of dictionaries for each of the values in ar_values
+            new_values_array = []
+            for i in range(len(ar_values)):
+                new_var = {}
+                new_var["var_name"] = ""
+                new_var["addr"] = to_hex(start_addr + (i * level_size))
+                new_var["type"] = next_type
+                new_var["new"] = True
+                new_var["hex_value"] = ar_hex_values[i]
+                new_var["invalid"] = False
+                new_var["location"] = current_var["location"]
+                new_var["max_size"] = level_size
+
+                is_ptr = (level == 1) and (next_type.count('*') > 0)
+                new_var["is_ptr"] = is_ptr
+                new_var["ptr_size"] = base_size if is_ptr else 0
+
+                new_var["value"] = ar_values[i]
+                new_var["value"] = self.parse_value(new_var)
+
+                new_values_array.append(new_var)
+
+            return new_values_array
             pass
         else:
             # Pointers values must always be as wide as an address
@@ -340,9 +388,21 @@ class CSpecifics():
 
 
         current_var['addr'] = self.hex_pad(current_var['addr'][2:], self.max_addr_size)
-        current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
 
-        current_var['value'] = self.parse_value(current_var['value'], current_var['type'])
+        sizes_by_level = []
+        if 'array' in current_var:
+            sizes_by_level = current_var['arr_dims'].append(current_var['arr_type_size'])
+
+            # TODO: Split by the hex_value hash and use that for the hex value
+            hex_value = ''
+
+            current_var['value'] = ast.literal_evals(current_var['value'].replace(" ",""))
+            current_var['hex_value'] = ast.literal_evals(current_var['hex_value'].replace(" ",""))
+
+        else:
+            current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
+
+        current_var['value'] = self.parse_value(current_var, sizes_by_level)
 
         return current_var
 
