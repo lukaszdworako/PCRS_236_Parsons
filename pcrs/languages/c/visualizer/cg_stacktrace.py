@@ -132,6 +132,7 @@ class CVisualizer:
         add_id_size = None
         add_return_val = None
         add_id_ptr_size = None
+        #pdb.set_trace()
         line_no = "line:"+ (str)(parent[index].coord.line)
         function = (str)(self.item_delimiter) +"function:"+ (str)(func_name)
         
@@ -150,9 +151,15 @@ class CVisualizer:
         on_return = ""
         if onReturn:
             #return_type contains function's return type (ie, int main(); would be int) 
-            return_type = self.func_list.get(func_name)
-            on_return = (str)(self.item_delimiter) + "return:" + (str)(self.primitive_types.get(return_type))
-            add_return_val = c_ast.ID((str)(return_node_name));
+            #Only execute this if return_node_name not none, which means it's not just an empty return statement
+            if return_node_name != None:
+                return_type = self.func_list.get(func_name)
+                on_return = (str)(self.item_delimiter) + "return:" + (str)(self.primitive_types.get(return_type))
+                add_return_val = c_ast.ID((str)(return_node_name));
+            
+            #Otherwise not returning anything on return
+            else:
+                on_return = (str)(self.item_delimiter) + "return:"
 
         returning_func = ""
         if onRetFnCall:
@@ -293,7 +300,7 @@ class CVisualizer:
         cur_par_index = 0
         while cur_par_index < len(compound_list):
 
-            nodes_added = self.recurse_by_compound(compound_list, cur_par_index, func_name)
+            self.recurse_by_compound(compound_list, cur_par_index, func_name)
             cur_par_index += 1+to_add_index
             to_add_index = 0
 
@@ -551,8 +558,15 @@ class CVisualizer:
     #I thnk there's only 3 cases when we make the call: declaration, assignment, and just straight-out call. Implememnt all 3
 
     def handle_return(self, parent, index, func_name):
+        global return_node_name
         #First create a new variable above the return statement which contains the return value
-        self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
+        #pdb.set_trace()
+        #If we aren't actually returning anything, just set return_node_name to None, so we won't look for a value in create_printf_node
+        if parent[index+self.amt_after+1].expr == None:
+            return_node_name = None
+        else:
+            self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
+
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
@@ -682,7 +696,7 @@ class CVisualizer:
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False)
         parent.insert(index, print_node)
         self.set_fn_returning_from(func_ret_from)
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, True, False, False, False, False, False)
+        print_node = self.create_printf_node(parent, index+1, func_name, False, False, False, True, False, False, False, False, False)
         parent.insert(index+2, print_node)
         to_add_index += 2
         self.amt_after += 2
