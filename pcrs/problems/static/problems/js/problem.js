@@ -254,12 +254,25 @@ function addHashkey(div_id){
     var code = "";
     var wrapClass;
     var i;
+    var inside_student_code = false;
+
     for (i = 0; i < line_count; i++){
         wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
-        if (wrapClass == 'CodeMirror-studentline-background')
-            code += hash_code;
-        else
-            code += myCodeMirrors[div_id].getLine(i);
+
+        if (wrapClass == 'CodeMirror-activeline-background') {
+            if(inside_student_code) {
+                code += hash_code + '\n';
+                inside_student_code = false;
+            }
+
+        } else {
+            if(!inside_student_code) {
+                code += hash_code + '\n';
+                inside_student_code = true;
+            }
+        }
+
+        code += myCodeMirrors[div_id].getLine(i);
         code += '\n';
     }
     code += hash_code;
@@ -827,35 +840,37 @@ function removeTags(source_code){
      */
     var lines = source_code.split("\n");
     var line;
-    var blocked_open = 0;
+    var student_view_line = 1;
+    var blocked_tag_num = 0;
+    var student_code_tag_num = 0;
+
     var blocked_list = [];
     var student_code_list = [];
-    var tag_num = 0;
 
     source_code = "";
-    for(var i = 0; i < lines.length; i++){
+    for(var i = 0; i < lines.length; i++) {
         line = lines[i];
-        if((line.split("[blocked]").length - 1) > 0){
-            blocked_list.push({"highlight": true, "start": i+1-tag_num, "end": 0});
-            blocked_open += 1;
-            tag_num += 1;
-        }
-        else if((line.split("[/blocked]").length - 1) > 0) {
-            tag_num += 1;
-            blocked_list[blocked_open - 1].end = i+1-tag_num;
-        }
-        else if((line.split("[student_code]").length - 1) > 0){
-            student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-        }
-        else if((line.split("[/student_code]").length - 1) > 0) {
-            student_code_list.push({"highlight": false, "start": i+1-tag_num, "end": i+1-tag_num});
-        }else {
+
+        if(line.indexOf("[blocked]") > -1) {
+            blocked_list.push({"highlight": true, "start": student_view_line, "end": 0});
+        } else if(line.indexOf("[/blocked]") > -1) {
+            blocked_list[blocked_tag_num].end = student_view_line-1;
+            blocked_tag_num++;
+
+        } else if(line.indexOf("[student_code]") > -1) {
+            student_code_list.push({"highlight": false, "start": student_view_line, "end": 0});
+        } else if(line.indexOf("[/student_code]") > -1) {
+            student_code_list[student_code_tag_num].end = student_view_line-1;
+            student_code_tag_num++;
+
+        } else {
             source_code += lines[i] + '\n';
+            student_view_line++;
         }
     }
 
     var tag_list;
-    // Remove last \n scape sequence
+    // Remove last \n escape sequence
     source_code = source_code.substring(0, source_code.length-1);
     tag_list = blocked_list.concat(student_code_list);
 
@@ -871,12 +886,12 @@ function blockInput(editor_id){
     var line_num = myCodeMirrors[editor_id].getCursor().line;
     var line_count;
     var wrapClass = myCodeMirrors[editor_id].lineInfo(line_num).wrapClass;
-    if (wrapClass == 'CodeMirror-studentline-background' || wrapClass == 'CodeMirror-activeline-background')
+    if (wrapClass == 'CodeMirror-activeline-background')
     {
         line_count = myCodeMirrors[editor_id].lineCount();
         for (var i = 0; i < line_count; i++){
             wrapClass = myCodeMirrors[editor_id].lineInfo(i).wrapClass;
-            if (wrapClass != 'CodeMirror-studentline-background' && wrapClass != 'CodeMirror-activeline-background'){
+            if (wrapClass != 'CodeMirror-activeline-background'){
                 myCodeMirrors[editor_id].setCursor(i, 0);
                 return true;
             }
