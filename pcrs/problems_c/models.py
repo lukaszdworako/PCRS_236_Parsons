@@ -237,7 +237,7 @@ class Submission(AbstractSubmission):
             student_code_key_list_len = len(student_code_key_list)
 
             # Could not find student code
-            if len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0:
+            if student_code_key_list_len == 0 or student_code_key_list_len % 2 != 0:
                 raise Exception("No student code found!")
 
             # Get student code from submission and add it to the official exercise (from the database)
@@ -252,7 +252,7 @@ class Submission(AbstractSubmission):
             last_tag_size = len('[/student_code]') + 1
             for student_code in student_code_list:
                 self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
-                                        '\r\n' + student_code + '' +\
+                                        student_code +\
                                         self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
 
             # Replace hashed key with text (Implementation start/end)

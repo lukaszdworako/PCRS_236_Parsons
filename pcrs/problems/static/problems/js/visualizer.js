@@ -53,12 +53,13 @@ function removeHashkeyForDisplay(div_id, newCode){
      */
     var codeArray = newCode.split('\n');
     var line_count = codeArray.length;
+    var hash_code = CryptoJS.SHA1(div_id.split("-")[1]);
     var code = "";
     var i;
     for (i = 0; i < line_count; i++){
         //wrapClass = newCode.lineInfo(i).wrapClass;
-        if (codeArray[i] == CryptoJS.SHA1(div_id.split("-")[1])) {
-            code += "";
+        if (codeArray[i] == hash_code) {
+            continue;
         }
         else {
             code += codeArray[i];

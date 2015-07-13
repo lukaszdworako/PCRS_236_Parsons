@@ -2,10 +2,18 @@
 {
     "global_vars": [
         {
-            "var_name": "the name of this global variable",
-            "value": "the value of this global variable",
-            "location": "Data",
+            "var_name": "",
             "addr": "",
+            "type": "",
+            "new": "",
+            "value": "", // String or array
+            "hex_value": "", // String of hex values of all bytes, including 0-padding
+            "invalid": "",
+            "location": "stack, heap or data",
+            "max_size": 4, // In bytes, the largest size that this variable can be
+            "is_ptr": true, // Whether or not it is a pointer
+            "ptr_size": 8, // The size of the thing the pointer is pointing to
+            "uninitialized": true // Only there if the variable is not initialized
         }
     ],
 
@@ -21,14 +29,18 @@
                     "addr": "",
                     "type": "",
                     "new": "",
-                    "value": "", // String or array
+                    "value": "", // String for the actual value, or an array of changed_var objects which themselves could be nested deeper
                     "hex_value": "", // String of hex values of all bytes, including 0-padding
                     "invalid": "",
                     "location": "stack, heap or data",
                     "max_size": 4, // In bytes, the largest size that this variable can be
                     "is_ptr": true, // Whether or not it is a pointer
                     "ptr_size": 8, // The size of the thing the pointer is pointing to
-                    "uninitialized": true // Only there if the variable is not initialized
+                    "uninitialized": true, // Only there if the variable is not initialized
+
+                    "array": true, // True if this is an array
+                    "arr_dims": [1,2,3], // The dimensions of the array, in order of declaration
+                    "arr_type_size": 4, // The size of the base type of the array
                 }
             ],
             "std_out": "standard output text", // This is the text printed by any standard output call in this step, if it was a std out call

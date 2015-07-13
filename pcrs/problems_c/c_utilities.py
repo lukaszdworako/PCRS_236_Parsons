@@ -38,7 +38,7 @@ def process_code_tags(problem_id, user_submission, starter_code):
         last_tag_size = len('[/student_code]') + 1
         for student_code in student_code_list:
             mod_submission = mod_submission[: mod_submission.find('[student_code]')] + \
-                                    '\r\n' + student_code + '' +\
+                                    student_code +\
                                     mod_submission[mod_submission.find('[/student_code]')+last_tag_size:]
 
         # Replace hashed key with text (Implementation start/end)
