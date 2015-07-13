@@ -87,6 +87,12 @@ class CVisualizer:
         #across these through global declarations, but can only insert them in main 
         self.global_print_nodes = []
 
+        #array_dict will hold the name as the key, with type, size nodes of each level, temporary int vars to be used in for loops,and depth as values in a list
+        #{array_name:[type, [size node1, size node2], [temp for var 1, temp for var 2],depth]}
+        #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2]} 
+        self.array_dict = {}
+
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -475,6 +481,23 @@ class CVisualizer:
         var_new_val = True
         is_uninit = True
 
+    def set_decl_array(self, parent, index):
+        #Adding the array info to the array_dict
+        size_nodes = []
+
+        temp_array = parent[index]
+        array_name = temp_array.name
+        array_depth = 0
+        pdb.set_trace()
+        while isinstance(temp_array.type, c_ast.ArrayDecl):
+            array_depth += 1
+            temp_array = temp_array.type
+
+            var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
+            self.var_type_dict.update(var_dict_add)
+
+            level_size = self.create_new_var_node('int', temp_array.dim)
+        #print("in set decl array")
 
     #Insert an assignment node, assigning the malloc size var to be the size that was malloced
     def set_malloc_size_var(self, parent, index, malloc_node):
@@ -576,6 +599,7 @@ class CVisualizer:
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
+                self.set_decl_array(parent, index)
                 print_node = self.old_create_printf_node()
                 parent.insert(index+1, print_node)
                 self.amt_after += 1
