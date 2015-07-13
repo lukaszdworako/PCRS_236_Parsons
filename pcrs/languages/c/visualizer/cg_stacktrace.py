@@ -84,7 +84,7 @@ class CVisualizer:
         self.malloc_size_var_name = "malloc_size"+(str)(uuid.uuid4().hex)
 
         #global_print_nodes will contain a list of ast print nodes that we must insert at the beginning of the main function. We come
-        #across these through global declarations, but can only insert them in main 
+        #across these through global declarations, but can only insert them in main
         self.global_print_nodes = []
 
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
@@ -126,7 +126,7 @@ class CVisualizer:
         add_id_ptr_size = None
         line_no = "line:"+ (str)(parent[index].coord.line)
         function = (str)(self.item_delimiter) +"function:"+ (str)(func_name)
-        
+
         on_entry = ""
         if onEntry:
             on_entry = (str)(self.item_delimiter) + "on_entry_point:True"
@@ -141,7 +141,7 @@ class CVisualizer:
 
         on_return = ""
         if onReturn:
-            #return_type contains function's return type (ie, int main(); would be int) 
+            #return_type contains function's return type (ie, int main(); would be int)
             return_type = self.func_list.get(func_name)
             on_return = (str)(self.item_delimiter) + "return:" + (str)(self.primitive_types.get(return_type))
             add_return_val = c_ast.ID((str)(return_node_name));
@@ -194,14 +194,14 @@ class CVisualizer:
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
             add_id_val = c_ast.ID(var_name_val)
             add_id_hex = c_ast.ID(var_name_val)
-            
+
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
 
         #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + var_info + on_return + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
-        if add_id_addr != None: 
+        if add_id_addr != None:
             if add_id_ptr_size != None:
                 add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_val, add_id_hex, add_id_size, add_id_ptr_size])
             else:
@@ -251,7 +251,6 @@ class CVisualizer:
             i+= 1
 
     def recurse_by_compound(self, parent, index, func_name):
-
         #If node is a node we added, ignore it & return TODO: add checking for hidden lines here too, don't include if hidden
         if parent[index].coord == None:
             return
@@ -426,7 +425,7 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.expr
 
-        var_name_val = '*'*ptr_depth+(str)(temp_node.name) 
+        var_name_val = '*'*ptr_depth+(str)(temp_node.name)
         #ie, int ** if that's what this pointer is
         unstripped_vartype = (str)(self.var_type_dict.get(temp_node.name))
 
@@ -434,7 +433,7 @@ class CVisualizer:
         stripped_vartype = unstripped_vartype.replace("*", "").strip()
 
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
-        
+
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
         if ptr_depth == self.ptr_dict.get(temp_node.name):
             var_typerep = self.primitive_types.get(stripped_vartype)
@@ -442,12 +441,12 @@ class CVisualizer:
             var_typerep = '%p'
 
         type_of_var = unstripped_vartype.replace("*", "", ptr_depth)
-        
+
         var_new_val = False
-        is_uninit = False        
+        is_uninit = False
 
 
-    #node is the assign or decl 
+    #node is the assign or decl
     def set_heap_vars(self, parent, index, node_name, malloc_node):
         global type_of_var
         global var_name_val
@@ -455,7 +454,7 @@ class CVisualizer:
         global is_uninit
         global var_typerep
 
-        #pdb.set_trace() 
+        #pdb.set_trace()
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
@@ -511,7 +510,7 @@ class CVisualizer:
 
     def handle_return(self, parent, index, func_name):
         #First create a new variable above the return statement which contains the return value
-        self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
+        self.create_return_val_node(parent, index+self.amt_after+1, func_name)
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
@@ -559,14 +558,14 @@ class CVisualizer:
 
                 else:
                     self.add_after_node(parent, index, func_name, False, True, False)
-            
+
                     #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].init.name.name == 'malloc':
                             #pdb.set_trace()
                             self.set_heap_vars(parent, index, parent[index].name, parent[index].init)
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True)
-                            parent.insert(index+1+self.amt_after, print_node)  
+                            parent.insert(index+1+self.amt_after, print_node)
                             self.amt_after += 1
                     except:
                         pass
@@ -604,7 +603,7 @@ class CVisualizer:
                             #pdb.set_trace()
                             self.set_heap_vars(parent, index, parent[index].lvalue.name, parent[index].rvalue)
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True)
-                            parent.insert(index+1+self.amt_after, print_node)  
+                            parent.insert(index+1+self.amt_after, print_node)
                             self.amt_after += 1
                     except:
                         pass
@@ -662,15 +661,15 @@ class CVisualizer:
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
                     self.set_decl_ptr_vars(header_vars[i])
                     header_var_ptr = True
-                else:               
+                else:
                     self.set_decl_vars(header_vars[i])
-                    header_var_ptr = False 
+                    header_var_ptr = False
                 print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, header_var_ptr, False)
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
 
         #Otherwise just set a print node with no changed vars
-        else: 
+        else:
             print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False, False, False)
             parent[index].body.block_items.insert(0, print_node)
             self.amt_after += 1
@@ -716,7 +715,7 @@ class CVisualizer:
         #Finding all functions in the program so we can save them in a list
         self.find_all_function_decl(ast)
 
-        #Initializing a malloc size variable in the code 
+        #Initializing a malloc size variable in the code
         malloc_size_var = self.create_new_var_node("int", None, self.malloc_size_var_name)
         ast.ext.insert(0, malloc_size_var)
 

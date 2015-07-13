@@ -30,8 +30,6 @@ $(document).ready(function() {
 function start_editor_visualizer(user_code, code_wrapper_id) {
     newOrOld = "new"; // Will be removed later on
 
-    console.log(user_code);
-
     var postParams = { 'language' : language, 'user_code' : user_code };
 
     executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);

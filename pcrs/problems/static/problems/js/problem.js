@@ -311,7 +311,6 @@ function getTestcases(div_id) {
         clean_code = myCodeMirrors[div_id].getValue();
     }
 
-    console.log("clean_code is "+clean_code);
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
         clean_code = clean_code.replace('\t',"    ");

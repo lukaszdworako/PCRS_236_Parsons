@@ -762,6 +762,7 @@ function executeCVisualizer(option, data, newCode) {
         var cell_table_rows = cell_table.children();
         var middle_rows_left = 0;
         var on_bottom_row = false;
+        var on_last_row = false;
         var in_middle = false;
         var previous_drawn_group_id = null;
         for(i=0; i < cell_table_rows.length; i++) {
@@ -779,7 +780,11 @@ function executeCVisualizer(option, data, newCode) {
                     // Still drawing the middle rows of a wide label, so draw a standard row with no extra tds
                     middle_rows_left--;
                     if(middle_rows_left == 0) {
-                        on_bottom_row = true;
+                        if(on_last_row) {
+                            on_last_row = false;
+                        } else {
+                            on_bottom_row = true;
+                        }
                     }
 
                 } else {
@@ -854,6 +859,7 @@ function executeCVisualizer(option, data, newCode) {
                                     }
 
                                     middle_rows_left = rowspan - 1;
+                                    on_last_row = true;
 
                                 } else if(c == 1 && colspan == 4) {
                                     // Draw the label
