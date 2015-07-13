@@ -246,11 +246,13 @@ class CVisualizer:
         i = 0
         while i < len(ast.ext):
             if isinstance(ast.ext[i], c_ast.FuncDef):
-                var_dict_add = {(str)(ast.ext[i].decl.name):(str)(ast.ext[i].decl.type.type.type.names[0])}
+                if isinstance(ast.ext[i].decl.type.type, c_ast.PtrDecl):
+                    tname = ast.ext[i].decl.type.type.type.type.names[0] + " *"
+                else:
+                    tname = ast.ext[i].decl.type.type.type.names[0]
+                var_dict_add = {(str)(ast.ext[i].decl.name):tname}
                 self.func_list.update(var_dict_add)
             i+=1
-        print("FUNC LIST IS:")
-        print(self.func_list)
 
 
     #Splits up the AST by function, continues to recurse if a node has a compound node
