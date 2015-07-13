@@ -239,7 +239,7 @@ class CSpecifics():
             pass
         self.compiled = False
 
-    def get_exec_trace(self, user_script, add_params):
+    def get_exec_trace(self, user_script, add_params, hidden_lines_list):
         """ Return dictionary ret containing all variables results.
             ret has the following mapping:
             'exception' (only if exception occurs) -> exception message.
@@ -261,7 +261,7 @@ class CSpecifics():
             return {'trace': None, 'exception': ret["exception"]}
 
         c_visualizer = CVisualizer(user, self.temp_path)
-        logger.info("gets here 1")
+
         # Build initial stack with functions and variables data
         #Each element of stack trace contains a dictionary for a
         #function in the code(one element per function, ie. stacktrace[0]
@@ -289,7 +289,7 @@ class CSpecifics():
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
-            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer)
+            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer, hidden_lines_list)
             return json_output
 
         else:
@@ -406,7 +406,7 @@ class CSpecifics():
 
         return current_var
 
-    def code_output_to_json(self, code_output, c_visualizer):
+    def code_output_to_json(self, code_output, c_visualizer, hidden_lines_list):
         """ Convert the code output into a dictionary to be converted into a JSON file """
 
         block_delim = c_visualizer.print_wrapper
@@ -442,11 +442,16 @@ class CSpecifics():
                         json_output["steps"].append(current_step)
 
                     current_line = int(line_info['line'])
+
+                    # Adjust the actual lines correctly
+                    adjustment = len([l for l in hidden_lines_list if l < current_line])
+                    student_view_line = current_line - adjustment
+
                     current_step_number = current_step_number + 1
                     current_step = {
                         "step": current_step_number,
                         "line": current_line,
-                        "student_view_line": current_line, # TODO: Adjust correctly
+                        "student_view_line": student_view_line,
                         "function": line_info['function']
                         }
 

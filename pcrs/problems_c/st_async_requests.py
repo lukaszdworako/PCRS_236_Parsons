@@ -32,7 +32,6 @@ def visualizer_details(request):
         clean_code = process_code_tags(problem_id, user_script, starter_code)
 
         # add_params is always JSON encoded.
-        #pdb.set_trace()
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
         # Use CSRF_COOKIE as username
@@ -70,10 +69,10 @@ def new_visualizer_details(request):
 
         starter_code = Problem.objects.get(pk=problem_id).starter_code
 
+        hidden_lines_list = get_hidden_lines(problem_id, user_script, starter_code)
         clean_code = process_code_tags(problem_id, user_script, starter_code)
 
         # add_params is always JSON encoded.
-        #pdb.set_trace()
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
         # Use CSRF_COOKIE as username
@@ -82,10 +81,8 @@ def new_visualizer_details(request):
         # Create a language instance
         gen = CSpecifics(add_params['user'], clean_code)
 
-        print("GEN IS :")
-        print(gen)
         #PROBLEM HERE---
-        ret = gen.get_exec_trace(clean_code, add_params)
+        ret = gen.get_exec_trace(clean_code, add_params, hidden_lines_list)
 
     except ZeroDivisionError as e:
         ret['exception'] = str(e)
