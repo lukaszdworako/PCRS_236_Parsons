@@ -7,6 +7,7 @@ import logging
 import string
 import re
 from operator import mul
+import shlex
 import ast
 
 from pprint import pprint
@@ -66,7 +67,7 @@ class CSpecifics():
         # Naming the temporary output file
         temp_output_file = self.temp_path + user + self.date_time + ".out"
         # Naming the temporary runtime error file
-        # temp_runtime_error_file = self.temp_path + user + self.date_time + "_runtime_error.out"
+        temp_runtime_error_file = self.temp_path + user + self.date_time + "_runtime_error.out"
 
         try:
             ret["exception_type"] = self.compilation_ret["exception_type"]
@@ -75,7 +76,7 @@ class CSpecifics():
                 raise CompilationError
 
             # Test input and expected output data
-            test_input = str(test_input)
+            test_input = shlex.quote(str(test_input)) # Escape shell metacharacters and newlines
             expected_output = str(expected_output)
 
             if USE_SAFEEXEC:
@@ -90,13 +91,12 @@ class CSpecifics():
 
                 # Running C program in a secure environment
                 process = subprocess.call(safe_exec + " -o " + temp_output_file + " -d " + max_process_mem
-                                + " -U " + SAFEEXEC_USERID + " -G " # + " -e " + temp_runtime_error_file
+                                + " -U " + SAFEEXEC_USERID + " -G " + " -e " + temp_runtime_error_file
                                 + SAFEEXEC_GROUPID + " -T " + max_time_sec + " -F " + max_number_files
                                 + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"]
                                 + " " + test_input + " > /dev/null 2> /dev/null", shell=True)
             else:
-                process = subprocess.call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file, shell=True)
-                # + " 2> " + temp_runtime_error_file
+                process = subprocess.call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file + " 2> " + temp_runtime_error_file, shell=True)
 
             # Getting the execution output
             f = open(temp_output_file, 'r', encoding="ISO-8859-1")
@@ -105,16 +105,17 @@ class CSpecifics():
 
             # Runtime error during process execution (ignore warning errors)
             if process != 0 and ret["exception"] == " ":
+                print("Exit code: " + str(process))
                 execution_output = 'Runtime error!'
-                ret["exception_type"] = "warning"
+                ret["exception_type"] = "error"
                 ret["exception"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
 
             # Getting the run time error output
-            #f = open(temp_runtime_error_file, 'r')
-            #runtime_error = f.read()
-            #if runtime_error:
-            #    print("===== safeexec runtime error=====\n", runtime_error, "==========")   # To system error log. Probably better to activity log.
-            #f.close()
+            f = open(temp_runtime_error_file, 'r')
+            runtime_error = f.read()
+            if runtime_error:
+                print("===== safeexec runtime error=====\n", runtime_error, "==========")   # To system error log. Probably better to activity log.
+            f.close()
 
             # Remove escape sequences in case of a string instance
             if isinstance(expected_output, str):
@@ -154,11 +155,11 @@ class CSpecifics():
                 os.remove(temp_output_file)
             except OSError:
                 pass
-            #try:
-            #    os.remove(temp_runtime_error_file)
-            #except OSError:
-            #    pass
-            # print(ret["exception_type"] + ": " + ret["exception"])
+            try:
+                os.remove(temp_runtime_error_file)
+            except OSError:
+                pass
+            print(ret["exception_type"] + ": " + ret["exception"])
             return ret
 
     def compile_source_code(self, user, user_script, deny_warning=False):
@@ -266,17 +267,6 @@ class CSpecifics():
         #Each element of stack trace contains a dictionary for a
         #function in the code(one element per function, ie. stacktrace[0]
         #is the main function, etc)
-
-        #stack_trace = c_visualizer.build_stacktrace(user_script)
-        #logger.info("gets here 2")
-        #for item in stack_trace:
-        #    logger.info(item)
-
-
-
-        # Change original source code with the proper printf (debug)
-        #mod_user_script = c_visualizer.change_code_for_debbug(stack_trace, user_script)
-        #print(user_script)
 
         mod_user_script = c_visualizer.add_printf(user_script)
 
@@ -428,6 +418,7 @@ class CSpecifics():
         for print_statement in filter(None, print_blocks):
             # Make a dictionary out of all of parts of the line
             line_info_list = print_statement.split(print_delim)
+            pprint(line_info_list)
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
             print(line_info)
 

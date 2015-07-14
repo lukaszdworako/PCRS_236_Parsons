@@ -74,6 +74,7 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
             function(data) {
+                alert(data)
                 executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
             },
         "json")
@@ -928,34 +929,43 @@ function highlightCode(editor_id, tag_list){
 
 function preventDeleteLastLine(editor_id) {
     editor = myCodeMirrors[editor_id];
+    editor.getSelectedLines = function () {
+        var start_line = editor.getCursor(true).line;
+        var end_line = editor.getCursor(false).line;
+        var selected_lines = [];
+        for(var i = start_line; i <= end_line; i++) {
+            selected_lines.push(editor.lineInfo(i));
+        }
 
-    // Find the lines which are accessible to the user
-    startLine = editor.doc.getCursor().line;
-    //    if (wrapClass != 'CodeMirror-studentline-background' && wrapClass != 'CodeMirror-activeline-background'){
+        return selected_lines
+    }
 
     editor.setOption("extraKeys",
         {
             "Backspace": guardBackspace,
-            "Delete": guardDelete
+            "Delete": guardDelete,
         });
 }
 
 function guardBackspace(editor) {
-    curLine = editor.getCursor().line;
-    curLineChar = editor.getCursor().ch;
+    var curLine = editor.getCursor().line;
+    var curLineChar = editor.getCursor().ch;
 
-    prevLine = (curLine > 0) ? curLine - 1 : 0;
+    var prevLine = (curLine > 0) ? curLine - 1 : 0;
 
-    codeSelected = editor.getSelection().length > 0;
-    curLineEmpty = editor.lineInfo(curLine).text.length == 0;
-    curLineFirstChar = curLineChar == 0;
-    prevLineWrapClass = editor.lineInfo(prevLine).wrapClass;
+    var isSelection = editor.getSelection().length > 0;
+    var blockedCodeSelected = editor.getSelectedLines().filter(function(line) {
+        return line.wrapClass == 'CodeMirror-activeline-background';
+    }).length > 0;
+
+    var curLineEmpty = editor.lineInfo(curLine).text.length == 0;
+    var curLineFirstChar = curLineChar == 0;
+    var prevLineWrapClass = editor.lineInfo(prevLine).wrapClass;
 
     // Allow deleting selections, characters on the same line and previous unblocked lines
-    if (codeSelected
-        || (!curLineEmpty && !curLineFirstChar)
-        || (prevLineWrapClass != 'CodeMirror-studentline-background'
-            && prevLineWrapClass != 'CodeMirror-activeline-background')) {
+    if ((!blockedCodeSelected)
+        && ((!curLineEmpty && !curLineFirstChar)
+            || (prevLineWrapClass != 'CodeMirror-activeline-background'))) {
 
         // Resume default behaviour
         return CodeMirror.Pass;
@@ -963,25 +973,26 @@ function guardBackspace(editor) {
 }
 
 function guardDelete(editor) {
-    selection = editor.getSelection();
+    var curLine = editor.getCursor().line;
+    var curLineLen = editor.lineInfo(curLine).text.length;
+    var curLineChar = editor.getCursor().ch;
 
-    curLine = editor.getCursor().line;
-    curLineLen = editor.lineInfo(curLine).text.length;
-    curLineChar = editor.getCursor().ch;
+    var lastLine = editor.lineCount() - 1;
+    var nextLine = (curLine < lastLine) ? curLine + 1 : lastLine;
 
-    lineCount = editor.lineCount();
-    nextLine = (curLine < lineCount) ? curLine + 1 : lineCount;
+    var isSelection = editor.getSelection().length > 0;
+    var blockedCodeSelected = editor.getSelectedLines().filter(function(line) {
+        return line.wrapClass == 'CodeMirror-activeline-background';
+    }).length > 0;
 
-    codeSelected = editor.getSelection().length > 0;
-    curLineEmpty = curLineLen == 0;
-    curLineLastChar = curLineChar == curLineLen;
-    nextLineWrapClass = editor.lineInfo(nextLine).wrapClass;
+    var curLineEmpty = curLineLen == 0;
+    var curLineLastChar = curLineChar == curLineLen;
+    var nextLineWrapClass = editor.lineInfo(nextLine).wrapClass;
 
     // Allow deleting selections, characters on the same line and following unblocked lines
-    if (codeSelected
-        || (!curLineEmpty && !curLineLastChar)
-        || (nextLineWrapClass != 'CodeMirror-studentline-background'
-            && nextLineWrapClass != 'CodeMirror-activeline-background')) {
+    if ((!blockedCodeSelected)
+        && ((!curLineEmpty && !curLineLastChar)
+            || (nextLineWrapClass != 'CodeMirror-activeline-background'))) {
 
         // Resume default behaviour
         return CodeMirror.Pass;

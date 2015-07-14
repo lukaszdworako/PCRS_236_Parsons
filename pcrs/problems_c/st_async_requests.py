@@ -9,6 +9,7 @@ from problems_c.c_language import *
 from problems_c.c_utilities import *
 from problems_c.models import Problem
 import logging
+import traceback
 
 import pdb
 
@@ -84,9 +85,14 @@ def new_visualizer_details(request):
         #PROBLEM HERE---
         ret = gen.get_exec_trace(clean_code, add_params, hidden_lines_list)
 
-    except ZeroDivisionError as e:
-        ret['exception'] = str(e)
+        if "error" in ret:
+            ret = { 'exception': ret["error"]["exception"] }
 
+    except Exception as e:
+        tb = e.__traceback__
+        traceback.print_tb(tb)
+        print(e)
+        ret['exception'] = str(e)
 
     json_output = json.dumps(ret, indent=None)
     return HttpResponse(json_output)
