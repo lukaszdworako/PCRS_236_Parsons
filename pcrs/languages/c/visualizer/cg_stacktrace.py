@@ -420,7 +420,7 @@ class CVisualizer:
             is_uninit = False
 
     #Set the variables to be used in the print statements for an assignment node
-    def set_assign_vars(self, node):
+    def set_assign_vars(self, node, isUnary):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -429,7 +429,11 @@ class CVisualizer:
         global var_typerep
 
         ptr_depth = 0
-        var_name_val = (str)(node.lvalue.name)
+        if isUnary:
+            temp_name_val = node.expr.name
+        else:
+            temp_name_val = node.lvalue.name
+        var_name_val = (str)(temp_name_val)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
         var_typerep = self.primitive_types.get(type_of_var)
         #This should only happen if it's a pointer and we can't find its type
@@ -470,7 +474,7 @@ class CVisualizer:
         else:
             is_uninit = False
 
-    def set_assign_ptr_vars(self, node):
+    def set_assign_ptr_vars(self, node, isUnary):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -480,7 +484,11 @@ class CVisualizer:
         global pointing_to_type
 
         ptr_depth = 0
-        temp_node = node.lvalue
+        if isUnary:
+            temp_node = node.expr
+        else:
+            temp_node = node.lvalue
+        
         while isinstance(temp_node, c_ast.UnaryOp):
             ptr_depth += 1
             temp_node = temp_node.expr
@@ -668,17 +676,29 @@ class CVisualizer:
 
         #Otherwise it was an assignment of an already declared var
         else:
-            #pdb.set_trace()
+            #unaryop case, such as x++ 
+            if isinstance(parent[index], c_ast.UnaryOp):
+                #Case for pointers such as *x++
+                if isinstance(parent[index].expr, c_ast.UnaryOp):
+                    self.set_assign_ptr_vars(parent[index], True)
+                    self.add_after_node(parent, index, func_name, False, True, False)
+                #Non-pointer unaryops
+                else:
+                    self.set_assign_vars(parent[index], True)
+                    self.add_after_node(parent, index, func_name, False, False, False)
+
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
-            if isinstance(parent[index].lvalue, c_ast.ID):
-                self.set_assign_vars(parent[index])
-                #If it's a function call assignment for a function in our program,
-                #ensure there's a print statement in front of it too
+            elif isinstance(parent[index].lvalue, c_ast.ID):
+                self.set_assign_vars(parent[index], False)
+
                 if parent[index].lvalue.name in self.ptr_dict:
                     ptr_assign = True
                 else:
                     ptr_assign = False
+
+                #If it's a function call assignment for a function in our program,
+                #ensure there's a print statement in front of it too
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
                     self.add_after_node(parent, index, func_name, True, ptr_assign, False)
@@ -700,7 +720,7 @@ class CVisualizer:
 
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
-                self.set_assign_ptr_vars(parent[index])
+                self.set_assign_ptr_vars(parent[index], False)
                 self.add_after_node(parent, index, func_name, False, True, False)
 
     def print_stdout(self, parent, index, func_name):
