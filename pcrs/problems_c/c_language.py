@@ -92,18 +92,14 @@ class CSpecifics():
                 max_file_size = "5120"  # 5 megabytes
 
                 # Running C program in a secure environment
-                process = subprocess.call(safe_exec + " -o " + temp_output_file + " -d " + max_process_mem
-                                + " -U " + SAFEEXEC_USERID + " -G " + " -e " + temp_runtime_error_file
-                                + SAFEEXEC_GROUPID + " -T " + max_time_sec + " -F " + max_number_files
-                                + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"]
-                                + " " + test_input + " > /dev/null 2> /dev/null", shell=True)
+                cmd_str = safe_exec + " -o " + temp_output_file + " -d " + max_process_mem \
+                                + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID + " -e " \
+                                + temp_runtime_error_file + " -T " + max_time_sec + " -F " + max_number_files \
+                                + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"] \
+                                + " " + test_input + " > /dev/null 2> /dev/null"
+                process = subprocess.call(cmd_str, shell=True)
             else:
                 process = subprocess.call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file + " 2> " + temp_runtime_error_file, shell=True)
-
-            # Getting the execution output
-            f = open(temp_output_file, 'r', encoding="ISO-8859-1")
-            execution_output = f.read()
-            f.close()
 
             # Runtime error during process execution (ignore warning errors)
             if process != 0:
@@ -111,6 +107,11 @@ class CSpecifics():
                 execution_output = 'Runtime error!'
                 ret["exception_type"] = "error"
                 ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
+
+            # Getting the execution output
+            f = open(temp_output_file, 'r', encoding="ISO-8859-1")
+            execution_output = f.read()
+            f.close()
 
             # Getting the run time error output
             f = open(temp_runtime_error_file, 'r')
@@ -273,12 +274,11 @@ class CSpecifics():
 
         mod_user_script = c_visualizer.add_printf(user_script)
 
-        logger.info("--------------")
-        print(mod_user_script)
-        logger.info("--------------")
+        #logger.info("--------------")
+        #print(mod_user_script)
+        #logger.info("--------------")
         # Compile and run the modified source code and remove compiled file
         code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
-        #print(code_output.get("test_val"))
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
