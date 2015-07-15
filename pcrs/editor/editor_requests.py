@@ -32,7 +32,8 @@ def new_visualizer_details_editor(request):
         # Create a language instance
         gen = CSpecifics(add_params['user'], user_code)
 
-        ret = gen.get_exec_trace(user_code, add_params)
+        hidden_lines_list = []
+        ret = gen.get_exec_trace(user_code, add_params, hidden_lines_list)
 
     except ZeroDivisionError as e:
         ret['exception'] = str(e)
