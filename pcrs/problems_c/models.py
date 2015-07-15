@@ -61,6 +61,11 @@ class Submission(AbstractSubmission):
             # Modify compilation and warning messages suppressing hidden code
             if run["exception"] != " ":
                 run["exception"] = self.treat_exception_text(run["exception"])
+            else:
+                del(run["exception"])
+                if "runtime_error" in run and run["runtime_error"]:
+                    run["runtime_error"] = run["runtime_error"]
+
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=run['passed_test'])
             run['test_input'], run['expected_output'] = None, None

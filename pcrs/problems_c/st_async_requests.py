@@ -44,7 +44,7 @@ def visualizer_details(request):
         print("GEN IS :")
         print(gen)
         #PROBLEM HERE---
-        ret = gen.get_exec_trace(clean_code, add_params)
+        ret = gen.get_exec_trace(clean_code, add_params, [])
 
     except Exception as e:
         ret['exception'] = str(e)
@@ -85,8 +85,15 @@ def new_visualizer_details(request):
         #PROBLEM HERE---
         ret = gen.get_exec_trace(clean_code, add_params, hidden_lines_list)
 
-        if "error" in ret:
-            ret = { 'exception': ret["error"]["exception"] }
+        if 'error' in ret:
+            error = ret['error']
+            exception_msg = ""
+            if 'exception' in error:
+                exception_msg = error['exception']
+            elif 'runtime_error' in error:
+                exception_msg = error['runtime_error']
+
+            ret = { 'exception': exception_msg }
 
     except Exception as e:
         tb = e.__traceback__

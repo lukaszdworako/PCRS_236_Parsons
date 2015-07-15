@@ -74,7 +74,6 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
             function(data) {
-                alert(data)
                 executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
             },
         "json")
@@ -307,9 +306,17 @@ function handleCMessages(div_id, testcases){
         else if(bad_testcase.exception_type == "error"){
             class_type = 'alert alert-danger';
         }
+
+        var bad_testcase_message = "";
+        if("exception" in bad_testcase) {
+            bad_testcase_message = bad_testcase.exception;
+        } else if("runtime_error" in bad_testcase) {
+            bad_testcase_message = "Runtime error for input '" + bad_testcase.test_input + "':<br/>" + bad_testcase.runtime_error;
+        }
+
         $('#'+div_id)
             .find('#alert')
-            .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase.exception + '</div>');
+            .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase_message + '</div>');
     }
 }
 

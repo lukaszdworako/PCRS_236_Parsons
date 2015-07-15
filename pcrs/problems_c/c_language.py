@@ -55,6 +55,7 @@ class CSpecifics():
             'test_val' -> test output.
             'passed_test' -> boolean
             'exception' (only if exception occurs) -> exception message.
+            'runtime_error' (only if a runtime error occurs) -> error message.
             'warning' (only if warning occurs) -> warning message.
         """
         ret = {}
@@ -76,7 +77,8 @@ class CSpecifics():
                 raise CompilationError
 
             # Test input and expected output data
-            test_input = shlex.quote(str(test_input)) # Escape shell metacharacters and newlines
+            # Wrap each argument in '' and escape metacharacters
+            test_input = " ".join([shlex.quote(c) for c in test_input.split(" ")])
             expected_output = str(expected_output)
 
             if USE_SAFEEXEC:
@@ -104,17 +106,18 @@ class CSpecifics():
             f.close()
 
             # Runtime error during process execution (ignore warning errors)
-            if process != 0 and ret["exception"] == " ":
+            if process != 0:
                 print("Exit code: " + str(process))
                 execution_output = 'Runtime error!'
                 ret["exception_type"] = "error"
-                ret["exception"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
+                ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
 
             # Getting the run time error output
             f = open(temp_runtime_error_file, 'r')
             runtime_error = f.read()
             if runtime_error:
-                print("===== safeexec runtime error=====\n", runtime_error, "==========")   # To system error log. Probably better to activity log.
+                print("===== safeexec runtime error =====\n", runtime_error, "==========")   # To system error log. Probably better to activity log.
+                ret["runtime_error"] = runtime_error
             f.close()
 
             # Remove escape sequences in case of a string instance
