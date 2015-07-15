@@ -95,6 +95,9 @@ class CVisualizer:
         #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2]} 
         self.array_dict = {}
 
+        #handled_returns is a list of return nodes that have already been handled - used to check if we've handled a return or not
+        self.handled_returns = []
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -363,8 +366,9 @@ class CVisualizer:
                 self.print_funccall_not_prog(parent, index, func_name)
 
         #Case for return
+        #Will only go into this case if the return hasn't already been handled, as indicated in the handled_returns list
         elif isinstance(parent[index], c_ast.Return):
-            if index == 2:
+            if parent[index] not in self.handled_returns:
                 self.handle_return(parent, index-1, func_name)
 
         #Case for start of a function: check if it has a body and insert a print statement at the beginning
@@ -593,6 +597,7 @@ class CVisualizer:
         else:
             self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
 
+        self.handled_returns.append(parent[index+self.amt_after+1])
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False, False, False)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
