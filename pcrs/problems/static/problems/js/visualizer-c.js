@@ -519,6 +519,7 @@ function executeCVisualizer(option, data, newCode) {
         var func_location = changed_var["location"];
         var cells_needed = parseInt(changed_var["max_size"]);
         var is_new = Boolean(changed_var["new"]);
+        var is_uninitialized = Boolean(changed_var["uninitialized"]);
 
         var location = get_var_location(func_location, func_name, start_addr);
 
@@ -551,7 +552,7 @@ function executeCVisualizer(option, data, newCode) {
         group_id_to_var_name[group_id] = var_name;
 
         // Add the cell rows first
-        var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value));
+        var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized));
 
         // Append at the end if this address is greater than any currently in the table
         var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody td[addr]").filter(function() {
@@ -562,7 +563,7 @@ function executeCVisualizer(option, data, newCode) {
         insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
     }
 
-    function create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value) {
+    function create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized) {
         var end_addr = start_addr + cells_needed - 1;
         var rows_needed = (Math.floor(end_addr/4)) - (Math.floor(start_addr/4)) + 1;
 
@@ -591,7 +592,7 @@ function executeCVisualizer(option, data, newCode) {
                     hex_val_index++;
                 }
 
-                var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "");
+                var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "", is_uninitialized);
                 cell_row.appendChild(memory_map_cell);
 
                 current_cell_addr++;
@@ -615,7 +616,7 @@ function executeCVisualizer(option, data, newCode) {
                     }
                 }
 
-                var memory_map_cell = create_cell_cell(current_cell_addr, group_id, hex_value[hex_val_index], clarity_classes);
+                var memory_map_cell = create_cell_cell(current_cell_addr, group_id, hex_value[hex_val_index], clarity_classes, is_uninitialized);
                 cell_row.appendChild(memory_map_cell)
                 current_cell_addr++;
                 c++;
@@ -629,7 +630,7 @@ function executeCVisualizer(option, data, newCode) {
                     hex_val_index++;
                 }
 
-                var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "");
+                var memory_map_cell = create_cell_cell(current_cell_addr, "", cell_hex_val, "", is_uninitialized);
                 cell_row.appendChild(memory_map_cell);
                 current_cell_addr++;
                 c++;
@@ -804,6 +805,8 @@ function executeCVisualizer(option, data, newCode) {
                         var current_cell = $(current_row.children()[c]);
                         var current_cell_addr = parseInt(current_cell.attr("addr"), 16);
                         var current_cell_group_id = current_cell.attr("group-id");
+                        var is_uninitialized = current_cell.attr("uninitialized");
+
                         if(current_cell_group_id) {
                             cells_on_row_in_group = current_cell.nextUntil("td[group-id!='" + current_cell_group_id + "']").length + 1;
 
@@ -898,7 +901,7 @@ function executeCVisualizer(option, data, newCode) {
                             }
                         }
 
-                        td = create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes);
+                        td = create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes, is_uninitialized);
 
                         label_row.appendChild(td);
                         c += cells_on_row_in_group;
@@ -1128,9 +1131,14 @@ function executeCVisualizer(option, data, newCode) {
         return minimizer;
     }
 
-    function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes) {
+    function create_cell_cell(cell_addr, group_id, cell_value, clarity_classes, is_uninitialized) {
         var memory_map_cell = document.createElement("td");
         memory_map_cell.className = "memory-map-cell ";// + clarity_classes;
+        if(is_uninitialized) {
+            memory_map_cell.className += " uninitialized";
+            memory_map_cell.setAttribute("uninitialized", true);
+        }
+
         memory_map_cell.setAttribute("addr", toHexString(cell_addr));
 
         if(cell_value && cell_value != "&nbsp;") {
@@ -1150,9 +1158,13 @@ function executeCVisualizer(option, data, newCode) {
         return memory_map_cell;
     }
 
-    function create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes) {
+    function create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes, is_uninitialized) {
         var memory_map_cell = document.createElement("td");
         memory_map_cell.className = "memory-map-cell " + clarity_classes;
+        if(is_uninitialized) {
+            memory_map_cell.className += " uninitialized";
+        }
+
         memory_map_cell.colSpan = colspan;
         memory_map_cell.rowSpan = rowspan;
 
