@@ -6,7 +6,7 @@ $(document).ready(function() {
 
     check_language(code_wrapper_id);
     if (language == "c") {
-        myCodeMirrors[code_wrapper_id] = history_code_mirror(language, 'text/x-csrc', $(code_wrapper).find("#div_id_code_box"), '', false);
+        myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 'text/x-csrc', $(code_wrapper).find("#div_id_code_box"), '', false);
 
         preventDeleteLastLine(code_wrapper_id)
     }

@@ -223,6 +223,7 @@ function executeCVisualizer(option, data, newCode) {
         reset_memory_tables();
 
         // Clear the name tables
+        $('#name-table-data tbody').empty();
         $('#name-type-section').empty();
         $('#new_debugger_table_heap').empty();
 

@@ -10,7 +10,7 @@
 {% load compress %}
 {% compress js %}
     {# When another language is added modify code_mirror.js #}
-    <script src="{% static "code_mirror.js" %}"></script>
+    <script src="{% static 'code_mirror.js' %}"></script>
 
     <script type="text/javascript">
 
@@ -271,7 +271,7 @@
             if(cmh_list[id_preview_code_field] != null){
                 cmh_list[id_preview_code_field].setValue(source_code);
             }else{
-                cmh_list[id_preview_code_field] = history_code_mirror(language, language_version, $('#'+id_preview_code_field), source_code, true);
+                cmh_list[id_preview_code_field] = to_code_mirror(language, language_version, $('#'+id_preview_code_field), source_code, true);
             }
 
             $('#previewModal').on('shown.bs.modal', function() { cmh_list[id_preview_code_field].refresh(); });
@@ -304,8 +304,8 @@
             language_version = 'text/x-csrc';
 
             // Add function to submit button to update hidden field data
-            document.getElementById("submit-id-submit").setAttribute("onclick","return submitHidden();");
-            document.getElementById("submit-id-attempt").setAttribute("onclick","return submitHidden();");
+            $("#submit-id-submit").attr("onclick", "return submitHidden();");
+            $("#submit-id-attempt").attr("onclick", "return submitHidden();");
 
             // Add hidden values to submit code
             var element = document.getElementsByTagName('form')[0];
@@ -313,14 +313,16 @@
             element.innerHTML = element.innerHTML + '<input type="hidden" id="id_solution_tmp" name="solution" value=""></input>';
 
             // Append tag inclusion buttons
-            $('#div_' + id_starter_code_field).after('<a class="btn btn-danger" role="button" onclick="createTag('+"'[hidden]','[/hidden]'"+')"><span class="glyphicon glyphicon-eye-close"></span>  Hidden</a>');
-            $('#div_' + id_starter_code_field).after('<a class="btn btn-danger" role="button" onclick="createTag('+"'[blocked]','[/blocked]'"+')"><span class="glyphicon glyphicon-ban-circle"></span>  Blocked</a>&nbsp;&nbsp;&nbsp;');
-            $('#div_' + id_starter_code_field).after('<a class="btn btn-success" role="button" onclick="createTag('+"'[student_code]','[/student_code]'"+')"><span class="glyphicon glyphicon-pencil"></span>  Student Code</a>&nbsp;&nbsp;&nbsp;');
-            $('#div_' + id_starter_code_field).after('<a class="btn btn-primary" role="button" onclick="previewCode()"><span class="glyphicon glyphicon-eye-open"></span>  Preview Exercise</a>&nbsp;&nbsp;&nbsp;');
+            var starter_code_field = $('#div_' + id_starter_code_field + ' div.controls');
+            starter_code_field.after('<a class="btn btn-danger" role="button" onclick="createTag('+"'[hidden]','[/hidden]'"+')"><span class="glyphicon glyphicon-eye-close"></span>   Hidden</a>');
+            starter_code_field.after('<a class="btn btn-danger" role="button" onclick="createTag('+"'[blocked]','[/blocked]'"+')"><span class="glyphicon glyphicon-ban-circle"></span>   Blocked</a>&nbsp;&nbsp;&nbsp;');
+            starter_code_field.after('<a class="btn btn-success" role="button" onclick="createTag('+"'[student_code]','[/student_code]'"+')"><span class="glyphicon glyphicon-pencil"></span>   Student Code</a>&nbsp;&nbsp;&nbsp;');
+            starter_code_field.after('<a class="btn btn-primary" role="button" onclick="previewCode()"><span class="glyphicon glyphicon-eye-open"></span>   Preview Exercise</a>&nbsp;&nbsp;&nbsp;');
+            starter_code_field.after('<br/>');
 
             // Start code mirror for both starter code and solution fields
-            cmh_list[id_starter_code_field] = history_code_mirror(language, language_version, $('#'+id_starter_code_field), $('#'+id_starter_code_field).text(), false);
-            cmh_list[id_solution_field] = history_code_mirror(language, language_version, $('#'+id_solution_field), $('#'+id_solution_field).text(), false);
+            cmh_list[id_starter_code_field] = to_code_mirror(language, language_version, $('#'+id_starter_code_field), $('#'+id_starter_code_field).text(), false);
+            cmh_list[id_solution_field] = to_code_mirror(language, language_version, $('#'+id_solution_field), $('#'+id_solution_field).text(), false);
 
             // Set last cursor position in the editor
             last_starter_code_cursor_position = cmh_list[id_starter_code_field].getCursor();

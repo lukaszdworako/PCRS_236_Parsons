@@ -219,13 +219,13 @@ function add_history_entry(data, div_id, flag){
 
     check_language(div_id);
     if (language == "python"){
-        create_history_code_mirror("python", 3, "history_mirror_"
+        create_to_code_mirror("python", 3, "history_mirror_"
                                                 + data['problem_pk']
                                                 + "_"
                                                 + data['sub_pk']);
     }
     else{
-        create_history_code_mirror(language, false, "history_mirror_"
+        create_to_code_mirror(language, false, "history_mirror_"
                                                 + data['problem_pk']
                                                 + "_"
                                                 + data['sub_pk']);
@@ -1017,18 +1017,18 @@ $(document).ready(function() {
         check_language(all_wrappers[x].id);
         if (language == "python"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
         else if (language == "c") {
             var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
             myCodeMirrors[all_wrappers[x].id] =
-                history_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
+                to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
                     codeObj.source_code, false);
             // Debugguer declaration
             debugger_id = all_wrappers[x].id+1;
             myCodeMirrors[debugger_id] =
-                    history_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
+                    to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
                         codeObj.source_code, true);
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
 
@@ -1036,12 +1036,12 @@ $(document).ready(function() {
         }
         else if (language == "sql"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
         else if (language == "ra"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
 

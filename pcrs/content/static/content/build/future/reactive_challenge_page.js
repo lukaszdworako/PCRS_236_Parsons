@@ -33,16 +33,16 @@ var Problem = React.createClass({displayName: 'Problem',
     render: function () {
         var problem = this.props.item;
         return (
-            React.DOM.div({id: problem.id}, 
-                React.DOM.div(null, 
-                    React.DOM.h3(null, 
-                        React.DOM.span({dangerouslySetInnerHTML: {__html: problem.name}}), 
+            React.DOM.div({id: problem.id},
+                React.DOM.div(null,
+                    React.DOM.h3(null,
+                        React.DOM.span({dangerouslySetInnerHTML: {__html: problem.name}}),
                         ProblemScore({item: problem})
                     )
-                ), 
-                React.DOM.p({dangerouslySetInnerHTML: {__html: problem.description}}), 
+                ),
+                React.DOM.p({dangerouslySetInnerHTML: {__html: problem.description}}),
 
-                this.getProblemForm(problem), 
+                this.getProblemForm(problem),
 
                 React.DOM.hr(null)
             )
@@ -88,14 +88,14 @@ var ProblemScore = React.createClass({displayName: 'ProblemScore',
 
         else {
             score = (
-                React.DOM.span(null, 
-                    React.DOM.sup(null, this.state.score != null ? this.state.score : '-'), 
-                "/", 
+                React.DOM.span(null,
+                    React.DOM.sup(null, this.state.score != null ? this.state.score : '-'),
+                "/",
                     React.DOM.sub(null, maxScore)
                 ));
         }
 
-        return (React.DOM.span({title: "Progress so far", className: "align-right"}, 
+        return (React.DOM.span({title: "Progress so far", className: "align-right"},
             score
         ));
     }
@@ -170,15 +170,15 @@ var ProgrammingProblemForm = React.createClass({displayName: 'ProgrammingProblem
 
     render: function () {
         return (
-            React.DOM.div(null, 
-                React.DOM.div(null, 
-                    React.DOM.textarea({defaultValue: this.props.item.starter_code, 
-                    ref: "submission", className: "code-mirror"}), 
-                    React.DOM.button({ref: "submitButton", className: "green-button", 
-                    onClick: this.handleSubmit}, 
+            React.DOM.div(null,
+                React.DOM.div(null,
+                    React.DOM.textarea({defaultValue: this.props.item.starter_code,
+                    ref: "submission", className: "code-mirror"}),
+                    React.DOM.button({ref: "submitButton", className: "green-button",
+                    onClick: this.handleSubmit},
                     "Submit"
                     )
-                ), 
+                ),
 
                 ProgrammingProblemGrading({item: this.props.item, postRender: this.enableButton})
 
@@ -219,11 +219,11 @@ var MultipleChoiceProblemForm = React.createClass({displayName: 'MultipleChoiceP
         var component = this;
         var options = this.props.item.answer_options.map(function (option) {
             return (
-                React.DOM.span(null, 
-                    React.DOM.input({type: "checkbox", name: "anwer_options", 
-                    value: option.pk, 
-                    onChange: component.updateSelectedOptions}, 
-                         option.text, 
+                React.DOM.span(null,
+                    React.DOM.input({type: "checkbox", name: "anwer_options",
+                    value: option.pk,
+                    onChange: component.updateSelectedOptions},
+                         option.text,
                         React.DOM.br(null)
                     )
 
@@ -232,13 +232,13 @@ var MultipleChoiceProblemForm = React.createClass({displayName: 'MultipleChoiceP
         });
 
         return (
-            React.DOM.div(null, 
-                React.DOM.div(null, options, 
-                    React.DOM.button({ref: "submitButton", className: "submitBtn", 
+            React.DOM.div(null,
+                React.DOM.div(null, options,
+                    React.DOM.button({ref: "submitButton", className: "submitBtn",
                     onClick: this.handleSubmit}, "Submit")
-                ), 
+                ),
 
-                MultipleChoiceGrading({item: this.props.item, postRender: this.enableButton}), 
+                MultipleChoiceGrading({item: this.props.item, postRender: this.enableButton}),
                 MultipleChoiceSubmissionHistory({key: "history-" + this.props.item.id, item: this.props.item})
             )
 
@@ -275,7 +275,7 @@ var MultipleChoiceGrading = React.createClass({displayName: 'MultipleChoiceGradi
                 message: "This solution is not entirely correct."}));
         }
         return (
-            React.DOM.div(null, 
+            React.DOM.div(null,
                 correctness
             )
             );
@@ -302,8 +302,8 @@ var ProgrammingProblemGrading = React.createClass({displayName: 'ProgrammingProb
                 error = SubmissionErrorMessage({error: errorMessage})
             }
             return (
-                React.DOM.div(null, 
-                    correctness, 
+                React.DOM.div(null,
+                    correctness,
                     error
                 )
                 );
@@ -328,8 +328,8 @@ var ProgrammingProblemGrading = React.createClass({displayName: 'ProgrammingProb
 
     render: function () {
         return (
-            React.DOM.div(null, 
-                this.getStatusMessage(), 
+            React.DOM.div(null,
+                this.getStatusMessage(),
                 this.getGradingTable()
             )
             );
@@ -341,33 +341,33 @@ var CodeProblemTestcaseTable = React.createClass({displayName: 'CodeProblemTestc
     render: function () {
         var tableRows = this.props.testruns.map(function (testrun) {
             return (
-                React.DOM.tr({className: "pcrs-table-row"}, 
-                    React.DOM.td({className: "description"}, testrun.test_desc), 
-                    React.DOM.td({className: "expression"}, testrun.test_input || "Hidden Test", 
+                React.DOM.tr({className: "pcrs-table-row"},
+                    React.DOM.td({className: "description"}, testrun.test_desc),
+                    React.DOM.td({className: "expression"}, testrun.test_input || "Hidden Test",
                         React.DOM.div({className: "expression_div"})
 
-                    ), 
+                    ),
 
-                    React.DOM.td({className: "expected"}, testrun.expected_output || "Hidden Result", 
-                        React.DOM.div({className: "ptd"}, 
+                    React.DOM.td({className: "expected"}, testrun.expected_output || "Hidden Result",
+                        React.DOM.div({className: "ptd"},
                             React.DOM.div({className: "ExecutionVizualizer"})
                         )
-                    ), 
-                    React.DOM.td({className: "result"}, testrun.test_val), 
-                    React.DOM.div({className: "ptd"}, 
+                    ),
+                    React.DOM.td({className: "result"}, testrun.test_val),
+                    React.DOM.div({className: "ptd"},
                         React.DOM.div({className: "ExecutionVizualizer"})
-                    ), 
-                    React.DOM.td({className: "passed"}, 
-                    
-                        testrun.test_passed ?
-                            React.DOM.img({id: "dynamic", src: happyFaceURL, alt: "Happy Face", 
-                            height: "36", width: "36"}) :
-                            React.DOM.img({id: "dynamic", src: sadFaceURL, alt: "Sad Face", 
-                            height: "36", width: "36"})
-                        
+                    ),
+                    React.DOM.td({className: "passed"},
 
-                    ), 
-                    React.DOM.td({className: "debug"}, "Debug"), 
+                        testrun.test_passed ?
+                            React.DOM.img({id: "dynamic", src: happyFaceURL, alt: "Happy Face",
+                            height: "36", width: "36"}) :
+                            React.DOM.img({id: "dynamic", src: sadFaceURL, alt: "Sad Face",
+                            height: "36", width: "36"})
+
+
+                    ),
+                    React.DOM.td({className: "debug"}, "Debug"),
 
                     React.DOM.a({className: "at"}, "This testcase has __ (if failed, expected and result)")
                 )
@@ -381,19 +381,19 @@ var CodeProblemTestcaseTable = React.createClass({displayName: 'CodeProblemTestc
         });
 
         return (
-            React.DOM.div(null, 
-                React.DOM.table({className: classes}, 
-                    React.DOM.thead(null, 
-                        React.DOM.tr({className: "pcrs-table-head-row"}, 
-                            React.DOM.th({className: "description"}, "Description"), 
-                            React.DOM.th({className: "expression"}, "Test Expression"), 
-                            React.DOM.th({className: "expected"}, "Expected"), 
-                            React.DOM.th({className: "result"}, "Result"), 
-                            React.DOM.th({className: "passed"}, "Passed"), 
+            React.DOM.div(null,
+                React.DOM.table({className: classes},
+                    React.DOM.thead(null,
+                        React.DOM.tr({className: "pcrs-table-head-row"},
+                            React.DOM.th({className: "description"}, "Description"),
+                            React.DOM.th({className: "expression"}, "Test Expression"),
+                            React.DOM.th({className: "expected"}, "Expected"),
+                            React.DOM.th({className: "result"}, "Result"),
+                            React.DOM.th({className: "passed"}, "Passed"),
                             React.DOM.th({className: "debug"}, "Debug")
                         )
-                    ), 
-                    React.DOM.tbody(null, 
+                    ),
+                    React.DOM.tbody(null,
                     tableRows
                     )
                 )
@@ -414,17 +414,17 @@ var RDBProblemTestcaseTable = React.createClass({displayName: 'RDBProblemTestcas
             }
             // TODO: put tables side by side
             return (
-                React.DOM.div(null, 
-                    Table({attributes: testrun.expected_attrs, 
-                    data: testrun.expected}), 
-                    Table({attributes: testrun.actual_attrs, 
+                React.DOM.div(null,
+                    Table({attributes: testrun.expected_attrs,
+                    data: testrun.expected}),
+                    Table({attributes: testrun.actual_attrs,
                     data: testrun.actual})
                 )
                 );
         });
 
         return (
-            React.DOM.div(null, 
+            React.DOM.div(null,
                 tables
             )
             );
@@ -440,8 +440,8 @@ var ProblemStatusMessage = React.createClass({displayName: 'ProblemStatusMessage
             error = SubmissionErrorMessage({error: this.props.error});
         }
         return (
-            React.DOM.div(null, 
-                React.DOM.div({className: "ProblemStatusMessage"}, this.props.message), 
+            React.DOM.div(null,
+                React.DOM.div({className: "ProblemStatusMessage"}, this.props.message),
                 error
             )
             );
@@ -457,7 +457,7 @@ var SubmissionErrorMessage = React.createClass({displayName: 'SubmissionErrorMes
 
 var SubmissionCorrectMessage = React.createClass({displayName: 'SubmissionCorrectMessage',
     render: function () {
-        return (React.DOM.div({className: "green-alert"}, 
+        return (React.DOM.div({className: "green-alert"},
         "Correct!"
         ));
     }
@@ -465,7 +465,7 @@ var SubmissionCorrectMessage = React.createClass({displayName: 'SubmissionCorrec
 
 var SubmissionIncorrectMessage = React.createClass({displayName: 'SubmissionIncorrectMessage',
     render: function () {
-        return (React.DOM.div({className: "red-alert"}, 
+        return (React.DOM.div({className: "red-alert"},
             this.props.message
         ));
     }
@@ -483,7 +483,7 @@ var Table = React.createClass({displayName: 'Table',
 
         var tableHeader = this.props.attributes.map(function (attribute) {
             return (
-                React.DOM.th(null, 
+                React.DOM.th(null,
                     attribute
                 )
                 );
@@ -508,12 +508,12 @@ var Table = React.createClass({displayName: 'Table',
                 ;
         });
         return (
-            React.DOM.div(null, 
-                React.DOM.table(null, 
-                    React.DOM.thead(null, 
+            React.DOM.div(null,
+                React.DOM.table(null,
+                    React.DOM.thead(null,
                         React.DOM.tr(null, tableHeader)
-                    ), 
-                    React.DOM.tbody(null, 
+                    ),
+                    React.DOM.tbody(null,
                     tableRows
                     )
                 )
@@ -563,17 +563,17 @@ var Video = React.createClass({displayName: 'Video',
         }
 
         return (
-            React.DOM.div(null, 
-                React.DOM.div(null, 
+            React.DOM.div(null,
+                React.DOM.div(null,
                 this.props.item.name, " ", videoWatched
-                ), 
-                React.DOM.div({id: video.id, onClick: this.handleClick}, 
+                ),
+                React.DOM.div({id: video.id, onClick: this.handleClick},
                     React.DOM.video({
-                    className: videoClasses, 
-                    controls: true, 
-                    preload: "auto", 
-                    'data-setup': videoControls, 
-                    poster: video.thumbnail}, 
+                    className: videoClasses,
+                    controls: true,
+                    preload: "auto",
+                    'data-setup': videoControls,
+                    poster: video.thumbnail},
                         React.DOM.source({src: video.url, type: "rtmp/mp4"})
                     )
                 )
@@ -602,13 +602,13 @@ var NavigationBar = React.createClass({displayName: 'NavigationBar',
         });
 
         return (
-            React.DOM.div({className: "pcrs-sidebar", role: "complementary"}, 
-                React.DOM.ul({className: "pcrs-sidenav"}, 
-                    items, 
-                    React.DOM.a({className: "side-bar-arrow", href: data.prev_url}, 
+            React.DOM.div({className: "pcrs-sidebar", role: "complementary"},
+                React.DOM.ul({className: "pcrs-sidenav"},
+                    items,
+                    React.DOM.a({className: "side-bar-arrow", href: data.prev_url},
                         React.DOM.span({className: prevClass})
-                    ), 
-                    React.DOM.a({className: "side-bar-arrow", href: data.next_url}, 
+                    ),
+                    React.DOM.a({className: "side-bar-arrow", href: data.next_url},
                         React.DOM.span({className: nextClass})
                     )
                 )
@@ -630,8 +630,8 @@ var NavigationBarItem = React.createClass({displayName: 'NavigationBarItem',
             component = ProblemStatusIndicator({item: this.props.item})
         }
         return(
-            React.DOM.div({className: "side-bar-el"}, 
-                React.DOM.a({href: "#" + this.props.item.id}, 
+            React.DOM.div({className: "side-bar-el"},
+                React.DOM.a({href: "#" + this.props.item.id},
                 component
                 )
             )
@@ -656,30 +656,30 @@ var MultipleChoiceSubmissionHistory = React.createClass({displayName: 'MultipleC
 
         var modalID = "history_window_" + this.props.item.id;
         return (
-            React.DOM.div(null, 
-                React.DOM.div({className: "pcrs-modal-history", id: modalID, 
-                tabindex: "-1", 'aria-labelledby': "myModalLabel", 'aria-hidden': "true"}, 
-                    React.DOM.div({className: "pcrs-modal-content"}, 
+            React.DOM.div(null,
+                React.DOM.div({className: "pcrs-modal-history", id: modalID,
+                tabindex: "-1", 'aria-labelledby': "myModalLabel", 'aria-hidden': "true"},
+                    React.DOM.div({className: "pcrs-modal-content"},
 
-                        React.DOM.div({className: "pcrs-modal-header"}, 
-                            React.DOM.h4({className: "pcrs-modal-title", title: "problem History"}, "Submission History"), 
+                        React.DOM.div({className: "pcrs-modal-header"},
+                            React.DOM.h4({className: "pcrs-modal-title", title: "problem History"}, "Submission History"),
                             React.DOM.button({type: "button", className: "close", 'data-dismiss': "modal", 'aria-hidden': "false", title: "Close History"})
-                        ), 
+                        ),
 
-                        React.DOM.div({className: "pcrs-modal-body"}, 
-                            React.DOM.div({className: "pcrs-panel-group", id: "history_accordion"}, 
+                        React.DOM.div({className: "pcrs-modal-body"},
+                            React.DOM.div({className: "pcrs-panel-group", id: "history_accordion"},
                             rows
                             )
-                        ), 
-                        React.DOM.div({className: "pcrs-modal-footer"}, 
-                            React.DOM.button({type: "button", className: "reg-button", 'data-dismiss': "modal"}, "Close", 
+                        ),
+                        React.DOM.div({className: "pcrs-modal-footer"},
+                            React.DOM.button({type: "button", className: "reg-button", 'data-dismiss': "modal"}, "Close",
                                 React.DOM.span({className: "at"}, " Close History ")
                             )
                         )
                     )
-                ), 
+                ),
 
-                React.DOM.button({ref: "historyButton", dataToggle: "modal", dataTarget: "#" + modalID, className: "reg-button"}, 
+                React.DOM.button({ref: "historyButton", dataToggle: "modal", dataTarget: "#" + modalID, className: "reg-button"},
                 "History"
                 )
 
@@ -706,16 +706,16 @@ var MultipleChoiceSubmissionHistoryItem = React.createClass({displayName: 'Multi
             "collapse": true
         });
 
-        return (React.DOM.div({className: classes}, 
-                    React.DOM.div({className: "pcrs-panel-heading"}, 
-                        React.DOM.h4({className: "pcrs-panel-title"}, 
+        return (React.DOM.div({className: classes},
+                    React.DOM.div({className: "pcrs-panel-heading"},
+                        React.DOM.h4({className: "pcrs-panel-title"},
 
-                        React.DOM.a({className: "collapsed", 'data-toggle': "collapse", 'data-parent': "#history_accordion", href: "#history-"+submission.sub_pk}, 
+                        React.DOM.a({className: "collapsed", 'data-toggle': "collapse", 'data-parent': "#history_accordion", href: "#history-"+submission.sub_pk},
                             "Submission title"
                             )
                         )
-                    ), 
-                    React.DOM.div({className: collapseClasses, id: "history-"+submission.sub_pk}, 
+                    ),
+                    React.DOM.div({className: collapseClasses, id: "history-"+submission.sub_pk},
                         "submission stuff"
                     )
                ));
@@ -738,7 +738,7 @@ $.ajax({
         // TODO initialize codemirror
         // Initialize code mirror instances.
 //        $(".code-mirror").each(function (index, element) {
-//            create_history_code_mirror("python", 3, element);
+//            create_to_code_mirror("python", 3, element);
 //        });
         React.renderComponent(
             NavigationBar({items: data.items}),
