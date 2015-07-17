@@ -135,6 +135,7 @@ class CVisualizer:
         add_id_size = None
         add_return_val = None
         add_id_ptr_size = None
+        add_id_hex = None
         #pdb.set_trace()
         line_to_add = parent[index].coord.line
         if isElse:
@@ -203,9 +204,12 @@ class CVisualizer:
                 value_type_set = (str)(var_typerep)
             var_val = (str)(self.item_delimiter) +"value:" + value_type_set
 
+            if not isArray:
             #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
-            var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
-
+                var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
+            else:
+                var_hex = ""
+                 
             var_is_ptr = ""
             var_ptr_size = ""
             if isPtr:
@@ -216,8 +220,10 @@ class CVisualizer:
             var_info = var_name + var_addr +var_type + var_new + var_hex + is_global +var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size + var_val
 
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
-            add_id_val = c_ast.ID(var_name_val)
-            add_id_hex = c_ast.ID(var_name_val)
+            
+            if not isArray:
+                add_id_val = c_ast.ID(var_name_val)
+                add_id_hex = c_ast.ID(var_name_val)
 
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
@@ -225,16 +231,24 @@ class CVisualizer:
         #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + on_return + var_info + std_out + std_err
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
-        if add_id_addr != None:
-            if add_id_ptr_size != None:
-                add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_hex, add_id_size, add_id_ptr_size, add_id_val])
-            else:
-                add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_hex, add_id_size, add_id_val])
-        else:
-            if add_return_val != None:
-                add_exprList = c_ast.ExprList([add_const, add_return_val])
-            else:
-                add_exprList = c_ast.ExprList([add_const])
+
+        all_items_array = [add_const, add_id_addr, add_id_hex, add_id_size, add_id_ptr_size, add_id_val, add_return_val]
+        exprlist_array = []
+        for item in all_items_array:
+            if item != None:
+                exprlist_array.append(item)
+        add_exprList = c_ast.ExprList(exprlist_array)
+
+        # if add_id_addr != None:
+        #     if add_id_ptr_size != None:
+        #         add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_hex, add_id_size, add_id_ptr_size, add_id_val])
+        #     else:
+        #         add_exprList = c_ast.ExprList([add_const, add_id_addr, add_id_hex, add_id_size, add_id_val])
+        # else:
+        #     if add_return_val != None:
+        #         add_exprList = c_ast.ExprList([add_const, add_return_val])
+        #     else:
+        #         add_exprList = c_ast.ExprList([add_const])
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
 
@@ -541,21 +555,62 @@ class CVisualizer:
 
     def set_decl_array(self, parent, index):
         #Adding the array info to the array_dict
+
+        global to_add_index
+        #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
+        #temp_var_nodes will hold temporary int variable nodes that are initialized the first time we see the array,
+        #to be used every time we loop through this particular array
+        temp_var_nodes = []
 
         temp_array = parent[index]
         array_name = temp_array.name
         array_depth = 0
         #pdb.set_trace()
+        #Loop through the depth of the array (ie. int x[][] is depth 2)
         while isinstance(temp_array.type, c_ast.ArrayDecl):
             array_depth += 1
             temp_array = temp_array.type
 
-            var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
-            self.var_type_dict.update(var_dict_add)
-
+            #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
             level_size = self.create_new_var_node('int', temp_array.dim)
-        #print("in set decl array")
+            size_nodes.append(level_size)
+
+            #Adding a variable to hold the temporary size variables, will actually insert them into the parent after
+            temp_var_val = c_ast.Constant('int', '0')
+            temp_var_to_add = self.create_new_var_node('int', temp_var_val)
+            temp_var_nodes.append(temp_var_to_add)
+
+        #Initializing all the normal things like type and name, just like in other declarations
+
+        type_of_var = (str)(temp_array.type.type.names[0]) + ' ' + '[]'*array_depth
+        
+        #Need to decide on if I need this or not
+        var_typerep = "%p"
+
+        var_name_val = parent[index].name
+
+        var_new_val = True
+        if parent[index].init == None:
+            is_uninit = True
+        else:
+            is_uninit = False
+
+        array_dict_add = {(str)(var_name_val):[(str)(type_of_var), size_nodes, temp_var_nodes, array_depth]}
+        self.array_dict.update(array_dict_add)
+
+        #Now we're done adding it to the dictionary
+        #print(self.array_dict)
+
+        #pdb.set_trace()
+        #Initialize the temporary variables which will store size in later for loops
+        #Put them before the array decl node
+        for temp_var_node in temp_var_nodes:
+            parent.insert(index, temp_var_node)
+            to_add_index+=1
+            self.amt_after+= 1
+
+        print(self.array_dict)
 
     #Insert an assignment node, assigning the malloc size var to be the size that was malloced
     def set_malloc_size_var(self, parent, index, malloc_node):
@@ -671,7 +726,7 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
                 self.set_decl_array(parent, index)
                 print_node = self.old_create_printf_node()
-                parent.insert(index+1, print_node)
+                parent.insert(index+1+self.amt_after, print_node)
                 self.amt_after += 1
 
         #Otherwise it was an assignment of an already declared var
