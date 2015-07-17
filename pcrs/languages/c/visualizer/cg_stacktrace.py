@@ -200,16 +200,12 @@ class CVisualizer:
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
             value_type_set = "" 
+            var_hex = ""
             if not isArray:
+                var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
                 value_type_set = (str)(var_typerep)
             var_val = (str)(self.item_delimiter) +"value:" + value_type_set
 
-            if not isArray:
-            #Will pad the hex value after we run the C program, since we don't know the size of the variable yet
-                var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
-            else:
-                var_hex = ""
-                 
             var_is_ptr = ""
             var_ptr_size = ""
             if isPtr:
@@ -557,6 +553,15 @@ class CVisualizer:
         #Adding the array info to the array_dict
 
         global to_add_index
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        global var_typerep
+
+
+        ptr_depth = 0
         #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
         #temp_var_nodes will hold temporary int variable nodes that are initialized the first time we see the array,
@@ -674,14 +679,51 @@ class CVisualizer:
         self.amt_after += 1
         to_add_index += 1
 
-    def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap):
-        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, isPtr, isHeap, False, False)
+    def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False)
         #Case for global variables
         if func_name == None:
             self.global_print_nodes.append(print_node)
         else:
             parent.insert(index+1, print_node)
             self.amt_after += 1
+
+    #index here will be where we should start inserting nodes
+    def print_array_val(self, parent, index):
+        #Loop through and create foor loops nodes for each depth of the array
+        array_depth = self.array_dict.get(var_name_val)[3]
+        for_counter_nodes = self.array_dict.get(var_name_val)[2]
+        size_nodes = self.array_dict.get(var_name_val)[1]
+
+        self.for_node_recurse(for_counter_nodes, size_nodes)
+
+        for_node_list.append(new_for_node)
+
+    def for_node_recurse(self, for_counter_nodes, size_nodes):
+        cur_depth_counter = for_counter_nodes[0]
+        cur_depth_size = size_nodes[0]
+        
+        #the init part of the for loop
+        for_ID = c_ast.ID(cur_depth_counter.name)
+        for_exprlist = c_ast.ExprList(cur_depth_counter.args.exprs)
+        node_to_init = c_ast.Assignment('=', for_ID, for_exprlist)
+
+        #the condition part of the for loop
+        end_ID = c_ast.ID(cur_depth_size.name)
+        for_cond = c_ast.BinaryOp('<', for_ID, end_ID)
+
+        #the next part of the for loop
+        for_next = c_ast.UnaryOp('p++', for_ID)      
+
+        #the stment part of the for loop
+        if len(size_nodes) > 0:
+            for_statement = c_ast.Compound([self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:])])
+        else:
+            for_statement = c_ast.Compound([])
+
+        new_for_node = c_ast.For(node_to_init, for_cond, for_next, for_statement)
+
+        return new_for_node
 
     def print_changed_vars(self, parent, index, func_name, new):
         #global amt_after
@@ -694,21 +736,21 @@ class CVisualizer:
                 #ensure there's a print statement in front of it too
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
-                    self.add_after_node(parent, index, func_name, True, False, False)
+                    self.add_after_node(parent, index, func_name, True, False, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_node(parent, index, func_name, False, False, False)
+                    self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
                 self.set_decl_ptr_vars(parent[index])
                 if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
-                    self.add_after_node(parent, index, func_name, True, True, False)
+                    self.add_after_node(parent, index, func_name, True, True, False, False)
                     self.add_before_fn(parent, index, func_name)
 
                 else:
-                    self.add_after_node(parent, index, func_name, False, True, False)
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
 
                     #Case for malloc, won't be mallocing inside a function header
                     try:
@@ -725,9 +767,8 @@ class CVisualizer:
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
                 self.set_decl_array(parent, index)
-                print_node = self.old_create_printf_node()
-                parent.insert(index+1+self.amt_after, print_node)
-                self.amt_after += 1
+                self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                self.print_array_val(parent, index+self.amt_after+1)
 
         #Otherwise it was an assignment of an already declared var
         else:
@@ -736,11 +777,11 @@ class CVisualizer:
                 #Case for pointers such as *x++
                 if isinstance(parent[index].expr, c_ast.UnaryOp):
                     self.set_assign_ptr_vars(parent[index], True)
-                    self.add_after_node(parent, index, func_name, False, True, False)
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
                 #Non-pointer unaryops
                 else:
                     self.set_assign_vars(parent[index], True)
-                    self.add_after_node(parent, index, func_name, False, False, False)
+                    self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
@@ -756,10 +797,10 @@ class CVisualizer:
                 #ensure there's a print statement in front of it too
                 if isinstance(parent[index].rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(parent[index].rvalue))
-                    self.add_after_node(parent, index, func_name, True, ptr_assign, False)
+                    self.add_after_node(parent, index, func_name, True, ptr_assign, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_node(parent, index, func_name, False, ptr_assign, False)
+                    self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
 
                     #pdb.set_trace()
                      #Case for malloc, won't be mallocing inside a function header
@@ -776,7 +817,7 @@ class CVisualizer:
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
                 self.set_assign_ptr_vars(parent[index], False)
-                self.add_after_node(parent, index, func_name, False, True, False)
+                self.add_after_node(parent, index, func_name, False, True, False, False)
 
     def print_stdout(self, parent, index, func_name):
         global to_add_index
