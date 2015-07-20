@@ -345,7 +345,7 @@ class CSpecifics():
                 new_var["addr"] = self.to_hex(start_addr + (i * level_size))
                 new_var["type"] = next_type
                 new_var["new"] = True
-                new_var["hex_value"] = ar_hex_values[i]
+                new_var["hex_value"] = self.hex_pad(ar_hex_values[i], level_size)
                 new_var["invalid"] = False
                 new_var["location"] = current_var["location"]
                 new_var["max_size"] = level_size
@@ -384,11 +384,12 @@ class CSpecifics():
 
         sizes_by_level = []
         if 'array' in current_var:
-            sizes_by_level = current_var['arr_dims'].append(current_var['arr_type_size'])
+            sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
+            sizes_by_level.append(int(current_var['arr_type_size']))
 
             # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
-            current_var['value'] = ast.literal_eval(current_var['value'].replace(" ",""))
-            current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(" ",""))
+            current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']'))
+            current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(',]', ']'))
 
         else:
             current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)

@@ -183,11 +183,11 @@ class CVisualizer:
             var_addr = (str)(self.item_delimiter) +"addr:%p"
             var_type = (str)(self.item_delimiter) +"type:"+ (str)(type_of_var)
             var_new = (str)(self.item_delimiter) +"new:"+ (str)(var_new_val)
-            var_size = (str)(self.item_delimiter) +"max_size:%lu"
 
             #If on the stack, size is just the sizeof the variable name and location is stack
             location_info = "stack"
-            add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
+
+            
             #If on the heap, need to save the size of the thing we malloced in a separate variable since we can't do sizeof on heap
             if onHeap:
                 location_info = "heap"
@@ -202,11 +202,17 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
+            var_size = (str)(self.item_delimiter) +"arr_type_size:%lu"
+
             value_type_set = "" 
             var_hex = ""
+            var_isarray = (str)(self.item_delimiter) +"array:"
             if not isArray:
+                var_isarray = ""
+                var_size = (str)(self.item_delimiter) +"max_size:%lu"
                 var_hex = (str)(self.item_delimiter) +"hex_value:%lX"
                 value_type_set = (str)(var_typerep)
+
             var_val = (str)(self.item_delimiter) +"value:" + value_type_set
 
             var_is_ptr = ""
@@ -216,13 +222,17 @@ class CVisualizer:
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + pointing_to_type +'))')
 
-            var_info = var_name + var_addr +var_type + var_new + var_hex + is_global +var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size + var_val
+            var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size + var_val
 
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
             
+            add_id_size = c_ast.ID('(unsigned long)(sizeof(' + self.array_dict.get(var_name_val)[0]+'))')
+
             if not isArray:
                 add_id_val = c_ast.ID(var_name_val)
                 add_id_hex = c_ast.ID(var_name_val)
+                add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
+
 
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
@@ -706,16 +716,23 @@ class CVisualizer:
         for_counter_nodes = cur_array_dict[2]
         size_nodes = cur_array_dict[1]
 
-        new_val_node = self.for_node_recurse(for_counter_nodes, size_nodes, "val", cur_array_dict)
-        parent.insert(index, new_val_node)
+        open_bracket = self.create_printf_string('"["')
+        closed_bracket = self.create_printf_string('"]"')
 
-        hex_intro_node = self.create_printf_string('"'+self.item_delimiter + 'hex_value:"')        
-        parent.insert(index+1, hex_intro_node)
+
+        new_val_node = self.for_node_recurse(for_counter_nodes, size_nodes, "val", cur_array_dict)
+        parent.insert(index, open_bracket)
+        parent.insert(index+1, new_val_node)
+        parent.insert(index+2, closed_bracket)
+
+        hex_intro_node = self.create_printf_string('"'+self.item_delimiter + 'hex_value:["')        
+        parent.insert(index+3, hex_intro_node)
 
         new_hex_node = self.for_node_recurse(for_counter_nodes, size_nodes, "hex", cur_array_dict)
-        parent.insert(index+2, new_hex_node)
+        parent.insert(index+4, new_hex_node)
+        parent.insert(index+5, closed_bracket)
         
-        self.amt_after += 3
+        self.amt_after += 6
         
         #just calls a function that prints the values of size_nodes in a for loop
         #pass it any for counter node since it's just a temp node we'll use for the for loop
@@ -724,49 +741,26 @@ class CVisualizer:
 
     def print_size_nodes(self, size_nodes, parent, index):
     #insert a single for loop to go through the size node array
-        size_print = self.create_printf_string('"'+self.item_delimiter + 'array_dims:["')
+        size_print = self.create_printf_string('"'+self.item_delimiter + 'arr_dims:["')
         parent.insert(index, size_print)
         #just straight add a print statement to the c code parent for each size node,
         #no need to make a c for loop here
         added_size = 1
         for size_node in size_nodes:
-            size_print = self.create_printf_string('"%d,"')
+            #Don't add a comma after unless it's the last element in the list
+            if size_node == size_nodes[-1]:
+                size_print = self.create_printf_string('"%d"')
+            else:    
+                size_print = self.create_printf_string('"%d,"')
             cur_node_id = c_ast.ID(size_node.name)
             size_print.args.exprs.append(cur_node_id)
             parent.insert(index+added_size, size_print)
             added_size += 1
 
-        size_print = self.create_printf_string('"],"')
+        size_print = self.create_printf_string('"]"')
         parent.insert(index+added_size, size_print)
 
         self.amt_after += added_size+1
-
-
-
-        # for_ID = c_ast.ID(temp_for_node.name)
-        # for_exprlist = temp_for_node.init
-        # node_to_init = c_ast.Assignment('=', for_ID, for_exprlist)
-
-        # #the condition part of the for loop
-        # end_ID = c_ast.Constant('int', (str)(array_depth))
-        # for_cond = c_ast.BinaryOp('<', for_ID, end_ID)
-
-        # #the next part of the for loop
-        # for_next = c_ast.UnaryOp('p++', for_ID)      
-
-        # #the stment part of the for loop
-        # open_bracket = self.create_printf_string('"["')
-        # closed_bracket = self.create_printf_string('"],"')
-
-        # add_id = c_ast.ID('printf')
-        # add_const = c_ast.Constant('string', '"%d,"')
-
-        # for_print_stm = 
-
-        # for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
-
-        # new_for_node = c_ast.For(node_to_init, for_cond, for_next, for_statement)
-
 
     #print_type refers to whether we're printing a value, hex, or size
     def for_node_recurse(self, for_counter_nodes, size_nodes, print_type, cur_array_dict):
@@ -790,14 +784,34 @@ class CVisualizer:
         #the next part of the for loop
         for_next = c_ast.UnaryOp('p++', for_ID)      
 
-        #the stment part of the for loop
-        open_bracket = self.create_printf_string('"["')
-        closed_bracket = self.create_printf_string('"],"')
-        for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
+        if len(for_counter_nodes)>1:
+            #the stment part of the for loop
+            open_bracket = self.create_printf_string('"["')
+
+            #Adding an if statement to decide if we need a comma or not after closed bracket: only if we are not at last number in for loop
+            iftrue = self.create_printf_string('"]"')
+            iffalse = self.create_printf_string('"],"')
+
+            closed_bracket = self.check_if_last_for(for_ID, end_ID, iftrue, iffalse)
+            
+            for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
+        else:
+            for_statement = c_ast.Compound([self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict)])
 
         new_for_node = c_ast.For(node_to_init, for_cond, for_next, for_statement)
 
         return new_for_node
+
+    #Creates an if node to check if we're on the last iteration of a for loop in c - if so, does iftrue, otherwise, iffalse
+    def check_if_last_for(self, for_ID, end_ID, iftrue, iffalse):
+        num_1 = c_ast.Constant('int', '1')
+        count_subtract = c_ast.BinaryOp('-', end_ID, num_1)
+        if_cond = c_ast.BinaryOp('==', for_ID, count_subtract)
+        if_iftrue = iftrue
+        if_iffalse = iffalse
+
+        return c_ast.If(if_cond, if_iftrue, if_iffalse)
+
 
     #this function creates a simple printf node with a string value as specified in its arguments
     def create_printf_string(self, str_value):
