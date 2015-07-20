@@ -167,6 +167,7 @@ function executeCVisualizer(option, data, newCode) {
                     json_index = -1;
                     // Reset the memory map tables
                     reset_memory_tables();
+                    add_globals();
 
                     // Clear the name tables
                     $('#name-table-data tbody').empty();
