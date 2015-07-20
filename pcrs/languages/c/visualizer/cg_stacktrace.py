@@ -98,6 +98,9 @@ class CVisualizer:
         #handled_returns is a list of return nodes that have already been handled - used to check if we've handled a return or not
         self.handled_returns = []
 
+        #Delimiter to keep track of where array hex value begins
+        self.array_hex_delim = uuid.uuid4().hex
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -585,10 +588,10 @@ class CVisualizer:
             temp_var_val = c_ast.Constant('int', '0')
             temp_var_to_add = self.create_new_var_node('int', temp_var_val)
             temp_var_nodes.append(temp_var_to_add)
-
+        #pdb.set_trace()
         #Initializing all the normal things like type and name, just like in other declarations
-
-        type_of_var = (str)(temp_array.type.type.names[0]) + ' ' + '[]'*array_depth
+        clean_array_type = (str)(temp_array.type.type.names[0])
+        type_of_var = clean_array_type + ' ' + '[]'*array_depth
         
         #Need to decide on if I need this or not
         var_typerep = "%p"
@@ -601,7 +604,7 @@ class CVisualizer:
         else:
             is_uninit = False
 
-        array_dict_add = {(str)(var_name_val):[(str)(type_of_var), size_nodes, temp_var_nodes, array_depth]}
+        array_dict_add = {(str)(var_name_val):[(str)(clean_array_type), size_nodes, temp_var_nodes, array_depth]}
         self.array_dict.update(array_dict_add)
 
         #Now we're done adding it to the dictionary
@@ -614,6 +617,12 @@ class CVisualizer:
             parent.insert(index, temp_var_node)
             to_add_index+=1
             self.amt_after+= 1
+
+        #Initialize the size variables as well
+        for size_node in size_nodes:
+            parent.insert(index, size_node)
+            to_add_index+=1
+            self.amt_after+= 1        
 
         print(self.array_dict)
 
@@ -689,41 +698,148 @@ class CVisualizer:
             self.amt_after += 1
 
     #index here will be where we should start inserting nodes
-    def print_array_val(self, parent, index):
+    #prints value, hex, and size arrays by adding for loop nodes
+    def print_array_extra_nodes(self, parent, index):
         #Loop through and create foor loops nodes for each depth of the array
-        array_depth = self.array_dict.get(var_name_val)[3]
-        for_counter_nodes = self.array_dict.get(var_name_val)[2]
-        size_nodes = self.array_dict.get(var_name_val)[1]
+        cur_array_dict = self.array_dict.get(var_name_val)
+        array_depth = cur_array_dict[3]
+        for_counter_nodes = cur_array_dict[2]
+        size_nodes = cur_array_dict[1]
 
-        self.for_node_recurse(for_counter_nodes, size_nodes)
+        new_val_node = self.for_node_recurse(for_counter_nodes, size_nodes, "val", cur_array_dict)
+        parent.insert(index, new_val_node)
 
-        for_node_list.append(new_for_node)
+        hex_intro_node = self.create_printf_string('"'+self.item_delimiter + 'hex_value:"')        
+        parent.insert(index+1, hex_intro_node)
 
-    def for_node_recurse(self, for_counter_nodes, size_nodes):
-        cur_depth_counter = for_counter_nodes[0]
-        cur_depth_size = size_nodes[0]
+        new_hex_node = self.for_node_recurse(for_counter_nodes, size_nodes, "hex", cur_array_dict)
+        parent.insert(index+2, new_hex_node)
         
+        self.amt_after += 3
+        
+        #just calls a function that prints the values of size_nodes in a for loop
+        #pass it any for counter node since it's just a temp node we'll use for the for loop
+        self.print_size_nodes(size_nodes, parent, index+3)
+
+
+    def print_size_nodes(self, size_nodes, parent, index):
+    #insert a single for loop to go through the size node array
+        size_print = self.create_printf_string('"'+self.item_delimiter + 'array_dims:["')
+        parent.insert(index, size_print)
+        #just straight add a print statement to the c code parent for each size node,
+        #no need to make a c for loop here
+        added_size = 1
+        for size_node in size_nodes:
+            size_print = self.create_printf_string('"%d,"')
+            cur_node_id = c_ast.ID(size_node.name)
+            size_print.args.exprs.append(cur_node_id)
+            parent.insert(index+added_size, size_print)
+            added_size += 1
+
+        size_print = self.create_printf_string('"],"')
+        parent.insert(index+added_size, size_print)
+
+        self.amt_after += added_size+1
+
+
+
+        # for_ID = c_ast.ID(temp_for_node.name)
+        # for_exprlist = temp_for_node.init
+        # node_to_init = c_ast.Assignment('=', for_ID, for_exprlist)
+
+        # #the condition part of the for loop
+        # end_ID = c_ast.Constant('int', (str)(array_depth))
+        # for_cond = c_ast.BinaryOp('<', for_ID, end_ID)
+
+        # #the next part of the for loop
+        # for_next = c_ast.UnaryOp('p++', for_ID)      
+
+        # #the stment part of the for loop
+        # open_bracket = self.create_printf_string('"["')
+        # closed_bracket = self.create_printf_string('"],"')
+
+        # add_id = c_ast.ID('printf')
+        # add_const = c_ast.Constant('string', '"%d,"')
+
+        # for_print_stm = 
+
+        # for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
+
+        # new_for_node = c_ast.For(node_to_init, for_cond, for_next, for_statement)
+
+
+    #print_type refers to whether we're printing a value, hex, or size
+    def for_node_recurse(self, for_counter_nodes, size_nodes, print_type, cur_array_dict):
+        if len(for_counter_nodes) > 0:
+            cur_depth_counter = for_counter_nodes[0]
+            cur_depth_size = size_nodes[0]
+        else:
+            print_node = self.create_printf_arr_val(cur_array_dict, print_type)
+            return print_node
+
+        #pdb.set_trace()
         #the init part of the for loop
         for_ID = c_ast.ID(cur_depth_counter.name)
-        for_exprlist = c_ast.ExprList(cur_depth_counter.args.exprs)
+        for_exprlist = cur_depth_counter.init
         node_to_init = c_ast.Assignment('=', for_ID, for_exprlist)
 
         #the condition part of the for loop
         end_ID = c_ast.ID(cur_depth_size.name)
-        for_cond = c_ast.BinaryOp('<', for_ID, end_ID)
+        for_cond = c_ast.BinaryOp('<', for_ID, end_ID)  
 
         #the next part of the for loop
         for_next = c_ast.UnaryOp('p++', for_ID)      
 
         #the stment part of the for loop
-        if len(size_nodes) > 0:
-            for_statement = c_ast.Compound([self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:])])
-        else:
-            for_statement = c_ast.Compound([])
+        open_bracket = self.create_printf_string('"["')
+        closed_bracket = self.create_printf_string('"],"')
+        for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
 
         new_for_node = c_ast.For(node_to_init, for_cond, for_next, for_statement)
 
         return new_for_node
+
+    #this function creates a simple printf node with a string value as specified in its arguments
+    def create_printf_string(self, str_value):
+        add_id = c_ast.ID('printf')
+        add_const = c_ast.Constant('string', (str)(str_value))
+        add_exprList = c_ast.ExprList([add_const])
+        new_node = c_ast.FuncCall(add_id, add_exprList)
+        return new_node
+
+    #this function creates a printf node of an array value, either regular or hex
+    def create_printf_arr_val(self, cur_array_dict, print_type):
+        #pdb.set_trace()
+        #if printing the regular values, print them based on the array's initialized type
+        if print_type == "val":
+            arr_type = cur_array_dict[0]
+            print_notation = '"\''+(str)(self.primitive_types.get(arr_type))+'\',"'
+        #otherwise if printing hex values, print them in hex format
+        elif print_type == "hex":
+            print_notation = '"\'%lX\',"'
+
+        add_id = c_ast.ID('printf')
+        add_const = c_ast.Constant('string', (str)(print_notation))
+
+        #Call a function to recursively add array refs, passing in the temp for loop nodes
+        all_array_refs = self.add_array_refs(cur_array_dict[2])
+
+        add_exprList = c_ast.ExprList([add_const, all_array_refs])
+        new_node = c_ast.FuncCall(add_id, add_exprList)
+        return new_node
+
+    #recursively adds the array ref nodes to be used in the print statement formed above. 
+    #ie: to print x[temp1][temp2] in a for loop, we need to recursively add temp1 and temp2 "arrayref" nodes
+    def add_array_refs(self, temp_for_nodes):
+        if len(temp_for_nodes)<1:
+            return c_ast.ID(var_name_val)
+
+        ref_name = self.add_array_refs(temp_for_nodes[:-1])
+        ref_script = c_ast.ID(temp_for_nodes[-1].name)
+
+        return c_ast.ArrayRef(ref_name, ref_script)
+
+    
 
     def print_changed_vars(self, parent, index, func_name, new):
         #global amt_after
@@ -768,7 +884,7 @@ class CVisualizer:
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
                 self.set_decl_array(parent, index)
                 self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
-                self.print_array_val(parent, index+self.amt_after+1)
+                self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
         #Otherwise it was an assignment of an already declared var
         else:
@@ -955,5 +1071,5 @@ class CVisualizer:
 
         #Turning the new ast back into C code
         generator = c_generator.CGenerator()
-
+        print(generator.visit(ast))
         return generator.visit(ast)
