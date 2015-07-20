@@ -19,6 +19,7 @@ from hashlib import sha1
 from re import finditer, search
 import re
 import bisect
+from problems_c.c_utilities import *
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -254,7 +255,7 @@ class Submission(AbstractSubmission):
 
             # Create variable mod_submission to handle the fusion of student code with starter_code from the database
             self.mod_submission = self.problem.starter_code
-            last_tag_size = len('[/student_code]') + 1
+            last_tag_size = len('[/student_code]') + 2
             for student_code in student_code_list:
                 self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
                                         student_code +\

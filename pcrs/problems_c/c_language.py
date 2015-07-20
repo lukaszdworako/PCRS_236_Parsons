@@ -7,6 +7,7 @@ import logging
 import string
 import re
 from operator import mul
+from functools import reduce
 import shlex
 import ast
 
@@ -296,7 +297,7 @@ class CSpecifics():
 
 
     def to_hex(self, dec_num):
-        return hex_pad(hex(dec_num)[2:], 8)
+        return self.hex_pad(hex(dec_num)[2:], 8)
 
     def hex_pad(self, value, length):
         # Length is in bytes
@@ -330,7 +331,7 @@ class CSpecifics():
             base_size = sizes_by_level[len(sizes_by_level)-1]
 
             # Multiply the rest of the sizes to get the size of an element at this level
-            level_size = reduce(mul, sizes_by_level[0+(level-1):], 1)
+            level_size = reduce(mul, sizes_by_level[len(sizes_by_level) - level:], 1)
 
             # Turn everything inside the opening and closing brackets into an array
             ar_values = value
@@ -341,7 +342,7 @@ class CSpecifics():
             for i in range(len(ar_values)):
                 new_var = {}
                 new_var["var_name"] = ""
-                new_var["addr"] = to_hex(start_addr + (i * level_size))
+                new_var["addr"] = self.to_hex(start_addr + (i * level_size))
                 new_var["type"] = next_type
                 new_var["new"] = True
                 new_var["hex_value"] = ar_hex_values[i]
@@ -354,12 +355,12 @@ class CSpecifics():
                 new_var["ptr_size"] = base_size if is_ptr else 0
 
                 new_var["value"] = ar_values[i]
-                new_var["value"] = self.parse_value(new_var)
+                new_var["value"] = self.parse_value(new_var, sizes_by_level)
 
                 new_values_array.append(new_var)
 
             return new_values_array
-            pass
+
         else:
             # Pointers values must always be as wide as an address
             if '*' in value_type:
@@ -379,18 +380,15 @@ class CSpecifics():
         del(current_var['line'])
         del(current_var['function'])
 
-
         current_var['addr'] = self.hex_pad(current_var['addr'][2:], self.max_addr_size)
 
         sizes_by_level = []
         if 'array' in current_var:
             sizes_by_level = current_var['arr_dims'].append(current_var['arr_type_size'])
 
-            # TODO: Split by the hex_value hash and use that for the hex value
-            hex_value = ''
-
-            current_var['value'] = ast.literal_evals(current_var['value'].replace(" ",""))
-            current_var['hex_value'] = ast.literal_evals(current_var['hex_value'].replace(" ",""))
+            # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
+            current_var['value'] = ast.literal_eval(current_var['value'].replace(" ",""))
+            current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(" ",""))
 
         else:
             current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)

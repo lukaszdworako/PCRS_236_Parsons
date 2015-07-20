@@ -184,6 +184,21 @@ div.memory-map-table-wrapper td.memory-map-cell {
     border: 1px solid @border-color;
 }
 
+div#name-type-section table {
+    width: 100%;
+}
+div#name-type-section tbody td {
+    max-width: 0;
+    .hide-overflow;
+}
+
+div#name-type-section td.var-name {
+    width: 60%;
+}
+div#name-type-section td.var-type {
+    width: 40%;
+}
+
 table.memory-map-cell-table .memory-map-cell {
     border-left: none;
 }
@@ -285,4 +300,8 @@ a.small-minimizer {
 h3 .minimizer {
     // If someone can figure out a better way to vertically center this godforsaken, hellspawned anchor, please do it
     transform: translateY(21%);
+}
+
+td.uninitialized {
+    background-color: #f2dede;
 }

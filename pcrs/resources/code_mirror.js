@@ -1,11 +1,11 @@
-function create_history_code_mirror (language, version, location){
-    hcm = history_code_mirror(language, version, $('#'+location), $('#'+location).text(), true);
+function create_to_code_mirror (language, version, location){
+    hcm = to_code_mirror(language, version, $('#'+location), $('#'+location).text(), true);
     if (!(location in cmh_list)){
         cmh_list[location] = hcm;
     }
 }
 
-function history_code_mirror (language, version, location, value, lock){
+function to_code_mirror (language, version, location, value, lock){
 
     var mode;
     if (language == 'python'){
