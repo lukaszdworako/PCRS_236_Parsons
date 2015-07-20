@@ -296,11 +296,13 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         else if(update_type == "prev") {
+            // This just recreates the memory tables from the beginning up to one step before
+            remove_from_memory_table();
+
             //Process JSON here to go backward a line
             if(json_step.hasOwnProperty('changed_vars')) {
                 remove_from_name_table(json_step);
                 remove_from_val_list(json_step);
-                remove_from_memory_table(json_step);
                 //Case where it's a function return
             }
             //Case where it has standard output
@@ -343,7 +345,8 @@ function executeCVisualizer(option, data, newCode) {
         for(var i = 0; i < global_amt; i++) {
             //Include global vars
             var global_var = globals[i];
-            add_one_var_to_memory_table(global_var);
+            var var_group_id = get_var_group_id(Boolean(global_var["new"]), global_var["var_name"])
+            add_one_var_to_memory_table(global_var, "", var_group_id);
             add_one_var_to_name_table(global_var);
             add_one_var_to_val_list(global_var);
         }
@@ -506,12 +509,27 @@ function executeCVisualizer(option, data, newCode) {
         var changed_vars = json_step.changed_vars;
         var func_name = json_step["function"];
         for(var i=0; i < changed_vars.length; i++) {
-            add_one_var_to_memory_table(changed_vars[i], func_name);
+            var var_group_id = get_var_group_id(Boolean(changed_vars[i]["new"]), changed_vars[i]["var_name"])
+            add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
         }
     }
 
-    function add_one_var_to_memory_table(changed_var, func_name) {
-        // Store values for possible use later
+    function get_var_group_id(is_new, var_name) {
+        // Figure out the variable's group_id
+        var group_id;
+        if(is_new) {
+            group_id = largest_group_id;
+            largest_group_id++;
+        } else {
+            // Find it in the tables
+            group_id = var_name_to_group_id[var_name];
+        }
+
+        return group_id;
+    }
+
+    function add_one_var_to_memory_table(changed_var, func_name, group_id) {
+        // Store values for use later
         var var_name = changed_var["var_name"];
         var start_addr = parseInt(changed_var["addr"], 16);
         var value = changed_var["value"];
@@ -529,38 +547,31 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         if(value.constructor === Array) {
-            // TODO: Treat each value in the array as its own variable and insert individually
-        }
+            // Treat each value in the array as its own variable and insert individually, but with the same group_id
+            for(var i = 0; i < value.length; i++) {
+                add_one_var_to_memory_table(value[i], func_name, group_id)
+            }
 
-        // Figure out the variable's group_id
-        var group_id;
-        if(is_new) {
-            group_id = largest_group_id;
-            largest_group_id++;
         } else {
-            // Find it in the tables
-            group_id = var_name_to_group_id[var_name];
+            // Insert a single variable with a regular value, not an array
+
+            // Update all the relevant info maps
+            group_id_vals[group_id] = value;
+
+            group_id_to_start_addr[group_id] = start_addr;
+            start_addr_to_group_id[start_addr] = group_id;
+
+            var_name_to_group_id[var_name] = group_id;
+            group_id_to_var_name[group_id] = var_name;
+
+            // Add the cell rows first
+            var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized));
+
+            // Append as the first element if nothing else is in the table right now
+            var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody td[addr]").length == 0;
+
+            insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
         }
-
-        // Update all the relevant info maps
-        group_id_vals[group_id] = value;
-
-        group_id_to_start_addr[group_id] = start_addr;
-        start_addr_to_group_id[start_addr] = group_id;
-
-        var_name_to_group_id[var_name] = group_id;
-        group_id_to_var_name[group_id] = var_name;
-
-        // Add the cell rows first
-        var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized));
-
-        // Append at the end if this address is greater than any currently in the table
-        var simply_append_rows = $(location + " > table.memory-map-cell-table > tbody td[addr]").filter(function() {
-                return parseInt($(this).attr('addr'), 16) > start_addr;
-
-        }).length == 0;
-
-        insert_cell_rows(location, start_addr, cells_needed, new_var_cell_rows, simply_append_rows);
     }
 
     function create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized) {
@@ -726,23 +737,28 @@ function executeCVisualizer(option, data, newCode) {
                 var existing_row = location_table.find("tr[start-addr='" + current_start_addr + "']");
                 var i = 0;
                 while(current_row.children().length > 0) {
+                    var new_cell_group_id = current_row.children().first().attr("group-id");
+
                     // Only cells with a group-id count as part of the actual variable, the rest are ignored
-                    if(current_row.children().first().attr("group-id")) {
+                    // If the old cell is uninitialized and the new value is the same, keep it
+                    if(new_cell_group_id) {
+
                         $(existing_row.children()[i]).replaceWith(current_row.children().first());
                     } else {
                         $(current_row.children()[0]).remove();
                     }
+
                     i++;
                 }
+
+                // The cells have been extracted, but the <tr></tr> needs to be removed as well
+                $(new_var_rows.children()[0]).remove();
 
             } else {
                 // Simply append the row to insert_row
                 current_row.insertAfter(insert_row);
                 insert_row = insert_row.next();
             }
-
-            $(new_var_rows.children()[0]).remove();
-
         }
 
         // Insert a dot row after the last address if it is too far from the next address
@@ -1147,6 +1163,7 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         memory_map_cell.innerHTML = cell_value;
+        memory_map_cell.setAttribute("title", cell_value);
 
         if(group_id) {
             $(memory_map_cell).hover(
@@ -1554,15 +1571,16 @@ function executeCVisualizer(option, data, newCode) {
         $("#stack-frame-tables").empty();
     }
 
-    function remove_from_memory_table(json_step) {
+    function remove_from_memory_table() {
         // Nuke all memory tables and rebuild them up to the previous step
         reset_memory_tables();
 
-        // Readd the global variables just to the memory map; the name table and value list are handles separately
+        // Re-add the global variables just to the memory map; the name table and value list are handled separately
         globals = debugger_data["global_vars"];
         global_amt = globals.length;
         for(var i = 0; i < global_amt; i++) {
-            add_one_var_to_memory_table(globals[i]);
+            var var_group_id = get_var_group_id(Boolean(globals[i]["new"]), globals[i]["var_name"])
+            add_one_var_to_memory_table(globals[i], "", var_group_id);
         }
 
         var last_step = json_index-1;
