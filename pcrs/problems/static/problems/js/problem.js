@@ -37,8 +37,10 @@ function bindNewDebugButton(buttonId) {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         console.log("test case code is "+ testcaseCode);
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId, "new")}, 250
-        );
+            $('#waitingModal').modal('show');
+            prepareVisualizer("debug", testcaseCode, buttonId, "new")
+            $('#waitingModal').modal('hide');
+        }, 250);
     });
 }
 
