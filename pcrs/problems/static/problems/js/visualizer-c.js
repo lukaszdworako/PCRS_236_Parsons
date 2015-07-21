@@ -547,8 +547,10 @@ function executeCVisualizer(option, data, newCode) {
 
         if(value.constructor === Array) {
             var array_group_id = group_id;
-            var_name_to_group_id[var_name] = array_group_id;
-            group_id_to_var_name[array_group_id] = var_name;
+            if(var_name) {
+                var_name_to_group_id[var_name] = array_group_id;
+                group_id_to_var_name[array_group_id] = var_name;
+            }
 
             // Treat each value in the array as its own variable and insert individually, but with the same group_id
             for(var i = 0; i < value.length; i++) {
