@@ -315,7 +315,6 @@ class CSpecifics():
         value = current_var['value']
         hex_value = current_var['hex_value']
         value_type = current_var['type']
-        is_uninitialized = current_var['uninitialized']
 
         # Collapse spaces to judge the type accurately
         value_type = value_type.replace(" ", "")
@@ -345,12 +344,12 @@ class CSpecifics():
                 new_var["var_name"] = ""
                 new_var["addr"] = self.to_hex(start_addr + (i * level_size))
                 new_var["type"] = next_type
-                new_var["new"] = True
+                new_var["new"] = current_var["new"]
                 new_var["hex_value"] = self.hex_pad(ar_hex_values[i], level_size) if level == 1 else ar_hex_values[i]
                 new_var["invalid"] = False
                 new_var["location"] = current_var["location"]
                 new_var["max_size"] = level_size
-                new_var["uninitialized"] = is_uninitialized
+                new_var["uninitialized"] = current_var["uninitialized"]
 
                 is_ptr = (level == 1) and (next_type.count('*') > 0)
                 new_var["is_ptr"] = is_ptr

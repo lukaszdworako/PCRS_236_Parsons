@@ -18,6 +18,7 @@ var most_recently_entered = "";
 // Used for the memory map
 var largest_array_id;
 var largest_group_id;
+var array_id_counter;
 var group_id_vals = {};
 var group_id_to_start_addr = {};
 var start_addr_to_group_id = {};
@@ -531,6 +532,19 @@ function executeCVisualizer(option, data, newCode) {
         return group_id;
     }
 
+    function get_var_array_id(group_id) {
+        var existing_array_id = group_id_to_array_id[group_id];
+        if(existing_array_id) {
+            return existing_array_id;
+
+        } else {
+            var array_id = largest_array_id;
+            largest_array_id++;
+
+            return array_id;
+        }
+    }
+
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {
         // Store values for use later
         var var_name = changed_var["var_name"];
@@ -550,24 +564,34 @@ function executeCVisualizer(option, data, newCode) {
 
         if(value.constructor === Array) {
             var array_group_id = group_id;
+
+            // Top level of a nested array
             if(var_name) {
                 var_name_to_group_id[var_name] = array_group_id;
                 group_id_to_var_name[array_group_id] = var_name;
+
+                array_id_counter = array_group_id;
             }
 
             if(!array_id) {
-                array_id = largest_array_id;
-                largest_array_id++;
+                array_id = get_var_array_id(array_group_id);
 
                 group_id_to_array_id[array_group_id] = array_id;
                 array_id_to_group_id[array_id] = array_group_id;
             }
 
-            // Treat each value in the array as its own variable and insert individually, but with the same group_id
+            // Treat each value in the array as its own variable and insert individually, but with the same array-id
             for(var i = 0; i < value.length; i++) {
-                //add_one_var_to_memory_table(value[i], func_name, group_id)
-                add_one_var_to_memory_table(value[i], func_name, array_group_id, array_id);
-                array_group_id = get_var_group_id(is_new, var_name);
+                //array_group_id = get_var_group_id(is_new, var_name);
+                add_one_var_to_memory_table(value[i], func_name, array_id_counter, array_id);
+
+                if(value[i]["value"].constructor !== Array) {
+                    // Group ids in arrays should be sequential because we can't assign names to inner arrays
+                    array_id_counter++;
+                    if(array_id_counter > largest_group_id) {
+                        largest_group_id++;
+                    }
+                }
             }
 
         } else {

@@ -19,7 +19,7 @@ hr {
 
 #visualizer-section-wrapper {
     display: flex;
-    flex-flow: row wrap;
+    -webkit-flex-flow: row wrap;
     justify-content: space-between;
 }
 
@@ -27,7 +27,7 @@ hr {
     margin: 5px;
     padding: 10px;
     vertical-align: top;
-    flex-grow: 1;
+    -webkit-flex-grow: 1;
     overflow-y: auto;
     max-height: 800px;
 }
@@ -40,13 +40,13 @@ hr {
 .name-type-section {
     .visualizer-section;
     min-width: 328px;
-    flex: 0 0 20%;
+    -webkit-flex: 0 0 20%;
 }
 
 .memory-map-section {
     .visualizer-section;
     min-width: 412px;
-    flex: 0 0 26%;
+    -webkit-flex: 0 0 26%;
 }
 
 .memory-map-section td {
