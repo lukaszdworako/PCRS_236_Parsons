@@ -139,7 +139,6 @@ class CVisualizer:
         add_return_val = None
         add_id_ptr_size = None
         add_id_hex = None
-        #pdb.set_trace()
         line_to_add = parent[index].coord.line
         if isElse:
             line_to_add -= 1
@@ -225,14 +224,13 @@ class CVisualizer:
             var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_size + var_is_ptr + var_ptr_size + var_val
 
             add_id_addr = c_ast.ID('&(' + var_name_val+')')
-            
-            add_id_size = c_ast.ID('(unsigned long)(sizeof(' + self.array_dict.get(var_name_val)[0]+'))')
 
             if not isArray:
                 add_id_val = c_ast.ID(var_name_val)
                 add_id_hex = c_ast.ID(var_name_val)
                 add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
-
+            else:
+                add_id_size = c_ast.ID('(unsigned long)(sizeof(' + self.array_dict.get(var_name_val)[0]+'))')
 
             var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
             self.var_type_dict.update(var_dict_add)
@@ -287,7 +285,6 @@ class CVisualizer:
     #Splits up the AST by function, continues to recurse if a node has a compound node
     def recurse_by_function(self, ast):
         i = 0
-        #pdb.set_trace()
         while i < len(ast.ext):
             func_name = None
             if isinstance(ast.ext[i], c_ast.FuncDef):
@@ -310,9 +307,7 @@ class CVisualizer:
             return
 
         ast_function = parent[index]
-        #print(ast_function)
-        #print(ast_function.coord)
-        #pdb.set_trace()
+
         self.handle_nodetypes(parent, index, func_name)
         try:
             compound_list = ast_function.body.block_items
@@ -322,7 +317,6 @@ class CVisualizer:
             except AttributeError:
                 try:
                     if_compound_list = [ast_function.iftrue.block_items]
-                    #pdb.set_trace()
                     compound_list = []
                     #Append any "if false" part of the if statement if exists
                     try:
@@ -545,7 +539,6 @@ class CVisualizer:
         global is_uninit
         global var_typerep
 
-        #pdb.set_trace()
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
@@ -573,7 +566,6 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
-
         ptr_depth = 0
         #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
@@ -584,7 +576,6 @@ class CVisualizer:
         temp_array = parent[index]
         array_name = temp_array.name
         array_depth = 0
-        #pdb.set_trace()
         #Loop through the depth of the array (ie. int x[][] is depth 2)
         while isinstance(temp_array.type, c_ast.ArrayDecl):
             array_depth += 1
@@ -598,7 +589,12 @@ class CVisualizer:
             temp_var_val = c_ast.Constant('int', '0')
             temp_var_to_add = self.create_new_var_node('int', temp_var_val)
             temp_var_nodes.append(temp_var_to_add)
-        #pdb.set_trace()
+
+        #keep looping through in case it's a pointer array until we get to the bottom level
+        while isinstance(temp_array.type, c_ast.PtrDecl):
+            ptr_depth += 1
+            temp_array = temp_array.type
+
         #Initializing all the normal things like type and name, just like in other declarations
         clean_array_type = (str)(temp_array.type.type.names[0])
         type_of_var = clean_array_type + ' ' + '[]'*array_depth
@@ -618,9 +614,8 @@ class CVisualizer:
         self.array_dict.update(array_dict_add)
 
         #Now we're done adding it to the dictionary
-        #print(self.array_dict)
+        print(self.array_dict)
 
-        #pdb.set_trace()
         #Initialize the temporary variables which will store size in later for loops
         #Put them before the array decl node
         for temp_var_node in temp_var_nodes:
@@ -677,7 +672,6 @@ class CVisualizer:
     def handle_return(self, parent, index, func_name):
         global return_node_name
         #First create a new variable above the return statement which contains the return value
-        #pdb.set_trace()
         #If we aren't actually returning anything, just set return_node_name to None, so we won't look for a value in create_printf_node
         if parent[index+self.amt_after+1].expr == None:
             return_node_name = None
@@ -771,7 +765,6 @@ class CVisualizer:
             print_node = self.create_printf_arr_val(cur_array_dict, print_type)
             return print_node
 
-        #pdb.set_trace()
         #the init part of the for loop
         for_ID = c_ast.ID(cur_depth_counter.name)
         for_exprlist = cur_depth_counter.init
@@ -823,7 +816,6 @@ class CVisualizer:
 
     #this function creates a printf node of an array value, either regular or hex
     def create_printf_arr_val(self, cur_array_dict, print_type):
-        #pdb.set_trace()
         #if printing the regular values, print them based on the array's initialized type
         if print_type == "val":
             arr_type = cur_array_dict[0]
@@ -885,7 +877,6 @@ class CVisualizer:
                     #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].init.name.name == 'malloc':
-                            #pdb.set_trace()
                             self.set_heap_vars(parent, index, parent[index].name, parent[index].init)
 
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False)
@@ -932,11 +923,9 @@ class CVisualizer:
                 else:
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
 
-                    #pdb.set_trace()
                      #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].rvalue.name.name == 'malloc':
-                            #pdb.set_trace()
                             self.set_heap_vars(parent, index, parent[index].lvalue.name, parent[index].rvalue)
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False)
                             parent.insert(index+1+self.amt_after, print_node)  
@@ -1008,7 +997,6 @@ class CVisualizer:
                 is_void = True
         except:
             pass
-        #pdb.set_trace()
         #Check if the node contains a param list: if so, add the params as changed (declared) vars
         if isinstance(parent[index].decl.type.args, c_ast.ParamList) and not(is_void):
             #Loop through all the variables in the header, each of them will be handled as a declaration node
