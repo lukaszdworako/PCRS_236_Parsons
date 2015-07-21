@@ -345,7 +345,7 @@ class CSpecifics():
                 new_var["addr"] = self.to_hex(start_addr + (i * level_size))
                 new_var["type"] = next_type
                 new_var["new"] = True
-                new_var["hex_value"] = self.hex_pad(ar_hex_values[i], level_size)
+                new_var["hex_value"] = self.hex_pad(ar_hex_values[i], level_size) if level == 1 else ar_hex_values[i]
                 new_var["invalid"] = False
                 new_var["location"] = current_var["location"]
                 new_var["max_size"] = level_size

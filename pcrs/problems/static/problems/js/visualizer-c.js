@@ -546,10 +546,15 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         if(value.constructor === Array) {
+            var array_group_id = group_id;
+            var_name_to_group_id[var_name] = array_group_id;
+            group_id_to_var_name[array_group_id] = var_name;
+
             // Treat each value in the array as its own variable and insert individually, but with the same group_id
             for(var i = 0; i < value.length; i++) {
                 //add_one_var_to_memory_table(value[i], func_name, group_id)
-                add_one_var_to_memory_table(value[i], func_name, get_var_group_id(is_new, var_name))
+                add_one_var_to_memory_table(value[i], func_name, array_group_id);
+                array_group_id = get_var_group_id(is_new, var_name);
             }
 
         } else {
@@ -563,8 +568,10 @@ function executeCVisualizer(option, data, newCode) {
             group_id_to_start_addr[group_id] = start_addr;
             start_addr_to_group_id[start_addr] = group_id;
 
-            var_name_to_group_id[var_name] = group_id;
-            group_id_to_var_name[group_id] = var_name;
+            if(var_name) {
+                var_name_to_group_id[var_name] = group_id;
+                group_id_to_var_name[group_id] = var_name;
+            }
 
             // Add the cell rows first
             var new_var_cell_rows = $(create_new_var_cell_rows(group_id, start_addr, cells_needed, value, hex_value, is_uninitialized));
