@@ -241,7 +241,6 @@ function executeCVisualizer(option, data, newCode) {
         $('#newvisualizerModal').modal('show');
 
         add_hover_to_code();
-
         add_globals();
 
     }
@@ -534,7 +533,6 @@ function executeCVisualizer(option, data, newCode) {
         var var_name = changed_var["var_name"];
         var start_addr = parseInt(changed_var["addr"], 16);
         var value = changed_var["value"];
-        var hex_value = changed_var["hex_value"].match(/.{1,2}/g).slice(1); // Turn into array of 1-byte hex values
         var func_location = changed_var["location"];
         var cells_needed = parseInt(changed_var["max_size"]);
         var is_new = Boolean(changed_var["new"]);
@@ -550,11 +548,14 @@ function executeCVisualizer(option, data, newCode) {
         if(value.constructor === Array) {
             // Treat each value in the array as its own variable and insert individually, but with the same group_id
             for(var i = 0; i < value.length; i++) {
-                add_one_var_to_memory_table(value[i], func_name, group_id)
+                //add_one_var_to_memory_table(value[i], func_name, group_id)
+                add_one_var_to_memory_table(value[i], func_name, get_var_group_id(is_new, var_name))
             }
 
         } else {
             // Insert a single variable with a regular value, not an array
+
+            var hex_value = changed_var["hex_value"].match(/.{1,2}/g).slice(1); // Turn into array of 1-byte hex values
 
             // Update all the relevant info maps
             group_id_vals[group_id] = value;
