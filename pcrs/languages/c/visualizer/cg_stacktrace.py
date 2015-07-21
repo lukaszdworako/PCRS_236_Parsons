@@ -500,6 +500,8 @@ class CVisualizer:
         global var_typerep
         global pointing_to_type
 
+        array_access = ""
+        array_depth = 0
         ptr_depth = 0
         if isUnary:
             temp_node = node.expr
@@ -510,12 +512,18 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.expr
 
-        var_name_val = '*'*ptr_depth+(str)(temp_node.name)
+        while isinstance(temp_node, c_ast.ArrayRef):
+            array_depth += 1
+            array_access = array_access+"["+ temp_node.subscript.value +"]"
+            temp_node = temp_node.name
+
+
+        var_name_val = '*'*ptr_depth+(str)(temp_node.name)+array_access
         #ie, int ** if that's what this pointer is
         unstripped_vartype = (str)(self.var_type_dict.get(temp_node.name))
 
         #ie, int if that's what this pointer is pointing to at the end
-        stripped_vartype = unstripped_vartype.replace("*", "").strip()
+        stripped_vartype = unstripped_vartype.replace("*", "").replace("[]", "").strip()
 
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
 
@@ -525,7 +533,8 @@ class CVisualizer:
         else:
             var_typerep = '%p'
 
-        type_of_var = unstripped_vartype.replace("*", "", ptr_depth)
+        #pdb.set_trace()
+        type_of_var = unstripped_vartype.replace("*", "", ptr_depth).replace("[]", "")
 
         var_new_val = False
         is_uninit = False
@@ -595,9 +604,13 @@ class CVisualizer:
             ptr_depth += 1
             temp_array = temp_array.type
 
+
         #Initializing all the normal things like type and name, just like in other declarations
         clean_array_type = (str)(temp_array.type.type.names[0])
         type_of_var = clean_array_type + ' ' +'*'*ptr_depth + ' ' + '[]'*array_depth
+        
+        if ptr_depth > 0:
+            pointing_to_type = clean_array_type + ' ' + '*'*(ptr_depth-1)
         
         #Need to decide on if I need this or not
         var_typerep = "%p"
@@ -612,7 +625,8 @@ class CVisualizer:
 
         array_dict_add = {(str)(var_name_val):[(str)(clean_array_type), size_nodes, temp_var_nodes, array_depth, ptr_depth]}
         self.array_dict.update(array_dict_add)
-
+        ptr_dict_add = {(str)(var_name_val):(int)(ptr_depth)}
+        self.ptr_dict.update(ptr_dict_add)
         #Now we're done adding it to the dictionary
         print(self.array_dict)
 
@@ -631,6 +645,11 @@ class CVisualizer:
 
         print(self.array_dict)
 
+        if ptr_depth >0:
+            return True
+        else:
+            return False
+
     def set_assign_array(self, parent, index, isUnary):
         #Adding the array info to the array_dict
 
@@ -645,7 +664,7 @@ class CVisualizer:
         #pdb.set_trace()
         ptr_depth = 0
         if isUnary:
-            temp_val = parent[index].expr.name         
+            temp_val = parent[index].lvalue.expr.name         
         else:
             temp_val = parent[index].lvalue.name
 
@@ -655,13 +674,22 @@ class CVisualizer:
 
         var_name_val = (str)(temp_val.name)
 
-
         cur_array_dict = self.array_dict.get(var_name_val)
 
-        type_of_var = cur_array_dict[0]
+        ptr_depth = cur_array_dict[4]
+        if ptr_depth > 0:
+            pointing_to_type = cur_array_dict[0] + ' ' + '*'*(ptr_depth-1)
+
+        array_depth = cur_array_dict[3]
+        type_of_var = cur_array_dict[0] +' ' + '*'*(ptr_depth) + ' '+'[]'*(array_depth)
         var_typerep = '%p'
         var_new_val = False
         is_uninit = False        
+
+        if ptr_depth >0:
+            return True
+        else:
+            return False
 
     #Insert an assignment node, assigning the malloc size var to be the size that was malloced
     def set_malloc_size_var(self, parent, index, malloc_node):
@@ -922,8 +950,8 @@ class CVisualizer:
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
-                self.set_decl_array(parent, index)
-                self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                isPtr = self.set_decl_array(parent, index)
+                self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
                 self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
         #Otherwise it was an assignment of an already declared var
@@ -970,13 +998,14 @@ class CVisualizer:
 
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
+            #pdb.set_trace()
                 self.set_assign_ptr_vars(parent[index], False)
                 self.add_after_node(parent, index, func_name, False, True, False, False)
 
             #Array assignment, not unary
             elif isinstance((parent[index].lvalue), c_ast.ArrayRef):
-                self.set_assign_array(parent, index, False)
-                self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                isPtr = self.set_assign_array(parent, index, False)
+                self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
                 self.print_array_extra_nodes(parent, index+self.amt_after+1)
     
     def print_stdout(self, parent, index, func_name):
