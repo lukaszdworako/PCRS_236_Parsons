@@ -91,8 +91,8 @@ class CVisualizer:
         self.global_print_nodes = []
 
         #array_dict will hold the name as the key, with type, size nodes of each level, temporary int vars to be used in for loops,and depth as values in a list
-        #{array_name:[type, [size node1, size node2], [temp for var 1, temp for var 2],depth]}
-        #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2]} 
+        #{array_name:[type, [size node1, size node2], [temp for var 1, temp for var 2],depth, ptr_depth]}
+        #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2, 0]} 
         self.array_dict = {}
 
         #handled_returns is a list of return nodes that have already been handled - used to check if we've handled a return or not
@@ -597,7 +597,7 @@ class CVisualizer:
 
         #Initializing all the normal things like type and name, just like in other declarations
         clean_array_type = (str)(temp_array.type.type.names[0])
-        type_of_var = clean_array_type + ' ' + '[]'*array_depth
+        type_of_var = clean_array_type + ' ' +'*'*ptr_depth + ' ' + '[]'*array_depth
         
         #Need to decide on if I need this or not
         var_typerep = "%p"
@@ -610,7 +610,7 @@ class CVisualizer:
         else:
             is_uninit = False
 
-        array_dict_add = {(str)(var_name_val):[(str)(clean_array_type), size_nodes, temp_var_nodes, array_depth]}
+        array_dict_add = {(str)(var_name_val):[(str)(clean_array_type), size_nodes, temp_var_nodes, array_depth, ptr_depth]}
         self.array_dict.update(array_dict_add)
 
         #Now we're done adding it to the dictionary
@@ -630,6 +630,38 @@ class CVisualizer:
             self.amt_after+= 1        
 
         print(self.array_dict)
+
+    def set_assign_array(self, parent, index, isUnary):
+        #Adding the array info to the array_dict
+
+        global to_add_index
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        global var_typerep
+
+        #pdb.set_trace()
+        ptr_depth = 0
+        if isUnary:
+            temp_val = parent[index].expr.name         
+        else:
+            temp_val = parent[index].lvalue.name
+
+        #Loop until we get to the ID element
+        while isinstance(temp_val, c_ast.ArrayRef):
+            temp_val = temp_val.name
+
+        var_name_val = (str)(temp_val.name)
+
+
+        cur_array_dict = self.array_dict.get(var_name_val)
+
+        type_of_var = cur_array_dict[0]
+        var_typerep = '%p'
+        var_new_val = False
+        is_uninit = False        
 
     #Insert an assignment node, assigning the malloc size var to be the size that was malloced
     def set_malloc_size_var(self, parent, index, malloc_node):
@@ -819,7 +851,10 @@ class CVisualizer:
         #if printing the regular values, print them based on the array's initialized type
         if print_type == "val":
             arr_type = cur_array_dict[0]
-            print_notation = '"\''+(str)(self.primitive_types.get(arr_type))+'\',"'
+            if cur_array_dict[4] > 0:
+                print_notation = '"\'%p\',"'
+            else:    
+                print_notation = '"\''+(str)(self.primitive_types.get(arr_type))+'\',"'
         #otherwise if printing hex values, print them in hex format
         elif print_type == "hex":
             print_notation = '"\'%lX\',"'
@@ -938,6 +973,12 @@ class CVisualizer:
                 self.set_assign_ptr_vars(parent[index], False)
                 self.add_after_node(parent, index, func_name, False, True, False, False)
 
+            #Array assignment, not unary
+            elif isinstance((parent[index].lvalue), c_ast.ArrayRef):
+                self.set_assign_array(parent, index, False)
+                self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                self.print_array_extra_nodes(parent, index+self.amt_after+1)
+    
     def print_stdout(self, parent, index, func_name):
         global to_add_index
 
