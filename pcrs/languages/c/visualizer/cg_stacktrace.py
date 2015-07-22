@@ -530,6 +530,9 @@ class CVisualizer:
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
         if ptr_depth == self.ptr_dict.get(temp_node.name):
             var_typerep = self.primitive_types.get(stripped_vartype)
+            #it can't be pointing to a full string, only a character - this is the case for string lits
+            # if var_typerep == '%s':
+            #     var_typerep = '%p'
         else:
             var_typerep = '%p'
 
@@ -908,10 +911,12 @@ class CVisualizer:
 
         return c_ast.ArrayRef(ref_name, ref_script)
 
+    def handle_str_lit_array(self, parent, index):
+        print("in here")
     
 
     def print_changed_vars(self, parent, index, func_name, new):
-        #global amt_after
+        str_lit = False
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
             #Type declaration
@@ -974,6 +979,16 @@ class CVisualizer:
 
                 if parent[index].lvalue.name in self.ptr_dict:
                     ptr_assign = True
+
+                    #This is the case where we have a pointer tht points to a string: can only happen w/ string lit, so
+                    #we're still pointing to an address, which then points to a char array on data, hence %p for address
+                    try:
+                        if parent[index].rvalue.type == 'string':
+                            str_lit = True
+                            global var_typerep
+                            var_typerep = '%p'
+                    except:
+                        pass                        
                 else:
                     ptr_assign = False
 
@@ -984,7 +999,11 @@ class CVisualizer:
                     self.add_after_node(parent, index, func_name, True, ptr_assign, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
+                    #pdb.set_trace()
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
+                    #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
+                    if str_lit:
+                        self.handle_str_lit_array(parent, index) 
 
                      #Case for malloc, won't be mallocing inside a function header
                     try:
