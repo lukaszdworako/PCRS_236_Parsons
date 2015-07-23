@@ -619,11 +619,13 @@ class CVisualizer:
             
             #Case where size wasn't specified, check for initlist to determine the size
             if temp_array.dim == None:
-                outer_len = len(parent[index].init.children())
-                temp_len_val = c_ast.Constant('int', (str)(outer_len))
-                level_size = self.create_new_var_node('int', temp_len_val)
-                #pdb.set_trace()
-            
+                try:
+                    outer_len = len(parent[index].init.children())
+                    temp_len_val = c_ast.Constant('int', (str)(outer_len))
+                    level_size = self.create_new_var_node('int', temp_len_val)
+                #case where there's no size specified and no initlist - will deal more with this later
+                except:
+                    pass
             else:
                 level_size = self.create_new_var_node('int', temp_array.dim)
 
