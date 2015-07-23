@@ -303,7 +303,10 @@ class CVisualizer:
         global to_add_index
 
         #If node is a node we added, ignore it & return TODO: add checking for hidden lines here too, don't include if hidden
-        if parent[index].coord == None:
+        try:
+            if parent[index].coord == None:
+                return
+        except:
             return
 
         ast_function = parent[index]
@@ -408,6 +411,25 @@ class CVisualizer:
                 self.handle_return(parent, index, func_name)
         except:
             pass
+
+    #Checking if there's a function call within a built-in function argument (ie. if *funccall* == 2)
+    #Not sure what to do since we won't go into every if statement, check tomorrow
+    # def check_arg_funccall(self, parent, index, type):
+    #     #First just make sure it's not a node we added        
+    #     try:
+    #         if parent[index].coord == None:
+    #             return
+    #     except:
+    #         return
+
+    #     pdb.set_trace()
+    #     if type == "if":
+    #         cond = parent[index].cond
+    #         cond_children = cond.children()
+    #         #Children in a list, structured as tuples
+    #         for child in cond_children:
+    #             if isinstance(child[1], c_ast.FuncCall) and child[1].coord not None:
+    #                 print("has funccall")
 
 
     def get_funccall_funcname(self, node):
@@ -1098,6 +1120,8 @@ class CVisualizer:
                     self.set_decl_vars(header_vars[i])
 
                     header_var_ptr = False 
+                global is_uninit
+                is_uninit = False
                 print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, header_var_ptr, False, False, False)
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
