@@ -496,6 +496,7 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
         global pointing_to_type
+        global str_lit
 
         #Check how many levels of pointer this is
         ptr_depth = 0
@@ -505,8 +506,12 @@ class CVisualizer:
             temp_node = temp_node.type
 
         #print("ptr depth is "+(str)(ptr_depth))
-        type_of_var = (str)(temp_node.type.type.names[0]) + ' ' + '*'*ptr_depth
-        pointing_to_type = (str)(temp_node.type.type.names[0]) + ' ' + '*'*(ptr_depth-1)
+        clean_type = temp_node.type.type.names[0]
+        type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
+        pointing_to_type = (str)(clean_type) + ' ' + '*'*(ptr_depth-1)
+        if clean_type == "string":
+            str_lit = True
+
         var_typerep = "%p"
         var_name_val = node.name
 
@@ -953,10 +958,76 @@ class CVisualizer:
 
     def handle_str_lit_array(self, parent, index):
         print("in here")
-    
+        
+        global to_add_index
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        global var_typerep
+
+        ptr_depth = 0
+        #size_nodes contains nodes of int variables which hold the size of each level of the array
+        size_nodes = []
+        #temp_var_nodes will hold temporary int variable nodes that are initialized the first time we see the array,
+        #to be used every time we loop through this particular array
+        temp_var_nodes = []
+
+        str_lit_ptr = parent[index]
+        array_name = str_lit_ptr.name
+        array_depth = 1
+
+        #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
+        array_len = len((str)(parent[index].init.value))
+        temp_len_val = c_ast.Constant('int', (str)(array_len))
+        level_size = self.create_new_var_node('int', temp_len_val)
+        size_nodes.append(level_size)
+
+        #Adding a variable to hold the temporary size variables, will actually insert them into the parent after
+        temp_var_val = c_ast.Constant('int', '0')
+        temp_var_to_add = self.create_new_var_node('int', temp_var_val)
+        temp_var_nodes.append(temp_var_to_add)
+
+        #Initializing all the normal things like type and name, just like in other declarations
+        type_of_var = "char"
+        
+        #Need to decide on if I need this or not
+        var_typerep = "%p"
+
+        var_name_val = parent[index].name
+
+        var_new_val = True
+        is_uninit = False
+
+        array_dict_add = {(str)(var_name_val):[(str)(type_of_var), size_nodes, temp_var_nodes, array_depth, ptr_depth]}
+        self.array_dict.update(array_dict_add)
+
+        #Now we're done adding it to the dictionary
+        print(self.array_dict)
+
+        #Initialize the temporary variables which will store size in later for loops
+        #Put them before the array decl node
+        for temp_var_node in temp_var_nodes:
+            parent.insert(index, temp_var_node)
+            to_add_index+=1
+            self.amt_after+= 1
+
+        #Initialize the size variables as well
+        for size_node in size_nodes:
+            parent.insert(index, size_node)
+            to_add_index+=1
+            self.amt_after+= 1        
+
+        print(self.array_dict)
+
+        return False
+
 
     def print_changed_vars(self, parent, index, func_name, new):
-        str_lit = False
+        global str_lit
+        str_lit  = False
+
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
             #Type declaration
@@ -992,6 +1063,11 @@ class CVisualizer:
                             self.amt_after += 1
                     except:
                         pass
+                #Case for string literal, add an array val on data
+                if str_lit:
+                    self.handle_str_lit_array(parent, index)
+                    self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                    self.print_array_extra_nodes(parent, index+self.amt_after+1)                    
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
@@ -1043,8 +1119,8 @@ class CVisualizer:
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
                     #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
                     if str_lit:
-                        self.handle_str_lit_array(parent, index) 
-
+                        ##self.handle_str_lit_array(parent, index) 
+                        print("str lit")
                      #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].rvalue.name.name == 'malloc':
