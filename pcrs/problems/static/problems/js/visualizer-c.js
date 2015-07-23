@@ -289,7 +289,7 @@ function executeCVisualizer(option, data, newCode) {
 
             if(json_step.hasOwnProperty('returned_fn_call')) {
                 // Remove the previous stack frame and name table of this function
-                $("#name-table-"+most_recently_returned).hide();
+                $("#name-table-"+most_recently_returned).empty();
                 remove_stack_table(json_step['returned_fn_call'])
             }
 
