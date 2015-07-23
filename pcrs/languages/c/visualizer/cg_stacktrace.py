@@ -616,7 +616,17 @@ class CVisualizer:
             temp_array = temp_array.type
 
             #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-            level_size = self.create_new_var_node('int', temp_array.dim)
+            
+            #Case where size wasn't specified, check for initlist to determine the size
+            if temp_array.dim == None:
+                outer_len = len(parent[index].init.children())
+                temp_len_val = c_ast.Constant('int', (str)(outer_len))
+                level_size = self.create_new_var_node('int', temp_len_val)
+                #pdb.set_trace()
+            
+            else:
+                level_size = self.create_new_var_node('int', temp_array.dim)
+
             size_nodes.append(level_size)
 
             #Adding a variable to hold the temporary size variables, will actually insert them into the parent after
