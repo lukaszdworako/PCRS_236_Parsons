@@ -131,7 +131,7 @@ class CVisualizer:
 
     #RetFnCall means it just returned from a previous function call
     def create_printf_node(self, parent, index, func_name, onEntry, changedVar, onReturn, onRetFnCall, onStdOut, onStdErr, isPtr, onHeap, isArray, isElse, isFree):
-
+        global str_lit
         add_id = c_ast.ID('printf')
         add_id_addr = None
         add_id_val = None
@@ -226,8 +226,11 @@ class CVisualizer:
 
             var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_free+var_size + var_is_ptr + var_ptr_size + var_val
 
-            add_id_addr = c_ast.ID('&(' + var_name_val+')')
-
+            if str_lit:
+                add_id_addr = c_ast.ID('&(*' + var_name_val+')')
+            else:
+                add_id_addr = c_ast.ID('&(' + var_name_val+')')
+                
             if not isArray:
                 add_id_val = c_ast.ID(var_name_val)
                 add_id_hex = c_ast.ID(var_name_val)
@@ -509,7 +512,8 @@ class CVisualizer:
         clean_type = temp_node.type.type.names[0]
         type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
         pointing_to_type = (str)(clean_type) + ' ' + '*'*(ptr_depth-1)
-        if clean_type == "string":
+        #pdb.set_trace()
+        if type_of_var == "char *":
             str_lit = True
 
         var_typerep = "%p"
@@ -957,7 +961,6 @@ class CVisualizer:
         return c_ast.ArrayRef(ref_name, ref_script)
 
     def handle_str_lit_array(self, parent, index):
-        print("in here")
         
         global to_add_index
         global type_of_var
@@ -979,7 +982,8 @@ class CVisualizer:
         array_depth = 1
 
         #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-        array_len = len((str)(parent[index].init.value))
+        #pdb.set_trace()
+        array_len = len((str)(parent[index].init.value))-2
         temp_len_val = c_ast.Constant('int', (str)(array_len))
         level_size = self.create_new_var_node('int', temp_len_val)
         size_nodes.append(level_size)
@@ -1009,13 +1013,13 @@ class CVisualizer:
         #Initialize the temporary variables which will store size in later for loops
         #Put them before the array decl node
         for temp_var_node in temp_var_nodes:
-            parent.insert(index, temp_var_node)
+            parent.insert(index+self.amt_after+1, temp_var_node)
             to_add_index+=1
             self.amt_after+= 1
 
         #Initialize the size variables as well
         for size_node in size_nodes:
-            parent.insert(index, size_node)
+            parent.insert(index+self.amt_after+1, size_node)
             to_add_index+=1
             self.amt_after+= 1        
 
@@ -1027,7 +1031,6 @@ class CVisualizer:
     def print_changed_vars(self, parent, index, func_name, new):
         global str_lit
         str_lit  = False
-
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
             #Type declaration
@@ -1065,8 +1068,11 @@ class CVisualizer:
                         pass
                 #Case for string literal, add an array val on data
                 if str_lit:
+                    #pdb.set_trace()
                     self.handle_str_lit_array(parent, index)
-                    self.add_after_node(parent, index+self.amt_after, func_name, False, False, False, True)
+                    print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False)
+                    parent.insert(index+self.amt_after+1, print_node)
+                    self.amt_after += 1
                     self.print_array_extra_nodes(parent, index+self.amt_after+1)                    
 
             #Array declaration
