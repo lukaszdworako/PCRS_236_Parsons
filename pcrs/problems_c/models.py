@@ -256,7 +256,8 @@ class Submission(AbstractSubmission):
             # Create variable mod_submission to handle the fusion of student code with starter_code from the database
             self.mod_submission = self.problem.starter_code
             last_tag_size = len('[/student_code]') + 2
-            for student_code in student_code_list:
+            while len(student_code_list) > 0 and self.mod_submission.find('[student_code]') != -1:
+                student_code = student_code_list.pop(0)
                 self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
                                         student_code +\
                                         self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
