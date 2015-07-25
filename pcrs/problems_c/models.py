@@ -241,10 +241,12 @@ class Submission(AbstractSubmission):
             student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
             student_code_key_len = len(student_code_key)
             student_code_key_list_len = len(student_code_key_list)
-
+            
             # Could not find student code
-            if student_code_key_list_len == 0 or student_code_key_list_len % 2 != 0:
+            if student_code_key_list_len == 0:
                 raise Exception("No student code found!")
+            if student_code_key_list_len % 2 != 0:
+                student_code_key_list = student_code_key_list[:-1]
 
             # Get student code from submission and add it to the official exercise (from the database)
             student_code_list = []
