@@ -181,7 +181,6 @@ class Submission(AbstractSubmission):
         if not self.hidden_lines_list:
             return program_exception
 
-        hidden_error = 0
         #First, get only the parts that match what I want to split by
         split_pattern = re.compile(r'(([0-9]+):[0-9]+:\s(?:warning:|error:))')
         tuple_of_delims = split_pattern.findall(program_exception)
@@ -205,11 +204,14 @@ class Submission(AbstractSubmission):
 
         #Split by either ": warning:" or ": error:"
         count=0
+        hidden_error = False
         for exception_line in final_split:
             if (int)(tuple_of_delims[count][1]) in self.hidden_lines_list:
-                if hidden_error == 0:
-                    hidden_error = 1
-                    exception_line = "There's a problem in your code! Please check the exercise description."
+                if not hidden_error:
+                    hidden_error = True
+                    split_warning = re.split(r'[0-9]+:[0-9]+:\s(?:warning:|error:)', exception_line)[1]
+                    split_warning = split_warning[:split_warning.find('\'')]
+                    exception_line = "Please check the exercise description. There's an issue in your code:<br />&nbsp;&nbsp;{0}".format(split_warning)
                 else:
                     exception_line = ""
             else:
