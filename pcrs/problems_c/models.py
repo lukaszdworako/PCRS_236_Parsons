@@ -16,8 +16,8 @@ from rest_framework import status
 from json import loads, dumps
 from requests import post
 from hashlib import sha1
-from re import finditer, search
 import re
+import shlex
 import bisect
 from problems_c.c_utilities import *
 
@@ -72,7 +72,7 @@ class Submission(AbstractSubmission):
             run['test_input'], run['expected_output'] = None, None
             run['test_desc'] = testcase.description
             if testcase.is_visible:
-                run['test_input'] = testcase.test_input
+                run['test_input'] = " ".join(["'{0}'".format(c.strip('"')) for c in shlex.shlex(testcase.test_input)])
                 run['expected_output'] = testcase.expected_output
             results.append(run)
 
@@ -240,7 +240,7 @@ class Submission(AbstractSubmission):
         #Code not from editor, process tags
         else:
             student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-            student_code_key_list = [m.start() for m in finditer(student_code_key, self.submission)]
+            student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
             student_code_key_len = len(student_code_key)
             student_code_key_list_len = len(student_code_key_list)
             
@@ -269,7 +269,7 @@ class Submission(AbstractSubmission):
             # Replace hashed key with text (Implementation start/end)
             x = 0
             while x < student_code_key_list_len:
-                m = search(student_code_key, self.submission)
+                m = re.search(student_code_key, self.submission)
                 self.submission = self.submission[: m.start()] + self.submission[m.end():]
                 x += 1
 

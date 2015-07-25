@@ -8,7 +8,6 @@ import string
 import re
 from operator import mul
 from functools import reduce
-import shlex
 import ast
 
 from pprint import pprint
@@ -76,11 +75,6 @@ class CSpecifics():
             ret["exception"] = self.compilation_ret["exception"]
             if self.compilation_ret["exception_type"] == "error":
                 raise CompilationError
-
-            # Test input and expected output data
-            # Wrap each argument in '' and escape metacharacters
-            test_input = " ".join([shlex.quote(c) for c in test_input.split(" ")])
-            expected_output = str(expected_output)
 
             if USE_SAFEEXEC:
                 # Safeexec path
