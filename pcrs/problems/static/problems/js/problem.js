@@ -939,11 +939,14 @@ function highlightCode(editor_id, tag_list){
 function preventDeleteLastLine(editor_id) {
     editor = myCodeMirrors[editor_id];
     editor.getSelectedLines = function () {
-        var start_line = editor.getCursor(true).line;
-        var end_line = editor.getCursor(false).line;
         var selected_lines = [];
-        for(var i = start_line; i <= end_line; i++) {
-            selected_lines.push(editor.lineInfo(i));
+
+        if(editor.somethingSelected()) {
+            var start_line = editor.getCursor(true).line;
+            var end_line = editor.getCursor(false).line;
+            for(var i = start_line; i <= end_line; i++) {
+                selected_lines.push(editor.lineInfo(i));
+            }
         }
 
         return selected_lines
@@ -962,8 +965,8 @@ function guardBackspace(editor) {
 
     var prevLine = (curLine > 0) ? curLine - 1 : 0;
 
-    var isSelection = editor.getSelection().length > 0;
-    var blockedCodeSelected = editor.getSelectedLines().filter(function(line) {
+    var isSelection = editor.somethingSelected();
+    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
         return line.wrapClass == 'CodeMirror-activeline-background';
     }).length > 0;
 
@@ -989,8 +992,8 @@ function guardDelete(editor) {
     var lastLine = editor.lineCount() - 1;
     var nextLine = (curLine < lastLine) ? curLine + 1 : lastLine;
 
-    var isSelection = editor.getSelection().length > 0;
-    var blockedCodeSelected = editor.getSelectedLines().filter(function(line) {
+    var isSelection = editor.somethingSelected();
+    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
         return line.wrapClass == 'CodeMirror-activeline-background';
     }).length > 0;
 
