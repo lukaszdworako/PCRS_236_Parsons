@@ -234,11 +234,11 @@ class CVisualizer:
 
             var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_free+var_size + var_is_ptr + var_ptr_size + var_val
 
-                
             if not isArray:
                 add_id_val = c_ast.ID(var_name_val)
                 add_id_hex = c_ast.ID(var_name_val)
-                add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
+                if not onHeap:
+                    add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
             else:
                 add_id_size = c_ast.ID('(unsigned long)(sizeof(' + self.array_dict.get(var_name_val)[0]+'))')
 
@@ -732,6 +732,11 @@ class CVisualizer:
 
         cur_array_dict = self.array_dict.get(var_name_val)
 
+        #If it wasn't originally declared as an array but is now being referenced
+        #like an array
+        if cur_array_dict == None:
+            return {"is_ptr": True, "in_arr_dict":False}
+
         ptr_depth = cur_array_dict[4]
         if ptr_depth > 0:
             pointing_to_type = cur_array_dict[0] + ' ' + '*'*(ptr_depth-1)
@@ -743,9 +748,9 @@ class CVisualizer:
         is_uninit = False        
 
         if ptr_depth >0:
-            return True
+            return {"is_ptr": True, "in_arr_dict":True}
         else:
-            return False
+            return {"is_ptr": False, "in_arr_dict":True}
 
     #Insert an assignment node, assigning the malloc size var to be the size that was malloced
     def set_malloc_size_var(self, parent, index, malloc_node):
@@ -1149,9 +1154,14 @@ class CVisualizer:
 
             #Array assignment, not unary
             elif isinstance((parent[index].lvalue), c_ast.ArrayRef):
-                isPtr = self.set_assign_array(parent, index, False)
-                self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
-                self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                returned_dict = self.set_assign_array(parent, index, False)
+                isPtr = returned_dict.get("is_ptr")
+                isDeclArray = returned_dict.get("in_arr_dict")
+                if isDeclArray:
+                    self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
+                    self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                else:
+                    print ("not declared as an array")
     
     def print_stdout(self, parent, index, func_name):
         global to_add_index
