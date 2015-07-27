@@ -14,13 +14,16 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_short_answer': '',
 }
 
-USE_SAFEEXEC = False              # For C only, for now
+USE_SAFEEXEC = True               # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
 SAFEEXEC_GROUPID = "1005"
 
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
 
 PRODUCTION = False
+DEBUG = not PRODUCTION
+SQL_DEBUG = False                   # Suppresses logging of SQL queries
+TEMPLATE_DEBUG = DEBUG
 
 # controls if a reactive content page should be used
 # reactive content page is live updated and updates content pages in other tabs
@@ -33,10 +36,6 @@ QUESTS_LIVE = False
 # hack to fix video links that come from U of T's mymedia system
 MYMEDIA_VIDEOS = True
 
-DEBUG = True
-SQL_DEBUG = False                   # Suppresses logging of SQL queries
-TEMPLATE_DEBUG = DEBUG
-
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -46,11 +45,11 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'pcrs_dev',
-        'USER': 'dev',
-        'PASSWORD': 'dev',
+        'NAME': 'pcrsdev',
+        'USER': 'pcrsdev',
+        'PASSWORD': 'apJIRu4',
         'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '5432',                      # Set to empty string for default.
+        'PORT': '',                               # Set to empty string for default.
     }
 }
 
@@ -148,7 +147,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '+h3qkl7(k%067zn0kjn9#g&9uwzo0u3yzhq$5b)pw(gkeoy4m='
+SECRET_KEY = '36!^rq34a%q0stzTNy2:34%328[setv8pwWtLLglihs4r1JOZ&'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
