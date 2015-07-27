@@ -417,6 +417,15 @@ class CVisualizer:
         elif isinstance(parent[index], c_ast.If):
             self.print_if_entry(parent, index, func_name)
 
+        #Case for a "while" loop: just insert a print statement in the beginning of its body to show its line #
+        elif isinstance(parent[index], c_ast.While) or isinstance(parent[index], c_ast.DoWhile):
+            self.print_loop_entry(parent, index, func_name)
+
+        #Case for a "For" loop is a bit different since we have to show the changing index variable, have a changed var each time
+        #we loop through it
+        elif isinstance(parent[index], c_ast.For):
+            self.print_for_entry(parent, index, func_name)
+
         #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
         try:
             if isinstance(parent[index+self.amt_after+1], c_ast.Return):
@@ -1231,6 +1240,17 @@ class CVisualizer:
     def print_funccall_not_prog(self, parent, index, func_name):
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
         parent.insert(index+1, print_node)
+        self.amt_after += 1
+
+    def print_loop_entry(self, parent, index, func_name):
+        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
+        parent[index].stmt.block_items.insert(0, print_node)
+        self.amt_after += 1
+
+    def print_for_entry(self, parent, index, func_name):
+        self.set_assign_vars(parent[index].next, True)
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, False, False, False, False)
+        parent[index].stmt.block_items.insert(0, print_node)
         self.amt_after += 1
 
     def print_if_entry(self, parent, index, func_name):
