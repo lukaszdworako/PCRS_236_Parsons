@@ -548,7 +548,7 @@ class CVisualizer:
             temp_node = node.expr
         else:
             temp_node = node.lvalue
-        
+        pdb.set_trace()
         while isinstance(temp_node, c_ast.UnaryOp):
             ptr_depth += 1
             temp_node = temp_node.expr
@@ -558,10 +558,16 @@ class CVisualizer:
             array_access = array_access+"["+ temp_node.subscript.value +"]"
             temp_node = temp_node.name
 
-
-        var_name_val = '*'*ptr_depth+(str)(temp_node.name)+array_access
+        #Case where it's a binary op, like *(ptr + 1) = something
+        if isinstance(temp_node, c_ast.BinaryOp):
+            #add in case for *(ptr + var) = something, currently only for constant
+            var_name_val = '*'*ptr_depth+'('+(str)(temp_node.left.name)+array_access+(str)(temp_node.op)+(str)(temp_node.right.value)+')'  
+            node_name = temp_node.left.name                
+        else:
+            var_name_val = '*'*ptr_depth+(str)(temp_node.name)+array_access
+            node_name = temp_node.name
         #ie, int ** if that's what this pointer is
-        unstripped_vartype = (str)(self.var_type_dict.get(temp_node.name))
+        unstripped_vartype = (str)(self.var_type_dict.get(node_name))
 
         #ie, int if that's what this pointer is pointing to at the end
         stripped_vartype = unstripped_vartype.replace("*", "").replace("[]", "").strip()
@@ -569,7 +575,7 @@ class CVisualizer:
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
 
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
-        if ptr_depth == self.ptr_dict.get(temp_node.name):
+        if ptr_depth+array_depth == self.ptr_dict.get(node_name):
             var_typerep = self.primitive_types.get(stripped_vartype)
             #it can't be pointing to a full string, only a character - this is the case for string lits
             # if var_typerep == '%s':
@@ -1160,7 +1166,11 @@ class CVisualizer:
                 if isDeclArray:
                     self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
                     self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                #Handle as a pointer, but dont put in name table. It's arrayref opposed to binaryop, since we're referencing
+                #the pointer with array notation, ie ptr[2] = var
                 else:
+                    self.set_assign_ptr_vars(parent[index], False)
+                    self.add_after_node(parent, index, func_name, False, True, False, False)                    
                     print ("not declared as an array")
     
     def print_stdout(self, parent, index, func_name):
