@@ -231,6 +231,9 @@ class CVisualizer:
                 var_is_ptr = (str)(self.item_delimiter) + "is_ptr:name"
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu" 
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + pointing_to_type +'))')
+            if onHeap:
+                var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu" 
+                add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + type_of_var +'))')
 
             var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_free+var_size + var_is_ptr + var_ptr_size + var_val
 
@@ -444,7 +447,6 @@ class CVisualizer:
     #     except:
     #         return
 
-    #     pdb.set_trace()
     #     if type == "if":
     #         cond = parent[index].cond
     #         cond_children = cond.children()
@@ -525,7 +527,6 @@ class CVisualizer:
         clean_type = temp_node.type.type.names[0]
         type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
         pointing_to_type = (str)(clean_type) + ' ' + '*'*(ptr_depth-1)
-        #pdb.set_trace()
         if type_of_var == "char *":
             str_lit = True
 
@@ -557,7 +558,6 @@ class CVisualizer:
             temp_node = node.expr
         else:
             temp_node = node.lvalue
-        pdb.set_trace()
         while isinstance(temp_node, c_ast.UnaryOp):
             ptr_depth += 1
             temp_node = temp_node.expr
@@ -592,7 +592,6 @@ class CVisualizer:
         else:
             var_typerep = '%p'
 
-        #pdb.set_trace()
         type_of_var = unstripped_vartype.replace("*", "", ptr_depth).replace("[]", "")
 
         var_new_val = False
@@ -610,12 +609,12 @@ class CVisualizer:
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
-
+        #pdb.set_trace()
         ptr_depth = self.ptr_dict.get((str)(node_name))
 
-        type_of_var = (str)(self.var_type_dict.get((str)(node_name)))
-        stripped_vartype = type_of_var.replace("*", "").strip()
-        var_typerep = self.primitive_types.get(stripped_vartype)
+        parent_type = (str)(self.var_type_dict.get((str)(node_name)))
+        type_of_var = parent_type.replace("*", "").strip()
+        var_typerep = self.primitive_types.get(type_of_var)
         var_name_val = '*'*ptr_depth+(str)(node_name)
 
         self.set_malloc_size_var(parent, index, malloc_node)
@@ -732,7 +731,6 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
-        #pdb.set_trace()
         ptr_depth = 0
         if isUnary:
             temp_val = parent[index].lvalue.expr.name         
@@ -1006,7 +1004,6 @@ class CVisualizer:
         array_depth = 1
 
         #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-        #pdb.set_trace()
         array_len = len((str)(parent[index].init.value))-2
         temp_len_val = c_ast.Constant('int', (str)(array_len))
         level_size = self.create_new_var_node('int', temp_len_val)
@@ -1092,7 +1089,6 @@ class CVisualizer:
                         pass
                 #Case for string literal, add an array val on data
                 if str_lit:
-                    #pdb.set_trace()
                     self.handle_str_lit_array(parent, index)
                     print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
                     parent.insert(index+self.amt_after+1, print_node)
@@ -1145,27 +1141,20 @@ class CVisualizer:
                     self.add_after_node(parent, index, func_name, True, ptr_assign, False, False)
                     self.add_before_fn(parent, index, func_name)
                 else:
-                    #pdb.set_trace()
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
                     #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
                     if str_lit:
                         ##self.handle_str_lit_array(parent, index) 
                         print("str lit")
                      #Case for malloc, won't be mallocing inside a function header
-                    try:
-                        if parent[index].rvalue.name.name == 'malloc':
-                            self.set_heap_vars(parent, index, parent[index].lvalue.name, parent[index].rvalue)
-                            print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False, False, False)
-                            parent.insert(index+1+self.amt_after, print_node)  
-                            self.amt_after += 1
-                    except:
-                        pass
+                    self.try_malloc(parent, index, func_name, parent[index].lvalue.name)
 
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(parent[index].lvalue, c_ast.UnaryOp):
-            #pdb.set_trace()
+
                 self.set_assign_ptr_vars(parent[index], False)
                 self.add_after_node(parent, index, func_name, False, True, False, False)
+                self.try_malloc(parent, index, func_name, parent[index].lvalue.expr.name)
 
             #Array assignment, not unary
             elif isinstance((parent[index].lvalue), c_ast.ArrayRef):
@@ -1182,6 +1171,17 @@ class CVisualizer:
                     self.add_after_node(parent, index, func_name, False, True, False, False)                    
                     print ("not declared as an array")
     
+    #Try to malloc
+    def try_malloc(self, parent, index, func_name, var_name):
+        try:
+            if parent[index].rvalue.name.name == 'malloc':
+                self.set_heap_vars(parent, index, var_name, parent[index].rvalue)
+                print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False, False, False)
+                parent.insert(index+1+self.amt_after, print_node)  
+                self.amt_after += 1
+        except:
+            pass        
+
     def print_stdout(self, parent, index, func_name):
         global to_add_index
 
