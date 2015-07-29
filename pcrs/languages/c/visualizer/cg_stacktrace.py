@@ -490,6 +490,7 @@ class CVisualizer:
         global is_uninit
         global ptr_depth
         global var_typerep
+        global str_lit
 
         ptr_depth = 0
         if isUnary:
@@ -499,6 +500,10 @@ class CVisualizer:
         var_name_val = (str)(temp_name_val)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
         var_typerep = self.primitive_types.get(type_of_var)
+
+        if type_of_var == "char *":
+            str_lit = True
+
         #This should only happen if it's a pointer and we can't find its type
         if var_typerep == None:
             var_typerep = '%p'
@@ -1088,7 +1093,8 @@ class CVisualizer:
                     except:
                         pass
                 #Case for string literal, add an array val on data
-                if str_lit:
+                if str_lit and parent[index].init != None:
+                    #pdb.set_trace()
                     self.handle_str_lit_array(parent, index)
                     print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
                     parent.insert(index+self.amt_after+1, print_node)
@@ -1170,6 +1176,15 @@ class CVisualizer:
                     self.set_assign_ptr_vars(parent[index], False)
                     self.add_after_node(parent, index, func_name, False, True, False, False)                    
                     print ("not declared as an array")
+
+            #Case for string literal, add an array val on data
+            if str_lit:
+                #pdb.set_trace()
+                self.handle_str_lit_array(parent, index)
+                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
+                parent.insert(index+self.amt_after+1, print_node)
+                self.amt_after += 1
+                self.print_array_extra_nodes(parent, index+self.amt_after+1)
     
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name):
