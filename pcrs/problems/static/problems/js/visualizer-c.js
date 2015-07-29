@@ -312,7 +312,7 @@ function executeCVisualizer(option, data, newCode) {
 
             if(json_step.hasOwnProperty('returned_fn_call')) {
                 // Remove the previous stack frame and name table of this function
-                $("#name-table-"+most_recently_returned).empty();
+                $("#name-table-"+most_recently_returned).remove();
                 remove_stack_table(json_step['returned_fn_call'])
             }
 
@@ -1594,10 +1594,13 @@ function executeCVisualizer(option, data, newCode) {
             '</table></span>');
         }
 
+        if(json_step.hasOwnProperty('returned_fn_call')) {
+            most_recently_returned = json_step['returned_fn_call'];
+        }
+
         if(json_step.hasOwnProperty('return')) {
             return_val = json_step["return"];
             return_data = 'Return <'+return_val+'>';
-            most_recently_returned = json_step['function'];
         }
         else {
             //If this is the first time we're seeing this JSON step, the last value returned is stored in return_val and added to the JSON step
