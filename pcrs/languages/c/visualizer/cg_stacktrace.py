@@ -1005,11 +1005,16 @@ class CVisualizer:
         temp_var_nodes = []
 
         str_lit_ptr = parent[index]
-        array_name = str_lit_ptr.name
+        try:
+            array_name = str_lit_ptr.name
+            array_len = len((str)(parent[index].init.value))-2
+        except:
+            array_name = str_lit_ptr.lvalue.name
+            array_len = len((str)(parent[index].rvalue.value))-2
         array_depth = 1
 
         #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-        array_len = len((str)(parent[index].init.value))-2
+        
         temp_len_val = c_ast.Constant('int', (str)(array_len))
         level_size = self.create_new_var_node('int', temp_len_val)
         size_nodes.append(level_size)
@@ -1025,7 +1030,7 @@ class CVisualizer:
         #Need to decide on if I need this or not
         var_typerep = "%p"
 
-        var_name_val = parent[index].name
+        var_name_val = array_name
 
         var_new_val = True
         is_uninit = False
