@@ -69,7 +69,6 @@ class CSpecifics():
         temp_output_file = self.temp_path + user + self.date_time + ".out"
         # Naming the temporary runtime error file
         temp_runtime_error_file = self.temp_path + user + self.date_time + "_runtime_error.out"
-
         try:
             ret["exception_type"] = self.compilation_ret["exception_type"]
             ret["exception"] = self.compilation_ret["exception"]
@@ -87,6 +86,7 @@ class CSpecifics():
                 max_file_size = "5120"  # 5 megabytes
 
                 # Running C program in a secure environment
+                subprocess.call('touch ' + temp_output_file + ' ' + temp_runtime_error_file, shell=True)
                 cmd_str = safe_exec + " -o " + temp_output_file + " -d " + max_process_mem \
                                 + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID + " -e " \
                                 + temp_runtime_error_file + " -T " + max_time_sec + " -F " + max_number_files \
