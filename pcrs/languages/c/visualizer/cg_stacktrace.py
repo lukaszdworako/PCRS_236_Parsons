@@ -637,6 +637,7 @@ class CVisualizer:
         global is_uninit
         global ptr_depth
         global var_typerep
+        global pointing_to_type
 
         ptr_depth = 0
         #size_nodes contains nodes of int variables which hold the size of each level of the array
@@ -987,7 +988,9 @@ class CVisualizer:
 
         return c_ast.ArrayRef(ref_name, ref_script)
 
-    def handle_str_lit_array(self, parent, index):
+    #This creates a string lit array for the node at parent, index
+    #const_node is only passed in if it's part of an array declaration, otherwise ignore
+    def handle_str_lit_array(self, parent, index, const_node_name=None, const_node=None):
 
         global to_add_index
         global type_of_var
@@ -1004,15 +1007,21 @@ class CVisualizer:
         #to be used every time we loop through this particular array
         temp_var_nodes = []
 
-        str_lit_ptr = parent[index]
-        try:
-            array_name = str_lit_ptr.name
-            array_len = len((str)(parent[index].init.value))-2
-        except:
-            array_name = str_lit_ptr.lvalue.name
-            array_len = len((str)(parent[index].rvalue.value))-2
-        array_depth = 1
+        #pdb.set_trace()
 
+        if const_node == None:
+            str_lit_ptr = parent[index]
+            try:
+                array_name = str_lit_ptr.name
+                array_len = len((str)(parent[index].init.value))-2
+            except:
+                array_name = str_lit_ptr.lvalue.name
+                array_len = len((str)(parent[index].rvalue.value))-2
+        else:
+            array_name = const_node_name
+            array_len = len(const_node.value)
+
+        array_depth = 1
         #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
         
         temp_len_val = c_ast.Constant('int', (str)(array_len))
@@ -1058,6 +1067,41 @@ class CVisualizer:
 
         return False
 
+    #This function is distinct from the above, as above creates a string lit array for any str lit types, while
+    #this one particularly handles cases where someone declares an array and its contents are str lits.
+    def handle_array_decl_str_lit(self, node, parent_to_add_to, index_to_add_to, func_name):
+        node_array_dict = self.array_dict.get(node.name)
+
+        #If it's not a char* (ie. type is char and ptr depth is 1) or wasn't initialized to anything then just return
+        if not(node_array_dict[0] == "char" and node_array_dict[4] == 1 and node.init != None):
+            return
+
+        #Recurse through the initList and insert str lit printf array nodes for each init item 
+        #pdb.set_trace()
+        self.initList_recurse(node.init, -1,parent_to_add_to, index_to_add_to, node.name, func_name)
+
+
+    def initList_recurse(self, parent, index, parent_to_add_to, index_to_add_to, array_name, func_name):
+        global to_add_index
+
+        if index < 0:
+            cur_node = parent
+        else:
+            cur_node = parent[index]
+
+        #Got to the string constant, handle
+        if not(isinstance(cur_node, c_ast.InitList)):
+            print(array_name)
+            self.handle_str_lit_array(parent_to_add_to, index_to_add_to, array_name,cur_node)
+            print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
+            parent_to_add_to.insert(index_to_add_to, print_node)
+            self.amt_after += 1
+            self.print_array_extra_nodes(parent_to_add_to, index_to_add_to+1)
+
+        else:
+            for i in range(0, len(cur_node.exprs)):
+                nodes_name = array_name + '[' + (str)(i) + ']'
+                self.initList_recurse(cur_node.exprs, i, parent_to_add_to, index_to_add_to, nodes_name, func_name)
 
     def print_changed_vars(self, parent, index, func_name, new):
         global str_lit
@@ -1111,7 +1155,7 @@ class CVisualizer:
                 isPtr = self.set_decl_array(parent, index)
                 self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
                 self.print_array_extra_nodes(parent, index+self.amt_after+1)
-
+                self.handle_array_decl_str_lit(parent[index+to_add_index], parent, index+self.amt_after+1, func_name)
         #Otherwise it was an assignment of an already declared var
         else:
             #unaryop case, such as x++
