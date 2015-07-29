@@ -382,11 +382,8 @@ class CSpecifics():
 
         current_var['addr'] = self.hex_pad(current_var['addr'][2:], self.max_addr_size)
 
-        if '*' in current_var['type'] and 'ptr_size' in current_var:
-            self.ptr_sizes[current_var['var_name']] = int(current_var['ptr_size'])
-
         if current_var['location'] == 'heap' and current_var['new']:
-            ptr_size = self.ptr_sizes[current_var['var_name'].replace('*','',1)]
+            ptr_size = int(current_var['ptr_size'])
             remaining = int(current_var['max_size'])
 
             value = []
@@ -452,7 +449,6 @@ class CSpecifics():
 
     def code_output_to_json(self, code_output, c_visualizer, hidden_lines_list):
         """ Convert the code output into a dictionary to be converted into a JSON file """
-        self.ptr_sizes = {}
         self.data_val_counter = 0;
         self.brackets_regex = re.compile("\[[^\[\]]*\]")
 

@@ -544,12 +544,12 @@ function executeCVisualizer(option, data, newCode) {
     function get_var_group_id(is_new, var_name) {
         // Figure out the variable's group_id
         var group_id;
-        if(is_new) {
-            group_id = largest_group_id;
-            largest_group_id++;
-        } else {
+        if(var_name_to_group_id[var_name]) {
             // Find it in the tables
             group_id = var_name_to_group_id[var_name];
+        } else {
+            group_id = largest_group_id;
+            largest_group_id++;
         }
 
         return group_id;
