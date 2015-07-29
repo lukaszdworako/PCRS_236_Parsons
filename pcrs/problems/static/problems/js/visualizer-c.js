@@ -441,6 +441,11 @@ function executeCVisualizer(option, data, newCode) {
 
     function add_one_var_to_name_table(changed_var, func_name) {
         //Check if it's new - if so, adding it
+        if ((changed_var['location'] == "heap") | (!changed_var['var_name'])) {
+            // Ignore heap variables because they don't have a name table
+            return;
+        }
+
         if(changed_var['new']) {
 
             //If the variable is a pointer, only add it if its marked to show up in the name table
@@ -449,12 +454,7 @@ function executeCVisualizer(option, data, newCode) {
                 //Check if it's in the stack, heap, or data to decide what we're looking for
                 if(changed_var['location'] == "stack") {
                     table_name = func_name;
-                }
-                else if (changed_var['location'] == "heap") {
-                    // Ignore heap variables because they don't have a name table
-                    return;
-                }
-                else {
+                } else {
                     table_name = 'data';
                 }
 
