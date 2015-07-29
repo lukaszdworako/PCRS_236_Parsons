@@ -1160,7 +1160,13 @@ class CVisualizer:
 
                 self.set_assign_ptr_vars(parent[index], False)
                 self.add_after_node(parent, index, func_name, False, True, False, False)
-                self.try_malloc(parent, index, func_name, parent[index].lvalue.expr.name)
+                #pdb.set_trace()
+                try:
+                    name_to_pass = parent[index].lvalue.expr.name
+                except:
+                    #If there's a binary op inside the unary op
+                    name_to_pass = parent[index].lvalue.expr.left.name
+                self.try_malloc(parent, index, func_name, name_to_pass)
 
             #Array assignment, not unary
             elif isinstance((parent[index].lvalue), c_ast.ArrayRef):
