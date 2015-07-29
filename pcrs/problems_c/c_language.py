@@ -417,6 +417,17 @@ class CSpecifics():
             current_var['type'] += '[]'
 
 
+        if self.brackets_regex.search(current_var['var_name']):
+            name_brackets = len(self.brackets_regex.findall(current_var['var_name']))
+            type_brackets = len(self.brackets_regex.findall(current_var['type']))
+
+            current_var['type'] = current_var['type'].replace('[]','', name_brackets)
+            levels_left = name_brackets-type_brackets
+            current_var['type'] = current_var['type'].replace('*','', levels_left)
+
+            current_var['type'] = current_var['type'].strip()
+
+
         sizes_by_level = []
         if 'array' in current_var:
             current_var['array_top_level'] = True
@@ -443,6 +454,7 @@ class CSpecifics():
         """ Convert the code output into a dictionary to be converted into a JSON file """
         self.ptr_sizes = {}
         self.data_val_counter = 0;
+        self.brackets_regex = re.compile("\[[^\[\]]*\]")
 
         block_delim = c_visualizer.print_wrapper
         print_delim = c_visualizer.item_delimiter

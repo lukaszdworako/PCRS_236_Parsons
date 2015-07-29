@@ -1033,6 +1033,7 @@ function executeCVisualizer(option, data, newCode) {
         console.log("generated_label_value: " + generated_label_value);
 
         return label_value;
+        //return generated_label_value;
     }
 
     function regenerate_all_label_tables() {
