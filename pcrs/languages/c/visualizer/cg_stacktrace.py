@@ -92,7 +92,7 @@ class CVisualizer:
 
         #array_dict will hold the name as the key, with type, size nodes of each level, temporary int vars to be used in for loops,and depth as values in a list
         #{array_name:[type, [size node1, size node2], [temp for var 1, temp for var 2],depth, ptr_depth]}
-        #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2, 0]} 
+        #int x[3][4]; would show up as:  {x:[int, [node with constant 3, node with constant 4], [temp for var 1, temp for var 2],2, 0]}
         self.array_dict = {}
 
         #handled_returns is a list of return nodes that have already been handled - used to check if we've handled a return or not
@@ -158,13 +158,13 @@ class CVisualizer:
 
         on_return = ""
         if onReturn:
-            #return_type contains function's return type (ie, int main(); would be int) 
+            #return_type contains function's return type (ie, int main(); would be int)
             #Only execute this if return_node_name not none, which means it's not just an empty return statement
             if return_node_name != None:
                 return_type = self.func_list.get(func_name)
                 on_return = (str)(self.item_delimiter) + "return:" + (str)(self.primitive_types.get(return_type))
                 add_return_val = c_ast.ID((str)(return_node_name));
-            
+
             #Otherwise not returning anything on return
             else:
                 on_return = (str)(self.item_delimiter) + "return:"
@@ -190,7 +190,7 @@ class CVisualizer:
 
             #If on the stack, size is just the sizeof the variable name and location is stack
             location_info = "stack"
-            
+
             #If on the heap, need to save the size of the thing we malloced in a separate variable since we can't do sizeof on heap
             if onHeap:
                 location_info = "heap"
@@ -205,7 +205,7 @@ class CVisualizer:
                 location_info = "data"
                 is_global = (str)(self.item_delimiter) +"global:True"
 
-            if isStrLit: 
+            if isStrLit:
                 location_info = "data"
 
             var_location = (str)(self.item_delimiter) +"location:"+location_info
@@ -214,7 +214,7 @@ class CVisualizer:
 
             var_size = (str)(self.item_delimiter) +"arr_type_size:%lu"
 
-            value_type_set = "" 
+            value_type_set = ""
             var_hex = ""
             var_isarray = (str)(self.item_delimiter) +"array:"
             if not isArray:
@@ -229,7 +229,7 @@ class CVisualizer:
             var_ptr_size = ""
             if isPtr:
                 var_is_ptr = (str)(self.item_delimiter) + "is_ptr:name"
-                var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu" 
+                var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + pointing_to_type +'))')
 
             var_info = var_name + var_addr +var_type + var_new + var_hex + var_isarray +is_global +var_location +var_uninitialized + var_free+var_size + var_is_ptr + var_ptr_size + var_val
@@ -354,7 +354,7 @@ class CVisualizer:
                     cur_par_index += 1+to_add_index
                     to_add_index = 0
             if_compound_list = []
-        
+
         #Case for non if statements
         else:
             cur_par_index = 0
@@ -437,7 +437,7 @@ class CVisualizer:
     #Checking if there's a function call within a built-in function argument (ie. if *funccall* == 2)
     #Not sure what to do since we won't go into every if statement, check tomorrow
     # def check_arg_funccall(self, parent, index, type):
-    #     #First just make sure it's not a node we added        
+    #     #First just make sure it's not a node we added
     #     try:
     #         if parent[index].coord == None:
     #             return
@@ -557,7 +557,7 @@ class CVisualizer:
             temp_node = node.expr
         else:
             temp_node = node.lvalue
-        pdb.set_trace()
+        #pdb.set_trace()
         while isinstance(temp_node, c_ast.UnaryOp):
             ptr_depth += 1
             temp_node = temp_node.expr
@@ -570,8 +570,8 @@ class CVisualizer:
         #Case where it's a binary op, like *(ptr + 1) = something
         if isinstance(temp_node, c_ast.BinaryOp):
             #add in case for *(ptr + var) = something, currently only for constant
-            var_name_val = '*'*ptr_depth+'('+(str)(temp_node.left.name)+array_access+(str)(temp_node.op)+(str)(temp_node.right.value)+')'  
-            node_name = temp_node.left.name                
+            var_name_val = '*'*ptr_depth+'('+(str)(temp_node.left.name)+array_access+(str)(temp_node.op)+(str)(temp_node.right.value)+')'
+            node_name = temp_node.left.name
         else:
             var_name_val = '*'*ptr_depth+(str)(temp_node.name)+array_access
             node_name = temp_node.name
@@ -650,7 +650,7 @@ class CVisualizer:
             temp_array = temp_array.type
 
             #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-            
+
             #Case where size wasn't specified, check for initlist to determine the size
             if temp_array.dim == None:
                 try:
@@ -679,10 +679,10 @@ class CVisualizer:
         #Initializing all the normal things like type and name, just like in other declarations
         clean_array_type = (str)(temp_array.type.type.names[0])
         type_of_var = clean_array_type + ' ' +'*'*ptr_depth + ' ' + '[]'*array_depth
-        
+
         if ptr_depth > 0:
             pointing_to_type = clean_array_type + ' ' + '*'*(ptr_depth-1)
-        
+
         #Need to decide on if I need this or not
         var_typerep = "%p"
 
@@ -712,7 +712,7 @@ class CVisualizer:
         for size_node in size_nodes:
             parent.insert(index, size_node)
             to_add_index+=1
-            self.amt_after+= 1        
+            self.amt_after+= 1
 
         print(self.array_dict)
 
@@ -735,7 +735,7 @@ class CVisualizer:
         #pdb.set_trace()
         ptr_depth = 0
         if isUnary:
-            temp_val = parent[index].lvalue.expr.name         
+            temp_val = parent[index].lvalue.expr.name
         else:
             temp_val = parent[index].lvalue.name
 
@@ -760,7 +760,7 @@ class CVisualizer:
         type_of_var = cur_array_dict[0] +' ' + '*'*(ptr_depth) + ' '+'[]'*(array_depth)
         var_typerep = '%p'
         var_new_val = False
-        is_uninit = False        
+        is_uninit = False
 
         if ptr_depth >0:
             return {"is_ptr": True, "in_arr_dict":True}
@@ -812,7 +812,7 @@ class CVisualizer:
         if parent[index+self.amt_after+1].expr == None:
             return_node_name = None
         else:
-            self.create_return_val_node(parent, index+self.amt_after+1, func_name) 
+            self.create_return_val_node(parent, index+self.amt_after+1, func_name)
 
         self.handled_returns.append(parent[index+self.amt_after+1])
         print_node = self.create_printf_node(parent, index+self.amt_after+1, func_name, False, False, True, False, False, False, False, False, False, False, False, False)
@@ -855,15 +855,15 @@ class CVisualizer:
         parent.insert(index+1, new_val_node)
         parent.insert(index+2, closed_bracket)
 
-        hex_intro_node = self.create_printf_string('"'+self.item_delimiter + 'hex_value:["')        
+        hex_intro_node = self.create_printf_string('"'+self.item_delimiter + 'hex_value:["')
         parent.insert(index+3, hex_intro_node)
 
         new_hex_node = self.for_node_recurse(for_counter_nodes, size_nodes, "hex", cur_array_dict)
         parent.insert(index+4, new_hex_node)
         parent.insert(index+5, closed_bracket)
-        
+
         self.amt_after += 6
-        
+
         #just calls a function that prints the values of size_nodes in a for loop
         #pass it any for counter node since it's just a temp node we'll use for the for loop
         self.print_size_nodes(size_nodes, parent, index+3)
@@ -880,7 +880,7 @@ class CVisualizer:
             #Don't add a comma after unless it's the last element in the list
             if size_node == size_nodes[-1]:
                 size_print = self.create_printf_string('"%d"')
-            else:    
+            else:
                 size_print = self.create_printf_string('"%d,"')
             cur_node_id = c_ast.ID(size_node.name)
             size_print.args.exprs.append(cur_node_id)
@@ -908,10 +908,10 @@ class CVisualizer:
 
         #the condition part of the for loop
         end_ID = c_ast.ID(cur_depth_size.name)
-        for_cond = c_ast.BinaryOp('<', for_ID, end_ID)  
+        for_cond = c_ast.BinaryOp('<', for_ID, end_ID)
 
         #the next part of the for loop
-        for_next = c_ast.UnaryOp('p++', for_ID)      
+        for_next = c_ast.UnaryOp('p++', for_ID)
 
         if len(for_counter_nodes)>1:
             #the stment part of the for loop
@@ -922,7 +922,7 @@ class CVisualizer:
             iffalse = self.create_printf_string('"],"')
 
             closed_bracket = self.check_if_last_for(for_ID, end_ID, iftrue, iffalse)
-            
+
             for_statement = c_ast.Compound([open_bracket, self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict), closed_bracket])
         else:
             for_statement = c_ast.Compound([self.for_node_recurse(for_counter_nodes[1:], size_nodes[1:], print_type, cur_array_dict)])
@@ -957,7 +957,7 @@ class CVisualizer:
             arr_type = cur_array_dict[0]
             if cur_array_dict[4] > 0:
                 print_notation = '"\'%p\',"'
-            else:    
+            else:
                 print_notation = '"\''+(str)(self.primitive_types.get(arr_type))+'\',"'
         #otherwise if printing hex values, print them in hex format
         elif print_type == "hex":
@@ -973,7 +973,7 @@ class CVisualizer:
         new_node = c_ast.FuncCall(add_id, add_exprList)
         return new_node
 
-    #recursively adds the array ref nodes to be used in the print statement formed above. 
+    #recursively adds the array ref nodes to be used in the print statement formed above.
     #ie: to print x[temp1][temp2] in a for loop, we need to recursively add temp1 and temp2 "arrayref" nodes
     def add_array_refs(self, temp_for_nodes):
         if len(temp_for_nodes)<1:
@@ -985,7 +985,7 @@ class CVisualizer:
         return c_ast.ArrayRef(ref_name, ref_script)
 
     def handle_str_lit_array(self, parent, index):
-        
+
         global to_add_index
         global type_of_var
         global var_name_val
@@ -1019,7 +1019,7 @@ class CVisualizer:
 
         #Initializing all the normal things like type and name, just like in other declarations
         type_of_var = "char"
-        
+
         #Need to decide on if I need this or not
         var_typerep = "%p"
 
@@ -1045,7 +1045,7 @@ class CVisualizer:
         for size_node in size_nodes:
             parent.insert(index+self.amt_after+1, size_node)
             to_add_index+=1
-            self.amt_after+= 1        
+            self.amt_after+= 1
 
         print(self.array_dict)
 
@@ -1086,7 +1086,7 @@ class CVisualizer:
                             self.set_heap_vars(parent, index, parent[index].name, parent[index].init)
 
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False, False, False)
-                            parent.insert(index+1+self.amt_after, print_node)  
+                            parent.insert(index+1+self.amt_after, print_node)
                             self.amt_after += 1
                     except:
                         pass
@@ -1097,7 +1097,7 @@ class CVisualizer:
                     print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
                     parent.insert(index+self.amt_after+1, print_node)
                     self.amt_after += 1
-                    self.print_array_extra_nodes(parent, index+self.amt_after+1)                    
+                    self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
@@ -1107,7 +1107,7 @@ class CVisualizer:
 
         #Otherwise it was an assignment of an already declared var
         else:
-            #unaryop case, such as x++ 
+            #unaryop case, such as x++
             if isinstance(parent[index], c_ast.UnaryOp):
                 #Case for pointers such as *x++
                 if isinstance(parent[index].expr, c_ast.UnaryOp):
@@ -1134,7 +1134,7 @@ class CVisualizer:
                             global var_typerep
                             var_typerep = '%p'
                     except:
-                        pass                        
+                        pass
                 else:
                     ptr_assign = False
 
@@ -1149,14 +1149,14 @@ class CVisualizer:
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
                     #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
                     if str_lit:
-                        ##self.handle_str_lit_array(parent, index) 
+                        ##self.handle_str_lit_array(parent, index)
                         print("str lit")
                      #Case for malloc, won't be mallocing inside a function header
                     try:
                         if parent[index].rvalue.name.name == 'malloc':
                             self.set_heap_vars(parent, index, parent[index].lvalue.name, parent[index].rvalue)
                             print_node = self.create_printf_node(parent, index+1, func_name, False, True, False, False, False, False, False, True, False, False, False, False)
-                            parent.insert(index+1+self.amt_after, print_node)  
+                            parent.insert(index+1+self.amt_after, print_node)
                             self.amt_after += 1
                     except:
                         pass
@@ -1179,9 +1179,9 @@ class CVisualizer:
                 #the pointer with array notation, ie ptr[2] = var
                 else:
                     self.set_assign_ptr_vars(parent[index], False)
-                    self.add_after_node(parent, index, func_name, False, True, False, False)                    
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
                     print ("not declared as an array")
-    
+
     def print_stdout(self, parent, index, func_name):
         global to_add_index
 
@@ -1286,7 +1286,7 @@ class CVisualizer:
                 else:
                     self.set_decl_vars(header_vars[i])
 
-                    header_var_ptr = False 
+                    header_var_ptr = False
                 global is_uninit
                 is_uninit = False
                 print_node = self.create_printf_node(parent, index, func_name, True, True, False, False, False, False, header_var_ptr, False, False, False, False, False)
@@ -1294,7 +1294,7 @@ class CVisualizer:
                 self.amt_after += 1
 
         #Otherwise just set a print node with no changed vars
-        else: 
+        else:
             print_node = self.create_printf_node(parent, index, func_name, True, False, False, False, False, False, False, False, False, False, False, False)
             parent[index].body.block_items.insert(0, print_node)
             self.amt_after += 1

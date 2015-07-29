@@ -20,6 +20,7 @@ var largest_array_id;
 var largest_group_id;
 var array_id_counter;
 var group_id_vals = {};
+var group_id_to_type = {};
 var group_id_to_start_addr = {};
 var start_addr_to_group_id = {};
 var var_name_to_group_id = {};
@@ -30,7 +31,7 @@ var value_list = {};
 var hex_mode_on = false;
 //---
 
-function zeroPad (str, max) {
+function zeroPad(str, max) {
   str = str.toString();
   return str.length < max ? zeroPad("0" + str, max) : str;
 }
@@ -43,6 +44,28 @@ function toHexString(hexnum, max) {
     }
 
     return "0x" + zeroPad(str_hex_num, max);
+}
+
+function hexToInt(hexstring) {
+    // For signed int-like values, consider the first bit
+    var binary_string = zeroPad(parseInt(hexstring, 16).toString(2), hexstring.length*4);
+    var first_bit = binary_string[0];
+    return (first_bit === '1' ? '-' : '') + parseInt(binary_string.slice(1), 2);
+}
+function hexToUnsignedInt(hexstring) {
+    return parseInt(hexstring, 16);
+}
+function hexToChar(hexstring) {
+    return String.fromCharCode(parseInt(hexstring, 16));
+}
+function hexToCharArray(hexstring) {
+    hexstring = hexstring.toString().replace(/0x/g, ''); // Force conversion
+    var str = [];
+    for (var i = 0; i < hexstring.length; i += 2) {
+        str.push(hexToChar(hexstring.substr(i, 2)));
+    }
+
+    return str;
 }
 
 function executeCVisualizer(option, data, newCode) {
@@ -548,12 +571,14 @@ function executeCVisualizer(option, data, newCode) {
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {
         // Store values for use later
         var var_name = changed_var["var_name"];
+        var type = changed_var["type"];
         var start_addr = parseInt(changed_var["addr"], 16);
         var value = changed_var["value"];
         var func_location = changed_var["location"];
         var cells_needed = parseInt(changed_var["max_size"]);
         var is_new = Boolean(changed_var["new"]);
         var is_uninitialized = Boolean(changed_var["uninitialized"]);
+        var is_top_level = Boolean(changed_var["array_top_level"]);
 
         var location = get_var_location(func_location, func_name, start_addr);
 
@@ -569,7 +594,9 @@ function executeCVisualizer(option, data, newCode) {
             if(var_name) {
                 var_name_to_group_id[var_name] = array_group_id;
                 group_id_to_var_name[array_group_id] = var_name;
+            }
 
+            if(is_top_level) {
                 array_id_counter = array_group_id;
             }
 
@@ -601,6 +628,7 @@ function executeCVisualizer(option, data, newCode) {
 
             // Update all the relevant info maps
             group_id_vals[group_id] = value;
+            group_id_to_type[group_id] = type;
 
             group_id_to_start_addr[group_id] = start_addr;
             start_addr_to_group_id[start_addr] = group_id;
@@ -911,7 +939,7 @@ function executeCVisualizer(option, data, newCode) {
                             if(rows_in_group > 1) {
                                 if(rows_in_group == 2 && !in_middle) {
                                     // Draw the label
-                                    cell_value = group_id_vals[group_id];
+                                    cell_value = generate_label_value(group_id);;
                                     clarity_classes = "label-td"
                                     rowspan = rows_in_group;
 
@@ -930,7 +958,7 @@ function executeCVisualizer(option, data, newCode) {
 
                                 } else if(c == 1 && colspan == 4) {
                                     // Draw the label
-                                    cell_value = group_id_vals[group_id];
+                                    cell_value = generate_label_value(group_id);;
                                     clarity_classes = "clear-cell middle-row-clear-cell label-td"
                                     rowspan = rows_in_group;
                                     if((group_end_addr % 4) > 0) {
@@ -957,7 +985,7 @@ function executeCVisualizer(option, data, newCode) {
 
                                 } else {
                                     // Draw the label cell right now
-                                    cell_value = group_id_vals[group_id];
+                                    cell_value = generate_label_value(group_id);
                                     clarity_classes = "right-edge-clear-cell label-td";
                                 }
 
@@ -977,6 +1005,34 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         return updated_label_table;
+    }
+
+    function generate_label_value(group_id) {
+        var label_value = group_id_vals[group_id];
+        // TODO: Get all hex values of this group and convert appropriately
+        // TODO: Remove calls to group_id_vals[group_id]
+        var generated_label_value = '';
+        var all_group_hex_values = $("table.memory-map-cell-table td[group-id='" + group_id + "'").map(function() {
+            return $(this).html().replace(/0x/g, '');
+        }).get().join('');
+
+        var type = group_id_to_type[group_id];
+        if(type.indexOf('*') > -1) {
+            generated_label_value = '0x' + all_group_hex_values;
+
+        } else if(type === 'char') {
+            generated_label_value = hexToChar(all_group_hex_values);
+
+        } else if(type.indexOf('unsigned') > -1) {
+            generated_label_value = hexToUnsignedInt(all_group_hex_values);
+
+        } else {
+            // All other signed int-like values
+            generated_label_value = hexToInt(all_group_hex_values);
+        }
+        console.log("generated_label_value: " + generated_label_value);
+
+        return label_value;
     }
 
     function regenerate_all_label_tables() {
@@ -1207,10 +1263,13 @@ function executeCVisualizer(option, data, newCode) {
         if(cell_value && cell_value != "&nbsp;") {
             memory_map_cell.setAttribute("group-id", group_id);
             cell_value = toHexString(cell_value, 2);
-        }
 
-        if(array_id) {
-            memory_map_cell.setAttribute("array-id", array_id);
+            if(array_id) {
+                memory_map_cell.setAttribute("array-id", array_id);
+            }
+        } else {
+            memory_map_cell.className += " uninitialized";
+            memory_map_cell.setAttribute("uninitialized", true);
         }
 
         memory_map_cell.innerHTML = cell_value;
@@ -1457,10 +1516,10 @@ function executeCVisualizer(option, data, newCode) {
             var ptr_val = elem_info['value'];
             var ptr_size = elem_info['ptr_size'];
 
-            // Add all the following cells up to ptr_size
             // Get the cell it's pointing to
-            var pointed_cell = $("div.memory-map-section td[addr='" + ptr_val + "']");
+            var pointed_cell = $("table.memory-map-cell-table td[addr='" + ptr_val + "']");
 
+            // Add all the following cells up to ptr_size
             if(pointed_cell.length > 0) {
                 // Get all following cells
                 var parent_wrapper = pointed_cell.parents("div.memory-map-table-wrapper");
@@ -1582,7 +1641,7 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         //If the variable is not new and not freed, just push the new value onto its history array and update its current value
-        else {
+        else if(val_address in value_list) {
             value_list[val_address]["history"].push(changed_var["value"]);
             value_list[val_address]["value"] = changed_var["value"];
         }
@@ -1634,6 +1693,7 @@ function executeCVisualizer(option, data, newCode) {
 
     function reset_memory_tables() {
         group_id_vals = {};
+        group_id_to_type = {};
         group_id_to_start_addr = {};
         start_addr_to_group_id = {};
         var_name_to_group_id = {};

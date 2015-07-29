@@ -309,6 +309,7 @@ class CSpecifics():
         value = current_var['value']
         hex_value = current_var['hex_value']
         value_type = current_var['type']
+        name = current_var['var_name']
 
         # Collapse spaces to judge the type accurately
         value_type = value_type.replace(" ", "")
@@ -358,11 +359,15 @@ class CSpecifics():
 
         else:
             # Pointers values must always be as wide as an address
-            if '*' in value_type:
-                value = self.hex_pad(value[2:], self.max_addr_size)
+            if '*' in value_type and value[0:2] == '0x':
+                array_brackets = len(re.findall(r"\[[^\[\]]*\]", name))
+                pointer_levels = value_type.count('*')
+                if(array_brackets < pointer_levels):
+                    value = self.hex_pad(value[2:], self.max_addr_size)
 
             # If not a pointer, return the value as is
             return value
+
 
     def parse_var(self, line_info):
         current_var = dict(line_info)
@@ -377,8 +382,48 @@ class CSpecifics():
 
         current_var['addr'] = self.hex_pad(current_var['addr'][2:], self.max_addr_size)
 
+        if '*' in current_var['type'] and 'ptr_size' in current_var:
+            self.ptr_sizes[current_var['var_name']] = int(current_var['ptr_size'])
+
+        if current_var['location'] == 'heap' and current_var['new']:
+            ptr_size = self.ptr_sizes[current_var['var_name'].replace('*','',1)]
+            remaining = int(current_var['max_size'])
+
+            value = []
+            hex_value = []
+            elems = 0
+            while remaining > ptr_size:
+                value.append("'" + '0' + "'")
+                hex_value.append("'" + '0'*ptr_size + "'")
+                elems += 1
+                remaining -= ptr_size
+
+            if remaining > 0:
+                value.append("'" + '0' + "'")
+                hex_value.append("'" + '0'*remaining + "'")
+                elems += 1
+
+            value = '[' + ','.join(value) + ']'
+            hex_value = '[' + ','.join(hex_value) + ']'
+
+            arr_dims = "[" + str(elems) + "]"
+            arr_type_size = ptr_size
+
+            current_var['value'] = value
+            current_var['hex_value'] = hex_value
+            current_var['arr_dims'] = arr_dims
+            current_var['arr_type_size'] = arr_type_size
+            current_var['array'] = True
+            current_var['type'] += '[]'
+
+
         sizes_by_level = []
         if 'array' in current_var:
+            current_var['array_top_level'] = True
+
+            if current_var['type'] == 'char':
+                current_var['type'] += '[]'
+
             sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
             sizes_by_level.append(int(current_var['arr_type_size']))
 
@@ -393,8 +438,11 @@ class CSpecifics():
 
         return current_var
 
+
     def code_output_to_json(self, code_output, c_visualizer, hidden_lines_list):
         """ Convert the code output into a dictionary to be converted into a JSON file """
+        self.ptr_sizes = {}
+        self.data_val_counter = 0;
 
         block_delim = c_visualizer.print_wrapper
         print_delim = c_visualizer.item_delimiter
