@@ -20,32 +20,36 @@ hr {
 #visualizer-section-wrapper {
     display: flex;
     -webkit-flex-flow: row wrap;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .visualizer-section {
     margin: 5px;
-    padding: 10px;
+    padding: 15px;
     vertical-align: top;
-    -webkit-flex-grow: 1;
+    overflow-x: auto;
     overflow-y: auto;
     max-height: 800px;
 }
 
 .code-window-section {
     .visualizer-section;
-    min-width: 600px;
+    min-width: 420px;
+    -webkit-flex: 1 0 420px;
 }
 
 .name-type-section {
     .visualizer-section;
-    min-width: 328px;
-    -webkit-flex: 0 0 20%;
+    //min-width: 328px;
+    min-width: 18%;
+    width: 18%;
+    -webkit-flex: 0 0 18%;
 }
 
 .memory-map-section {
     .visualizer-section;
     min-width: 420px;
+    width: 26%;
     -webkit-flex: 0 0 26%;
 }
 
@@ -75,7 +79,6 @@ hr {
 #std-out-section {
     margin: 0px;
     width: 100%;
-    min-width: 25em;
 }
 
 #std-out-textbox {
@@ -193,10 +196,10 @@ div#name-type-section tbody td {
 }
 
 div#name-type-section td.var-name {
-    width: 60%;
+    width: 50%;
 }
 div#name-type-section td.var-type {
-    width: 40%;
+    width: 50%;
 }
 
 table.memory-map-cell-table .memory-map-cell {

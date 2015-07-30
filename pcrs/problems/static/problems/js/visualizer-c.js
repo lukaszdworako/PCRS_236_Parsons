@@ -239,6 +239,28 @@ function executeCVisualizer(option, data, newCode) {
                 add_globals();
             });
 
+            $("#font_size_up").bind('click', function () {
+                var code_window =  $("div#preview-code");
+                var font_size = parseInt(code_window.css('font-size'));
+                code_window.css('font-size', font_size+1 + 'px');
+
+                myCodeMirrors[debugger_id].refresh();
+            });
+            $("#font_size_down").bind('click', function () {
+                var code_window =  $("div#preview-code");
+                var font_size = parseInt(code_window.css('font-size'));
+
+                if(font_size > 0) {
+                    code_window.css('font-size', font_size-1 + 'px');
+                }
+
+                myCodeMirrors[debugger_id].refresh();
+            });
+            $("#font_size_default").bind('click', function () {
+                $("div#preview-code").css('font-size', '14px');
+                myCodeMirrors[debugger_id].refresh();
+            });
+
             $('#toggle-hex-button').bind('click', function () {
                 toggle_hex();
             });
@@ -284,6 +306,11 @@ function executeCVisualizer(option, data, newCode) {
     function update_new_debugger_table(data, update_type){
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
+        myCodeMirrors[debugger_id].setSelection(
+                {line: cur_line, ch: 0},
+                {line: cur_line, ch: 0},
+                {scroll: true}
+            );
 
         add_hover_to_code();
 
@@ -499,11 +526,11 @@ function executeCVisualizer(option, data, newCode) {
         '" class="table table-bordered" style="width: 100%; float:left;">'+
         '<thead>'+
             '<tr>'+
-             '<th colSpan=2>'+table_name + '</th>'+
+             '<th colspan=2>'+table_name + '</th>'+
             '</tr>'+
             '<tr>'+
-            '<th width="60%">Name</th>' +
-            '<th width="40%">Type</th>' +
+            '<th width="50%">Name</th>' +
+            '<th width="50%">Type</th>' +
             '</tr>' +
         '</thead>' +
         '<tbody id="name-body-'+table_name+'">' +
@@ -1609,8 +1636,8 @@ function executeCVisualizer(option, data, newCode) {
             '" class="table table-bordered" style="width: 100%; float:left;">'+
             '<thead>'+
                 '<tr>'+
-                '<th width="60%">Name</th>' +
-                '<th width="40%">Type</th>' +
+                '<th width="50%">Name</th>' +
+                '<th width="50%">Type</th>' +
                 '</tr>' +
             '</thead>' +
             '<tbody id="name-body-'+table_name+'">' +

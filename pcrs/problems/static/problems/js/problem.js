@@ -957,6 +957,8 @@ function preventDeleteLastLine(editor_id) {
             "Backspace": guardBackspace,
             "Delete": guardDelete,
         });
+
+    editor.setOption("lineWrapping", true);
 }
 
 function guardBackspace(editor) {
