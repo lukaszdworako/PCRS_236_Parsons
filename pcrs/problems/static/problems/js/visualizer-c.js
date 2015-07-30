@@ -811,12 +811,18 @@ function executeCVisualizer(option, data, newCode) {
                 var existing_row = location_table.find("tr[start-addr='" + current_start_addr + "']");
                 var i = 0;
                 while(current_row.children().length > 0) {
-                    var new_cell_group_id = current_row.children().first().attr("group-id");
+                    var new_cell_group_id = current_row.children().first().attr('group-id');
 
                     var var_name = group_id_to_var_name[new_cell_group_id];
                     if(var_name && var_name[0] === '*') {
                         var old_group_id = $(existing_row.children()[i]).attr('group-id');
-                        current_row.children().first().attr('gropu-id', old_group_id);
+                        group_id_vals[old_group_id] = group_id_vals[new_cell_group_id];
+                        current_row.children().first().attr('group-id', old_group_id);
+                    }
+
+                    var old_array_id = $(existing_row.children()[i]).attr('array-id');
+                    if(old_array_id) {
+                        current_row.children().first().attr('array-id', old_array_id);
                     }
 
                     // Only cells with a group-id count as part of the actual variable, the rest are ignored
