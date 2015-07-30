@@ -432,9 +432,8 @@ class CSpecifics():
 
             sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
             sizes_by_level.append(int(current_var['arr_type_size']))
-
             # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
-            current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']'))
+            current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']').replace('\x00', ' '))
             current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(',]', ']'))
 
         else:
