@@ -20,6 +20,7 @@ hr {
 #visualizer-section-wrapper {
     display: flex;
     -webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
     justify-content: flex-start;
 }
 
@@ -28,7 +29,7 @@ hr {
     padding: 15px;
     vertical-align: top;
     overflow-x: auto;
-    overflow-y: auto;
+    overflow-y: hidden;
     max-height: 800px;
 }
 
@@ -36,6 +37,7 @@ hr {
     .visualizer-section;
     min-width: 420px;
     -webkit-flex: 1 0 420px;
+    flex: 1 0 420px;
 }
 
 .name-type-section {
@@ -44,6 +46,7 @@ hr {
     min-width: 18%;
     width: 18%;
     -webkit-flex: 0 0 18%;
+    flex: 0 0 18%;
 }
 
 .memory-map-section {
@@ -51,6 +54,7 @@ hr {
     min-width: 420px;
     width: 26%;
     -webkit-flex: 0 0 26%;
+    flex: 0 0 26%;
 }
 
 .memory-map-section td {
