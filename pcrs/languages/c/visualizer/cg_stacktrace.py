@@ -573,7 +573,7 @@ class CVisualizer:
 
         while isinstance(temp_node, c_ast.ArrayRef):
             array_depth += 1
-            array_access = array_access+"["+ temp_node.subscript.value +"]"
+            array_access = "["+ temp_node.subscript.value +"]"+array_access
             temp_node = temp_node.name
 
         #Case where it's a binary op, like *(ptr + 1) = something
@@ -592,8 +592,17 @@ class CVisualizer:
 
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
 
+        #pdb.set_trace()
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
-        if ptr_depth+array_depth == self.ptr_dict.get(node_name):
+
+        array_dict_entry = self.array_dict.get(node_name)
+        if array_dict_entry == None:
+            dict_ptr_depth = self.ptr_dict.get(node_name)
+            dict_array_depth = 0
+        else: 
+            dict_ptr_depth = array_dict_entry[4]
+            dict_array_depth = array_dict_entry[3]
+        if ptr_depth+array_depth == dict_ptr_depth + dict_array_depth:
             var_typerep = self.primitive_types.get(stripped_vartype)
             #it can't be pointing to a full string, only a character - this is the case for string lits
             # if var_typerep == '%s':
@@ -663,8 +672,12 @@ class CVisualizer:
 
             #Case where size wasn't specified, check for initlist to determine the size
             if temp_array.dim == None:
+                #pdb.set_trace()
                 try:
                     outer_len = len(parent[index].init.children())
+                    #Case for strings
+                    if outer_len == 0:
+                        outer_len = len(parent[index].init.value)-2
                     temp_len_val = c_ast.Constant('int', (str)(outer_len))
                     level_size = self.create_new_var_node('int', temp_len_val)
                 #case where there's no size specified and no initlist - will deal more with this later
@@ -1224,26 +1237,29 @@ class CVisualizer:
                 returned_dict = self.set_assign_array(parent, index, False)
                 isPtr = returned_dict.get("is_ptr")
                 isDeclArray = returned_dict.get("in_arr_dict")
-                if isDeclArray:
-                    self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
-                    self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                # if isDeclArray:
+                #     self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
+                #     self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
-                    #This is only to get the exact name of the var changing for malloc
-                    temp_node = parent[index+to_add_index].lvalue
-                    array_access = ""
-                    while isinstance(temp_node, c_ast.ArrayRef):
-                        array_access = array_access+"["+ temp_node.subscript.value +"]"
-                        temp_node = temp_node.name
-                    name_to_pass = var_name_val+array_access
+                #     #This is only to get the exact name of the var changing for malloc
+                #     temp_node = parent[index+to_add_index].lvalue
+                #     array_access = ""
+                #     while isinstance(temp_node, c_ast.ArrayRef):
+                #         array_access = array_access+"["+ temp_node.subscript.value +"]"
+                #         temp_node = temp_node.name
+                #     name_to_pass = var_name_val+array_access
 
-                #Handle as a pointer, but dont put in name table. It's arrayref opposed to binaryop, since we're referencing
-                #the pointer with array notation, ie ptr[2] = var
-                else:
-                    self.set_assign_ptr_vars(parent[index], False)
-                    self.add_after_node(parent, index, func_name, False, True, False, False)
-                    print ("not declared as an array")
-                    name_to_pass = var_name_val
+                # #Handle as a pointer, but dont put in name table. It's arrayref opposed to binaryop, since we're referencing
+                # #the pointer with array notation, ie ptr[2] = var
+                # else:
+                #     self.set_assign_ptr_vars(parent[index], False)
+                #     self.add_after_node(parent, index, func_name, False, True, False, False)
+                #     print ("not declared as an array")
+                #     name_to_pass = var_name_val
                 #pdb.set_trace()
+                self.set_assign_ptr_vars(parent[index], False)
+                self.add_after_node(parent, index, func_name, False, isPtr, False, False)
+                name_to_pass = var_name_val
                 self.try_malloc(parent, index+to_add_index, func_name, name_to_pass)
 
             #Case for string literal, add an array val on data
