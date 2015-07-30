@@ -157,7 +157,6 @@ class CSpecifics():
                 os.remove(temp_runtime_error_file)
             except OSError:
                 pass
-            print(ret["exception_type"] + ": " + ret["exception"])
             return ret
 
     def compile_source_code(self, user, user_script, deny_warning=False):
