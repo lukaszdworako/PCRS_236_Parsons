@@ -86,7 +86,7 @@ class CSpecifics():
                 max_file_size = "5120"  # 5 megabytes
 
                 # Running C program in a secure environment
-                subprocess.call('touch ' + temp_output_file + ' ' + temp_runtime_error_file, shell=True)
+                #subprocess.call('touch ' + temp_output_file + ' ' + temp_runtime_error_file, shell=True)
                 cmd_str = safe_exec + " -o " + temp_output_file + " -d " + max_process_mem \
                                 + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID + " -e " \
                                 + temp_runtime_error_file + " -T " + max_time_sec + " -F " + max_number_files \
