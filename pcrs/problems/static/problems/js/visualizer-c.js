@@ -306,11 +306,6 @@ function executeCVisualizer(option, data, newCode) {
     function update_new_debugger_table(data, update_type){
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
-        myCodeMirrors[debugger_id].setSelection(
-                {'anchor': cur_line, 'head': 0},
-                {'anchor': cur_line, 'head': 0},
-                {'scroll': true}
-            );
 
         add_hover_to_code();
 
