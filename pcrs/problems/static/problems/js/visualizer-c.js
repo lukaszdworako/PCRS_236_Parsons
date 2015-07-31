@@ -289,7 +289,8 @@ function executeCVisualizer(option, data, newCode) {
 
         $('#newvisualizerModal').modal('show');
 
-        add_hover_to_code();
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
+        //add_hover_to_code();
         add_globals();
 
     }
@@ -306,13 +307,15 @@ function executeCVisualizer(option, data, newCode) {
     function update_new_debugger_table(data, update_type){
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
-        myCodeMirrors[debugger_id].setSelection(
-                {line: cur_line, ch: 0},
-                {line: cur_line, ch: 0},
-                {scroll: true}
-            );
+        if((json_index+1 < debugger_data["steps"].length)
+            && (debugger_data["steps"][json_index+1]['on_entry_point'])) {
 
-        add_hover_to_code();
+            var function_call_line = parseInt(debugger_data["steps"][json_index+1]["student_view_line"]-1);
+            myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
+        }
+
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
+        //add_hover_to_code();
 
         //Removes any name table rows that must be removed with this step
         $(return_to_clr).remove();
@@ -571,12 +574,16 @@ function executeCVisualizer(option, data, newCode) {
     function get_var_group_id(is_new, var_name) {
         // Figure out the variable's group_id
         var group_id;
-        if(var_name_to_group_id[var_name]) {
+        if(var_name_to_group_id[var_name] && !is_new) {
             // Find it in the tables
             group_id = var_name_to_group_id[var_name];
         } else {
             group_id = largest_group_id;
             largest_group_id++;
+        }
+
+        if(var_name_to_group_id[var_name] && is_new) {
+            var_name_to_group_id[var_name] = group_id;
         }
 
         return group_id;
@@ -1553,12 +1560,14 @@ function executeCVisualizer(option, data, newCode) {
         var array_group = $("div.memory-map-section td[array-id='" + array_id + "']");
         main_elements_to_highlight.push(array_group);
 
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
         //var var_name = group_id_to_var_name[group_id];
-        var var_name = name_table_row.find("td.var-name").attr('title');
+        /*var var_name = name_table_row.find("td.var-name").attr('title');
         var code_span = $("div.code-window-section span.cm-variable").filter(function() {
             return $(this).html() == var_name;
         });
         extra_elements_to_highlight.push(code_span);
+        */
 
         // If it's a pointer, find all things down the chain of pointers and add them to the array
         // Loop until we reach a non-pointer
