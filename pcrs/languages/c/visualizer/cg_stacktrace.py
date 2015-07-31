@@ -571,9 +571,11 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.expr
 
+        #pdb.set_trace()
         while isinstance(temp_node, c_ast.ArrayRef):
             array_depth += 1
-            array_access = "["+ temp_node.subscript.value +"]"+array_access
+            temp_generator = c_generator.CGenerator()
+            array_access = "["+ (str)(temp_generator.visit(temp_node.subscript)) +"]"+array_access
             temp_node = temp_node.name
 
         #Case where it's a binary op, like *(ptr + 1) = something
