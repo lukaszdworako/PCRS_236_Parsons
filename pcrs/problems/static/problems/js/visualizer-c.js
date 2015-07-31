@@ -289,7 +289,8 @@ function executeCVisualizer(option, data, newCode) {
 
         $('#newvisualizerModal').modal('show');
 
-        add_hover_to_code();
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
+        //add_hover_to_code();
         add_globals();
 
     }
@@ -313,7 +314,8 @@ function executeCVisualizer(option, data, newCode) {
             myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
         }
 
-        add_hover_to_code();
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
+        //add_hover_to_code();
 
         //Removes any name table rows that must be removed with this step
         $(return_to_clr).remove();
@@ -1554,12 +1556,14 @@ function executeCVisualizer(option, data, newCode) {
         var array_group = $("div.memory-map-section td[array-id='" + array_id + "']");
         main_elements_to_highlight.push(array_group);
 
+        // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
         //var var_name = group_id_to_var_name[group_id];
-        var var_name = name_table_row.find("td.var-name").attr('title');
+        /*var var_name = name_table_row.find("td.var-name").attr('title');
         var code_span = $("div.code-window-section span.cm-variable").filter(function() {
             return $(this).html() == var_name;
         });
         extra_elements_to_highlight.push(code_span);
+        */
 
         // If it's a pointer, find all things down the chain of pointers and add them to the array
         // Loop until we reach a non-pointer

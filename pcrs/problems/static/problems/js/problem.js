@@ -70,8 +70,6 @@ function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
     executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);
 
-    console.log(newCode);
-
     visualizerDetailsTarget = newOrOld == 'old' ? '/visualizer-details' : '/new-visualizer-details';
     $.post(root + '/problems/' + language + visualizerDetailsTarget,
             postParams,
