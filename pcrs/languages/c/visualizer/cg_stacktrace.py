@@ -496,6 +496,7 @@ class CVisualizer:
         global var_typerep
         global str_lit
 
+        #pdb.set_trace()
         ptr_depth = 0
         if isUnary:
             temp_name_val = node.expr.name
@@ -508,8 +509,8 @@ class CVisualizer:
         if type_of_var == "char *":
             str_lit = True
 
-        #This should only happen if it's a pointer and we can't find its type
-        if var_typerep == None:
+        #This should only happen if it's a pointer and we can't find its type, char* finds string so including that too
+        if var_typerep == None or var_typerep == '%s':
             var_typerep = '%p'
         var_new_val = False
         is_uninit = False
@@ -1161,7 +1162,9 @@ class CVisualizer:
                     except:
                         pass
                 #Case for string literal, add an array val on data
-                if str_lit and parent[index].init != None:
+                #Only execute this if it's being set to a constant that's a string: otherwise, if pointing to a var, leave it
+                if str_lit and parent[index].init != None and isinstance(parent[index].init, c_ast.Constant):
+                    #pdb.set_trace()
                     self.handle_str_lit_array(parent, index)
                     print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
                     parent.insert(index+self.amt_after+1, print_node)
@@ -1216,9 +1219,9 @@ class CVisualizer:
                 else:
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
                     #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
-                    if str_lit:
+                    #if str_lit:
                         ##self.handle_str_lit_array(parent, index)
-                        print("str lit")
+                        #print("str lit")
                      #Case for malloc, won't be mallocing inside a function header
                     self.try_malloc(parent, index+to_add_index, func_name, parent[index].lvalue.name)
 
@@ -1265,7 +1268,7 @@ class CVisualizer:
                 self.try_malloc(parent, index+to_add_index, func_name, name_to_pass)
 
             #Case for string literal, add an array val on data
-            if str_lit:
+            if str_lit and isinstance(parent[index].rvalue, c_ast.Constant):
                 #pdb.set_trace()
                 self.handle_str_lit_array(parent, index)
                 print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
