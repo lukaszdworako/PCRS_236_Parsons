@@ -306,6 +306,12 @@ function executeCVisualizer(option, data, newCode) {
     function update_new_debugger_table(data, update_type){
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
+        if((json_index+1 < debugger_data["steps"].length)
+            && (debugger_data["steps"][json_index+1]['on_entry_point'])) {
+
+            var function_call_line = parseInt(debugger_data["steps"][json_index+1]["student_view_line"]-1);
+            myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
+        }
 
         add_hover_to_code();
 
