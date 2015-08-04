@@ -171,6 +171,16 @@ class CSpecifics():
         flags = "-Wall"
 
         ret = {"temp_gcc_file": temp_gcc_file}
+
+        # Filtering user script
+        for line in user_script.split("\n"):
+            if "#include" in line and ("<sys/" in line or "<net" in line):
+                ret["exception_type"] = "error"
+                lib_loc = line.find("#include <")
+                lib_end = line[lib_loc:].find(">")
+                ret["exception"] = "Forbidden library found: {0}".format(line[lib_loc + 10:lib_end])
+                return ret
+
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
