@@ -208,11 +208,12 @@ class CSpecifics():
                 compilation_alert = compilation_alert.replace(self.temp_path, "")
                 # Removing the file name from the error string
                 compilation_alert = compilation_alert.replace((user + self.date_time + ".c:"), '')
+                
                 # Check for compilation, or warning errors
-                if not compilation_alert.find("warning") != -1:
+                if compilation_alert.find("error") != -1:
                     ret["exception_type"] = "error"
                     ret["exception"] = str("Compilation Error:\n" + compilation_alert).replace('\n', '<br />')
-                elif not deny_warning:
+                elif not deny_warning and (compilation_alert.find("warning") != -1):
                     ret["exception_type"] = "warning"
                     ret["exception"] = str("Compilation Warning:\n" + compilation_alert).replace('\n', '<br />')
                 else:
@@ -441,7 +442,7 @@ class CSpecifics():
                 current_var['type'] += '[]'
 
             sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
-            sizes_by_level.append(int(current_var['arr_type_size']))
+            sizes_by_level.append(int(current_var['arr_type_size']))    
             # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
             current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']').replace('\x00', ' '))
             current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(',]', ']'))
