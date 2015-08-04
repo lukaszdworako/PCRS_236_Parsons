@@ -307,12 +307,6 @@ function executeCVisualizer(option, data, newCode) {
     function update_new_debugger_table(data, update_type){
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
-        if((json_index+1 < debugger_data["steps"].length)
-            && (debugger_data["steps"][json_index+1]['on_entry_point'])) {
-
-            var function_call_line = parseInt(debugger_data["steps"][json_index+1]["student_view_line"]-1);
-            myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
-        }
 
         // Uncomment when a way is figured out to separate variables (instead of highlighting all with the same name)
         //add_hover_to_code();
@@ -382,6 +376,21 @@ function executeCVisualizer(option, data, newCode) {
             if(json_step.hasOwnProperty('on_entry_point')) {
                 most_recently_entered = json_step['function'];
             }
+
+            if((json_index+2 < debugger_data["steps"].length)
+                && (debugger_data["steps"][json_index+2]['on_entry_point'])) {
+
+                var function_call_line = parseInt(debugger_data["steps"][json_index+2]["student_view_line"]-1);
+                myCodeMirrors[debugger_id].removeLineClass(function_call_line, '', 'CodeMirror-activeline-background');
+            }
+        }
+
+        // Highlight the upcoming line of a function call, whether we moved back or forward
+        if((json_index+1 < debugger_data["steps"].length)
+            && (debugger_data["steps"][json_index+1]['on_entry_point'])) {
+
+            var function_call_line = parseInt(debugger_data["steps"][json_index+1]["student_view_line"]-1);
+            myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
         }
 
         if((most_recently_entered != "") && (!json_step.hasOwnProperty('on_entry_point'))) {
@@ -669,6 +678,8 @@ function executeCVisualizer(option, data, newCode) {
 
             group_id_to_start_addr[group_id] = start_addr;
             start_addr_to_group_id[start_addr] = group_id;
+
+            group_id_to_array_id[group_id] = array_id;
 
             if(var_name) {
                 var_name_to_group_id[var_name] = group_id;
