@@ -12,12 +12,11 @@ Convert code with tags like [student], [blocked] and [hidden] from the starter_c
 def process_code_tags(problem_id, user_submission, starter_code):
     #if code from editor, just return straight code
     if (str)(problem_id) == "9999999":
-        logger.info("IN HERE PID IS CORRECT")
         if len(user_submission) == 0:
             raise Exception("No code found!")
         else:
-            logger.info("length of sub is not 0")
-            return user_submission
+            mod_submission = user_submission
+            return mod_submission
     else:
         mod_submission = combine_user_code_starter_code(problem_id, user_submission, starter_code)
 
@@ -63,6 +62,15 @@ def combine_user_code_starter_code(problem_id, user_submission, starter_code):
 
 
 def get_hidden_lines(problem_id, user_submission, starter_code):
+
+    #Editor case, no hidden lines so return an empty list
+    if (str)(problem_id) == "9999999":
+        if len(user_submission) == 0:
+            raise Exception("No code found!")
+        else:
+            return []
+
+    #Not editor, combine the user with starter code and get hidden line list
     combined_code = combine_user_code_starter_code(problem_id, user_submission, starter_code)
 
     inside_hidden_tag = False
