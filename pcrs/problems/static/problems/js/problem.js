@@ -298,6 +298,8 @@ function handleCMessages(div_id, testcases){
         }
     }
 
+    var dont_visualize = false;
+
     if(bad_testcase != null){
         var class_type;
         if(bad_testcase.exception_type == "warning") {
@@ -305,6 +307,7 @@ function handleCMessages(div_id, testcases){
         }
         else if(bad_testcase.exception_type == "error"){
             class_type = 'alert alert-danger';
+            dont_visualize = true;
         }
 
         var bad_testcase_message = "";
@@ -318,6 +321,8 @@ function handleCMessages(div_id, testcases){
             .find('#alert')
             .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase_message + '</div>');
     }
+
+    return dont_visualize;
 }
 
 function getTestcases(div_id) {
@@ -337,15 +342,26 @@ function getTestcases(div_id) {
         clean_code = clean_code.replace('\t',"    ");
     }
 
-    var postParams = { csrftoken: csrftoken, submission: clean_code };
     var call_path = "";
 
     check_language(div_id);
     if (language == 'python'){
-        call_path = root + '/problems/python/'+div_id.split("-")[1]+'/run'
+        call_path = root + '/problems/python/'+div_id.split("-")[1]+'/run';
     }
     else if (language == 'c'){
-        call_path = root + '/problems/c/'+div_id.split("-")[1]+'/run'
+        var problem_number = div_id.split("-")[1];
+        var if_editor = div_id.split("-")[2];
+
+        //If it's not part of the code editor, get path normally
+        if (if_editor == null){
+            call_path = root + '/problems/c/'+div_id.split("-")[1]+'/run';
+        }
+        //Otherwise it's part of the code editor, set number to 9999999
+        //and set the code to not have hashes
+        else {
+            call_path = root + '/problems/c/editor/run';
+            clean_code = myCodeMirrors[div_id].getValue();
+        }
     }
     else if (language == 'sql'){
         call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
@@ -353,6 +369,8 @@ function getTestcases(div_id) {
     else if (language == 'ra'){
         call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
     }
+
+    var postParams = { csrftoken: csrftoken, submission: clean_code };
 
     // Activate loading pop-up
     $('#waitingModal').modal('show');
@@ -372,44 +390,47 @@ function getTestcases(div_id) {
                     error_msg = data['results'][1];
                 }
 
-                if (use_simpleui == 'False'){
+                var isEditor = ($("p.widget_title").text().indexOf("C Editor") >= 0);
+                
+                if (use_simpleui == 'False' && !isEditor){
                     $("#"+div_id).find("#grade-code").show();
                 }
 
                 var score = data['score'];
                 var max_score = data['max_score'];
                 var desider = score == max_score;
-                var isEditor = ($("p.widget_title").text().indexOf("C Editor") >= 0);
 
-                $('#'+div_id).find('#alert')
-                    .toggleClass("red-alert", !desider);
+                if (!isEditor){
 
-                $('#'+div_id).find('#alert')
-                    .toggleClass("green-alert", desider);
-
-                $('#'+div_id).find('#alert')
-                    .children('icon')
-                    .toggleClass("remove-icon", !desider);
-
-                $('#'+div_id).find('#alert')
-                    .children('icon')
-                    .toggleClass("ok-icon", desider);
-
-                if (desider){
                     $('#'+div_id).find('#alert')
-                        .children('span')
-                        .text("Your solution is correct!");
+                        .toggleClass("red-alert", !desider);
 
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
-                }
-                else{
                     $('#'+div_id).find('#alert')
-                        .children('span')
-                        .text("Your solution passed " + score + " out of " + max_score + " cases!");
+                        .toggleClass("green-alert", desider);
 
-                    $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
-                }
+                    $('#'+div_id).find('#alert')
+                        .children('icon')
+                        .toggleClass("remove-icon", !desider);
 
+                    $('#'+div_id).find('#alert')
+                        .children('icon')
+                        .toggleClass("ok-icon", desider);
+
+                    if (desider){
+                        $('#'+div_id).find('#alert')
+                            .children('span')
+                            .text("Your solution is correct!");
+
+                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
+                    }
+                    else{
+                        $('#'+div_id).find('#alert')
+                            .children('span')
+                            .text("Your solution passed " + score + " out of " + max_score + " cases!");
+
+                        $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
+                    }
+                }   
                 if (language == 'python'){
                     prepareGradingTable(div_id,
                                         data['best'],
@@ -419,7 +440,7 @@ function getTestcases(div_id) {
                 }
                 else if (language == 'c'){
                     // Handle C error and warning messages
-                    handleCMessages(div_id, testcases);
+                    dont_visualize = handleCMessages(div_id, testcases);
                     if (!isEditor){
                         prepareGradingTable(div_id,
                                             data['best'],
@@ -427,9 +448,11 @@ function getTestcases(div_id) {
                                             data['sub_pk'],
                                             max_score);
                     }
-                    //If it's the editor, start calling virtualizer functions now
+                    //If it's the editor, start calling visualizer functions now so long as no errors exist
                     else{
-                        getVisualizerComponents(clean_code, "", 9999999);
+                        if (!dont_visualize){
+                            getVisualizerComponents(clean_code, "", 9999999);
+                        }
                     }
                 }
                 else if (language=='sql'){

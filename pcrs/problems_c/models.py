@@ -54,8 +54,8 @@ class Submission(AbstractSubmission):
         Run all testcases for the submission locally and create testrun objects.
         Return the list of testrun results.
         """
-        results = []
 
+        results = []
         runner = CSpecifics(self.user.username, self.mod_submission)
         for testcase in self.problem.testcase_set.all():
             run = runner.run_test(testcase.test_input, testcase.expected_output)
@@ -228,7 +228,6 @@ class Submission(AbstractSubmission):
 
     def pre_process_code_tags(self):
         # Get student code hashed key
-
         #if code from editor, just return straight code
         if self.problem_id == 9999999:
             if len(self.submission) == 0:

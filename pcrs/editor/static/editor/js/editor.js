@@ -20,9 +20,10 @@ $(document).ready(function() {
         if (user_code == '') {
             alert('There is no code to submit.');
         } else{
-            setTimeout(function() {
-                start_editor_visualizer(user_code, code_wrapper_id);
-            });
+            getTestcases(div_id);
+            // setTimeout(function() {
+            //     start_editor_visualizer(user_code, code_wrapper_id);
+            // });
         }
     });
 });
