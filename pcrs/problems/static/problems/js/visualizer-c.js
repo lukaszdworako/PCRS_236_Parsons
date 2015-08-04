@@ -569,6 +569,9 @@ function executeCVisualizer(option, data, newCode) {
             var var_group_id = get_var_group_id(Boolean(changed_vars[i]["new"]), changed_vars[i]["var_name"])
             add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
         }
+
+        // After adding all variables to the table and finalizing their group-ids, add their highlight functions
+        add_hover_highlight_to_cells();
     }
 
     function get_var_group_id(is_new, var_name) {
@@ -845,24 +848,28 @@ function executeCVisualizer(option, data, newCode) {
                 var existing_row = location_table.find("tr[start-addr='" + current_start_addr + "']");
                 var i = 0;
                 while(current_row.children().length > 0) {
-                    var new_cell_group_id = current_row.children().first().attr('group-id');
+                    var first_child = current_row.children().first();
+                    var new_cell_group_id = first_child.attr('group-id');
 
                     var var_name = group_id_to_var_name[new_cell_group_id];
                     if(var_name && var_name[0] === '*') {
                         var old_group_id = $(existing_row.children()[i]).attr('group-id');
                         group_id_vals[old_group_id] = group_id_vals[new_cell_group_id];
-                        current_row.children().first().attr('group-id', old_group_id);
+                        first_child.attr('group-id', old_group_id);
                     }
 
                     var old_array_id = $(existing_row.children()[i]).attr('array-id');
                     if(old_array_id) {
-                        current_row.children().first().attr('array-id', old_array_id);
+                        first_child.attr('array-id', old_array_id);
+                        group_id_to_array_id[first_child.attr('group-id')] = old_array_id;
                     }
+
+                    start_addr_to_group_id[parseInt(first_child.attr('addr'), 16)] = first_child.attr('group-id');
 
                     // Only cells with a group-id count as part of the actual variable, the rest are ignored
                     // If the old cell is uninitialized and the new value is the same, keep it
                     if(new_cell_group_id) {
-                        $(existing_row.children()[i]).replaceWith(current_row.children().first());
+                        $(existing_row.children()[i]).replaceWith(first_child);
                     } else {
                         $(current_row.children()[0]).remove();
                     }
@@ -1333,14 +1340,19 @@ function executeCVisualizer(option, data, newCode) {
             group_id = array_group_id;
         }
 
-        if(group_id) {
-            $(memory_map_cell).hover(
-                create_hover_highlight_function(group_id),
-                create_hover_unhighlight_function(group_id)
-                );
-        }
-
         return memory_map_cell;
+    }
+
+    function add_hover_highlight_to_cells() {
+        $("div.memory-map-section td.memory-map-cell").each(function () {
+           var this_group_id = $(this).attr('group-id');
+           if(this_group_id) {
+                $(this).hover(
+                    create_hover_highlight_function(this_group_id),
+                    create_hover_unhighlight_function(this_group_id)
+                    );
+            }
+        });
     }
 
     function create_label_cell(colspan, rowspan, group_id, cell_value, clarity_classes, is_uninitialized, array_id) {
