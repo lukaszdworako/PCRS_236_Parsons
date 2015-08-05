@@ -1705,18 +1705,27 @@ function executeCVisualizer(option, data, newCode) {
         var val_address = changed_var["addr"];
         var ptr_size = null;
         if(changed_var["new"]) {
-            var is_ptr_val = false;
-            if(changed_var.hasOwnProperty('is_ptr')) {
-                is_ptr_val = true;
-                ptr_size = changed_var['ptr_size'];
-            }
-            new_value = {"value": changed_var["value"], "history": [changed_var["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
-            value_list[val_address] = new_value;
+            
+            var val_as_obj = false;
             //Recurse through and add any of the val_lists value objects to the val_list
-            for(val_object in changed_var["value"]) {
+            for(var i = 0; i < changed_var["value"].length; i++) {
+                val_object = changed_var["value"][i];
                 if(val_object["value"] !== undefined){
-                    add_value_array_to_val_list(val_object)
+                    val_as_obj = true;
+                    add_value_array_to_val_list(val_object);
                 }
+            }
+
+            //Only add the top level thing to the list if it doesn't contain an array as its value,
+            //otherwise we'll have duplicate addresses
+            if (val_as_obj == false) {
+                var is_ptr_val = false;
+                if(changed_var.hasOwnProperty('is_ptr') && changed_var['is_ptr'] == true) {
+                    is_ptr_val = true;
+                    ptr_size = changed_var['ptr_size'];
+                }
+                new_value = {"value": changed_var["value"], "history": [changed_var["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
+                value_list[val_address] = new_value;
             }
         }
 
@@ -1742,7 +1751,7 @@ function executeCVisualizer(option, data, newCode) {
         }
         else {
             var is_ptr_val = false;
-            if(value_var.hasOwnProperty('is_ptr')) {
+            if(value_var.hasOwnProperty('is_ptr') && value_var['is_ptr'] == true) {
                 is_ptr_val = true;
                 ptr_size = value_var['ptr_size'];
             }
@@ -1885,16 +1894,24 @@ function executeCVisualizer(option, data, newCode) {
         for(var i=0; i<json_step['changed_vars'].length; i++) {
 
             var val_address = toHexString(json_step['changed_vars'][i]["addr"]);
-
+            
             if(json_step['changed_vars'][i]["new"]) {
 
+                had_more_vals = false
+
                 //Recurse through and delete any additional things in the val list that are in its value array
-                for(val_obj in json_step['changed_vars'][i]["value"]) {
+                for(var j=0; j < json_step['changed_vars'][i]["value"].length; j++) {
+                    val_obj = json_step['changed_vars'][i]["value"][j];
                     if(val_obj["value"] !== undefined) {
-                        remove_from_val_list(val_obj)
+                        had_more_vals = true;
+                        remove_inner_val_from_val_list(val_obj);
                     }
                 }
-                delete value_list[val_address];
+                //Delete it here it if didnt have any other values in it, otherwise leave it
+                //since we'll delete it the for loop above
+                if (had_more_vals == false) {
+                    delete value_list[val_address];
+                }
             }
 
             //Otherwise just pop the last value off the list
@@ -1903,6 +1920,19 @@ function executeCVisualizer(option, data, newCode) {
                 var history = value_list[val_address]["history"];
                 value_list[val_address]["value"] = history[history.length-1];
             }
+        }
+    }
+
+    function remove_inner_val_from_val_list(inner_val){
+        if(inner_val["new"]) {
+            for (var i=0; i < inner_val["value"].length; i++) {
+                cur_val_obj = inner_val["value"][i]["value"];
+                if (cur_val_obj !== undefined) {
+                    remove_inner_val_from_val_list(cur_val_obj);
+                }
+            }
+            var val_address = toHexString(inner_val["addr"]);
+            delete value_list[val_address];
         }
     }
 
