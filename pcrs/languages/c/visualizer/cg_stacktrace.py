@@ -862,6 +862,11 @@ class CVisualizer:
             parent.insert(index+1, print_node)
             self.amt_after += 1
 
+    def add_after_all_nodes(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
+        parent.insert(index+self.amt_after+1, print_node)
+        self.amt_after += 1
+
     #index here will be where we should start inserting nodes
     #prints value, hex, and size arrays by adding for loop nodes
     def print_array_extra_nodes(self, parent, index):
@@ -1341,12 +1346,16 @@ class CVisualizer:
 
     #If calling a function not declared in the program, only add a print statement after the function call,
     #only need to highlight this line once.
+
+    #
     def print_funccall_not_prog(self, parent, index, func_name):
         #pdb.set_trace()
         #Loop through all the arguments we're passing this function, print out each of their values after the function
         for variable_passed in parent[index].args.exprs:
             self.handle_types_variable_passed(parent, index, variable_passed, func_name)
-    
+        
+        #Add this in without any changed vars just to show we got to this line, incase we didn't have any vars in the funccall
+
         # print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
         # parent.insert(index+1, print_node)
         # self.amt_after += 1
@@ -1356,32 +1365,54 @@ class CVisualizer:
             if isinstance(variable_passed, c_ast.ID):
                 var_name = variable_passed.name
                 self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name)
-            #binary op, like x+1 - we'll just get value of x
-            #elif isinstance(variable_passed, c_ast.BinaryOp):
-                
+            #binary op, like x+1 or 1+x - we'll just get value of x, run through this function until we get to an ID
+            elif isinstance(variable_passed, c_ast.BinaryOp):
+                self.handle_types_variable_passed(parent, index, variable_passed.left, func_name)
+                self.handle_types_variable_passed(parent, index, variable_passed.right, func_name)    
             #Unary op, like x++ or *x
-            #elif isinstance(variable_passed, c_ast.UnaryOp):
+
+            #QUESTION - Should i check the val of the pointer, the thing it's pointing to, or both?
+
+            elif isinstance(variable_passed, c_ast.UnaryOp):
+                self.handle_types_variable_passed(parent, index, variable_passed.expr, func_name)
             #ArrayRef, like x[1]
-            #elif isinstance(variable_passed, c_ast.ArrayRef):
+            elif isinstance(variable_passed, c_ast.ArrayRef):
+                #pdb.set_trace()
+
+                cur_arrayref = variable_passed
+                array_depth = 0
+                while isinstance(cur_arrayref, c_ast.ArrayRef):
+                    array_depth += 1
+                    cur_arrayref = cur_arrayref.name
+
+                var_name = cur_arrayref.name
+                self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name, array_depth)
             #Otherwise don't do anything with it - probably a constant
 
-    def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name):
+
+    #Actually set the variables - only have depth if it was an arrayref, in which case, do something a bit different
+    def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name, depth=0):
         array_dict_entry = self.array_dict.get(name_val)
-        #Not an array
-        if array_dict_entry == None:
-            is_str_lit = self.set_funccall_changed_vars(id_node, name_val)
-            
+
+        is_str_lit = self.set_funccall_changed_vars(id_node, name_val)
+        
+        #Not an array, could be straight var or part of an array but the element itself isnt one
+        if array_dict_entry == None or array_dict_entry[3] == depth:    
             #Add a regular node here first:
-            self.add_after_node(parent, index, func_name, False, False, False, False)
+            self.add_after_all_nodes(parent, index, func_name, False, False, False, False)
 
-            #Now handle cases where it got assigned to a str lit: loop through it
-            if is_str_lit:
-                self.call_funcs_for_str_lit(parent, index, func_name)
-
-
-        #an array, loop through all its values
         else:
             print("array - add this")
+            isPtr = False
+            if var_typerep == '%p':
+                isPtr == True
+            self.add_after_all_nodes(parent, index, func_name, False, isPtr, False, True)
+            self.print_array_extra_nodes(parent, index+self.amt_after+1)
+
+        #Now handle cases where it got assigned to a str lit: loop through it
+        if is_str_lit:
+            self.call_funcs_for_str_lit(parent, index+amt_after, func_name)
+
 
     #Set the variables to be used in the print statements for the changed funccall vars
     def set_funccall_changed_vars(self, node, name_val):
@@ -1391,11 +1422,18 @@ class CVisualizer:
         global is_uninit
         global ptr_depth
         global var_typerep
-    
+
         is_str_lit = False
         ptr_depth = 0
-        var_name_val = name_val
-        type_of_var = (str)(self.var_type_dict.get(var_name_val))
+        
+        #If arrayref, name is a bit different
+        if isinstance(node, c_ast.ArrayRef):
+            generator = c_generator.CGenerator()
+            var_name_val = (str)(generator.visit(node))
+        else:
+            var_name_val = name_val
+
+        type_of_var = (str)(self.var_type_dict.get(name_val)).replace("[]", "").strip()
         var_typerep = self.primitive_types.get(type_of_var)
 
         if type_of_var == "char *":

@@ -6,6 +6,7 @@ from languages.c.visualizer.cg_stacktrace import CVisualizer
 import logging
 import string
 import re
+import uuid
 from operator import mul
 from functools import reduce
 import ast
@@ -36,6 +37,8 @@ class CSpecifics():
         self.username = username
         self.submission = submission
 
+        self.backslash_hash = uuid.uuid4().hex
+        
         # Get the size of an address on this machine
         self.max_addr_size = 8 if (sys.maxsize > 2**32) else 4
 
@@ -444,7 +447,11 @@ class CSpecifics():
             sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
             sizes_by_level.append(int(current_var['arr_type_size']))    
             # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
-            current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']').replace('\x00', ' '))
+            #pdb.set_trace()
+            current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']').encode('unicode-escape').decode())
+            # for str_val in current_var['value']:
+            #     str_val = str_val.replace(self.backslash_hash, '\\')
+            #current_var['value'] = current_var['value'].replace(self.backslash_hash, '\\')
             current_var['hex_value'] = ast.literal_eval(current_var['hex_value'].replace(',]', ']'))
 
         else:
