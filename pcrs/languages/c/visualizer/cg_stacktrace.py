@@ -1164,12 +1164,7 @@ class CVisualizer:
                 #Case for string literal, add an array val on data
                 #Only execute this if it's being set to a constant that's a string: otherwise, if pointing to a var, leave it
                 if str_lit and parent[index].init != None and isinstance(parent[index].init, c_ast.Constant):
-                    #pdb.set_trace()
-                    self.handle_str_lit_array(parent, index)
-                    print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
-                    parent.insert(index+self.amt_after+1, print_node)
-                    self.amt_after += 1
-                    self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                    self.call_funcs_for_str_lit(parent, index, func_name)
 
             #Array declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.ArrayDecl):
@@ -1270,11 +1265,14 @@ class CVisualizer:
             #Case for string literal, add an array val on data
             if str_lit and isinstance(parent[index].rvalue, c_ast.Constant):
                 #pdb.set_trace()
-                self.handle_str_lit_array(parent, index)
-                print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
-                parent.insert(index+self.amt_after+1, print_node)
-                self.amt_after += 1
-                self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                self.call_funcs_for_str_lit(parent, index, func_name)
+
+    def call_funcs_for_str_lit(self, parent, index, func_name):
+        self.handle_str_lit_array(parent, index)
+        print_node = self.create_printf_node(parent, index, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
+        parent.insert(index+self.amt_after+1, print_node)
+        self.amt_after += 1
+        self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name):
@@ -1341,12 +1339,75 @@ class CVisualizer:
         to_add_index += 2
         self.amt_after += 2
 
-    #If calling a function not declared in the progra, only add a print statement after the function call,
+    #If calling a function not declared in the program, only add a print statement after the function call,
     #only need to highlight this line once.
     def print_funccall_not_prog(self, parent, index, func_name):
-        print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
-        parent.insert(index+1, print_node)
-        self.amt_after += 1
+        #pdb.set_trace()
+        #Loop through all the arguments we're passing this function, print out each of their values after the function
+        for variable_passed in parent[index].args.exprs:
+            self.handle_types_variable_passed(parent, index, variable_passed, func_name)
+    
+        # print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
+        # parent.insert(index+1, print_node)
+        # self.amt_after += 1
+
+    def handle_types_variable_passed(self, parent, index, variable_passed, func_name):
+            #Straight ID
+            if isinstance(variable_passed, c_ast.ID):
+                var_name = variable_passed.name
+                self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name)
+            #binary op, like x+1 - we'll just get value of x
+            #elif isinstance(variable_passed, c_ast.BinaryOp):
+                
+            #Unary op, like x++ or *x
+            #elif isinstance(variable_passed, c_ast.UnaryOp):
+            #ArrayRef, like x[1]
+            #elif isinstance(variable_passed, c_ast.ArrayRef):
+            #Otherwise don't do anything with it - probably a constant
+
+    def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name):
+        array_dict_entry = self.array_dict.get(name_val)
+        #Not an array
+        if array_dict_entry == None:
+            is_str_lit = self.set_funccall_changed_vars(id_node, name_val)
+            
+            #Add a regular node here first:
+            self.add_after_node(parent, index, func_name, False, False, False, False)
+
+            #Now handle cases where it got assigned to a str lit: loop through it
+            if is_str_lit:
+                self.call_funcs_for_str_lit(parent, index, func_name)
+
+
+        #an array, loop through all its values
+        else:
+            print("array - add this")
+
+    #Set the variables to be used in the print statements for the changed funccall vars
+    def set_funccall_changed_vars(self, node, name_val):
+        global type_of_var
+        global var_name_val
+        global var_new_val
+        global is_uninit
+        global ptr_depth
+        global var_typerep
+    
+        is_str_lit = False
+        ptr_depth = 0
+        var_name_val = name_val
+        type_of_var = (str)(self.var_type_dict.get(var_name_val))
+        var_typerep = self.primitive_types.get(type_of_var)
+
+        if type_of_var == "char *":
+            is_str_lit = True
+
+        #This should only happen if it's a pointer and we can't find its type, char* finds string so including that too
+        if var_typerep == None or var_typerep == '%s':
+            var_typerep = '%p'
+        var_new_val = False
+        is_uninit = False
+
+        return is_str_lit
 
     def print_loop_entry(self, parent, index, func_name):
         print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
