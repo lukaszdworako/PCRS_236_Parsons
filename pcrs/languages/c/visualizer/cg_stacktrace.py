@@ -381,7 +381,10 @@ class CVisualizer:
 
         #Case for variable declaration
         if isinstance(parent[index], c_ast.Decl):
-            self.print_changed_vars(parent, index, func_name, True)
+            if isinstance(parent[index].type, c_ast.Struct):
+                pdb.set_trace()
+            else:
+                self.print_changed_vars(parent, index, func_name, True)
 
         #Case for variable assignment, if variable already exists
         elif isinstance(parent[index], c_ast.Assignment) or isinstance(parent[index], c_ast.UnaryOp):
@@ -1168,7 +1171,8 @@ class CVisualizer:
                         pass
                 #Case for string literal, add an array val on data
                 #Only execute this if it's being set to a constant that's a string: otherwise, if pointing to a var, leave it
-                if str_lit and parent[index].init != None and isinstance(parent[index].init, c_ast.Constant):
+                #pdb.set_trace()
+                if str_lit and parent[index+to_add_index].init != None and isinstance(parent[index+to_add_index].init, c_ast.Constant):
                     self.call_funcs_for_str_lit(parent, index, func_name)
 
             #Array declaration
