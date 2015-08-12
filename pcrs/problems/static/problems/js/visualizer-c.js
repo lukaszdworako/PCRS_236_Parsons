@@ -672,7 +672,7 @@ function executeCVisualizer(option, data, newCode) {
             group_id_to_type[group_id] = type;
 
             group_id_to_start_addr[group_id] = start_addr;
-            start_addr_to_group_id[start_addr] = group_id;
+            start_addr_to_group_id[start_addr] = String(group_id);
 
             if(var_name) {
                 var_name_to_group_id[var_name] = group_id;
@@ -855,24 +855,26 @@ function executeCVisualizer(option, data, newCode) {
                     var first_child = current_row.children().first();
                     var new_cell_group_id = first_child.attr('group-id');
 
-                    var var_name = group_id_to_var_name[new_cell_group_id];
-                    if(var_name && var_name[0] === '*') {
-                        var old_group_id = $(existing_row.children()[i]).attr('group-id');
-                        group_id_vals[old_group_id] = group_id_vals[new_cell_group_id];
-                        first_child.attr('group-id', old_group_id);
-                    }
-
-                    var old_array_id = $(existing_row.children()[i]).attr('array-id');
-                    if(old_array_id) {
-                        first_child.attr('array-id', old_array_id);
-                        group_id_to_array_id[first_child.attr('group-id')] = old_array_id;
-                    }
-
-                    start_addr_to_group_id[parseInt(first_child.attr('addr'), 16)] = first_child.attr('group-id');
-
                     // Only cells with a group-id count as part of the actual variable, the rest are ignored
                     // If the old cell is uninitialized and the new value is the same, keep it
                     if(new_cell_group_id) {
+
+                        var var_name = group_id_to_var_name[new_cell_group_id];
+                        if(var_name && var_name[0] === '*') {
+                            var old_group_id = $(existing_row.children()[i]).attr('group-id');
+                            group_id_vals[old_group_id] = group_id_vals[new_cell_group_id];
+                            first_child.attr('group-id', old_group_id);
+                        }
+
+                        var old_array_id = $(existing_row.children()[i]).attr('array-id');
+                        if(old_array_id) {
+                            first_child.attr('array-id', old_array_id);
+                            group_id_to_array_id[first_child.attr('group-id')] = old_array_id;
+                        }
+
+                        // Save the last group address, if it exists
+                        start_addr_to_group_id[parseInt(first_child.attr('addr'), 16)] = String(first_child.attr('group-id'));
+
                         $(existing_row.children()[i]).replaceWith(first_child);
                     } else {
                         $(current_row.children()[0]).remove();
@@ -1705,7 +1707,7 @@ function executeCVisualizer(option, data, newCode) {
         var val_address = changed_var["addr"];
         var ptr_size = null;
         if(changed_var["new"]) {
-            
+
             var val_as_obj = false;
             //Recurse through and add any of the val_lists value objects to the val_list
             for(var i = 0; i < changed_var["value"].length; i++) {
@@ -1894,7 +1896,7 @@ function executeCVisualizer(option, data, newCode) {
         for(var i=0; i<json_step['changed_vars'].length; i++) {
 
             var val_address = toHexString(json_step['changed_vars'][i]["addr"]);
-            
+
             if(json_step['changed_vars'][i]["new"]) {
 
                 had_more_vals = false
