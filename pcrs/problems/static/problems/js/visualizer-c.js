@@ -1720,7 +1720,7 @@ function executeCVisualizer(option, data, newCode) {
             //otherwise we'll have duplicate addresses
             if (val_as_obj == false) {
                 var is_ptr_val = false;
-                if(changed_var.hasOwnProperty('is_ptr') && changed_var['is_ptr'] == true) {
+                if(changed_var.hasOwnProperty('is_ptr') && changed_var['is_ptr'] == 'name') {
                     is_ptr_val = true;
                     ptr_size = changed_var['ptr_size'];
                 }
@@ -1751,7 +1751,7 @@ function executeCVisualizer(option, data, newCode) {
         }
         else {
             var is_ptr_val = false;
-            if(value_var.hasOwnProperty('is_ptr') && value_var['is_ptr'] == true) {
+            if(value_var.hasOwnProperty('is_ptr') && value_var['is_ptr'] == 'name') {
                 is_ptr_val = true;
                 ptr_size = value_var['ptr_size'];
             }
