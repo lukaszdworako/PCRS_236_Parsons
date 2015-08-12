@@ -28,6 +28,9 @@ var group_id_to_var_name = {};
 var group_id_to_array_id = {};
 var array_id_to_group_id = {};
 var value_list = {};
+
+var stack_frame_levels = {};
+
 var hex_mode_on = false;
 //---
 
@@ -338,9 +341,10 @@ function executeCVisualizer(option, data, newCode) {
 
         var json_step = debugger_data["steps"][json_index];
         if((update_type == "next")) {
-            if(json_step.hasOwnProperty('on_entry_point')) {
+            if(json_step['on_entry_point']) {
                 // Create the empty table even before any variables get assigned
-                get_var_location('stack', json_step['function']);
+                get_var_location('stack', json_step['function'], undefined, true);
+
                 add_first_name_table(json_step);
                 $("#name-table-"+json_step['function']).show()
                 most_recently_entered = json_step['function'];
@@ -1194,12 +1198,12 @@ function executeCVisualizer(option, data, newCode) {
         location_label_table.replaceWith(updated_label_table);
     }
 
-    function get_var_location(func_location, func_name, start_addr) {
+    function get_var_location(func_location, func_name, start_addr, on_entry_point) {
         var exists_in_data = false;
         var exists_in_heap = false;
         var exists_in_stack = false;
 
-        if(typeof start_addr !== 'undefined') {
+        if(start_addr) {
             // Check if it already exists in the heap or data section
             start_addr = toHexString(start_addr);
             exists_in_data = $("div#data-memory-map td[addr='" + start_addr + "']").length > 0;
@@ -1220,9 +1224,19 @@ function executeCVisualizer(option, data, newCode) {
         } else if(func_location === "stack") {
             var stack_frame_exists = $("#stack-frame-tables > div[stack-function='" + func_name + "']").length > 0;
 
-            if(!stack_frame_exists) {
+            if(on_entry_point || !stack_frame_exists) {
+                // Determine which stack level we are at, and increase it by 1
+                var stack_level = 1;
+                if(stack_frame_levels[func_name]) {
+                    stack_frame_levels[func_name]++;
+                    stack_level = stack_frame_levels[func_name];
+
+                } else {
+                    stack_frame_levels[func_name] = stack_level;
+                }
+
                 var calling_line = json_index > 0 ? debugger_data["steps"][json_index-1]["student_view_line"] : 0;
-                var new_stack_frame = create_stack_frame_table(calling_line, func_name)
+                var new_stack_frame = create_stack_frame_table(calling_line, func_name, stack_level);
                 $("div#stack-frame-tables").prepend(new_stack_frame);
             }
 
@@ -1264,7 +1278,7 @@ function executeCVisualizer(option, data, newCode) {
     }
 
 
-    function create_stack_frame_table(stack_frame_number, stack_function) {
+    function create_stack_frame_table(stack_frame_number, stack_function, stack_level) {
         var table_title = stack_function + (stack_frame_number > 0 ? ": " + stack_frame_number : "");
 
         // Create the cells table
@@ -1297,16 +1311,21 @@ function executeCVisualizer(option, data, newCode) {
 
         //---
 
-        var c_tr1_th = document.createElement("th");
-        c_tr1_th.colSpan = "5";
-        c_tr1_th.className = "heading-height";
+        var c_tr1_th1 = document.createElement("th");
+        c_tr1_th1.colSpan = "4";
+        c_tr1_th1.className = "heading-height";
+        c_tr1_th1.appendChild(create_minimizer());
+        $(c_tr1_th1).append(table_title);
 
-        c_tr1_th.appendChild(create_minimizer());
-        $(c_tr1_th).append(table_title);
+        var c_tr1_th2 = document.createElement("th");
+        c_tr1_th2.innerHTML = stack_level;
+        c_tr1_th2.className = "heading-height";
+        $(c_tr1_th2).css("text-align", "center");
 
         var c_tr1 = document.createElement("tr");
         c_tr1.style.visibility = (hex_mode_on ? "" : "hidden");
-        c_tr1.appendChild(c_tr1_th);
+        c_tr1.appendChild(c_tr1_th1);
+        c_tr1.appendChild(c_tr1_th2);
 
         //---
 
@@ -1345,24 +1364,30 @@ function executeCVisualizer(option, data, newCode) {
 
         //---
 
-        var l_tr1_th = document.createElement("th");
-        l_tr1_th.colSpan = "5";
+        var l_tr1_th1 = document.createElement("th");
+        l_tr1_th1.colSpan = "4";
+        l_tr1_th1.className = "heading-height";
+        l_tr1_th1.appendChild(create_minimizer());
+        $(l_tr1_th1).append(table_title);
 
-        l_tr1_th.appendChild(create_minimizer());
-        $(l_tr1_th).append(table_title);
+        var l_tr1_th2 = document.createElement("th");
+        l_tr1_th2.innerHTML = stack_level;
+        l_tr1_th2.className = "heading-height";
+        $(l_tr1_th2).css("text-align", "center");
 
 
         var l_tr1 = document.createElement("tr");
-        l_tr1.appendChild(l_tr1_th);
+        l_tr1.appendChild(l_tr1_th1);
+        l_tr1.appendChild(l_tr1_th2);
 
         //---
 
         var l_tr2_th1 = document.createElement("th");
-        l_tr2_th1.className = "address-heading";
+        l_tr2_th1.className = "address-heading heading-height";
         l_tr2_th1.innerHTML = "Address";
 
         var l_tr2_th2 = document.createElement("th");
-        l_tr2_th2.className = "values-heading";
+        l_tr2_th2.className = "values-heading heading-height";
         l_tr2_th2.colSpan = "4";
         l_tr2_th2.innerHTML = "Values"
 
@@ -1691,7 +1716,7 @@ function executeCVisualizer(option, data, newCode) {
             var ptr_size = elem_info['ptr_size'];
 
             // Get the cell it's pointing to
-            var pointed_cell = $("table.memory-map-cell-table td[addr='" + ptr_val + "']");
+            var pointed_cell = $("table.memory-map-cell-table td[addr='" + ptr_val + "']:first");
 
             // Add all the following cells up to ptr_size
             if(pointed_cell.length > 0) {
@@ -1916,6 +1941,7 @@ function executeCVisualizer(option, data, newCode) {
         var_name_to_group_id = {};
         group_id_to_var_name = {};
         group_id_to_array_id = {};
+        stack_frame_levels = {};
 
         largest_group_id = 1; // Not 0 because it would fail a check for adding the highlight functions
         largest_array_id = 1; // Not 0, same reason as above
@@ -1942,9 +1968,9 @@ function executeCVisualizer(option, data, newCode) {
         for(var i=0; i <= last_step; i++) {
             var json_step = debugger_data["steps"][i];
 
-            if(json_step.hasOwnProperty('on_entry_point')) {
+            if(json_step['on_entry_point']) {
                 // Create the empty table even before any variables get assigned
-                get_var_location('stack', json_step['function']);
+                get_var_location('stack', json_step['function'], undefined, true);
             }
 
             if(json_step.hasOwnProperty('returned_fn_call')) {
@@ -1980,6 +2006,11 @@ function executeCVisualizer(option, data, newCode) {
 
             delete var_name_to_group_id[var_name];
             delete group_id_to_var_name[group_id];
+        }
+
+        stack_frame_levels[stack_function]--;
+        if(stack_frame_levels[stack_function] === 0) {
+            delete stack_frame_levels[stack_function];
         }
 
         stack_table.remove();
