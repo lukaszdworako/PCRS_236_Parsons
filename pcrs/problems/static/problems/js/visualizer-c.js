@@ -68,6 +68,17 @@ function hexToCharArray(hexstring) {
     return str;
 }
 
+function isDotRow(tr) {
+    return tr.find("td.dot-line").length > 0;
+}
+
+function canFreeRow(tr, array_id) {
+    return tr.find("td.memory-map-cell").filter(function() {
+        return $(this).attr('array-id') == array_id || !$(this).attr('group-id');
+    }).length == 4;
+}
+
+
 function executeCVisualizer(option, data, newCode) {
 /**
  * C visualizer representation.
@@ -475,8 +486,11 @@ function executeCVisualizer(option, data, newCode) {
 
     function add_one_var_to_name_table(changed_var, func_name) {
         //Check if it's new - if so, adding it
-        if ((changed_var['location'] == "heap") | (!changed_var['var_name'])) {
-            // Ignore heap variables because they don't have a name table
+        if (changed_var['location'] == "heap"
+            || !changed_var['var_name']
+            || changed_var['free']
+            ) {
+            // Ignore calls to free and adding of heap variables (because they don't have a name table)
             return;
         }
 
@@ -518,13 +532,6 @@ function executeCVisualizer(option, data, newCode) {
                     create_hover_unhighlight_function(name_row_group_id)
                     );
             }
-        }
-
-        //If not new, will only be deleting it if on the heap table (verify this)
-        else if ((changed_var['location']) == "Heap" && (changed_var.hasOwnProperty('freed'))) {
-                //Remove this var from table
-                $('#Heap-'+changed_var['var_name']).remove();
-                //check_rm_empty_table("names-Heap");
         }
     }
 
@@ -569,44 +576,98 @@ function executeCVisualizer(option, data, newCode) {
         // Add changed_vars to memory table
         var changed_vars = json_step.changed_vars;
         var func_name = json_step["function"];
+
         for(var i=0; i < changed_vars.length; i++) {
             var var_group_id = get_var_group_id(Boolean(changed_vars[i]["new"]), changed_vars[i]["var_name"])
-            add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
+
+            if(changed_vars[i]['free']) {
+                free_one_var_from_memory_table(changed_vars[i]);
+            } else {
+                add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
+            }
         }
 
         // After adding all variables to the table and finalizing their group-ids, add their highlight functions
         add_hover_highlight_to_cells();
     }
 
-    function get_var_group_id(is_new, var_name) {
-        // Figure out the variable's group_id
-        var group_id;
-        if(var_name_to_group_id[var_name] && !is_new) {
-            // Find it in the tables
-            group_id = var_name_to_group_id[var_name];
-        } else {
-            group_id = largest_group_id;
-            largest_group_id++;
-        }
-
-        if(var_name_to_group_id[var_name] && is_new) {
-            var_name_to_group_id[var_name] = group_id;
-        }
-
-        return group_id;
+    function clear_group_id_maps(group_id) {
+        // Clear all maps that use this group_id as a key
+        delete group_id_vals[group_id];
+        delete group_id_to_type[group_id];
+        delete group_id_to_start_addr[group_id];
+        delete group_id_to_var_name[group_id];
+        delete group_id_to_array_id[group_id];
     }
 
-    function get_var_array_id(group_id) {
-        var existing_array_id = group_id_to_array_id[group_id];
-        if(existing_array_id) {
-            return existing_array_id;
+    function free_one_var_from_memory_table(changed_var) {
+        // Remove one variable from the memory map
+        var hex_start_addr = changed_var['addr'];
+        var start_addr = parseInt(changed_var['addr'], 16);
 
-        } else {
-            var array_id = largest_array_id;
-            largest_array_id++;
+        var first_cell = $("div.memory-map-section td[addr='" + hex_start_addr + "']:first");
+        var array_id = first_cell.attr('array-id');
+        var current_row = first_cell.parents('tr:first');
 
-            return array_id;
+        // Clear the map that uses this array id as a key
+        delete array_id_to_group_id[array_id];
+
+        // Remove all applicable entries in the various maps
+        // Deal with only the unique group-ids
+        var seen_group_ids = [];
+        $("td.memory-map-cell[array-id='" + array_id + "']").each(function(){
+            var group_id = $(this).attr('group-id');
+            if($.inArray(group_id, seen_group_ids) === -1) {
+                seen_group_ids.push(group_id);
+                clear_group_id_maps(group_id);
+            }
+        });
+
+
+        // Go through all rows in the memory map and either remove entire rows, or just blank out cells
+        // Remove rows when all cells on the row are either part of this malloced memory, or have no group
+        while(current_row.length !== 0 && !isDotRow(current_row)) {
+            if(canFreeRow(current_row, array_id)) {
+                // Remove an extra dot row if it exists
+                if(isDotRow(current_row.prev()) && isDotRow(current_row.next())) {
+                    current_row.next().remove();
+                }
+
+                // Remove this row and move on to the next one
+                var next_row = current_row.next();
+                current_row.remove();
+                current_row = next_row
+
+            } else {
+                // Remove only the cells that need to be removed
+                current_row.find("td[array-id='" + array_id + "']").map(
+                    // Replace with an empty cell but with the same addr and title
+                    function () {
+                        $(this).replaceWith($(
+                            "<td" +
+                            " class='memory-map-cell uninitialized' " +
+                            " uninitialized='true'" +
+                            " title='" + $(this).attr('title') + "'" +
+                            " addr='" + $(this).attr('addr') + "'" +
+                            "></td>"
+                            ))
+                    });
+
+                current_row = current_row.next();
+            }
         }
+
+        // Remove extra dot rows at the beginning and end
+        var first_heap_row = $("div#heap-memory-map table.memory-map-cell-table tbody tr:first");
+        if(isDotRow(first_heap_row)) {
+            first_heap_row.remove();
+        }
+        var last_heap_row = $("div#heap-memory-map table.memory-map-cell-table tbody tr:last");
+        if(isDotRow(last_heap_row)) {
+            last_heap_row.remove();
+        }
+
+        console.log('ayy lmao');
     }
 
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {
@@ -673,6 +734,10 @@ function executeCVisualizer(option, data, newCode) {
 
             group_id_to_start_addr[group_id] = start_addr;
             start_addr_to_group_id[start_addr] = String(group_id);
+
+            if(array_id) {
+                group_id_to_array_id[group_id] = array_id;
+            }
 
             if(var_name) {
                 var_name_to_group_id[var_name] = group_id;
@@ -1067,8 +1132,8 @@ function executeCVisualizer(option, data, newCode) {
 
     function generate_label_value(group_id) {
         var label_value = group_id_vals[group_id];
-        // TODO: Get all hex values of this group and convert appropriately
-        // TODO: Remove calls to group_id_vals[group_id]
+        // Get all hex values of this group and convert appropriately
+        // TODO: Remove calls to group_id_vals[group_id] and return the generated values
         var generated_label_value = '';
         var all_group_hex_values = $("table.memory-map-cell-table td[group-id='" + group_id + "'").map(function() {
             return $(this).html().replace(/0x/g, '');
@@ -1165,6 +1230,37 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         return location;
+    }
+
+    function get_var_group_id(is_new, var_name) {
+        // Figure out the variable's group_id
+        var group_id;
+        if(var_name_to_group_id[var_name] && !is_new) {
+            // Find it in the tables
+            group_id = var_name_to_group_id[var_name];
+        } else {
+            group_id = largest_group_id;
+            largest_group_id++;
+        }
+
+        if(var_name_to_group_id[var_name] && is_new) {
+            var_name_to_group_id[var_name] = group_id;
+        }
+
+        return group_id;
+    }
+
+    function get_var_array_id(group_id) {
+        var existing_array_id = group_id_to_array_id[group_id];
+        if(existing_array_id) {
+            return existing_array_id;
+
+        } else {
+            var array_id = largest_array_id;
+            largest_array_id++;
+
+            return array_id;
+        }
     }
 
 
@@ -1732,7 +1828,7 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         //Case where variable is not new, was on the heap and got freed - push "#Freed#" onto the list as a marker that it's been freed
-        else if((changed_var['location']) == "Heap" && (changed_var.hasOwnProperty('freed'))) {
+        else if((changed_var['location']) == "Heap" && (changed_var.hasOwnProperty('free'))) {
             value_list[val_address]["history"].push("#Freed#");
         }
 
