@@ -101,6 +101,14 @@ class CVisualizer:
         #Delimiter to keep track of where array hex value begins
         self.array_hex_delim = uuid.uuid4().hex
 
+        #Dictionary of all structs and the things within them: if a struct within a struct, both will show up as keys
+        #Format is: {struct_name: [declaration1, declaration2, ...]}
+        self.struct_dict = {}
+
+        #Dictionary of all of the typedefs that point to types, including structs
+        #Format is: {typedef_name: actual_type_name}
+        self.typedef_dict = {}
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -382,7 +390,7 @@ class CVisualizer:
         #Case for variable declaration
         if isinstance(parent[index], c_ast.Decl):
             if isinstance(parent[index].type, c_ast.Struct):
-                pdb.set_trace()
+                self.add_to_struct_dict(parent[index])
             else:
                 self.print_changed_vars(parent, index, func_name, True)
 
@@ -436,6 +444,9 @@ class CVisualizer:
         elif isinstance(parent[index], c_ast.For):
             self.print_for_entry(parent, index, func_name)
 
+        elif isinstance(parent[index], c_ast.Typedef):
+            self.add_to_typedef_dict(parent[index])
+
         #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
         try:
             if isinstance(parent[index+self.amt_after+1], c_ast.Return):
@@ -463,6 +474,28 @@ class CVisualizer:
     #                 print("has funccall")
 
 
+
+    def add_to_struct_dict(self, node):
+        struct_dict_add = {(str)(node.type.name):node.type.decls}
+        self.struct_dict.update(struct_dict_add)
+
+        print(self.struct_dict)
+
+    def add_to_typedef_dict(self, node):
+        #pdb.set_trace()
+        #If it's a struct typedef, add struct name and also add to struct dict
+        if isinstance(node.type.type, c_ast.Struct):
+            self.add_to_struct_dict(node.type)
+            actual_type = node.type.type.name
+        #Other cases
+        else:
+            actual_type = node.type.type.names[0]
+
+        typedef_dict_add = {(str)(node.name):actual_type}
+        self.typedef_dict.update(typedef_dict_add)
+
+        print(self.typedef_dict)
+
     def get_funccall_funcname(self, node):
         return node.name.name
 
@@ -481,6 +514,9 @@ class CVisualizer:
 
         ptr_depth = 0
         type_of_var = node.type.type.names[0]
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
         var_name_val = node.name
         var_new_val = True
@@ -507,6 +543,9 @@ class CVisualizer:
             temp_name_val = node.lvalue.name
         var_name_val = (str)(temp_name_val)
         type_of_var = (str)(self.var_type_dict.get(var_name_val))
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
 
         if type_of_var == "char *":
@@ -517,6 +556,35 @@ class CVisualizer:
             var_typerep = '%p'
         var_new_val = False
         is_uninit = False
+
+    def set_struct_vars(self, parent, index, node, struct_name):
+        
+        cur_struct = self.struct_dict.get(struct_name)
+        
+        #Loop through all the declaration nodes saved in the current struct
+        #for declaration in cur_struct:
+
+
+        # global type_of_var
+        # global var_name_val
+        # global var_new_val
+        # global is_uninit
+        # global ptr_depth
+        # global var_typerep
+
+        # ptr_depth = 0
+        # type_of_var = node.type.type.names[0]
+        # actual_type = self.typedef_dict.get(type_of_var)
+        # if actual_type != None:
+        #     type_of_var = actual_type
+        # var_typerep = self.primitive_types.get(type_of_var)
+        # var_name_val = node.name
+        # var_new_val = True
+        # if node.init == None:
+        #     is_uninit = True
+        # else:
+        #     is_uninit = False        
+
 
     #Set the variables to be used in the print statements for a pointer declaration node
     def set_decl_ptr_vars(self, node):
@@ -539,6 +607,11 @@ class CVisualizer:
         #print("ptr depth is "+(str)(ptr_depth))
         clean_type = temp_node.type.type.names[0]
         type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
+        
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
+
         pointing_to_type = (str)(clean_type) + ' ' + '*'*(ptr_depth-1)
         if type_of_var == "char *":
             str_lit = True
@@ -618,6 +691,10 @@ class CVisualizer:
 
         type_of_var = unstripped_vartype.replace("*", "", ptr_depth).replace("[]", "")
 
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
+
         var_new_val = False
         is_uninit = False
 
@@ -639,6 +716,9 @@ class CVisualizer:
 
         parent_type = (str)(self.var_type_dict.get(clean_name))
         type_of_var = parent_type.replace("*", "").replace("[]", "").strip()
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
         var_name_val = '*'*ptr_depth+(str)(node_name)
 
@@ -708,6 +788,10 @@ class CVisualizer:
         #Initializing all the normal things like type and name, just like in other declarations
         clean_array_type = (str)(temp_array.type.type.names[0])
         type_of_var = clean_array_type + ' ' +'*'*ptr_depth + ' ' + '[]'*array_depth
+
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
 
         if ptr_depth > 0:
             pointing_to_type = clean_array_type + ' ' + '*'*(ptr_depth-1)
@@ -786,6 +870,11 @@ class CVisualizer:
 
         array_depth = cur_array_dict[3]
         type_of_var = cur_array_dict[0] +' ' + '*'*(ptr_depth) + ' '+'[]'*(array_depth)
+
+        actual_type = self.typedef_dict.get(type_of_var)
+        if actual_type != None:
+            type_of_var = actual_type
+
         var_typerep = '%p'
         var_new_val = False
         is_uninit = False
@@ -1138,15 +1227,31 @@ class CVisualizer:
         if new:
             #Type declaration
             if isinstance(self.get_decl_type(parent[index]), c_ast.TypeDecl):
-                self.set_decl_vars(parent[index])
-                #If it's a function call declaration for a function in our program,
-                #ensure there's a print statement in front of it too
-                if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
-                    self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
-                    self.add_after_node(parent, index, func_name, True, False, False, False)
-                    self.add_before_fn(parent, index, func_name)
+                
+                #Check if it's a struct - if so, handle it differently than plain decl
+                cur_type = parent[index].type.type.names[0]
+                struct_entry = self.struct_dict.get(cur_type)
+                typedef_entry = self.typedef_dict.get(cur_type)
+                    
+                if struct_entry or typedef_entry != None:
+                    #Get the name of the actual struct
+                    if typedef_entry != None:
+                        struct_name = typedef_entry
+                    else:
+                        struct_name = cur_type
+
+                    self.set_struct_vars(parent, index, parent[index], struct_name)
+
                 else:
-                    self.add_after_node(parent, index, func_name, False, False, False, False)
+                    self.set_decl_vars(parent[index])
+                    #If it's a function call declaration for a function in our program,
+                    #ensure there's a print statement in front of it too
+                    if isinstance(parent[index].init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(parent[index].init)) in self.func_list):
+                        self.set_fn_returning_from(self.get_funccall_funcname(parent[index].init))
+                        self.add_after_node(parent, index, func_name, True, False, False, False)
+                        self.add_before_fn(parent, index, func_name)
+                    else:
+                        self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(parent[index]), c_ast.PtrDecl):
