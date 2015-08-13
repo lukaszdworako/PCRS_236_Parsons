@@ -209,17 +209,21 @@ function executeCVisualizer(option, data, newCode) {
                     json_index = -1;
                     // Reset the memory map tables
                     reset_memory_tables();
-                    add_globals();
 
                     // Clear the name tables
                     $('#name-table-data tbody').empty();
                     $('#name-type-section').empty();
                     $('#new_debugger_table_heap').empty();
+
                     //Clear stdout
                     cur_stdout= "";
                     $("#std-out-textbox").html(cur_stdout);
                     myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
 
+                    // Re-add the global variables
+                    add_globals();
+
+                    // Reset the code in the CodeMirror window
                     myCodeMirrors[debugger_id].setValue(codeToShow);
                 }
             });
@@ -322,7 +326,7 @@ function executeCVisualizer(option, data, newCode) {
         });
     }
 
-    function update_new_debugger_table(data, update_type){
+    function update_new_debugger_table(data, update_type) {
         myCodeMirrors[debugger_id].removeLineClass(last_stepped_line_debugger, '', 'CodeMirror-activeline-background');
         myCodeMirrors[debugger_id].addLineClass(cur_line, '', 'CodeMirror-activeline-background')
         if((json_index+1 < debugger_data["steps"].length)
@@ -400,6 +404,20 @@ function executeCVisualizer(option, data, newCode) {
             }
             if(json_step.hasOwnProperty('on_entry_point')) {
                 most_recently_entered = json_step['function'];
+            }
+
+            if((json_index+1 < debugger_data["steps"].length)
+                && (debugger_data["steps"][json_index+1]['on_entry_point'])) {
+
+                var function_call_line = parseInt(debugger_data["steps"][json_index+1]["student_view_line"]-1);
+                myCodeMirrors[debugger_id].addLineClass(function_call_line, '', 'CodeMirror-activeline-background');
+            }
+
+            if((json_index+2 < debugger_data["steps"].length)
+                && (debugger_data["steps"][json_index+2]['on_entry_point'])) {
+
+                var function_call_line = parseInt(debugger_data["steps"][json_index+2]["student_view_line"]-1);
+                myCodeMirrors[debugger_id].removeLineClass(function_call_line, '', 'CodeMirror-activeline-background');
             }
         }
 
