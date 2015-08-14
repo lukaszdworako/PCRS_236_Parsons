@@ -33,9 +33,6 @@ REACT = True
 # live page receives updates from socket.io to update when items are completed
 QUESTS_LIVE = False
 
-# hack to fix video links that come from U of T's mymedia system
-MYMEDIA_VIDEOS = True
-
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -175,7 +172,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 ROOT_URLCONF = 'pcrs.urls'

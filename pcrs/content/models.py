@@ -31,10 +31,20 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
 
     @property
     def url(self):
-        if MYMEDIA_VIDEOS:
+        if "media/public" in self.link:      # Hack for MYMEDIA
             return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+        elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
+            tag = self.link.find("?v=")
+            return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
         else:
             return self.link
+
+    @property
+    def format(self):
+        if "media/public" in self.link:      # Hack for MYMEDIA
+            return 'rtmp/mp4'
+        else:
+            return 'video/mp4'
 
     class Meta:
         ordering = ['name']

@@ -11,32 +11,27 @@
 {% endautoescape  %}
 <br>
 
-<video id="my_video_{{ item.pk }}"
-       class="video-js vjs-default-skin"
-       controls
-       preload="auto"
+{% if "youtube.com" in item.url %}          {# Hack for youtube.com #}
+<iframe width="560" height="315" src="{{ item.url }}" frameborder="0" allowfullscreen></iframe>
+{% else %}
+    <video id="my_video_{{ item.pk }}"
+           class="video-js vjs-default-skin"
+           controls
+           preload="auto"
 
-       data-setup='{"customControlsOnMobile": true }'
-       poster="{{ item.thumbnail }}">
-       {% if mymedia_videos %}
-           <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
-{#         <source src="{{ item.link }}" type="rtmp/mp4">#}
-       {% else %}
-           <source src="{{ item.link }}" type='video/mp4'>
-{#         <source src="{{ item.link }}" type="video/mp4">#}
-       {% endif %}
+           data-setup='{"customControlsOnMobile": true }'
+           poster="{{ item.thumbnail }}">
+           <source src="{{ item.url }}" type='{{ item.format }}'>
+    </video>
 
-</video>
-
-{% if item.download %}
-    <br>
-    <div>
-        <a href="{{ item.download }}">
-            Download Video
-        </a>
-    </div>
-    <br>
+    {% if item.download %}
+        <br>
+        <div>
+            <a id="video-download_{{ item.pk }}" href="{{ item.download }}">
+                Download Video
+            </a>
+        </div>
+        <br>
+    {% endif %}
 {% endif %}
-
-
 
