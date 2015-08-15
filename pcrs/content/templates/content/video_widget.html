@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 {% autoescape off %}
 <h3> <p class="widget_title"> {{ item.name }} </p>
 
@@ -20,7 +22,11 @@
            preload="auto"
 
            data-setup='{"customControlsOnMobile": true }'
-           poster="{{ item.thumbnail }}">
+           {% if item.thumbnail %}
+               poster="{{ item.thumbnail }}">
+           {% else %}
+               poster="{% static "content/images/gradient.jpg" %}">
+           {% endif %}
            <source src="{{ item.url }}" type='{{ item.format }}'>
     </video>
 
