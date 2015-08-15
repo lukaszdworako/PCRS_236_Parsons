@@ -12,7 +12,7 @@
 <br>
 
 {% if "youtube.com" in item.url %}          {# Hack for youtube.com #}
-<iframe width="560" height="315" src="{{ item.url }}" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
 {% else %}
     <video id="my_video_{{ item.pk }}"
            class="video-js vjs-default-skin"
