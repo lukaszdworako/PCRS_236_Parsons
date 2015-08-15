@@ -14,7 +14,11 @@
 <br>
 
 {% if "youtube.com" in item.url %}          {# Hack for youtube.com #}
-<iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
+<div class="iframe-video-wrapper">
+    <div class="iframe-video-container">
+        <iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
+    </div> <!-- iframe-video-container -->
+</div> <!-- iframe-video-wrapper -->
 {% else %}
     <video id="my_video_{{ item.pk }}"
            class="video-js vjs-default-skin"
@@ -32,12 +36,11 @@
 
     {% if item.download %}
         <br>
-        <div>
+        <div> <!-- video-download -->
             <a id="video-download_{{ item.pk }}" href="{{ item.download }}">
                 Download Video
             </a>
-        </div>
+        </div> <!-- video-download -->
         <br>
     {% endif %}
 {% endif %}
-

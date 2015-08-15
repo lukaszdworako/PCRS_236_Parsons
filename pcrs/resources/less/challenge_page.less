@@ -158,3 +158,30 @@
     height: 150px !important;
   }
 }
+
+/* Elastic iframe videos courtesy Nick La @ http://webdesignerwall.com/tutorials/css-elastic-videos */
+
+.iframe-video-container {
+	position: relative;
+	padding-bottom: 56.25%;
+	padding-top: 30px;
+	height: 0;
+	overflow: hidden;
+}
+
+.iframe-video-container iframe,  
+.iframe-video-container object,  
+.iframe-video-container embed {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.iframe-video-wrapper {
+	width: 600px;
+	max-width: 100%;
+}
+
+/* End elastic iframe video code */
