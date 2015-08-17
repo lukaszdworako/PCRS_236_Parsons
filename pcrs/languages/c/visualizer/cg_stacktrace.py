@@ -109,6 +109,10 @@ class CVisualizer:
         #Format is: {typedef_name: actual_type_name}
         self.typedef_dict = {}
 
+        #extra_adder is used to keep track of any additional space we should add between our current node and where to insert it,
+        #used in the add_after_node function
+        self.extra_adder = 0
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -383,6 +387,7 @@ class CVisualizer:
         #global amt_after
         #reset amt_after
         self.amt_after = 0
+        self.extra_adder = 0
 
         print(parent[index])
         #Check for the current node's type and handle:
@@ -427,7 +432,7 @@ class CVisualizer:
         elif isinstance(parent[index], c_ast.FuncDef):
             try:
                 if parent[index].body.block_items != None:
-                    self.print_func_entry(parent, index, func_name)
+                    self.print_func_entry(parent, index, func_name, struct_name_val)
             except:
                 pass
 
@@ -504,7 +509,7 @@ class CVisualizer:
         return node.children()[0][1]
 
     #Set the variables to be used in the print statements for a declaration node
-    def set_decl_vars(self, node):
+    def set_decl_vars(self, node, struct_name_val):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -518,7 +523,7 @@ class CVisualizer:
         if actual_type != None:
             type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
-        var_name_val = node.name
+        var_name_val = struct_name_val + node.name
         var_new_val = True
         if node.init == None:
             is_uninit = True
@@ -557,37 +562,21 @@ class CVisualizer:
         var_new_val = False
         is_uninit = False
 
-    def set_struct_vars(self, parent, index, node, struct_name):
+    def set_struct_vars(self, parent, index, node, struct_type_name, func_name, struct_full_name=""):
         
-        cur_struct = self.struct_dict.get(struct_name)
+        #pdb.set_trace()
+
+        cur_struct = self.struct_dict.get(struct_type_name)
+
+        struct_full_name += node.name + "."
         
         #Loop through all the declaration nodes saved in the current struct
-        #for declaration in cur_struct:
-
-
-        # global type_of_var
-        # global var_name_val
-        # global var_new_val
-        # global is_uninit
-        # global ptr_depth
-        # global var_typerep
-
-        # ptr_depth = 0
-        # type_of_var = node.type.type.names[0]
-        # actual_type = self.typedef_dict.get(type_of_var)
-        # if actual_type != None:
-        #     type_of_var = actual_type
-        # var_typerep = self.primitive_types.get(type_of_var)
-        # var_name_val = node.name
-        # var_new_val = True
-        # if node.init == None:
-        #     is_uninit = True
-        # else:
-        #     is_uninit = False        
-
+        for declaration in cur_struct:
+            self.extra_adder = self.amt_after
+            self.print_changed_vars(parent, index+to_add_index, func_name, True, declaration, struct_full_name)
 
     #Set the variables to be used in the print statements for a pointer declaration node
-    def set_decl_ptr_vars(self, node):
+    def set_decl_ptr_vars(self, node, struct_name_val):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -605,6 +594,7 @@ class CVisualizer:
             temp_node = temp_node.type
 
         #print("ptr depth is "+(str)(ptr_depth))
+        #pdb.set_trace()
         clean_type = temp_node.type.type.names[0]
         type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
         
@@ -617,7 +607,7 @@ class CVisualizer:
             str_lit = True
 
         var_typerep = "%p"
-        var_name_val = node.name
+        var_name_val = struct_name_val + node.name
 
         ptr_dict_add = {(str)(var_name_val):(int)(ptr_depth)}
         self.ptr_dict.update(ptr_dict_add)
@@ -700,7 +690,7 @@ class CVisualizer:
 
 
     #node is the assign or decl
-    def set_heap_vars(self, parent, index, node_name, malloc_node):
+    def set_heap_vars(self, parent, index, node_name, malloc_node, struct_name_val):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -711,7 +701,7 @@ class CVisualizer:
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
         #pdb.set_trace()
-        clean_name = (str)(node_name.split('[', 1)[0])
+        clean_name = struct_name_val + (str)(node_name.split('[', 1)[0])
         ptr_depth = self.ptr_dict.get(clean_name)
 
         parent_type = (str)(self.var_type_dict.get(clean_name))
@@ -720,14 +710,14 @@ class CVisualizer:
         if actual_type != None:
             type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
-        var_name_val = '*'*ptr_depth+(str)(node_name)
+        var_name_val = '*'*ptr_depth+ struct_name_val+(str)(node_name)
 
         self.set_malloc_size_var(parent, index, malloc_node)
 
         var_new_val = True
         is_uninit = True
 
-    def set_decl_array(self, parent, index, node):
+    def set_decl_array(self, parent, index, node, struct_name_val):
         #Adding the array info to the array_dict
 
         global to_add_index
@@ -799,7 +789,7 @@ class CVisualizer:
         #Need to decide on if I need this or not
         var_typerep = "%p"
 
-        var_name_val = node.name
+        var_name_val = struct_name_val+node.name
 
         var_new_val = True
         if node.init == None:
@@ -819,13 +809,11 @@ class CVisualizer:
         for temp_var_node in temp_var_nodes:
             parent.insert(index, temp_var_node)
             to_add_index+=1
-            self.amt_after+= 1
 
         #Initialize the size variables as well
         for size_node in size_nodes:
             parent.insert(index, size_node)
             to_add_index+=1
-            self.amt_after+= 1
 
         print(self.array_dict)
 
@@ -937,23 +925,23 @@ class CVisualizer:
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after+= 1
 
-    def add_before_fn(self, parent, index, func_name, node):
+    def add_before_fn(self, parent, index, func_name):
         global to_add_index
         #global cur_par_index
         #global amt_after
-        print_node = self.create_printf_node(node, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
+        print_node = self.create_printf_node(parent[index], func_name, False, False, False, False, False, False, False, False, False, False, False, False)
         parent.insert(index, print_node)
         self.amt_after += 1
         to_add_index += 1
 
     #node is the actual node we're looking at, mostly for the coord. Parent and index is where we're adding it
-    def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray, node):
-        print_node = self.create_printf_node(node, func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
+    def add_after_node(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
+        print_node = self.create_printf_node(parent[index], func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
         #Case for global variables
         if func_name == None:
             self.global_print_nodes.append(print_node)
         else:
-            parent.insert(index+1, print_node)
+            parent.insert(index+1+self.extra_adder, print_node)
             self.amt_after += 1
 
     def add_after_all_nodes(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
@@ -1192,6 +1180,9 @@ class CVisualizer:
         node = parent[index+to_add_index]
         node_array_dict = self.array_dict.get(node.name)
 
+        if node_array_dict == None:
+            return
+
         #If it's not a char* (ie. type is char and ptr depth is 1) or wasn't initialized to anything then just return
         if not(node_array_dict[0] == "char" and node_array_dict[4] == 1 and node.init != None):
             return
@@ -1224,7 +1215,7 @@ class CVisualizer:
 
     #If node is given, we're going to use that instead to tell the function which node we're adding info on, yet we're adding to parent and index
     #Node should only be given if it's a struct decl
-    def print_changed_vars(self, parent, index, func_name, new, node=None):
+    def print_changed_vars(self, parent, index, func_name, new, node=None, struct_name_val=""):
         global str_lit
         str_lit  = False
     
@@ -1240,7 +1231,13 @@ class CVisualizer:
             if isinstance(self.get_decl_type(node_to_consider), c_ast.TypeDecl):
                 
                 #Check if it's a struct - if so, handle it differently than plain decl
-                cur_type = node_to_consider.type.type.names[0]
+                try:
+                    #This will pass as long as node_to_consider.type.type is an IdentifierType node
+                    cur_type = node_to_consider.type.type.names[0]
+                except:
+                    #This will generally happen only when it is a struct that has already been declared, inside another struct
+                    cur_type = node_to_consider.type.type.name
+
                 struct_entry = self.struct_dict.get(cur_type)
                 typedef_entry = self.typedef_dict.get(cur_type)
                     
@@ -1251,34 +1248,34 @@ class CVisualizer:
                     else:
                         struct_name = cur_type
 
-                    self.set_struct_vars(parent, index, node_to_consider, struct_name)
+                    self.set_struct_vars(parent, index, node_to_consider, struct_name, func_name, struct_name_val)
 
                 else:
-                    self.set_decl_vars(node_to_consider)
+                    self.set_decl_vars(node_to_consider, struct_name_val)
                     #If it's a function call declaration for a function in our program,
                     #ensure there's a print statement in front of it too
                     if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
                         self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
-                        self.add_after_node(parent, index, func_name, True, False, False, False, node_to_consider)
-                        self.add_before_fn(parent, index, func_name, node_to_consider)
+                        self.add_after_node(parent, index, func_name, True, False, False, False)
+                        self.add_before_fn(parent, index, func_name)
                     else:
-                        self.add_after_node(parent, index, func_name, False, False, False, False, node_to_consider)
+                        self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(node_to_consider), c_ast.PtrDecl):
-                self.set_decl_ptr_vars(node_to_consider)
+                self.set_decl_ptr_vars(node_to_consider, struct_name_val)
                 if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
-                    self.add_after_node(parent, index, func_name, True, True, False, False, node_to_consider)
-                    self.add_before_fn(parent, index, func_name, node_to_consider)
+                    self.add_after_node(parent, index, func_name, True, True, False, False)
+                    self.add_before_fn(parent, index, func_name)
 
                 else:
-                    self.add_after_node(parent, index, func_name, False, True, False, False, node_to_consider)
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
 
                     #Case for malloc, won't be mallocing inside a function header
                     try:
                         if node_to_consider.init.name.name == 'malloc':
-                            self.set_heap_vars(parent, index, node_to_consider.name, node_to_consider.init)
+                            self.set_heap_vars(parent, index, node_to_consider.name, node_to_consider.init, struct_name_val)
 
                             print_node = self.create_printf_node(parent[index+1], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                             parent.insert(index+1+self.amt_after, print_node)
@@ -1293,9 +1290,9 @@ class CVisualizer:
 
             #Array declaration
             elif isinstance(self.get_decl_type(node_to_consider), c_ast.ArrayDecl):
-                isPtr = self.set_decl_array(parent, index, node_to_consider)
-                self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True, node_to_consider)
-                self.print_array_extra_nodes(parent, index+self.amt_after+1)
+                isPtr = self.set_decl_array(parent, index, node_to_consider, struct_name_val)
+                self.add_after_node(parent, index+to_add_index, func_name, False, isPtr, False, True)
+                self.print_array_extra_nodes(parent, index+to_add_index+self.amt_after+1)
                 self.handle_array_decl_str_lit(parent, index, func_name)
         #Otherwise it was an assignment of an already declared var
         else:
@@ -1304,11 +1301,11 @@ class CVisualizer:
                 #Case for pointers such as *x++
                 if isinstance(node_to_consider.expr, c_ast.UnaryOp):
                     self.set_assign_ptr_vars(node_to_consider, True)
-                    self.add_after_node(parent, index, func_name, False, True, False, False, node_to_consider)
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
                 #Non-pointer unaryops
                 else:
                     self.set_assign_vars(node_to_consider, True)
-                    self.add_after_node(parent, index, func_name, False, False, False, False, node_to_consider)
+                    self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
@@ -1334,28 +1331,28 @@ class CVisualizer:
                 #ensure there's a print statement in front of it too
                 if isinstance(node_to_consider.rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.rvalue)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.rvalue))
-                    self.add_after_node(parent, index, func_name, True, ptr_assign, False, False, node_to_consider)
-                    self.add_before_fn(parent, index, func_name, node_to_consider)
+                    self.add_after_node(parent, index, func_name, True, ptr_assign, False, False)
+                    self.add_before_fn(parent, index, func_name)
                 else:
-                    self.add_after_node(parent, index, func_name, False, ptr_assign, False, False, node_to_consider)
+                    self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
                     #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
                     #if str_lit:
                         ##self.handle_str_lit_array(parent, index)
                         #print("str lit")
                      #Case for malloc, won't be mallocing inside a function header
-                    self.try_malloc(parent, index+to_add_index, func_name, node_to_consider.lvalue.name, node_to_consider)
+                    self.try_malloc(parent, index+to_add_index, func_name, node_to_consider.lvalue.name, node_to_consider, struct_name_val)
 
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(node_to_consider.lvalue, c_ast.UnaryOp):
 
                 self.set_assign_ptr_vars(node_to_consider, False)
-                self.add_after_node(parent, index, func_name, False, True, False, False, node_to_consider)
+                self.add_after_node(parent, index, func_name, False, True, False, False)
                 try:
                     name_to_pass = node_to_consider.lvalue.expr.name
                 except:
                     #If there's a binary op inside the unary op
                     name_to_pass = node_to_consider.lvalue.expr.left.name
-                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider)
+                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
 
             #Array assignment, not unary
             elif isinstance((node_to_consider.lvalue), c_ast.ArrayRef):
@@ -1383,9 +1380,9 @@ class CVisualizer:
                 #     name_to_pass = var_name_val
                 #pdb.set_trace()
                 self.set_assign_ptr_vars(node_to_consider, False)
-                self.add_after_node(parent, index, func_name, False, isPtr, False, False, node_to_consider)
+                self.add_after_node(parent, index, func_name, False, isPtr, False, False)
                 name_to_pass = var_name_val
-                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider)
+                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
 
             #Case for string literal, add an array val on data
             if str_lit and isinstance(node_to_consider.rvalue, c_ast.Constant):
@@ -1394,18 +1391,18 @@ class CVisualizer:
 
     def call_funcs_for_str_lit(self, parent, index, func_name, node):
         self.handle_str_lit_array(parent, index, node)
-        print_node = self.create_printf_node(node, func_name, False, True, False, False, False, False, False, False, True, False, False, True)
+        print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, False, True, False, False, True)
         parent.insert(index+self.amt_after+1, print_node)
         self.amt_after += 1
         self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
     #Try to malloc
-    def try_malloc(self, parent, index, func_name, var_name, node):
+    def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
         try:
             if node.rvalue.name.name == 'malloc':
                 #pdb.set_trace()
-                self.set_heap_vars(parent, index, var_name, node.rvalue)
-                print_node = self.create_printf_node(node, func_name, False, True, False, False, False, False, False, True, False, False, False, False)
+                self.set_heap_vars(parent, index, var_name, node.rvalue, struct_name_val)
+                print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                 parent.insert(index+2, print_node)
                 self.amt_after += 1
         except:
@@ -1593,7 +1590,7 @@ class CVisualizer:
         except:
             pass
 
-    def print_func_entry(self, parent, index, func_name):
+    def print_func_entry(self, parent, index, func_name, struct_name_val):
         is_void = False
         try:
             if parent[index].decl.type.args.params[0].type.type.names[0] == 'void':
@@ -1606,10 +1603,10 @@ class CVisualizer:
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
-                    self.set_decl_ptr_vars(header_vars[i])
+                    self.set_decl_ptr_vars(header_vars[i], struct_name_val)
                     header_var_ptr = True
                 else:
-                    self.set_decl_vars(header_vars[i])
+                    self.set_decl_vars(header_vars[i], struct_name_val)
 
                     header_var_ptr = False
                 global is_uninit
