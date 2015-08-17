@@ -10,8 +10,6 @@ from django.utils.timezone import utc, now, localtime
 
 from content.tags import AbstractTaggedObject
 
-from pcrs.settings import MYMEDIA_VIDEOS
-
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence,
                          get_problem_content_types)
@@ -247,10 +245,10 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     @classmethod
     def get_content_type_name(cls):
         return 'challenge'
-    
+
     def __str__(self):
         return '{name} | {quest}'.format(name=self.name, quest=self.quest)
-    
+
     @staticmethod
     def _get_completed_challenges(completed, total):
         return {challenge.pk for challenge in Challenge.objects.all()

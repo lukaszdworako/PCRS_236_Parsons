@@ -528,13 +528,13 @@ function executeCVisualizer(option, data, newCode) {
                     table_name = 'data';
                 }
 
-                var cur_frame;
-                cur_frame = $('#names-'+table_name);
+                var cur_frame = $('#names-'+table_name+':first'); // Only take the top stack frame with this name
 
-                //Check if there's a current frame up for this:
+                // Check if there's a current frame up for this:
                 if(cur_frame.length == 0) {
-                //If not, create a whole new name table
-                    add_name_table_frame(table_name);
+                    // If not, create a new stack frame for it
+                    var stack_frame_level = stack_frame_levels[table_name];
+                    add_name_table_frame(table_name, stack_frame_level);
                 }
 
                 //Add a row to the existing name table
@@ -557,16 +557,28 @@ function executeCVisualizer(option, data, newCode) {
         }
     }
 
-    function add_name_table_frame(table_name) {
+    function add_name_table_frame(table_name, stack_frame_num) {
         $('#name-type-section').prepend('<span id="name-table-'+table_name+'"> <table id="names-' +table_name+
         '" class="table table-bordered" style="width: 100%; float:left;">'+
         '<thead>'+
             '<tr>'+
-             '<th colspan=2>'+table_name + '</th>'+
+             '<th colspan=2 class="names-stack-header">'+
+             '<table class="table names-stack-header-table">'+
+                '<tr>'+
+                    '<th class="names-stack-header-label">'+
+                        table_name +
+                    '</th>'+
+                    '<th class="names-stack-header-frame-num">'+
+                        stack_frame_num+
+                    '</th>'+
+                '</tr>'+
+             '</table>'+
+             '</th>'+
             '</tr>'+
+
             '<tr>'+
-            '<th width="50%">Name</th>' +
-            '<th width="50%">Type</th>' +
+                '<th width="50%">Name</th>' +
+                '<th width="50%">Type</th>' +
             '</tr>' +
         '</thead>' +
         '<tbody id="name-body-'+table_name+'">' +
@@ -575,15 +587,11 @@ function executeCVisualizer(option, data, newCode) {
     }
 
     function add_first_name_table(json_step) {
-        table_name = json_step['function'];
-        var cur_frame;
-        cur_frame = $('#names-'+table_name);
+        var table_name = json_step['function'];
+        var stack_frame_level = stack_frame_levels[table_name];
 
-        //Check if there's a current frame up for this:
-        if(cur_frame.length == 0) {
-        //If not, create a whole new name table
-            add_name_table_frame(table_name);
-        }
+        // Always add this first table, since this function is only called on the entry point
+        add_name_table_frame(table_name, stack_frame_level);
     }
 
 
