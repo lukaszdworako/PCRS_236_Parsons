@@ -585,7 +585,7 @@ class CVisualizer:
         global var_typerep
         global pointing_to_type
         global str_lit
-
+        #pdb.set_trace()
         #Check how many levels of pointer this is
         ptr_depth = 0
         temp_node = node
@@ -594,8 +594,12 @@ class CVisualizer:
             temp_node = temp_node.type
 
         #print("ptr depth is "+(str)(ptr_depth))
-        #pdb.set_trace()
-        clean_type = temp_node.type.type.names[0]
+        try:
+            clean_type = temp_node.type.type.names[0]
+        except:
+            clean_type = "struct "+temp_node.type.type.name
+        #if it's a struct pointer
+            
         type_of_var = (str)(clean_type) + ' ' + '*'*ptr_depth
         
         actual_type = self.typedef_dict.get(type_of_var)
@@ -1263,7 +1267,9 @@ class CVisualizer:
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(node_to_consider), c_ast.PtrDecl):
-                self.set_decl_ptr_vars(node_to_consider, struct_name_val)
+                
+                is_struct = self.set_decl_ptr_vars(node_to_consider, struct_name_val)
+
                 if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
                     self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
                     self.add_after_node(parent, index, func_name, True, True, False, False)
