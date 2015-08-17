@@ -545,7 +545,8 @@ function executeCVisualizer(option, data, newCode) {
                 '</tr>');
 
 
-                var name_row = $('#name-body-'+table_name + " tr[id='"+table_name+'-'+changed_var['var_name']+"']");
+                var name_row =
+                    $('#name-body-'+table_name+" tr[id='"+table_name+'-'+changed_var['var_name']+"']:first");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
                 var name_row_group_id = start_addr_to_group_id[group_start_addr];
