@@ -432,7 +432,7 @@ class CVisualizer:
         elif isinstance(parent[index], c_ast.FuncDef):
             try:
                 if parent[index].body.block_items != None:
-                    self.print_func_entry(parent, index, func_name, struct_name_val)
+                    self.print_func_entry(parent, index, func_name)
             except:
                 pass
 
@@ -1590,7 +1590,7 @@ class CVisualizer:
         except:
             pass
 
-    def print_func_entry(self, parent, index, func_name, struct_name_val):
+    def print_func_entry(self, parent, index, func_name):
         is_void = False
         try:
             if parent[index].decl.type.args.params[0].type.type.names[0] == 'void':
@@ -1603,10 +1603,10 @@ class CVisualizer:
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
-                    self.set_decl_ptr_vars(header_vars[i], struct_name_val)
+                    self.set_decl_ptr_vars(header_vars[i], "")
                     header_var_ptr = True
                 else:
-                    self.set_decl_vars(header_vars[i], struct_name_val)
+                    self.set_decl_vars(header_vars[i], "")
 
                     header_var_ptr = False
                 global is_uninit
