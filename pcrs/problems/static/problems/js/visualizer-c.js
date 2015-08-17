@@ -81,6 +81,19 @@ function canFreeRow(tr, array_id) {
     }).length == 4;
 }
 
+function repeat_string(str, count) {
+    if (count < 1) {
+        return '';
+    }
+
+    var result = '';
+    while(count > 1) {
+        count--;
+        result += str;
+    }
+    return result + str;
+}
+
 
 function executeCVisualizer(option, data, newCode) {
 /**
@@ -537,16 +550,56 @@ function executeCVisualizer(option, data, newCode) {
                     add_name_table_frame(table_name, stack_frame_level);
                 }
 
+                var name_tbody = $('#name-body-' + table_name);
+                var insert_row = name_tbody.find("tr:last");
+                var var_name = changed_var['var_name'];
+
+                // Create the different struct levels
+                var struct_levels = changed_var['struct_levels'];
+                var struct_parent = "";
+                if(struct_levels) {
+                    var level_delim = "";
+                    var struct_tr = "", level_name = "";
+                    for(var i = 0; i < struct_levels.length-1; i++) {
+                        // Create a row for each level
+                        level_name = level_delim ? level_delim + ' ' + struct_levels[i] : struct_levels[i];
+                        var var_id = struct_parent ? struct_parent + '.' + struct_levels[i] : struct_levels[i];
+                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true);
+
+                        // Don't add new rows for existing hierarchies
+                        var row_exists = $("tr[id='" + var_id + "']").length > 0;
+                        if(!row_exists) {
+                            if(insert_row.length > 0) {
+                                insert_row.after(struct_tr);
+                                insert_row = insert_row.next();
+                            } else {
+                                name_tbody.append(struct_tr);
+                                insert_row = name_tbody.find("tr:last");
+                            }
+                        }
+
+                        // Update the parent name
+                        struct_parent = var_id;
+
+                        // Separate the levels with vertical bars
+                        level_delim += '|';
+                    }
+
+                    // The last element will be the actual variable name
+                    var_name = level_delim + ' ' + struct_levels[i];
+                }
+
                 //Add a row to the existing name table
-                $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+changed_var['var_name']+'" data-address="'+
-                    changed_var['addr']+'">' +
-                    '<td class="var-name hide-overflow" title="' + changed_var['var_name'] + '">' + changed_var['var_name'] + '</td>' +
-                    '<td class="var-type hide-overflow" title="' + changed_var['type'] + '">' + changed_var['type'] + '</td>' +
-                '</tr>');
+                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false);
+
+                if(insert_row.length > 0) {
+                    insert_row.after(name_tr);
+                } else {
+                    name_tbody.append(name_tr);
+                }
 
 
-                var name_row =
-                    $('#name-body-'+table_name+" tr[id='"+table_name+'-'+changed_var['var_name']+"']:first");
+                var name_row = $('#name-body-'+table_name+":first tr[id='"+changed_var['var_name']+"']");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
                 var name_row_group_id = start_addr_to_group_id[group_start_addr];
@@ -555,6 +608,35 @@ function executeCVisualizer(option, data, newCode) {
                     create_hover_unhighlight_function(name_row_group_id)
                     );
             }
+        }
+    }
+
+    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children) {
+        var clean_name = var_name.replace(/\|| /g,'')
+        var tr =
+        $('<tr id="' + var_id + '" data-address="' + var_addr + '" struct-parent="' + struct_parent + '">' +
+            '<td class="var-name hide-overflow" title="' + clean_name + '">'
+                + var_name +
+            '</td>' +
+            '<td class="var-type hide-overflow" title="' + var_type + '">'
+                + var_type +
+            '</td>' +
+        '</tr>');
+
+        // Add a function to show and hide its children
+        if(has_children) {
+           tr.click(create_toggle_struct_function(struct_parent ? struct_parent + '.' + clean_name : clean_name));
+           tr.addClass('cursor-to-hand');
+        }
+
+        return tr;
+    }
+
+    function create_toggle_struct_function(target_struct_parent) {
+        return function() {
+            $("div.name-type-section tr[struct-parent]").filter(function() {
+                return $(this).attr('struct-parent').indexOf(target_struct_parent) >= 0;
+            }).fadeToggle();
         }
     }
 
@@ -1489,22 +1571,24 @@ function executeCVisualizer(option, data, newCode) {
         memory_map_cell.innerHTML = cell_value;
         memory_map_cell.setAttribute("title", cell_value);
 
-        var array_group_id = array_id_to_group_id[array_id];
-        if(array_group_id) {
-            group_id = array_group_id;
-        }
-
         return memory_map_cell;
     }
 
     function add_hover_highlight_to_cells() {
         $("div.memory-map-section td.memory-map-cell").each(function () {
-           var this_group_id = $(this).attr('group-id');
-           if(this_group_id) {
+            var this_group_id = $(this).attr('group-id');
+            var this_array_id = $(this).attr('array-id');
+
+            var array_group_id = array_id_to_group_id[this_array_id];
+            if(array_group_id) {
+                this_group_id = array_group_id;
+            }
+
+            if(this_group_id) {
                 $(this).hover(
                     create_hover_highlight_function(this_group_id),
                     create_hover_unhighlight_function(this_group_id)
-                    );
+                );
             }
         });
     }
