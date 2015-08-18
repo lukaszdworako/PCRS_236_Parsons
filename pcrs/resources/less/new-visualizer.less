@@ -10,6 +10,10 @@ hr {
     margin-top: 0px;
 }
 
+body {
+    overflow-y: auto !important;
+}
+
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -316,21 +320,25 @@ td.uninitialized {
 }
 
 // An inner table is used in the headers of stack frames in the name/type section to show the stack frame number
-div.name-type-section th.names-stack-header {
+div#newvisualizerModal th.names-stack-header,
+div#nameTableDetailsModal th.names-stack-header {
     padding: 0px;
 }
-div.name-type-section table.names-stack-header-table {
+div#newvisualizerModal table.names-stack-header-table,
+div#nameTableDetailsModal table.names-stack-header-table {
     height: 100%;
     padding: 8px;
     margin: 0px;
     width: 100%;
 }
-div.name-type-section th.names-stack-header-label {
+div#newvisualizerModal th.names-stack-header-label,
+div#nameTableDetailsModal th.names-stack-header-label {
     text-align: left;
     border-top: 0px;
 }
-div.name-type-section th.names-stack-header-frame-num {
-    width: 25%;
+div#newvisualizerModal th.names-stack-header-frame-num,
+div#nameTableDetailsModal th.names-stack-header-frame-num {
+    width: 45px;
     text-align: center;
     border-left: 1px solid @border-color;
     border-top: 0px;
@@ -339,4 +347,26 @@ div.name-type-section th.names-stack-header-frame-num {
 .cursor-to-hand {
     cursor: pointer;
     cursor: hand;
+}
+
+
+#newvisualizerModal{
+    overflow-y: auto;
+}
+#nameTableDetailsModal {
+    background-clip: padding-box;
+    margin: 10%;
+    z-index: 1050;
+    overflow-y: auto;
+    border: none;
+    opacity: 1;
+}
+
+#nameTableDetailsDiv {
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+}
+#nameTableDetailsDiv .pcrs-modal-body {
+    padding: 15px;
 }

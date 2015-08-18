@@ -210,6 +210,11 @@ function executeCVisualizer(option, data, newCode) {
                 myCodeMirrors[debugger_id].refresh();
             });
 
+            $('#nameTableDetailsModal div.pcrs-modal-footer button').click(function() {
+                $("#newvisualizerModal").css("z-index", 1050);
+                $("#nameTableDetailsModal").modal('hide');
+            });
+
             // Bind debugger buttons
             $('#new_previous_debugger').bind('click', function () {
                 if (json_index > 0) {
@@ -641,25 +646,27 @@ function executeCVisualizer(option, data, newCode) {
     }
 
     function add_name_table_frame(table_name, stack_frame_num) {
-        $('#name-type-section').prepend('<span id="name-table-'+table_name+'"> <table id="names-' +table_name+
-        '" class="table table-bordered" style="width: 100%; float:left;">'+
-        '<thead>'+
-            '<tr>'+
-             '<th colspan=2 class="names-stack-header">'+
-             '<table class="table names-stack-header-table">'+
-                '<tr>'+
-                    '<th class="names-stack-header-label">'+
-                        table_name +
-                    '</th>'+
-                    '<th class="names-stack-header-frame-num">'+
-                        stack_frame_num+
-                    '</th>'+
-                '</tr>'+
-             '</table>'+
-             '</th>'+
-            '</tr>'+
+        var table_id = 'name-table-' + table_name + '-' + stack_frame_num;
+        var new_name_table = $(
+        '<span id="'+table_id+'">' +
+        '<table id="names-'+table_name+'" class="table table-bordered" style="width: 100%; float:left;">' +
+        '<thead>' +
+            '<tr>' +
+             '<th colspan=2 class="names-stack-header cursor-to-hand">' +
+                '<table class="table names-stack-header-table">' +
+                    '<tr>' +
+                        '<th class="names-stack-header-label">' +
+                            table_name +
+                        '</th>' +
+                        '<th class="names-stack-header-frame-num">' +
+                            stack_frame_num +
+                        '</th>' +
+                    '</tr>' +
+                '</table>' +
+             '</th>' +
+            '</tr>' +
 
-            '<tr>'+
+            '<tr>' +
                 '<th width="50%">Name</th>' +
                 '<th width="50%">Type</th>' +
             '</tr>' +
@@ -667,6 +674,38 @@ function executeCVisualizer(option, data, newCode) {
         '<tbody id="name-body-'+table_name+'">' +
         '</tbody>' +
         '</table></span>');
+
+        // Add expansion function
+        new_name_table.find("th:first").click(create_expand_name_table_function(table_id));
+
+        $('#name-type-section').prepend(new_name_table);
+    }
+
+    function create_expand_name_table_function(table_id) {
+        return function() {
+            // Make a copy of the table to put in the modal window
+            var name_table_copy = $("#"+table_id).clone();
+
+            // Remove the click and hover behaviours
+            name_table_copy.find("*").removeClass("cursor-to-hand");
+            name_table_copy.find("*").unbind("click");
+            name_table_copy.find("*").unbind("mouseenter mouseleave")
+
+            // Remove ids
+            name_table_copy.find("*").removeAttr("id");
+
+            // Put table info into modal window
+            var name_modal_body = $("#nameTableDetailsDiv").find("div.pcrs-modal-body");
+            name_modal_body.empty();
+            name_modal_body.prepend(name_table_copy);
+
+            // Open modal window with table info
+            $("#newvisualizerModal").css("z-index", 500);
+            $("#nameTableDetailsModal").modal({
+                "show": true,
+                "backdrop": false
+            });
+        };
     }
 
     function add_first_name_table(json_step) {
@@ -779,8 +818,6 @@ function executeCVisualizer(option, data, newCode) {
         if(isDotRow(last_heap_row)) {
             last_heap_row.remove();
         }
-
-        console.log('ayy lmao');
     }
 
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {

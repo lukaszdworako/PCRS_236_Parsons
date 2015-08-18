@@ -391,7 +391,7 @@ function getTestcases(div_id) {
                 }
 
                 var isEditor = ($("p.widget_title").text().indexOf("C Editor") >= 0);
-                
+
                 if (use_simpleui == 'False' && !isEditor){
                     $("#"+div_id).find("#grade-code").show();
                 }
@@ -430,7 +430,7 @@ function getTestcases(div_id) {
 
                         $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
                     }
-                }   
+                }
                 if (language == 'python'){
                     prepareGradingTable(div_id,
                                         data['best'],
