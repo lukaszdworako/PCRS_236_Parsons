@@ -204,10 +204,13 @@ div#name-type-section tbody td {
     .hide-overflow;
 }
 
-div#name-type-section td.var-name {
+div#name-type-section td.var-name,
+div#nameTableDetailsModal td.var-name {
     width: 50%;
+    padding: 0%;
 }
-div#name-type-section td.var-type {
+div#name-type-section td.var-type,
+div#nameTableDetailsModal td.var-type {
     width: 50%;
 }
 
@@ -364,9 +367,25 @@ div#nameTableDetailsModal th.names-stack-header-frame-num {
 
 #nameTableDetailsDiv {
     margin: 0px;
-    height: 100%;
     width: 100%;
 }
 #nameTableDetailsDiv .pcrs-modal-body {
     padding: 15px;
+}
+
+table.name-label-inner-table {
+    width: 100%;
+    margin: 0px;
+}
+.name-label-inner-td {
+    border: none;
+}
+table.name-label-inner-table td.name-label-inner-td {
+    .name-label-inner-td;
+}
+table.name-label-inner-table td.name-label-inner-td-empty-space {
+    .name-label-inner-td;
+    background-color: lightgrey;
+    padding: 0px;
+    // width will be set by the code, in multiples of 5px
 }

@@ -556,20 +556,23 @@ function executeCVisualizer(option, data, newCode) {
                 }
 
                 var name_tbody = $('#name-body-' + table_name);
-                var insert_row = name_tbody.find("tr:last");
+                var insert_row = name_tbody.find("> tr:last");
                 var var_name = changed_var['var_name'];
 
                 // Create the different struct levels
                 var struct_levels = changed_var['struct_levels'];
                 var struct_parent = "";
+                var level = 0;
                 if(struct_levels) {
                     var level_delim = "";
                     var struct_tr = "", level_name = "";
                     for(var i = 0; i < struct_levels.length-1; i++) {
                         // Create a row for each level
-                        level_name = level_delim ? level_delim + ' ' + struct_levels[i] : struct_levels[i];
+                        level_name = struct_levels[i];
                         var var_id = struct_parent ? struct_parent + '.' + struct_levels[i] : struct_levels[i];
-                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true);
+
+                        // Use level for the depth
+                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true, level);
 
                         // Don't add new rows for existing hierarchies
                         var row_exists = $("tr[id='" + var_id + "']").length > 0;
@@ -579,23 +582,21 @@ function executeCVisualizer(option, data, newCode) {
                                 insert_row = insert_row.next();
                             } else {
                                 name_tbody.append(struct_tr);
-                                insert_row = name_tbody.find("tr:last");
+                                insert_row = name_tbody.find("> tr:last");
                             }
                         }
 
                         // Update the parent name
                         struct_parent = var_id;
 
-                        // Separate the levels with vertical bars
-                        level_delim += '|';
+                        level++;
                     }
 
-                    // The last element will be the actual variable name
-                    var_name = level_delim + ' ' + struct_levels[i];
+                    var_name = struct_levels[i];
                 }
 
-                //Add a row to the existing name table
-                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false);
+                // Add a row to the existing name table
+                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false, level);
 
                 if(insert_row.length > 0) {
                     insert_row.after(name_tr);
@@ -616,12 +617,28 @@ function executeCVisualizer(option, data, newCode) {
         }
     }
 
-    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children) {
+    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children, depth) {
         var clean_name = var_name.replace(/\|| /g,'')
+        var shade_width = depth * 5; // In px
+        var shade_style = 'style="display: none;"';
+        if(shade_width > 0) {
+            shade_style = 'style="width: '+shade_width+'px;"'
+        }
+
         var tr =
         $('<tr id="' + var_id + '" data-address="' + var_addr + '" struct-parent="' + struct_parent + '">' +
-            '<td class="var-name hide-overflow" title="' + clean_name + '">'
-                + var_name +
+            '<td class="var-name hide-overflow" title="' + var_id + '">' +
+                // An inner table is used to more finely divide up this individual cell
+                '<table class="table table-no-border name-label-inner-table">' +
+                    '<tbody>' +
+                        '<tr>' +
+                            '<td class="name-label-inner-td-empty-space" ' + shade_style + '></td>' +
+                            '<td class="name-label-inner-td">' +
+                                var_name +
+                            '</td>' +
+                        '</tr>' +
+                    '</tbody>' +
+                '</table>' +
             '</td>' +
             '<td class="var-type hide-overflow" title="' + var_type + '">'
                 + var_type +
@@ -652,7 +669,7 @@ function executeCVisualizer(option, data, newCode) {
         '<table id="names-'+table_name+'" class="table table-bordered" style="width: 100%; float:left;">' +
         '<thead>' +
             '<tr>' +
-             '<th colspan=2 class="names-stack-header cursor-to-hand">' +
+             '<th title="Open exapanded table view" colspan=2 class="names-stack-header cursor-to-hand">' +
                 '<table class="table names-stack-header-table">' +
                     '<tr>' +
                         '<th class="names-stack-header-label">' +
