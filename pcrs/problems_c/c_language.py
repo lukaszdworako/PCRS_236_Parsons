@@ -328,7 +328,7 @@ class CSpecifics():
 
         # Currently only handles arrays, not structs
         if("[]" in value_type):
-            # TODO: Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
+            # Handle arrays recursively by creating a list of dictionaries, similar to changed_vars
             # Find at which level we are and go down one level
             level = value_type.count("[]")
             next_type = value_type.replace("[]","",1)
