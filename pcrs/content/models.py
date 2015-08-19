@@ -23,6 +23,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     link = models.TextField()
     thumbnail = models.URLField(blank=True)
     download = models.URLField(blank=True)
+    resources = models.TextField(blank=True)
     content_videos = generic.GenericRelation('ContentSequenceItem',
                                              content_type_field='content_type',
                                              object_id_field='object_id')
@@ -63,6 +64,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['url'] = self.url,
         serialized['thumbnail'] = self.thumbnail,
         serialized['download'] = self.download,
+        serialized['resources'] = self.resources,
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
