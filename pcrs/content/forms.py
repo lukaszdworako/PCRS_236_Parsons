@@ -17,7 +17,7 @@ class TagForm(BaseCrispyForm, forms.ModelForm):
 class VideoForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Video
-        fields = ('name', 'description', 'link', 'thumbnail', 'download', 'tags')
+        fields = ('name', 'description', 'resources', 'link', 'thumbnail', 'download', 'tags')
 
 
 class ChallengeForm(CrispyFormMixin, forms.ModelForm):
