@@ -1959,7 +1959,8 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         if(json_step.hasOwnProperty('returned_fn_call')) {
-            most_recently_returned = json_step['returned_fn_call'];
+            var returned_function = json_step['returned_fn_call'];
+            most_recently_returned = returned_function + '-' + stack_frame_levels[returned_function];
         }
 
         if(json_step.hasOwnProperty('return')) {

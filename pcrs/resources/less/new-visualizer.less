@@ -61,7 +61,8 @@ body {
     flex: 0 0 28%;
 }
 
-.memory-map-section tbody td {
+.memory-map-section tbody td,
+#nameTableDetailsDiv .pcrs-modal-body tbody td {
     font-family: monospace;
 }
 
@@ -374,8 +375,12 @@ div#nameTableDetailsModal th.names-stack-header-frame-num {
 }
 
 table.name-label-inner-table {
-    width: 100%;
     margin: 0px;
+}
+
+div#name-type-section table.name-label-inner-table {
+    width: 100%;
+    background-color: inherit;
 }
 .name-label-inner-td {
     border: none;
