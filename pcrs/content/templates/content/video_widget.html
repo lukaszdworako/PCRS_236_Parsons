@@ -11,7 +11,7 @@
 </h3>
 <div> {{ item.description|linebreaks }} </div>
 {% endautoescape  %}
-<br>
+<br />
 
 {% if "youtube.com" in item.url %}          {# Hack for youtube.com #}
 <div class="iframe-video-wrapper">
@@ -35,12 +35,26 @@
     </video>
 
     {% if item.download %}
-        <br>
+        <br />
         <div> <!-- video-download -->
             <a id="video-download_{{ item.pk }}" href="{{ item.download }}">
                 Download Video
             </a>
         </div> <!-- video-download -->
-        <br>
+        <br />
     {% endif %}
+{% endif %}
+
+{% if item.resource_list %}
+<br />
+<div> <!-- video-resources -->
+    <b>Resources</b>
+    <ol>
+    {{item.resource_list}}
+    {% for reslink, restext in item.resource_list %}
+       <li><a href="{{ reslink }}">{{ restext }}</a></li>
+    {% endfor %}
+    </ol>
+</div> <!-- video-resources -->
+<br />
 {% endif %}

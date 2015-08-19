@@ -45,6 +45,20 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         else:
             return 'video/mp4'
 
+    @property
+    def resource_list(self):
+        items = []
+        for line in self.resources.strip().split("\n"):
+            split_loc = line.find(",")
+            if split_loc > -1:
+                link = line[:split_loc].strip()
+                text = line[split_loc+1:].strip()
+            else:
+                link = line
+                text = "Resource"
+            items.append([link, text])
+        return items
+
     class Meta:
         ordering = ['name']
 
@@ -64,7 +78,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['url'] = self.url,
         serialized['thumbnail'] = self.thumbnail,
         serialized['download'] = self.download,
-        serialized['resources'] = self.resources,
+        serialized['resource_list'] = self.resource_list,
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
