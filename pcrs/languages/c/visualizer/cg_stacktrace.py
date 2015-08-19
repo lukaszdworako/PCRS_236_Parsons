@@ -487,7 +487,6 @@ class CVisualizer:
         print(self.struct_dict)
 
     def add_to_typedef_dict(self, node):
-        #pdb.set_trace()
         #If it's a struct typedef, add struct name and also add to struct dict
         if isinstance(node.type.type, c_ast.Struct):
             self.add_to_struct_dict(node.type)
@@ -540,7 +539,6 @@ class CVisualizer:
         global var_typerep
         global str_lit
 
-        #pdb.set_trace()
         ptr_depth = 0
         if isUnary:
             temp_name_val = node.expr.name
@@ -564,7 +562,6 @@ class CVisualizer:
 
     def set_struct_vars(self, parent, index, node, struct_type_name, func_name, struct_full_name=""):
         
-        #pdb.set_trace()
 
         cur_struct = self.struct_dict.get(struct_type_name)
 
@@ -585,7 +582,6 @@ class CVisualizer:
         global var_typerep
         global pointing_to_type
         global str_lit
-        #pdb.set_trace()
         #Check how many levels of pointer this is
         ptr_depth = 0
         temp_node = node
@@ -642,7 +638,6 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.expr
 
-        #pdb.set_trace()
         while isinstance(temp_node, c_ast.ArrayRef):
             array_depth += 1
             temp_generator = c_generator.CGenerator()
@@ -665,7 +660,6 @@ class CVisualizer:
 
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
 
-        #pdb.set_trace()
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
 
         array_dict_entry = self.array_dict.get(node_name)
@@ -704,7 +698,6 @@ class CVisualizer:
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
-        #pdb.set_trace()
         clean_name = struct_name_val + (str)(node_name.split('[', 1)[0])
         ptr_depth = self.ptr_dict.get(clean_name)
 
@@ -752,7 +745,6 @@ class CVisualizer:
 
             #Case where size wasn't specified, check for initlist to determine the size
             if temp_array.dim == None:
-                #pdb.set_trace()
                 try:
                     outer_len = len(node.init.children())
                     #Case for strings
@@ -1161,17 +1153,15 @@ class CVisualizer:
         print(self.array_dict)
 
         #Initialize the temporary variables which will store size in later for loops
-        #Put them before the array decl node
+        #Put them before the array decl node we're goign to declare below
         for temp_var_node in temp_var_nodes:
-            parent.insert(index+self.amt_after+1, temp_var_node)
-            to_add_index+=1
-            self.amt_after+= 1
+            parent.insert(index+to_add_index+self.amt_after+1, temp_var_node)
+            self.amt_after+=1
 
         #Initialize the size variables as well
         for size_node in size_nodes:
-            parent.insert(index+self.amt_after+1, size_node)
-            to_add_index+=1
-            self.amt_after+= 1
+            parent.insert(index+to_add_index+self.amt_after+1, size_node)
+            self.amt_after+=1
 
         print(self.array_dict)
 
@@ -1290,7 +1280,6 @@ class CVisualizer:
                         pass
                 #Case for string literal, add an array val on data
                 #Only execute this if it's being set to a constant that's a string: otherwise, if pointing to a var, leave it
-                #pdb.set_trace()
                 if str_lit and node_to_consider.init != None and isinstance(node_to_consider.init, c_ast.Constant):
                     self.call_funcs_for_str_lit(parent, index, func_name, node_to_consider)
 
@@ -1384,7 +1373,6 @@ class CVisualizer:
                 #     self.add_after_node(parent, index, func_name, False, True, False, False)
                 #     print ("not declared as an array")
                 #     name_to_pass = var_name_val
-                #pdb.set_trace()
                 self.set_assign_ptr_vars(node_to_consider, False)
                 self.add_after_node(parent, index, func_name, False, isPtr, False, False)
                 name_to_pass = var_name_val
@@ -1392,21 +1380,19 @@ class CVisualizer:
 
             #Case for string literal, add an array val on data
             if str_lit and isinstance(node_to_consider.rvalue, c_ast.Constant):
-                #pdb.set_trace()
                 self.call_funcs_for_str_lit(parent, index, func_name, node_to_consider)
 
     def call_funcs_for_str_lit(self, parent, index, func_name, node):
         self.handle_str_lit_array(parent, index, node)
         print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, False, True, False, False, True)
-        parent.insert(index+self.amt_after+1, print_node)
+        parent.insert(index+to_add_index+1+self.amt_after, print_node)
         self.amt_after += 1
-        self.print_array_extra_nodes(parent, index+self.amt_after+1)
+        self.print_array_extra_nodes(parent, index+to_add_index+self.amt_after+1)
 
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
         try:
             if node.rvalue.name.name == 'malloc':
-                #pdb.set_trace()
                 self.set_heap_vars(parent, index, var_name, node.rvalue, struct_name_val)
                 print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                 parent.insert(index+2, print_node)
@@ -1472,7 +1458,6 @@ class CVisualizer:
 
     #
     def print_funccall_not_prog(self, parent, index, func_name):
-        #pdb.set_trace()
         #Loop through all the arguments we're passing this function, print out each of their values after the function
         for variable_passed in parent[index].args.exprs:
             self.handle_types_variable_passed(parent, index, variable_passed, func_name)
@@ -1500,7 +1485,6 @@ class CVisualizer:
                 self.handle_types_variable_passed(parent, index, variable_passed.expr, func_name)
             #ArrayRef, like x[1]
             elif isinstance(variable_passed, c_ast.ArrayRef):
-                #pdb.set_trace()
 
                 cur_arrayref = variable_passed
                 array_depth = 0
