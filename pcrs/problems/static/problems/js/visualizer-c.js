@@ -457,9 +457,18 @@ function executeCVisualizer(option, data, newCode) {
         for(var i = 0; i < global_amt; i++) {
             //Include global vars
             var global_var = globals[i];
+
+            var this_struct_level = globals[i]['struct_levels'].length;
+            var next_struct_level = (i+1 < global_amt && globals[i+1]['struct_levels']) ?
+                                        globals[i+1]['struct_levels'].length
+                                        : undefined;
+
+            var is_last_struct_var = (i+1 == global_amt)
+                                    || (this_struct_level && next_struct_level && (next_struct_level < this_struct_level));
+
             var var_group_id = get_var_group_id(Boolean(global_var["new"]), global_var["var_name"])
             add_one_var_to_memory_table(global_var, "", var_group_id);
-            add_one_var_to_name_table(global_var);
+            add_one_var_to_name_table(global_var, "", is_last_struct_var);
             add_one_var_to_val_list(global_var);
         }
 
@@ -518,13 +527,22 @@ function executeCVisualizer(option, data, newCode) {
     function add_to_name_table(json_step) {
         var table_name;
         //Loop through all var changes in the step
-        for(var i=0; i<json_step['changed_vars'].length; i++) {
-            add_one_var_to_name_table(json_step['changed_vars'][i], json_step['function']);
+        var num_changed_vars = json_step['changed_vars'].length;
+        for(var i=0; i<num_changed_vars; i++) {
+            var this_struct_level = json_step['changed_vars'][i]['struct_levels'].length;
+            var next_struct_level = (i+1 < num_changed_vars && json_step['changed_vars'][i+1]['struct_levels']) ?
+                                        json_step['changed_vars'][i+1]['struct_levels'].length
+                                        : undefined;
+
+            var is_last_struct_var =(i+1 == num_changed_vars)
+                                    || (this_struct_level && next_struct_level && (next_struct_level < this_struct_level));
+
+            add_one_var_to_name_table(json_step['changed_vars'][i], json_step['function'], is_last_struct_var);
         }
         //Do collapsing/expanding of tables here, make sure the table of the last var change is expanded
     }
 
-    function add_one_var_to_name_table(changed_var, func_name) {
+    function add_one_var_to_name_table(changed_var, func_name, is_last_struct_var) {
         //Check if it's new - if so, adding it
         if (changed_var['location'] == "heap"
             || !changed_var['var_name']
@@ -572,7 +590,7 @@ function executeCVisualizer(option, data, newCode) {
                         var var_id = struct_parent ? struct_parent + '.' + struct_levels[i] : struct_levels[i];
 
                         // Use level for the depth
-                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true, level);
+                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true, level, false);
 
                         // Don't add new rows for existing hierarchies
                         var row_exists = $("tr[id='" + var_id + "']").length > 0;
@@ -596,7 +614,7 @@ function executeCVisualizer(option, data, newCode) {
                 }
 
                 // Add a row to the existing name table
-                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false, level);
+                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false, level, is_last_struct_var);
 
                 if(insert_row.length > 0) {
                     insert_row.after(name_tr);
@@ -617,12 +635,20 @@ function executeCVisualizer(option, data, newCode) {
         }
     }
 
-    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children, depth) {
+    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children, depth, is_last) {
         var clean_name = var_name.replace(/\|| /g,'')
-        var shade_width = depth * 5; // In px
+        var shade_width = depth * 15; // In px
         var shade_style = 'style="display: none;"';
-        if(shade_width > 0) {
+        var img = "";
+
+        if(depth > 0) {
             shade_style = 'style="width: '+shade_width+'px;"'
+            img = "t-level-line.png";
+        }
+
+        if(is_last) {
+            // TODO: Insert the appropriate image in the space cell
+            img = "l-level-line.png";
         }
 
         var tr =
@@ -632,7 +658,9 @@ function executeCVisualizer(option, data, newCode) {
                 '<table class="table table-no-border name-label-inner-table">' +
                     '<tbody>' +
                         '<tr>' +
-                            '<td class="name-label-inner-td-empty-space" ' + shade_style + '></td>' +
+                            '<td class="name-label-inner-td-space" ' + shade_style + '>' +
+                                '<img class="name-table-level-line" src="/static/problems/img/' + img + '" />' +
+                            '</td>' +
                             '<td class="name-label-inner-td">' +
                                 var_name +
                             '</td>' +
