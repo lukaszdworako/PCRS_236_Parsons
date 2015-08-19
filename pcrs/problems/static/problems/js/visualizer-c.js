@@ -81,6 +81,19 @@ function canFreeRow(tr, array_id) {
     }).length == 4;
 }
 
+function repeat_string(str, count) {
+    if (count < 1) {
+        return '';
+    }
+
+    var result = '';
+    while(count > 1) {
+        count--;
+        result += str;
+    }
+    return result + str;
+}
+
 
 function executeCVisualizer(option, data, newCode) {
 /**
@@ -195,6 +208,11 @@ function executeCVisualizer(option, data, newCode) {
             // Refresh Code Mirror
             $('#newvisualizerModal').on('shown.bs.modal', function () {
                 myCodeMirrors[debugger_id].refresh();
+            });
+
+            $('#nameTableDetailsModal div.pcrs-modal-footer button').click(function() {
+                $("#newvisualizerModal").css("z-index", 1050);
+                $("#nameTableDetailsModal").modal('hide');
             });
 
             // Bind debugger buttons
@@ -537,16 +555,57 @@ function executeCVisualizer(option, data, newCode) {
                     add_name_table_frame(table_name, stack_frame_level);
                 }
 
-                //Add a row to the existing name table
-                $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+changed_var['var_name']+'" data-address="'+
-                    changed_var['addr']+'">' +
-                    '<td class="var-name hide-overflow" title="' + changed_var['var_name'] + '">' + changed_var['var_name'] + '</td>' +
-                    '<td class="var-type hide-overflow" title="' + changed_var['type'] + '">' + changed_var['type'] + '</td>' +
-                '</tr>');
+                var name_tbody = $('#name-body-' + table_name);
+                var insert_row = name_tbody.find("> tr:last");
+                var var_name = changed_var['var_name'];
+
+                // Create the different struct levels
+                var struct_levels = changed_var['struct_levels'];
+                var struct_parent = "";
+                var level = 0;
+                if(struct_levels) {
+                    var level_delim = "";
+                    var struct_tr = "", level_name = "";
+                    for(var i = 0; i < struct_levels.length-1; i++) {
+                        // Create a row for each level
+                        level_name = struct_levels[i];
+                        var var_id = struct_parent ? struct_parent + '.' + struct_levels[i] : struct_levels[i];
+
+                        // Use level for the depth
+                        struct_tr = create_name_table_row(var_id, level_name, "", "", struct_parent, true, level);
+
+                        // Don't add new rows for existing hierarchies
+                        var row_exists = $("tr[id='" + var_id + "']").length > 0;
+                        if(!row_exists) {
+                            if(insert_row.length > 0) {
+                                insert_row.after(struct_tr);
+                                insert_row = insert_row.next();
+                            } else {
+                                name_tbody.append(struct_tr);
+                                insert_row = name_tbody.find("> tr:last");
+                            }
+                        }
+
+                        // Update the parent name
+                        struct_parent = var_id;
+
+                        level++;
+                    }
+
+                    var_name = struct_levels[i];
+                }
+
+                // Add a row to the existing name table
+                var name_tr = create_name_table_row(changed_var['var_name'], var_name, changed_var['type'], changed_var['addr'], struct_parent, false, level);
+
+                if(insert_row.length > 0) {
+                    insert_row.after(name_tr);
+                } else {
+                    name_tbody.append(name_tr);
+                }
 
 
-                var name_row =
-                    $('#name-body-'+table_name+" tr[id='"+table_name+'-'+changed_var['var_name']+"']:first");
+                var name_row = $('#name-body-'+table_name+":first tr[id='"+changed_var['var_name']+"']");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
                 var name_row_group_id = start_addr_to_group_id[group_start_addr];
@@ -558,26 +617,73 @@ function executeCVisualizer(option, data, newCode) {
         }
     }
 
-    function add_name_table_frame(table_name, stack_frame_num) {
-        $('#name-type-section').prepend('<span id="name-table-'+table_name+'"> <table id="names-' +table_name+
-        '" class="table table-bordered" style="width: 100%; float:left;">'+
-        '<thead>'+
-            '<tr>'+
-             '<th colspan=2 class="names-stack-header">'+
-             '<table class="table names-stack-header-table">'+
-                '<tr>'+
-                    '<th class="names-stack-header-label">'+
-                        table_name +
-                    '</th>'+
-                    '<th class="names-stack-header-frame-num">'+
-                        stack_frame_num+
-                    '</th>'+
-                '</tr>'+
-             '</table>'+
-             '</th>'+
-            '</tr>'+
+    function create_name_table_row(var_id, var_name, var_type, var_addr, struct_parent, has_children, depth) {
+        var clean_name = var_name.replace(/\|| /g,'')
+        var shade_width = depth * 5; // In px
+        var shade_style = 'style="display: none;"';
+        if(shade_width > 0) {
+            shade_style = 'style="width: '+shade_width+'px;"'
+        }
 
-            '<tr>'+
+        var tr =
+        $('<tr id="' + var_id + '" data-address="' + var_addr + '" struct-parent="' + struct_parent + '">' +
+            '<td class="var-name hide-overflow" title="' + var_id + '">' +
+                // An inner table is used to more finely divide up this individual cell
+                '<table class="table table-no-border name-label-inner-table">' +
+                    '<tbody>' +
+                        '<tr>' +
+                            '<td class="name-label-inner-td-empty-space" ' + shade_style + '></td>' +
+                            '<td class="name-label-inner-td">' +
+                                var_name +
+                            '</td>' +
+                        '</tr>' +
+                    '</tbody>' +
+                '</table>' +
+            '</td>' +
+            '<td class="var-type hide-overflow" title="' + var_type + '">'
+                + var_type +
+            '</td>' +
+        '</tr>');
+
+        // Add a function to show and hide its children
+        if(has_children) {
+           tr.click(create_toggle_struct_function(struct_parent ? struct_parent + '.' + clean_name : clean_name));
+           tr.addClass('cursor-to-hand');
+        }
+
+        return tr;
+    }
+
+    function create_toggle_struct_function(target_struct_parent) {
+        return function() {
+            $("div.name-type-section tr[struct-parent]").filter(function() {
+                return $(this).attr('struct-parent').indexOf(target_struct_parent) >= 0;
+            }).fadeToggle();
+        }
+    }
+
+    function add_name_table_frame(table_name, stack_frame_num) {
+        var table_id = 'name-table-' + table_name + '-' + stack_frame_num;
+        var new_name_table = $(
+        '<span id="'+table_id+'">' +
+        '<table id="names-'+table_name+'" class="table table-bordered" style="width: 100%; float:left;">' +
+        '<thead>' +
+            '<tr>' +
+             '<th title="Open exapanded table view" colspan=2 class="names-stack-header cursor-to-hand">' +
+                '<table class="table names-stack-header-table">' +
+                    '<tr>' +
+                        '<th class="names-stack-header-label">' +
+                            table_name +
+                        '</th>' +
+                        '<th class="names-stack-header-frame-num">' +
+                            stack_frame_num +
+                        '</th>' +
+                    '</tr>' +
+                '</table>' +
+             '</th>' +
+            '</tr>' +
+
+            '<tr>' +
                 '<th width="50%">Name</th>' +
                 '<th width="50%">Type</th>' +
             '</tr>' +
@@ -585,6 +691,38 @@ function executeCVisualizer(option, data, newCode) {
         '<tbody id="name-body-'+table_name+'">' +
         '</tbody>' +
         '</table></span>');
+
+        // Add expansion function
+        new_name_table.find("th:first").click(create_expand_name_table_function(table_id));
+
+        $('#name-type-section').prepend(new_name_table);
+    }
+
+    function create_expand_name_table_function(table_id) {
+        return function() {
+            // Make a copy of the table to put in the modal window
+            var name_table_copy = $("#"+table_id).clone();
+
+            // Remove the click and hover behaviours
+            name_table_copy.find("*").removeClass("cursor-to-hand");
+            name_table_copy.find("*").unbind("click");
+            name_table_copy.find("*").unbind("mouseenter mouseleave")
+
+            // Remove ids
+            name_table_copy.find("*").removeAttr("id");
+
+            // Put table info into modal window
+            var name_modal_body = $("#nameTableDetailsDiv").find("div.pcrs-modal-body");
+            name_modal_body.empty();
+            name_modal_body.prepend(name_table_copy);
+
+            // Open modal window with table info
+            $("#newvisualizerModal").css("z-index", 500);
+            $("#nameTableDetailsModal").modal({
+                "show": true,
+                "backdrop": false
+            });
+        };
     }
 
     function add_first_name_table(json_step) {
@@ -697,8 +835,6 @@ function executeCVisualizer(option, data, newCode) {
         if(isDotRow(last_heap_row)) {
             last_heap_row.remove();
         }
-
-        console.log('ayy lmao');
     }
 
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {
@@ -1489,22 +1625,24 @@ function executeCVisualizer(option, data, newCode) {
         memory_map_cell.innerHTML = cell_value;
         memory_map_cell.setAttribute("title", cell_value);
 
-        var array_group_id = array_id_to_group_id[array_id];
-        if(array_group_id) {
-            group_id = array_group_id;
-        }
-
         return memory_map_cell;
     }
 
     function add_hover_highlight_to_cells() {
         $("div.memory-map-section td.memory-map-cell").each(function () {
-           var this_group_id = $(this).attr('group-id');
-           if(this_group_id) {
+            var this_group_id = $(this).attr('group-id');
+            var this_array_id = $(this).attr('array-id');
+
+            var array_group_id = array_id_to_group_id[this_array_id];
+            if(array_group_id) {
+                this_group_id = array_group_id;
+            }
+
+            if(this_group_id) {
                 $(this).hover(
                     create_hover_highlight_function(this_group_id),
                     create_hover_unhighlight_function(this_group_id)
-                    );
+                );
             }
         });
     }
@@ -1821,7 +1959,8 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         if(json_step.hasOwnProperty('returned_fn_call')) {
-            most_recently_returned = json_step['returned_fn_call'];
+            var returned_function = json_step['returned_fn_call'];
+            most_recently_returned = returned_function + '-' + stack_frame_levels[returned_function];
         }
 
         if(json_step.hasOwnProperty('return')) {

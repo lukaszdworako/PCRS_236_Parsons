@@ -426,6 +426,12 @@ class CSpecifics():
             current_var['type'] += '[]'
 
 
+        # If it's a struct, add a flag to indicate it and separate the struct levels, including the name
+        if '.' in current_var['var_name']:
+            current_var['struct'] = True
+            current_var['struct_levels'] = current_var['var_name'].split('.')
+
+        # Reduce the brackets of the type to match the name aka how it was accessed
         if self.brackets_regex.search(current_var['var_name']):
             name_brackets = len(self.brackets_regex.findall(current_var['var_name']))
             type_brackets = len(self.brackets_regex.findall(current_var['type']))

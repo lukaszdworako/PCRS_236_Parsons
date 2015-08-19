@@ -10,6 +10,10 @@ hr {
     margin-top: 0px;
 }
 
+body {
+    overflow-y: auto !important;
+}
+
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -57,7 +61,8 @@ hr {
     flex: 0 0 28%;
 }
 
-.memory-map-section tbody td {
+.memory-map-section tbody td,
+#nameTableDetailsDiv .pcrs-modal-body tbody td {
     font-family: monospace;
 }
 
@@ -200,10 +205,13 @@ div#name-type-section tbody td {
     .hide-overflow;
 }
 
-div#name-type-section td.var-name {
+div#name-type-section td.var-name,
+div#nameTableDetailsModal td.var-name {
     width: 50%;
+    padding: 0%;
 }
-div#name-type-section td.var-type {
+div#name-type-section td.var-type,
+div#nameTableDetailsModal td.var-type {
     width: 50%;
 }
 
@@ -316,22 +324,73 @@ td.uninitialized {
 }
 
 // An inner table is used in the headers of stack frames in the name/type section to show the stack frame number
-div.name-type-section th.names-stack-header {
+div#newvisualizerModal th.names-stack-header,
+div#nameTableDetailsModal th.names-stack-header {
     padding: 0px;
 }
-div.name-type-section table.names-stack-header-table {
+div#newvisualizerModal table.names-stack-header-table,
+div#nameTableDetailsModal table.names-stack-header-table {
     height: 100%;
     padding: 8px;
     margin: 0px;
     width: 100%;
 }
-div.name-type-section th.names-stack-header-label {
+div#newvisualizerModal th.names-stack-header-label,
+div#nameTableDetailsModal th.names-stack-header-label {
     text-align: left;
     border-top: 0px;
 }
-div.name-type-section th.names-stack-header-frame-num {
-    width: 25%;
+div#newvisualizerModal th.names-stack-header-frame-num,
+div#nameTableDetailsModal th.names-stack-header-frame-num {
+    width: 45px;
     text-align: center;
     border-left: 1px solid @border-color;
     border-top: 0px;
+}
+
+.cursor-to-hand {
+    cursor: pointer;
+    cursor: hand;
+}
+
+
+#newvisualizerModal{
+    overflow-y: auto;
+}
+#nameTableDetailsModal {
+    background-clip: padding-box;
+    margin: 10%;
+    z-index: 1050;
+    overflow-y: auto;
+    border: none;
+    opacity: 1;
+}
+
+#nameTableDetailsDiv {
+    margin: 0px;
+    width: 100%;
+}
+#nameTableDetailsDiv .pcrs-modal-body {
+    padding: 15px;
+}
+
+table.name-label-inner-table {
+    margin: 0px;
+}
+
+div#name-type-section table.name-label-inner-table {
+    width: 100%;
+    background-color: inherit;
+}
+.name-label-inner-td {
+    border: none;
+}
+table.name-label-inner-table td.name-label-inner-td {
+    .name-label-inner-td;
+}
+table.name-label-inner-table td.name-label-inner-td-empty-space {
+    .name-label-inner-td;
+    background-color: lightgrey;
+    padding: 0px;
+    // width will be set by the code, in multiples of 5px
 }
