@@ -105,7 +105,7 @@ PROJECT_ROOT = str(os.getcwd())
 
 # URL to the root of the system that stores PCRS documents. Make sure to use 
 # a trailing slash.
-DOC_URL = 'https://bitbucket.org/utmandrew/pcrs-c-content/src'
+DOC_URL = 'https://bitbucket.org/utmandrew/pcrs-c-content/src/webdocs'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
