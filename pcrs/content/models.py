@@ -51,7 +51,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         items = []
         if self.resources.strip():
             for line in self.resources.strip().split("\n"):
-                split_loc = line.find(",")
+                split_loc = line.find(" ")
                 if split_loc > -1:
                     link = line[:split_loc].strip()
                     text = line[split_loc+1:].strip()
