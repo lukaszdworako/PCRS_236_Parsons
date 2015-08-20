@@ -49,16 +49,17 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     @property
     def resource_list(self):
         items = []
-        for line in self.resources.strip().split("\n"):
-            split_loc = line.find(",")
-            if split_loc > -1:
-                link = line[:split_loc].strip()
-                text = line[split_loc+1:].strip()
-            else:
-                link = line
-                text = "Resource"
-            link = link.replace("{{DOC_URL}}", settings.DOC_URL)
-            items.append([link, text])
+        if self.resources.strip():
+            for line in self.resources.strip().split("\n"):
+                split_loc = line.find(",")
+                if split_loc > -1:
+                    link = line[:split_loc].strip()
+                    text = line[split_loc+1:].strip()
+                else:
+                    link = line
+                    text = "Resource"
+                link = link.replace("{{DOC_URL}}", settings.DOC_URL)
+                items.append([link, text])
         return items
 
     class Meta:
