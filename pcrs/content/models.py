@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -56,6 +57,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             else:
                 link = line
                 text = "Resource"
+            link = link.replace("{{DOC_URL}}", settings.DOC_URL)
             items.append([link, text])
         return items
 
