@@ -466,7 +466,7 @@ function executeCVisualizer(option, data, newCode) {
             var is_last_struct_var = (i+1 == global_amt)
                                     || (this_struct_level && next_struct_level && (next_struct_level < this_struct_level));
 
-            var var_group_id = get_var_group_id(Boolean(global_var["new"]), global_var["var_name"])
+            var var_group_id = get_var_group_id(global_var);
             add_one_var_to_memory_table(global_var, "", var_group_id);
             add_one_var_to_name_table(global_var, "", is_last_struct_var);
             add_one_var_to_val_list(global_var);
@@ -778,7 +778,7 @@ function executeCVisualizer(option, data, newCode) {
         var func_name = json_step["function"];
 
         for(var i=0; i < changed_vars.length; i++) {
-            var var_group_id = get_var_group_id(Boolean(changed_vars[i]["new"]), changed_vars[i]["var_name"])
+            var var_group_id = get_var_group_id(changed_vars[i]);
 
             if(changed_vars[i]['free']) {
                 free_one_var_from_memory_table(changed_vars[i]);
@@ -909,7 +909,6 @@ function executeCVisualizer(option, data, newCode) {
 
             // Treat each value in the array as its own variable and insert individually, but with the same array-id
             for(var i = 0; i < value.length; i++) {
-                //array_group_id = get_var_group_id(is_new, var_name);
                 add_one_var_to_memory_table(value[i], func_name, array_id_counter, array_id);
 
                 if(value[i]["value"].constructor !== Array) {
@@ -1351,10 +1350,9 @@ function executeCVisualizer(option, data, newCode) {
             // All other signed int-like values
             generated_label_value = hexToInt(all_group_hex_values);
         }
-        console.log("generated_label_value: " + generated_label_value);
 
-        return label_value;
-        //return generated_label_value;
+        //return label_value;
+        return generated_label_value;
     }
 
     function regenerate_all_label_tables() {
@@ -1440,12 +1438,16 @@ function executeCVisualizer(option, data, newCode) {
         return location;
     }
 
-    function get_var_group_id(is_new, var_name) {
+    function get_var_group_id(changed_var) {
+        var is_new = Boolean(changed_var["new"]);
+        var var_name = changed_var["var_name"];
+        var start_addr = parseInt(changed_var["addr"], 16);
+
         // Figure out the variable's group_id
         var group_id;
-        if(var_name_to_group_id[var_name] && !is_new) {
+        if(start_addr_to_group_id[start_addr]) {
             // Find it in the tables
-            group_id = var_name_to_group_id[var_name];
+            group_id = start_addr_to_group_id[start_addr];
         } else {
             group_id = largest_group_id;
             largest_group_id++;
@@ -2156,7 +2158,7 @@ function executeCVisualizer(option, data, newCode) {
         globals = debugger_data["global_vars"];
         global_amt = globals.length;
         for(var i = 0; i < global_amt; i++) {
-            var var_group_id = get_var_group_id(Boolean(globals[i]["new"]), globals[i]["var_name"])
+            var var_group_id = get_var_group_id(globals[i]);
             add_one_var_to_memory_table(globals[i], "", var_group_id);
         }
 
