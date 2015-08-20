@@ -1252,11 +1252,7 @@ class CVisualizer:
                     self.set_decl_vars(node_to_consider, struct_name_val)
                     #If it's a function call declaration for a function in our program,
                     #ensure there's a print statement in front of it too
-                    if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
-                        self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
-                        self.add_after_node(parent, index, func_name, True, False, False, False)
-                        self.add_before_fn(parent, index, func_name)
-                    else:
+                    if not self.try_decl_func(parent, index, node_to_consider, func_name, False):
                         self.add_after_node(parent, index, func_name, False, False, False, False)
 
             #Pointer declaration
@@ -1264,12 +1260,9 @@ class CVisualizer:
                 
                 is_struct = self.set_decl_ptr_vars(node_to_consider, struct_name_val)
 
-                if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
-                    self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
-                    self.add_after_node(parent, index, func_name, True, True, False, False)
-                    self.add_before_fn(parent, index, func_name)
+                #Check for function initialization, otherwise just add normally
+                if not self.try_decl_func(parent, index, node_to_consider, func_name, True):
 
-                else:
                     self.add_after_node(parent, index, func_name, False, True, False, False)
 
                     #Case for malloc, won't be mallocing inside a function header
@@ -1328,63 +1321,66 @@ class CVisualizer:
 
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
-                if isinstance(node_to_consider.rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.rvalue)) in self.func_list):
-                    self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.rvalue))
-                    self.add_after_node(parent, index, func_name, True, ptr_assign, False, False)
-                    self.add_before_fn(parent, index, func_name)
-                else:
+                if not self.try_assign_func(parent, index, node_to_consider, func_name, ptr_assign):
+
                     self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
-                    #again, if we have a string literal, we're going to create an array for it in data after the pointer print node
-                    #if str_lit:
-                        ##self.handle_str_lit_array(parent, index)
-                        #print("str lit")
-                     #Case for malloc, won't be mallocing inside a function header
+
                     self.try_malloc(parent, index+to_add_index, func_name, node_to_consider.lvalue.name, node_to_consider, struct_name_val)
 
             #Case for pointer assignment with stars in front, ie. *ptr = 3
             elif isinstance(node_to_consider.lvalue, c_ast.UnaryOp):
 
                 self.set_assign_ptr_vars(node_to_consider, False)
-                self.add_after_node(parent, index, func_name, False, True, False, False)
-                try:
-                    name_to_pass = node_to_consider.lvalue.expr.name
-                except:
-                    #If there's a binary op inside the unary op
-                    name_to_pass = node_to_consider.lvalue.expr.left.name
-                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
+
+                #Not a function call pointer assignment
+                if not self.try_assign_func(parent, index, node_to_consider, func_name, True):
+                    self.add_after_node(parent, index, func_name, False, True, False, False)
+                    try:
+                        name_to_pass = node_to_consider.lvalue.expr.name
+                    except:
+                        #If there's a binary op inside the unary op
+                        name_to_pass = node_to_consider.lvalue.expr.left.name
+                    self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
 
             #Array assignment, not unary
             elif isinstance((node_to_consider.lvalue), c_ast.ArrayRef):
                 returned_dict = self.set_assign_array(parent, index, False, node_to_consider)
                 isPtr = returned_dict.get("is_ptr")
                 isDeclArray = returned_dict.get("in_arr_dict")
-                # if isDeclArray:
-                #     self.add_after_node(parent, index+self.amt_after, func_name, False, isPtr, False, True)
-                #     self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
-                #     #This is only to get the exact name of the var changing for malloc
-                #     temp_node = parent[index+to_add_index].lvalue
-                #     array_access = ""
-                #     while isinstance(temp_node, c_ast.ArrayRef):
-                #         array_access = array_access+"["+ temp_node.subscript.value +"]"
-                #         temp_node = temp_node.name
-                #     name_to_pass = var_name_val+array_access
-
-                # #Handle as a pointer, but dont put in name table. It's arrayref opposed to binaryop, since we're referencing
-                # #the pointer with array notation, ie ptr[2] = var
-                # else:
-                #     self.set_assign_ptr_vars(parent[index], False)
-                #     self.add_after_node(parent, index, func_name, False, True, False, False)
-                #     print ("not declared as an array")
-                #     name_to_pass = var_name_val
                 self.set_assign_ptr_vars(node_to_consider, False)
-                self.add_after_node(parent, index, func_name, False, isPtr, False, False)
-                name_to_pass = var_name_val
-                self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
+
+                #Check if it's a function call assignment
+                if not self.try_assign_func(parent, index, node_to_consider, func_name, isPtr):
+
+                    self.add_after_node(parent, index, func_name, False, isPtr, False, False)
+                    name_to_pass = var_name_val
+                    self.try_malloc(parent, index+to_add_index, func_name, name_to_pass, node_to_consider, struct_name_val)
 
             #Case for string literal, add an array val on data
             if str_lit and isinstance(node_to_consider.rvalue, c_ast.Constant):
                 self.call_funcs_for_str_lit(parent, index, func_name, node_to_consider)
+
+    #Check if we're assigning the node to a function inside our program: if so, do what we need to and return true. Otherwise just return false
+    def try_assign_func(self, parent, index, node_to_consider, func_name, isPtr):
+        if isinstance(node_to_consider.rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.rvalue)) in self.func_list):
+            self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.rvalue))
+            self.add_after_node(parent, index, func_name, True, isPtr, False, False)
+            self.add_before_fn(parent, index, func_name)
+            return True
+        else:
+            return False
+
+    #Check if we're declaring the node as a function inside our program: if so, do what we need to and return true. Otherwise just return false
+    def try_decl_func(self, parent, index, node_to_consider, func_name, isPtr):
+        if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
+            self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
+            self.add_after_node(parent, index, func_name, True, isPtr, False, False)
+            self.add_before_fn(parent, index, func_name)
+            return True
+        else:
+            return False
+
 
     def call_funcs_for_str_lit(self, parent, index, func_name, node):
         self.handle_str_lit_array(parent, index, node)
