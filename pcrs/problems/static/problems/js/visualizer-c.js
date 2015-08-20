@@ -458,7 +458,7 @@ function executeCVisualizer(option, data, newCode) {
             //Include global vars
             var global_var = globals[i];
 
-            var this_struct_level = globals[i]['struct_levels'].length;
+            var this_struct_level = (globals[i]['struct_levels']) && globals[i]['struct_levels'].length;
             var next_struct_level = (i+1 < global_amt && globals[i+1]['struct_levels']) ?
                                         globals[i+1]['struct_levels'].length
                                         : undefined;
@@ -529,7 +529,8 @@ function executeCVisualizer(option, data, newCode) {
         //Loop through all var changes in the step
         var num_changed_vars = json_step['changed_vars'].length;
         for(var i=0; i<num_changed_vars; i++) {
-            var this_struct_level = json_step['changed_vars'][i]['struct_levels'].length;
+            var this_struct_level = (json_step['changed_vars'][i]['struct_levels'])
+                                        && json_step['changed_vars'][i]['struct_levels'].length;
             var next_struct_level = (i+1 < num_changed_vars && json_step['changed_vars'][i+1]['struct_levels']) ?
                                         json_step['changed_vars'][i+1]['struct_levels'].length
                                         : undefined;
@@ -697,16 +698,18 @@ function executeCVisualizer(option, data, newCode) {
         '<table id="names-'+table_name+'" class="table table-bordered" style="width: 100%; float:left;">' +
         '<thead>' +
             '<tr>' +
-             '<th title="Open exapanded table view" colspan=2 class="names-stack-header cursor-to-hand">' +
+             '<th title="Open expanded table view" colspan=2 class="names-stack-header cursor-to-hand">' +
                 '<table class="table names-stack-header-table">' +
-                    '<tr>' +
-                        '<th class="names-stack-header-label">' +
-                            table_name +
-                        '</th>' +
-                        '<th class="names-stack-header-frame-num">' +
-                            stack_frame_num +
-                        '</th>' +
-                    '</tr>' +
+                    '<tbody>' +
+                        '<tr>' +
+                            '<td class="names-stack-header-label">' +
+                                table_name +
+                            '</td>' +
+                            '<td class="names-stack-header-frame-num">' +
+                                stack_frame_num +
+                            '</td>' +
+                        '</tr>' +
+                    '</tbody>' +
                 '</table>' +
              '</th>' +
             '</tr>' +
