@@ -312,7 +312,7 @@ class CSpecifics():
 
     def convert_bool_strs(self, line_info):
         for k,v in line_info.items():
-            if v.lower() == "true" or v == '':
+            if v.lower() == "true" or (k != 'var_name' and v == ''):
                 line_info[k] = True
             elif v.lower() == "false":
                 line_info[k] = False
@@ -361,7 +361,11 @@ class CSpecifics():
 
                 is_ptr = (level == 1) and (next_type.count('*') > 0)
                 new_var["is_ptr"] = is_ptr
-                new_var["ptr_size"] = base_size if is_ptr else 0
+
+                if 'ptr_size' in current_var:
+                    new_var["ptr_size"] = current_var["ptr_size"]
+                else:
+                    new_var["ptr_size"] = base_size if is_ptr else 0
 
                 new_var["value"] = ar_values[i]
                 new_var["value"] = self.parse_value(new_var, sizes_by_level)
@@ -426,7 +430,11 @@ class CSpecifics():
             current_var['array'] = True
             current_var['type'] += '[]'
 
-        #pdb.set_trace()
+        # If it's a struct, add a flag to indicate it and separate the struct levels, including the name
+        if '.' in current_var['var_name']:
+            current_var['struct'] = True
+            current_var['struct_levels'] = current_var['var_name'].split('.')
+
         if isinstance(current_var['var_name'],str) and self.brackets_regex.search(current_var['var_name']):
             name_brackets = len(self.brackets_regex.findall(current_var['var_name']))
             type_brackets = len(self.brackets_regex.findall(current_var['type']))
@@ -445,10 +453,13 @@ class CSpecifics():
             if current_var['type'] == 'char':
                 current_var['type'] += '[]'
 
+
+            base_size = int(current_var['arr_type_size'])
+
             sizes_by_level = ast.literal_eval(current_var['arr_dims'].replace(',]', ']'))
-            sizes_by_level.append(int(current_var['arr_type_size']))
+            sizes_by_level.append(base_size)
+
             # For arrays, the 'value' and 'hex_value' properties will be arrays in string form, like "[['1','2'],['3','4']]" and "[['0x01','0x02'],['0x03','0x04']]"
-            #pdb.set_trace()
             current_var['value'] = ast.literal_eval(current_var['value'].replace(',]', ']').encode('unicode-escape').decode())
             # for str_val in current_var['value']:
             #     str_val = str_val.replace(self.backslash_hash, '\\')

@@ -446,9 +446,9 @@ function executeCVisualizer(option, data, newCode) {
 
     function add_step_to_all_tables(json_step) {
         // Have to add to memory table first to update the start_addr_to_group_id table, which the name table uses
+        add_to_val_list(json_step);
         add_to_memory_table(json_step);
         add_to_name_table(json_step);
-        add_to_val_list(json_step);
     }
 
     function add_globals() {
@@ -467,9 +467,9 @@ function executeCVisualizer(option, data, newCode) {
                                     || (this_struct_level && next_struct_level && (next_struct_level < this_struct_level));
 
             var var_group_id = get_var_group_id(global_var);
+            add_one_var_to_val_list(global_var);
             add_one_var_to_memory_table(global_var, "", var_group_id);
             add_one_var_to_name_table(global_var, "", is_last_struct_var);
-            add_one_var_to_val_list(global_var);
         }
 
         // Draw the label tables after all variables have been added
@@ -1701,7 +1701,11 @@ function executeCVisualizer(option, data, newCode) {
         memory_map_cell.setAttribute("title", cell_value);
 
         var array_group_id = array_id_to_group_id[array_id];
-        if(array_group_id) {
+        var start_addr = group_id_to_start_addr[group_id];
+        if(start_addr) start_addr = toHexString(start_addr);
+        var is_ptr = value_list[start_addr] && value_list[start_addr]["is_ptr"]; // Check if it is a pointer
+
+        if(array_group_id && !is_ptr) {
             group_id = array_group_id;
         }
 
@@ -1881,9 +1885,17 @@ function executeCVisualizer(option, data, newCode) {
         var main_elements_to_highlight = [];
         var extra_elements_to_highlight = [];
 
-        var group_start_addr = group_id_to_start_addr[group_id];
-        var hex_group_start_addr = toHexString(group_start_addr);
-        var name_table_row = $("div.name-type-section tr[data-address='" + hex_group_start_addr + "']");
+        var array_id = group_id_to_array_id[group_id];
+        var hex_group_start_addr = toHexString(group_id_to_start_addr[group_id]);
+
+        var array_group_id = array_id_to_group_id[array_id];
+        var hex_array_start_addr = group_id_to_start_addr[array_group_id];
+        if(hex_array_start_addr) {
+            hex_array_start_addr = toHexString(hex_array_start_addr);
+        }
+
+        var name_table_start_addr = hex_array_start_addr ? hex_array_start_addr : hex_group_start_addr;
+        var name_table_row = $("div.name-type-section tr[data-address='" + name_table_start_addr + "']");
         main_elements_to_highlight.push(name_table_row);
 
         var group = $("div.memory-map-section td[group-id='" + group_id + "']");
@@ -1893,7 +1905,6 @@ function executeCVisualizer(option, data, newCode) {
         var group_by_addr_labels = $("div.memory-map-section td[group-start-addr='" + hex_group_start_addr + "']");
         main_elements_to_highlight.push(group_by_addr_labels);
 
-        var array_id = group_id_to_array_id[group_id];
         var array_group = $("div.memory-map-section td[array-id='" + array_id + "']");
         main_elements_to_highlight.push(array_group);
 
@@ -2042,7 +2053,7 @@ function executeCVisualizer(option, data, newCode) {
             //otherwise we'll have duplicate addresses
             if (val_as_obj == false) {
                 var is_ptr_val = false;
-                if(changed_var.hasOwnProperty('is_ptr') && changed_var['is_ptr'] == 'name') {
+                if(changed_var['is_ptr']) {
                     is_ptr_val = true;
                     ptr_size = changed_var['ptr_size'];
                 }
@@ -2073,7 +2084,7 @@ function executeCVisualizer(option, data, newCode) {
         }
         else {
             var is_ptr_val = false;
-            if(value_var.hasOwnProperty('is_ptr') && value_var['is_ptr'] == 'name') {
+            if(value_var['is_ptr']) {
                 is_ptr_val = true;
                 ptr_size = value_var['ptr_size'];
             }
