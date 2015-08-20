@@ -1363,8 +1363,14 @@ class CVisualizer:
 
     #Check if we're assigning the node to a function inside our program: if so, do what we need to and return true. Otherwise just return false
     def try_assign_func(self, parent, index, node_to_consider, func_name, isPtr):
-        if isinstance(node_to_consider.rvalue, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.rvalue)) in self.func_list):
-            self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.rvalue))
+        node_array = []
+        self.check_for_funccall(node_to_consider.rvalue, node_array)
+        funccall_node = None
+        if node_array:
+            funccall_node = node_array[-1]
+
+        if funccall_node!= None and ((str)(self.get_funccall_funcname(funccall_node)) in self.func_list):
+            self.set_fn_returning_from(self.get_funccall_funcname(funccall_node))
             self.add_after_node(parent, index, func_name, True, isPtr, False, False)
             self.add_before_fn(parent, index, func_name)
             return True
@@ -1373,13 +1379,33 @@ class CVisualizer:
 
     #Check if we're declaring the node as a function inside our program: if so, do what we need to and return true. Otherwise just return false
     def try_decl_func(self, parent, index, node_to_consider, func_name, isPtr):
-        if isinstance(node_to_consider.init, c_ast.FuncCall) and ((str)(self.get_funccall_funcname(node_to_consider.init)) in self.func_list):
-            self.set_fn_returning_from(self.get_funccall_funcname(node_to_consider.init))
+        #pdb.set_trace()
+        node_array = []
+        self.check_for_funccall(node_to_consider.init, node_array)
+        funccall_node = None
+        if node_array:
+            funccall_node = node_array[-1]
+
+        if funccall_node != None and ((str)(self.get_funccall_funcname(funccall_node)) in self.func_list):
+            self.set_fn_returning_from(self.get_funccall_funcname(funccall_node))
             self.add_after_node(parent, index, func_name, True, isPtr, False, False)
             self.add_before_fn(parent, index, func_name)
             return True
         else:
             return False
+
+    #Recursively checks through a node to see if it contains any funccalls in it
+    def check_for_funccall(self, variable_passed, node_array):
+            #Straight ID
+            if isinstance(variable_passed, c_ast.FuncCall):
+                node_array.append(variable_passed)
+            #binary op, like x+1 or 1+x - we'll just get value of x, run through this function until we get to a funccall
+            elif isinstance(variable_passed, c_ast.BinaryOp):
+                self.check_for_funccall(variable_passed.left, node_array)
+                self.check_for_funccall(variable_passed.right, node_array)    
+            #Unary op, like x++ or *x
+            elif isinstance(variable_passed, c_ast.UnaryOp):
+                self.check_for_funccall(variable_passed.expr, node_array)
 
 
     def call_funcs_for_str_lit(self, parent, index, func_name, node):
