@@ -436,11 +436,11 @@ class CSpecifics():
             current_var['struct_levels'] = current_var['var_name'].split('.')
 
         if isinstance(current_var['var_name'],str) and self.brackets_regex.search(current_var['var_name']):
-            name_brackets = len(self.brackets_regex.findall(current_var['var_name']))
-            type_brackets = len(self.brackets_regex.findall(current_var['type']))
+            name_levels = len(self.brackets_regex.findall(current_var['var_name']))
+            type_levels = len(self.brackets_regex.findall(current_var['type'])) + current_var['type'].count('*')
 
-            current_var['type'] = current_var['type'].replace('[]','', name_brackets)
-            levels_left = name_brackets-type_brackets
+            current_var['type'] = current_var['type'].replace('[]','', name_levels)
+            levels_left = name_levels-type_levels
             current_var['type'] = current_var['type'].replace('*','', levels_left)
 
             current_var['type'] = current_var['type'].strip()
