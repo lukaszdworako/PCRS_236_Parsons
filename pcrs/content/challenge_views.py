@@ -174,10 +174,6 @@ class ReactiveContentPageData(ContentPageView, View):
                         .prefetch_related('content_object').all() if item
         ]
 
-        #print("=====")
-        #print(items)
-        #print("=====")
-
         scores = {}
         for content_type in get_submission_content_types():
             best, _ = content_type.model_class()\

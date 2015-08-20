@@ -45,7 +45,6 @@
 <div> <!-- video-resources -->
     <b>Resources</b>
     <ol>
-    {{item.resource_list}}
     {% for reslink, restext in item.resource_list %}
        <li><a href="{{ reslink }}">{{ restext }}</a></li>
     {% endfor %}
