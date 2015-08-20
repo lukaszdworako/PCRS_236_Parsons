@@ -1111,6 +1111,7 @@ class CVisualizer:
         #to be used every time we loop through this particular array
         temp_var_nodes = []
 
+        #if it's not an array of string lit 
         if const_node == None:
             str_lit_ptr = node
             try:
@@ -1119,6 +1120,8 @@ class CVisualizer:
             except:
                 array_name = str_lit_ptr.lvalue.name
                 array_len = len((str)(node.rvalue.value))-2
+
+        #otherwise it's an array of str lit, passing in our own const node 
         else:
             array_name = const_node_name
             array_len = len(const_node.value) - 2
@@ -1155,12 +1158,12 @@ class CVisualizer:
         #Initialize the temporary variables which will store size in later for loops
         #Put them before the array decl node we're goign to declare below
         for temp_var_node in temp_var_nodes:
-            parent.insert(index+to_add_index+self.amt_after+1, temp_var_node)
+            parent.insert(index+to_add_index+1, temp_var_node)
             self.amt_after+=1
 
         #Initialize the size variables as well
         for size_node in size_nodes:
-            parent.insert(index+to_add_index+self.amt_after+1, size_node)
+            parent.insert(index+to_add_index+1, size_node)
             self.amt_after+=1
 
         print(self.array_dict)
@@ -1182,7 +1185,7 @@ class CVisualizer:
             return
 
         #Recurse through the initList and insert str lit printf array nodes for each init item 
-        self.initList_recurse(node.init, -1, parent, index, node.name, func_name)
+        self.initList_recurse(node.init, -1, parent, index+to_add_index, node.name, func_name)
 
     #In this case, init_parent is the initList and init_index is the index in the initList.
     def initList_recurse(self, init_parent, init_index, parent, index, array_name, func_name):
@@ -1196,7 +1199,8 @@ class CVisualizer:
         #Got to the string constant, handle
         if not(isinstance(cur_node, c_ast.InitList)):
             print(array_name)
-            self.handle_str_lit_array(parent, index, array_name,cur_node)
+            
+            self.handle_str_lit_array(parent, index, parent[index],array_name,cur_node)
             print_node = self.create_printf_node(init_parent[init_index], func_name, False, True, False, False, False, False, False, False, True, False, False, True)
             parent.insert(index+self.amt_after+1, print_node)
             self.amt_after += 1
@@ -1212,7 +1216,7 @@ class CVisualizer:
     def print_changed_vars(self, parent, index, func_name, new, node=None, struct_name_val=""):
         global str_lit
         str_lit  = False
-    
+        
         if node != None:
             node_to_consider = node
         else:
