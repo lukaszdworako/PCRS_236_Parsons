@@ -35,7 +35,6 @@ function bindNewDebugButton(buttonId) {
 
     $('#'+"new"+buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
-        console.log("test case code is "+ testcaseCode);
         setTimeout(function(){
             $('#waitingModal').modal('show');
             prepareVisualizer("debug", testcaseCode, buttonId, "new")

@@ -437,8 +437,9 @@ class CSpecifics():
 
         if isinstance(current_var['var_name'],str) and self.brackets_regex.search(current_var['var_name']):
             name_levels = len(self.brackets_regex.findall(current_var['var_name']))
-            type_levels = len(self.brackets_regex.findall(current_var['type'])) + current_var['type'].count('*')
+            type_levels = len(self.brackets_regex.findall(current_var['type']))
 
+            # Remove [] from the type, then remove * until we've reduced the levels enough
             current_var['type'] = current_var['type'].replace('[]','', name_levels)
             levels_left = name_levels-type_levels
             current_var['type'] = current_var['type'].replace('*','', levels_left)
@@ -496,7 +497,7 @@ class CSpecifics():
         # Split the output into blocks of print statements
         print_blocks = code_output.split(block_delim)
         #pdb.set_trace()
-        #This will keep track of the line that a function call most recently originated from - 
+        #This will keep track of the line that a function call most recently originated from -
         #update as function calls happen
         most_recent_funccall_line = 0
         funccall_std_view_line = 0
@@ -553,20 +554,20 @@ class CSpecifics():
                     #Only execute if there's previous steps in json_output
                     if json_output["steps"]:
 
-                        #Check if the previous json step has "return" in it: if so, 
+                        #Check if the previous json step has "return" in it: if so,
                         #we need to add a json step in between these 2, with 'returned_fn_call'
                         if 'return' in json_output["steps"][-1]:
-                            
-                            json_output["steps"].append({'student_view_line':funccall_std_view_line, 
+
+                            json_output["steps"].append({'student_view_line':funccall_std_view_line,
                                 'function':most_recent_funccall_func,
-                                'returned_fn_call':json_output["steps"][-1].get('function'), 
-                                'step':current_step_number, 
+                                'returned_fn_call':json_output["steps"][-1].get('function'),
+                                'step':current_step_number,
                                 'line':most_recent_funccall_line})
 
                             current_step_number+= 1
                             current_step['step'] = current_step_number
 
-                        #Otherwise as long as there's steps in json_output, record the previous line number as 
+                        #Otherwise as long as there's steps in json_output, record the previous line number as
                         #it's the line number of the calling function
                         else:
                             most_recent_funccall_line = json_output["steps"][-1].get('line')

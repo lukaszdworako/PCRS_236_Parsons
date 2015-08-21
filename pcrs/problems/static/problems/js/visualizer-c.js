@@ -29,7 +29,11 @@ var group_id_to_array_id = {};
 var array_id_to_group_id = {};
 var value_list = {};
 
+// Keeps track of how many stack frames have been created for a function
 var stack_frame_levels = {};
+
+// Keeps track of addresses that have been freed and are unusable
+var free_list = {};
 
 var hex_mode_on = false;
 //---
@@ -783,7 +787,22 @@ function executeCVisualizer(option, data, newCode) {
             if(changed_vars[i]['free']) {
                 free_one_var_from_memory_table(changed_vars[i]);
             } else {
-                add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
+                var addr = changed_vars[i]["addr"];
+                if(free_list[addr]) {
+                    // If this address has been freed, do not add the variable but do update the value
+                    // If we're remallocing, get the old value and remove the address from free_list
+                    if(changed_vars[i]["location"].toLowerCase() === "heap") {
+                        add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
+                    } else {
+                        // Update the value, even if we're not showing the variable
+                        free_list[addr] = {
+                            "value": changed_vars[i]['value'],
+                            "hex_value": changed_vars[i]['hex_value'],
+                        }
+                    }
+                } else {
+                    add_one_var_to_memory_table(changed_vars[i], func_name, var_group_id);
+                }
             }
         }
 
@@ -803,11 +822,25 @@ function executeCVisualizer(option, data, newCode) {
     function free_one_var_from_memory_table(changed_var) {
         // Remove one variable from the memory map
         var hex_start_addr = changed_var['addr'];
-        var start_addr = parseInt(changed_var['addr'], 16);
+        var start_addr = parseInt(hex_start_addr, 16);
 
         var first_cell = $("div.memory-map-section td[addr='" + hex_start_addr + "']:first");
         var array_id = first_cell.attr('array-id');
         var current_row = first_cell.parents('tr:first');
+
+
+        // Find all the groups in this array (representing malloced addresses) and add them to the free list
+        for(var arr_group_id in group_id_to_array_id) {
+            if(group_id_to_array_id.hasOwnProperty(arr_group_id) && group_id_to_array_id[arr_group_id] == array_id) {
+                var arr_hex_addr = toHexString(group_id_to_start_addr[arr_group_id]);
+                var arr_val = value_list[arr_hex_addr];
+
+                free_list[arr_hex_addr] = {
+                    "value": arr_val['value'],
+                    "hex_value": arr_val['hex_value'],
+                }
+            }
+        }
 
         // Clear the map that uses this array id as a key
         delete array_id_to_group_id[array_id];
@@ -869,6 +902,19 @@ function executeCVisualizer(option, data, newCode) {
     }
 
     function add_one_var_to_memory_table(changed_var, func_name, group_id, array_id) {
+        // Inner array values will be added later
+        var addr = changed_var["addr"];
+        var on_heap = changed_var["location"].toLowerCase() === "heap"
+        var is_array = Boolean(changed_var["array"]);
+        if(free_list[addr] && !is_array && on_heap) {
+            // Restore the values when an address is being re-malloced
+            changed_var["value"] = free_list[addr]["value"];
+            changed_var["hex_value"] = free_list[addr]["hex_value"];
+
+            // Remove from the free_list, because the address is not free anymore
+            delete free_list[addr];
+        }
+
         // Store values for use later
         var var_name = changed_var["var_name"];
         var type = changed_var["type"];
@@ -2057,7 +2103,13 @@ function executeCVisualizer(option, data, newCode) {
                     is_ptr_val = true;
                     ptr_size = changed_var['ptr_size'];
                 }
-                new_value = {"value": changed_var["value"], "history": [changed_var["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
+                new_value = {
+                    "value": changed_var["value"],
+                    "hex_value": changed_var["hex_value"],
+                    "history": [changed_var["value"]],
+                    "is_ptr": is_ptr_val,
+                    "ptr_size": ptr_size
+                };
                 value_list[val_address] = new_value;
             }
         }
@@ -2071,6 +2123,7 @@ function executeCVisualizer(option, data, newCode) {
         else if(val_address in value_list) {
             value_list[val_address]["history"].push(changed_var["value"]);
             value_list[val_address]["value"] = changed_var["value"];
+            value_list[val_address]["hex_value"] = changed_var["hex_value"];
         }
     }
 
@@ -2081,6 +2134,7 @@ function executeCVisualizer(option, data, newCode) {
         if(val_address in value_list) {
             value_list[val_address]["history"].push(value_var["value"]);
             value_list[val_address]["value"] = value_var["value"];
+            value_list[val_address]["hex_value"] = value_var["hex_value"];
         }
         else {
             var is_ptr_val = false;
@@ -2088,7 +2142,13 @@ function executeCVisualizer(option, data, newCode) {
                 is_ptr_val = true;
                 ptr_size = value_var['ptr_size'];
             }
-            new_value = {"value": value_var["value"], "history": [value_var["value"]], "is_ptr": is_ptr_val, "ptr_size":ptr_size};
+            new_value = {
+                "value": value_var["value"],
+                "hex_value": value_var["hex_value"],
+                "history": [value_var["value"]],
+                "is_ptr": is_ptr_val,
+                "ptr_size": ptr_size
+            };
             value_list[val_address] = new_value;
             //Recurse through and add any of the val_lists value objects to the val_list
             for(val_object in value_var["value"]) {
@@ -2152,6 +2212,7 @@ function executeCVisualizer(option, data, newCode) {
         group_id_to_var_name = {};
         group_id_to_array_id = {};
         stack_frame_levels = {};
+        free_list = {};
 
         largest_group_id = 1; // Not 0 because it would fail a check for adding the highlight functions
         largest_array_id = 1; // Not 0, same reason as above
