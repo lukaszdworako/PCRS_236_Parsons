@@ -680,8 +680,9 @@ function executeCVisualizer(option, data, newCode) {
 
         // Add a function to show and hide its children
         if(has_children) {
-           tr.click(create_toggle_struct_function(struct_parent ? struct_parent + '.' + clean_name : clean_name));
-           tr.addClass('cursor-to-hand');
+            var target_struct_parent = struct_parent ? struct_parent + '.' + clean_name : clean_name;
+            tr.click(create_toggle_struct_function(target_struct_parent));
+            tr.addClass('cursor-to-hand');
         }
 
         return tr;
@@ -690,7 +691,8 @@ function executeCVisualizer(option, data, newCode) {
     function create_toggle_struct_function(target_struct_parent) {
         return function() {
             $("div.name-type-section tr[struct-parent]").filter(function() {
-                return $(this).attr('struct-parent').indexOf(target_struct_parent) >= 0;
+                return $(this).attr('struct-parent') == target_struct_parent
+                        && $(this).attr('id').indexOf(target_struct_parent+'.') == 0;
             }).fadeToggle();
         }
     }
