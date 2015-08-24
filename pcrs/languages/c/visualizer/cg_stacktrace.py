@@ -6,6 +6,7 @@ import uuid
 import sys
 import os
 import re
+import copy
 import datetime
 sys.path.extend(['.', '..'])
 from pycparser import parse_file, c_ast, c_generator, plyparser
@@ -705,8 +706,8 @@ class CVisualizer:
         global var_new_val
         global is_uninit
         global var_typerep
-
-
+        global set_heap_struct
+        #pdb.set_trace()
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
         clean_name = struct_name_val + (str)(node_name.split('[', 1)[0])
@@ -718,6 +719,10 @@ class CVisualizer:
         if actual_type != None:
             type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
+
+        if ptr_depth == None or struct_name_val != "":
+            ptr_depth = 0
+
         var_name_val = '*'*ptr_depth+ struct_name_val+(str)(node_name)
 
         self.set_malloc_size_var(parent, index, malloc_node)
@@ -730,6 +735,7 @@ class CVisualizer:
         #This is used in the set_assign_vars section to tell it that we just set a heap struct, so we should actually
         #tell the front end that the variable is new, as we want this assignment var to show up on the stack nametable
         global set_heap_struct 
+        global type_of_var
         set_heap_struct = False
 
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
@@ -752,23 +758,27 @@ class CVisualizer:
             for declaration in in_struct_list:
                 
                 set_heap_struct = True
-
                 #pdb.set_trace()
-                new_assign_node = self.create_assign_malloc_node(clean_name, declaration.name, declaration.type.type, malloc_node.coord.line)
+                new_assign_node = self.create_assign_malloc_node(clean_name, declaration.name, declaration.type, malloc_node.coord.line)
 
                 self.extra_adder = self.amt_after
                 
                 struct_name_val = clean_name+"->"+declaration.name
 
-                #add this to the var_type_dict
-                try:
-                    var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.names[0])}
-                except:
-                    var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.name)}
-                self.var_type_dict.update(var_dict_add)
-                
-                self.print_changed_vars(parent, index, func_name, False, new_assign_node, struct_name_val)                
+                if isinstance(declaration.type, c_ast.PtrDecl):
+                    #We call this function which recurses through ptr depth, adds to the ptr dict, and gets our type of var for us
+                    self.set_decl_ptr_vars(declaration, clean_name+"->")
+                    var_dict_add = {(str)(struct_name_val):type_of_var}
 
+                else:
+                    #add this to the var_type_dict
+                    try:
+                        var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.names[0])}
+                    except:
+                        var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.name)}
+                self.var_type_dict.update(var_dict_add)
+                self.print_changed_vars(parent, index, func_name, False, new_assign_node, struct_name_val)                
+                set_heap_struct = False
             return True            
 
     def create_assign_malloc_node(self, clean_name, declaration_name, decl_type, malloc_node_line):
@@ -796,8 +806,19 @@ class CVisualizer:
 
         #rvalue will be the value, a funccall with malloc as ID and the current node as the exprlist
         rval_name = c_ast.ID("malloc")
-        idtype = decl_type
-        unarytype = c_ast.TypeDecl(None, [], idtype)
+        
+        #Make a copy because we're going to change a bit of it
+        unarytype = copy.deepcopy(decl_type)
+        temp_type = unarytype
+        
+        #Keep looping until it's a typedecl, then change its name to none, so that our malloc node does't get weird
+        while not isinstance(temp_type, c_ast.TypeDecl): 
+            try:
+                temp_type = temp_type.type
+            except:
+                pass
+
+        temp_type.declname = None
         unaryexpr = c_ast.Typename(None, [], unarytype)
         rval_unary = c_ast.UnaryOp("sizeof", unaryexpr)
         rval_args = c_ast.ExprList([rval_unary])
@@ -971,8 +992,8 @@ class CVisualizer:
         malloc_name_ID = c_ast.ID(self.malloc_size_var_name)
         malloc_exprlist = c_ast.ExprList(malloc_node.args.exprs)
         malloc_size_assign = c_ast.Assignment('=', malloc_name_ID, malloc_exprlist)
-        parent.insert(index, malloc_size_assign)
-        to_add_index += 1
+        parent.insert(index+1, malloc_size_assign)
+        #to_add_index += 1
         self.amt_after += 1
 
     #Pass in the function call node and get the ID to see the name of the function we're calling
@@ -1366,7 +1387,7 @@ class CVisualizer:
                         if node_to_consider.init.name.name == 'malloc':
                             is_struct = self.set_heap_struct_vars(parent, index, func_name,node_to_consider.name, node_to_consider.init, struct_name_val)
                             if not is_struct:
-                                self.set_heap_vars(parent, index, node_to_consider.name, node_to_consider.init, struct_name_val)
+                                self.set_heap_vars(parent, index+to_add_index, node_to_consider.name, node_to_consider.init, struct_name_val)
                                 print_node = self.create_printf_node(parent[index+1+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                                 parent.insert(index+1+self.amt_after+to_add_index, print_node)
                                 self.amt_after += 1
@@ -1523,7 +1544,7 @@ class CVisualizer:
                 is_struct = self.set_heap_struct_vars(parent, index, func_name,var_name, node, struct_name_val)
                 
                 if not is_struct:
-                    self.set_heap_vars(parent, index, var_name, node.rvalue, struct_name_val)
+                    self.set_heap_vars(parent, index+to_add_index+self.extra_adder, var_name, node.rvalue, struct_name_val)
                     print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                     parent.insert(index+2+self.extra_adder+to_add_index, print_node)
                     self.amt_after += 1
@@ -1646,7 +1667,7 @@ class CVisualizer:
             self.add_after_all_nodes(parent, index, func_name, False, isPtr, False, True)
             self.print_array_extra_nodes(parent, index+self.amt_after+1)
 
-        #Now handle cases where it got assigned to a str lit: loop through it
+        #Now handle cases where it got assigned to a str lit: loop through it: FIX THIS
         if is_str_lit:
             self.call_funcs_for_str_lit(parent, index+self.amt_after, func_name, parent[index+self.amt_after])
 
