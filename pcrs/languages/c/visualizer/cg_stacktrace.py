@@ -256,7 +256,7 @@ class CVisualizer:
 
             if not isArray:
                 add_id_val = c_ast.ID(var_name_val)
-                add_id_hex = c_ast.ID(var_name_val)
+                add_id_hex = c_ast.ID("(long)("+var_name_val+")")
                 if not onHeap:
                     add_id_size = c_ast.ID('(unsigned long)(sizeof(' + var_name_val+'))')
             else:
