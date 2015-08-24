@@ -542,6 +542,9 @@ class CVisualizer:
         ptr_depth = 0
         if isUnary:
             temp_name_val = node.expr.name
+        elif isinstance(node.lvalue, c_ast.StructRef):
+            temp_generator = c_generator.CGenerator()
+            temp_name_val = (str)(temp_generator.visit(node.lvalue))
         else:
             temp_name_val = node.lvalue.name
         var_name_val = (str)(temp_name_val)
@@ -1301,7 +1304,7 @@ class CVisualizer:
 
             #Case for regular (non-pointer or anything fancy) assignment
             #Also need to get this working w/ vars assigned to function calls
-            elif isinstance(node_to_consider.lvalue, c_ast.ID):
+            elif isinstance(node_to_consider.lvalue, c_ast.ID) or isinstance(node_to_consider.lvalue, c_ast.StructRef):
                 self.set_assign_vars(node_to_consider, False)
 
                 if node_to_consider.lvalue.name in self.ptr_dict:
