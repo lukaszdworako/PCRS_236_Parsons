@@ -59,6 +59,13 @@ function hexToInt(hexstring) {
     var first_bit = binary_string[0];
     return (first_bit === '1' ? '-' : '') + parseInt(binary_string.slice(1), 2);
 }
+function hexToFloat(hexstring) {
+    // For signed int-like values, consider the first bit
+    var binary_string = zeroPad(parseFloat(hexstring, 16).toString(2), hexstring.length*4);
+    var first_bit = binary_string[0];
+    return (first_bit === '1' ? '-' : '') + parseFloat(binary_string.slice(1), 2);
+}
+
 function hexToUnsignedInt(hexstring) {
     return parseInt(hexstring, 16);
 }
@@ -1393,8 +1400,10 @@ function executeCVisualizer(option, data, newCode) {
 
         } else if(type.indexOf('unsigned') > -1) {
             generated_label_value = hexToUnsignedInt(all_group_hex_values);
-
-        } else {
+        } else if(type === ('double' || 'float' || 'long')) {
+            generated_label_value = hexToFloat(all_group_hex_values);
+        } 
+        else {
             // All other signed int-like values
             generated_label_value = hexToInt(all_group_hex_values);
         }
