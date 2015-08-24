@@ -11,6 +11,7 @@ import uuid
 from operator import mul
 from functools import reduce
 import ast
+import struct
 
 from pprint import pprint
 import pdb
@@ -306,6 +307,12 @@ class CSpecifics():
     def to_hex(self, dec_num):
         return self.hex_pad(hex(dec_num)[2:], 8)
 
+    def float_to_hex(self, f):
+        return hex(struct.unpack('<I', struct.pack('<f', f))[0])
+
+    def double_to_hex(self, sf):
+        return hex(struct.unpack('<Q', struct.pack('<d', f))[0])
+
     def hex_pad(self, value, length):
         # Length is in bytes
         return ("0x" + value.zfill(length*2)).lower();
@@ -388,7 +395,6 @@ class CSpecifics():
 
     def parse_var(self, line_info):
         current_var = dict(line_info)
-
         # Pad each hex value to the length of max_size
         # Arbitrarily chosen size of 8 bytes for anything without a max_size specified
         max_size = int(current_var['max_size']) if ('max_size' in current_var) else 8
@@ -469,6 +475,17 @@ class CSpecifics():
         else:
             current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
 
+        #pdb.set_trace()
+        if ('double' or 'float' or 'long') in current_var['type']:
+            if isinstance(current_var['hex_value'], list):
+                for i in range(0, len(current_var['hex_value'])):
+                    if '.' in current_var['value'][i]:
+                        temp_float = (float)(current_var['value'][i])
+                        current_var['hex_value'][i] = self.float_to_hex(temp_float)
+            else:
+                temp_float = (float)(current_var['value'])
+                current_var['hex_value'] = self.float_to_hex(temp_float)
+
         current_var['value'] = self.parse_value(current_var, sizes_by_level)
 
         return current_var
@@ -487,7 +504,6 @@ class CSpecifics():
             "global_vars": [],
             "steps": []
         }
-
 
         current_step_number = 0
         current_line = None
