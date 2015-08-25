@@ -148,7 +148,7 @@ class CVisualizer:
             return '\r'
         else:
             #If the line is anything other than blank, we've started other code
-            if line != "":
+            if (line != "") and ('#' not in line):
                 start_other_lines = True
             return line
 
