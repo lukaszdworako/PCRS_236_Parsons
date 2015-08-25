@@ -476,14 +476,16 @@ class CSpecifics():
         else:
             current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
 
-        #pdb.set_trace()
         if 'double' in current_var['type'] or 'float' in current_var['type']:
             # TODO: This is buggy -- how do you know which is a double and which is a float?
             if isinstance(current_var['hex_value'], list):
                 for i in range(0, len(current_var['hex_value'])):
                     if '.' in current_var['value'][i]:
                         temp_float = (float)(current_var['value'][i])
-                        current_var['hex_value'][i] = self.float_to_hex(temp_float)
+                        if 'double' in current_var['type']:
+                            current_var['hex_value'][i] = self.double_to_hex(temp_float)
+                        else:
+                            current_var['hex_value'][i] = self.float_to_hex(temp_float)
             else:
                 temp_float = (float)(current_var['value'])
                 if 'float' in current_var['type']:
