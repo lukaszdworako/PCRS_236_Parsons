@@ -173,18 +173,22 @@ class CSpecifics():
         # Naming the temporary error file
         temp_error_file = self.temp_path + user + self.date_time + "_error.out"
         # Compilation flags
-        flags = "-Wall"
+        flags = " -Wall"
 
         ret = {"temp_gcc_file": temp_gcc_file}
 
         # Filtering user script
         for line in user_script.split("\n"):
-            if "#include" in line and ("<sys/" in line or "<net" in line):
-                ret["exception_type"] = "error"
-                lib_loc = line.find("#include <")
-                lib_end = line[lib_loc:].find(">")
-                ret["exception"] = "Forbidden library found: {0}".format(line[lib_loc + 10:lib_end])
-                return ret
+            if "#include" in line:
+                if "<sys/" in line or "<net" in line:
+                    ret["exception_type"] = "error"
+                    lib_loc = line.find("#include <")
+                    lib_end = line[lib_loc:].find(">")
+                    ret["exception"] = "Forbidden library found: {0}".format(line[lib_loc + 10:lib_end])
+                    return ret
+                if "<math.h>" in line:
+                    flags += " -lm"
+
 
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
@@ -199,7 +203,7 @@ class CSpecifics():
             f.close()
 
             # Compiling the C file
-            subprocess.call("gcc " + flags + " " + temp_c_file + " -o " + temp_gcc_file + " 2> " + temp_error_file,
+            subprocess.call("gcc " + temp_c_file + " -o " + temp_gcc_file + flags + " 2> " + temp_error_file,
                             shell=True)
 
             # Getting the error output to check if there were any compilation errors
