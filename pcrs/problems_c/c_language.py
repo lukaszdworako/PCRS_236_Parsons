@@ -486,6 +486,8 @@ class CSpecifics():
                             current_var['hex_value'][i] = self.double_to_hex(temp_float)
                         else:
                             current_var['hex_value'][i] = self.float_to_hex(temp_float)
+
+                        current_var['hex_value'][i] = self.hex_pad(current_var['hex_value'][i], max_size)
             else:
                 temp_float = (float)(current_var['value'])
                 if 'float' in current_var['type']:
