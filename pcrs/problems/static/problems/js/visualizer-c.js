@@ -1032,6 +1032,7 @@ function executeCVisualizer(option, data, newCode) {
         var cell_rows = document.createElement("div");
 
         var hex_val_index = 0;
+        hex_value = hex_value.slice(-cells_needed);
         var current_addr = start_addr;
         var remaining_cells = cells_needed;
         for(var r=1; r <= rows_needed; r++) {
