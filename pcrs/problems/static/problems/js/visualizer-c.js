@@ -44,8 +44,6 @@ function zeroPad(str, max) {
 }
 
 function toHexString(hexnum, max) {
-    console.log("hexnum:"+hexnum)
-    console.log("max:"+max)
     max = typeof max !== 'undefined' ? max : 16;
     var str_hex_num = hexnum.toString(16);
     if(str_hex_num.indexOf("0x") === 0) {
@@ -2227,7 +2225,7 @@ function executeCVisualizer(option, data, newCode) {
 
                     //Check if the table is now empty from this removal, remove if so
                     table_id = '#names-'+table_name;
-                    //check_rm_empty_table(table_id);
+                    check_rm_empty_table(table_id);
                 }
             }
         }
@@ -2338,10 +2336,21 @@ function executeCVisualizer(option, data, newCode) {
                         remove_inner_val_from_val_list(val_obj);
                     }
                 }
-                //Delete it here it if didnt have any other values in it, otherwise leave it
+                //Pop it here it if didnt have any other values in it, otherwise leave it
                 //since we'll delete it the for loop above
+                value_list[val_address]["history"].pop();
+                var history = value_list[val_address]["history"];
+
                 if (had_more_vals == false) {
-                    delete value_list[val_address];
+                    //If the val no longer exists, just set its value to null but keep in the list
+                    if (history.length == 0) {
+                        value_list[val_address]["value"] = null;    
+                    }
+                    else {
+                        value_list[val_address]["value"] = history[history.length-1];
+                    }
+
+                    //delete value_list[val_address];
                 }
             }
 
@@ -2362,8 +2371,19 @@ function executeCVisualizer(option, data, newCode) {
                     remove_inner_val_from_val_list(cur_val_obj);
                 }
             }
+
             var val_address = toHexString(inner_val["addr"]);
-            delete value_list[val_address];
+            value_list[val_address]["history"].pop();
+            var history = value_list[val_address]["history"];
+
+            //If the val no longer exists, just set its value to null but keep in the list
+            if (history.length == 0) {
+                value_list[val_address]["value"] = null;    
+            }
+            else {
+                value_list[val_address]["value"] = history[history.length-1];
+            }
+            // delete value_list[val_address];
         }
     }
 
