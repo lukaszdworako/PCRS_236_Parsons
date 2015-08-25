@@ -53,17 +53,42 @@ function toHexString(hexnum, max) {
     return "0x" + zeroPad(str_hex_num, max);
 }
 
-function hexToInt(hexstring) {
-    // For signed int-like values, consider the first bit
+// General conversion for all signed values
+function hexToSigned(hexstring, type) {
+    if(type === 'int' || type === 'float') {     // Assuming 32-bit base values
+        var size = 4;
+    } else {
+        var size = 8;
+    }
+    var buffer = new ArrayBuffer(size);
+    var byteArr = new Uint8Array(buffer);
+    if(type === 'int') {
+        var val = new Int32Array(buffer);
+    } else if(type === 'float') {
+        var val = new Float32Array(buffer);
+    } else { // double of some sort -- and you're out of luck, "long double"
+        var val = new Float64Array(buffer);
+    }
+
+    var i = 0;
+    for(; i < hexstring.length; i += 2) {
+        byteArr[size -1 - i / 2] = "0x" + hexstring.substr(i, 2);
+    }
+
+    if(type === 'float' || type === 'double') {
+        return val[0].toFixed(6);
+    } else {
+        return val[0];
+    }
+}
+
+function hexToLong(hexstring) {
+    // TODO: Javascript can't easily handle longs, because it doesn't have a 64 bit int type.
+    hexstring = hexstring.slice(4)   // Doing our best. Removing top 16 bits. 
     var binary_string = zeroPad(parseInt(hexstring, 16).toString(2), hexstring.length*4);
     var first_bit = binary_string[0];
-    return (first_bit === '1' ? '-' : '') + parseInt(binary_string.slice(1), 2);
-}
-function hexToFloat(hexstring) {
-    // For signed int-like values, consider the first bit
-    var binary_string = zeroPad(parseFloat(hexstring, 16).toString(2), hexstring.length*4);
-    var first_bit = binary_string[0];
-    return (first_bit === '1' ? '-' : '') + parseFloat(binary_string.slice(1), 2);
+    var magnitude = first_bit === '1' ? ~parseInt(binary_string, 2) + 1 : parseInt(binary_string, 2);
+    return (first_bit === '1' ? '-' : '') + magnitude;
 }
 
 function hexToUnsignedInt(hexstring) {
@@ -1400,12 +1425,10 @@ function executeCVisualizer(option, data, newCode) {
 
         } else if(type.indexOf('unsigned') > -1) {
             generated_label_value = hexToUnsignedInt(all_group_hex_values);
-        } else if(type === ('double' || 'float' || 'long')) {
-            generated_label_value = hexToFloat(all_group_hex_values);
-        } 
-        else {
-            // All other signed int-like values
-            generated_label_value = hexToInt(all_group_hex_values);
+        } else if(type === 'long') {
+            generated_label_value = hexToLong(all_group_hex_values);
+        } else {
+            generated_label_value = hexToSigned(all_group_hex_values, type);
         }
 
         //return label_value;

@@ -310,7 +310,7 @@ class CSpecifics():
     def float_to_hex(self, f):
         return hex(struct.unpack('<I', struct.pack('<f', f))[0])
 
-    def double_to_hex(self, sf):
+    def double_to_hex(self, f):
         return hex(struct.unpack('<Q', struct.pack('<d', f))[0])
 
     def hex_pad(self, value, length):
@@ -477,7 +477,8 @@ class CSpecifics():
             current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
 
         #pdb.set_trace()
-        if ('double' or 'float' or 'long') in current_var['type']:
+        if 'double' in current_var['type'] or 'float' in current_var['type']:
+            # TODO: This is buggy -- how do you know which is a double and which is a float?
             if isinstance(current_var['hex_value'], list):
                 for i in range(0, len(current_var['hex_value'])):
                     if '.' in current_var['value'][i]:
@@ -485,7 +486,10 @@ class CSpecifics():
                         current_var['hex_value'][i] = self.float_to_hex(temp_float)
             else:
                 temp_float = (float)(current_var['value'])
-                current_var['hex_value'] = self.float_to_hex(temp_float)
+                if 'float' in current_var['type']:
+                    current_var['hex_value'] = self.float_to_hex(temp_float)
+                else: # double
+                    current_var['hex_value'] = self.double_to_hex(temp_float)
 
         current_var['value'] = self.parse_value(current_var, sizes_by_level)
 
