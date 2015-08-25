@@ -44,6 +44,8 @@ function zeroPad(str, max) {
 }
 
 function toHexString(hexnum, max) {
+    console.log("hexnum:"+hexnum)
+    console.log("max:"+max)
     max = typeof max !== 'undefined' ? max : 16;
     var str_hex_num = hexnum.toString(16);
     if(str_hex_num.indexOf("0x") === 0) {
@@ -224,6 +226,7 @@ function executeCVisualizer(option, data, newCode) {
          * Verify trace does not contain errors and create visualizer,
          * othervise don't enter visualization mode.
          */
+         console.log("");
         value_list = {};
         debugger_data = data;
         var removedLines;
@@ -2219,9 +2222,8 @@ function executeCVisualizer(option, data, newCode) {
                         table_name = 'data';
                     }
 
-                    var cur_frame;
-                    cur_frame = $('#names-'+table_name);
-                    $("#"+table_name+'-'+json_step['changed_vars'][i]['var_name']).remove();
+                    var to_remove = json_step['changed_vars'][i]['var_name'].toString();
+                    $('#name-body-'+table_name+':first tr[id='+to_remove+']').remove();
 
                     //Check if the table is now empty from this removal, remove if so
                     table_id = '#names-'+table_name;
