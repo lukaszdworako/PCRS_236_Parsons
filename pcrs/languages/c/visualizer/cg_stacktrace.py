@@ -1818,4 +1818,4 @@ class CVisualizer:
         generator = c_generator.CGenerator()
         print("\n".join(self.removed_lines))
         print(generator.visit(ast))
-        return generator.visit(ast)
+        return "{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast))
