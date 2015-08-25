@@ -53,18 +53,15 @@ function toHexString(hexnum, max) {
     return "0x" + zeroPad(str_hex_num, max);
 }
 
-// General conversion for all signed values
-function hexToSigned(hexstring, type) {
-    if(type === 'int' || type === 'float') {     // Assuming 32-bit base values
+function hexToFloat(hexstring, type) {
+    if(type === 'float') {     // Assuming 32-bit base values
         var size = 4;
     } else {
         var size = 8;
     }
     var buffer = new ArrayBuffer(size);
     var byteArr = new Uint8Array(buffer);
-    if(type === 'int') {
-        var val = new Int32Array(buffer);
-    } else if(type === 'float') {
+    if(type === 'float') {
         var val = new Float32Array(buffer);
     } else { // double of some sort -- and you're out of luck, "long double"
         var val = new Float64Array(buffer);
@@ -75,16 +72,12 @@ function hexToSigned(hexstring, type) {
         byteArr[size -1 - i / 2] = "0x" + hexstring.substr(i, 2);
     }
 
-    if(type === 'float' || type === 'double') {
-        return val[0].toFixed(6);
-    } else {
-        return val[0];
-    }
+    return val[0].toFixed(6);
 }
 
-function hexToLong(hexstring) {
-    // TODO: Javascript can't easily handle longs, because it doesn't have a 64 bit int type.
-    hexstring = hexstring.slice(4)   // Doing our best. Removing top 16 bits. 
+function hexToInt(hexstring) {
+    // Javascript can't easily handle longs, because it doesn't have a 64 bit int type.
+    hexstring = hexstring.slice(-12)   // Doing our best. Taking the last 48 bits.
     var binary_string = zeroPad(parseInt(hexstring, 16).toString(2), hexstring.length*4);
     var first_bit = binary_string[0];
     var magnitude = first_bit === '1' ? ~parseInt(binary_string, 2) + 1 : parseInt(binary_string, 2);
@@ -1425,10 +1418,11 @@ function executeCVisualizer(option, data, newCode) {
 
         } else if(type.indexOf('unsigned') > -1) {
             generated_label_value = hexToUnsignedInt(all_group_hex_values);
-        } else if(type === 'long') {
-            generated_label_value = hexToLong(all_group_hex_values);
-        } else {
-            generated_label_value = hexToSigned(all_group_hex_values, type);
+        } else if(type === 'double' || type === 'float') {
+            generated_label_value = hexToFloat(all_group_hex_values, type);
+        } else {  // treat it like some kind of int
+            generated_label_value = label_value;        // Since long can't be represented, this is more accurate
+            //generated_label_value = hexToInt(all_group_hex_values);
         }
 
         //return label_value;
