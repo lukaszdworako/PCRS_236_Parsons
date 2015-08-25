@@ -1816,5 +1816,6 @@ class CVisualizer:
 
         #Turning the new ast back into C code
         generator = c_generator.CGenerator()
+        print("\n".join(self.removed_lines))
         print(generator.visit(ast))
         return generator.visit(ast)
