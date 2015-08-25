@@ -147,7 +147,7 @@ class CVisualizer:
             self.removed_lines.append(line)
             return '\r'
         else:
-            #If the line is anything other than blank, we've started other code
+            #If the line is anything other than blank, we've started other const_node
             if (line != "") and ('#' not in line):
                 start_other_lines = True
             return line
@@ -258,6 +258,7 @@ class CVisualizer:
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + pointing_to_type +'))')
             if onHeap:
+                pdb.set_trace()
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + type_of_var +'))')
 
@@ -729,10 +730,16 @@ class CVisualizer:
             type_of_var = actual_type
         var_typerep = self.primitive_types.get(type_of_var)
 
+        if var_typerep == None:
+            var_typerep = '%p'
+
         if ptr_depth == None or struct_name_val != "":
             ptr_depth = 0
 
         var_name_val = '*'*ptr_depth+ struct_name_val+(str)(node_name)
+
+        if '->' in var_name_val:
+            type_of_var = parent_type
 
         self.set_malloc_size_var(parent, index, malloc_node)
 
@@ -1815,7 +1822,6 @@ class CVisualizer:
         #Initializing a malloc size variable in the code
         malloc_size_var = self.create_new_var_node("int", None, self.malloc_size_var_name)
         ast.ext.insert(0, malloc_size_var)
-
         #Going through each function and adding all the print statements
         self.recurse_by_function(ast)
 
@@ -1827,4 +1833,7 @@ class CVisualizer:
         generator = c_generator.CGenerator()
         print("\n".join(self.removed_lines))
         print(generator.visit(ast))
-        return "{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast))
+        #print("{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast)))
+
+        #return "{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast))
+        return generator.visit(ast)
