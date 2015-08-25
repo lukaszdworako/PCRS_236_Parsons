@@ -129,6 +129,8 @@ class CVisualizer:
     Replace preprocessor directives with empty lines to allow pycparser to parse the file correctly
     '''
     def remove_preprocessor_directives(self, user_script):
+        global start_other_lines
+        start_other_lines = False 
         lines = user_script.split('\n')
         new_lines = [self.clear_directive_line(l) for l in lines]
         new_user_script = '\n'.join(new_lines)
@@ -137,10 +139,17 @@ class CVisualizer:
 
 
     def clear_directive_line(self, line):
+        global start_other_lines
         if ('_Generic' in line) or ('#include' in line):
+            #If this is past other, non directive lines of code, return an error: we can't handle this
+            if start_other_lines:
+                raise Exception("Preprocessor Directives such as #include and _Generic must be at the top of your code")
             self.removed_lines.append(line)
             return '\r'
         else:
+            #If the line is anything other than blank, we've started other code
+            if line != "":
+                start_other_lines = True
             return line
 
     #RetFnCall means it just returned from a previous function call
