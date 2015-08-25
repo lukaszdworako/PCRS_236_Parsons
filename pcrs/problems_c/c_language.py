@@ -492,6 +492,7 @@ class CSpecifics():
                     current_var['hex_value'] = self.float_to_hex(temp_float)
                 else: # double
                     current_var['hex_value'] = self.double_to_hex(temp_float)
+                current_var['hex_value'] = self.hex_pad(current_var['hex_value'], max_size)
 
         current_var['value'] = self.parse_value(current_var, sizes_by_level)
 
