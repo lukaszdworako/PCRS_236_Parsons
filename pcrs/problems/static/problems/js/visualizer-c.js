@@ -28,6 +28,7 @@ var group_id_to_var_name = {};
 var group_id_to_array_id = {};
 var array_id_to_group_id = {};
 var value_list = {};
+var name_table_vars = {};
 
 // Keeps track of how many stack frames have been created for a function
 var stack_frame_levels = {};
@@ -226,6 +227,7 @@ function executeCVisualizer(option, data, newCode) {
          */
          console.log("");
         value_list = {};
+        name_table_vars = {};
         debugger_data = data;
         var removedLines;
         var start_line = debugger_data["steps"][0]["student_view_line"];
@@ -298,7 +300,7 @@ function executeCVisualizer(option, data, newCode) {
                 $('#new_debugger_table_heap').empty();
                 //clear val list
                 value_list = {};
-
+                name_table_vars = {};
                 //Clear stdout
                 cur_stdout= "";
                 $("#std-out-textbox").html(cur_stdout);
@@ -653,7 +655,16 @@ function executeCVisualizer(option, data, newCode) {
                     name_tbody.append(name_tr);
                 }
 
+                current_stack = name_table_vars[func_name]
+                //If the stack frame doesn't exist in name_table_vars yet add it
+                if (!current_stack){
+                    name_table_vars[func_name] = []
+                    current_stack = name_table_vars[func_name]
+                }
 
+                //Now appaend the var name and type to the dictionary 
+                current_stack.push([changed_var['var_name'],changed_var['type']])
+                
                 var name_row = $('#name-body-'+table_name+":first tr[id='"+changed_var['var_name']+"']");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
@@ -2222,6 +2233,19 @@ function executeCVisualizer(option, data, newCode) {
 
                     var to_remove = json_step['changed_vars'][i]['var_name'].toString();
                     $('#name-body-'+table_name+':first tr[id='+to_remove+']').remove();
+
+
+                    current_func = name_table_vars[json_step['function']]
+                    current_frame = current_func[current_func.length-1]
+                    //Pop the last element of current_frame
+                    current_frame.pop()
+
+                    //If the current frame has no more in it, remove it from the dictionary
+                    if (current_frame.length == 0){
+                        //Fix this, i don't think remove is what does it
+                        current_frame.remove()
+                    }
+
 
                     //Check if the table is now empty from this removal, remove if so
                     table_id = '#names-'+table_name;
