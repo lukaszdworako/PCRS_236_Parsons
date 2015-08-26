@@ -1075,7 +1075,7 @@ class CVisualizer:
 
     def add_after_all_nodes(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
         print_node = self.create_printf_node(parent[index], func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
-        parent.insert(index+self.amt_after+1, print_node)
+        parent.insert(index+1, print_node)
         self.amt_after += 1
 
     #index here will be where we should start inserting nodes
@@ -1574,6 +1574,7 @@ class CVisualizer:
         parent.insert(index, print_node)
         to_add_index += 1
         self.amt_after += 1
+        self.print_funccall_not_prog(parent, index+to_add_index, func_name)
 
     def print_stderr(self, parent, index, func_name):
         global to_add_index
@@ -1637,6 +1638,7 @@ class CVisualizer:
 
     def handle_types_variable_passed(self, parent, index, variable_passed, func_name):
             #Straight ID
+            
             if isinstance(variable_passed, c_ast.ID):
                 var_name = variable_passed.name
                 self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name)
