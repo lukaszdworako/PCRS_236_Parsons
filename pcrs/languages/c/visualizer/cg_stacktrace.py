@@ -240,6 +240,12 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
+            #pdb.set_trace()
+            #If struct_uninit is anything other than none, this print statement is part of a struct - set it to
+            #whatever struct_uninit is instead.
+            if struct_uninit != None:
+                var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(struct_uninit)                
+
             var_size = (str)(self.item_delimiter) +"arr_type_size:%lu"
 
             value_type_set = ""
@@ -260,7 +266,6 @@ class CVisualizer:
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + pointing_to_type +'))')
             if onHeap:
-                pdb.set_trace()
                 var_ptr_size = (str)(self.item_delimiter) + "ptr_size:%lu"
                 add_id_ptr_size = c_ast.ID('(unsigned long)(sizeof(' + type_of_var +'))')
 
@@ -399,6 +404,9 @@ class CVisualizer:
     #Takes a node, checks its type, and calls the appropriate function on it to add a print statement
     def handle_nodetypes(self, parent, index, func_name):
         global set_heap_struct
+        global struct_uninit
+
+        struct_uninit = None
         set_heap_struct = False
         #global amt_after
         #reset amt_after
@@ -586,11 +594,16 @@ class CVisualizer:
 
     def set_struct_vars(self, parent, index, node, struct_type_name, func_name, struct_full_name=""):
         
-
+        global struct_uninit
+        struct_uninit = True
         cur_struct = self.struct_dict.get(struct_type_name)
 
         struct_full_name += node.name + "."
         
+        #This means it's initialized
+        if node.init:
+            struct_uninit = False
+
         #Loop through all the declaration nodes saved in the current struct
         for declaration in cur_struct:
             self.extra_adder = self.amt_after
