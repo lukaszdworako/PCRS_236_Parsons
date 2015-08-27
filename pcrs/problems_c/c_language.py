@@ -66,6 +66,7 @@ class CSpecifics():
         ret = {}
         user = str(self.username)
         user_script = str(self.submission)
+        test_input = test_input.strip('\r\n')
 
         # Compile C source code
         if not self.compiled:
@@ -92,17 +93,16 @@ class CSpecifics():
 
                 # Running C program in a secure environment
                 cmd_str = safe_exec + " -o " + temp_output_file + " -d " + max_process_mem \
-                                + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID + " -e " \
-                                + temp_runtime_error_file + " -T " + max_time_sec + " -F " + max_number_files \
+                                + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID \
+                                + " -T " + max_time_sec + " -F " + max_number_files \
                                 + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"] \
-                                + " " + test_input + " > /dev/null 2> /dev/null"
+                                + " " + test_input + " > /dev/null 2> " + temp_runtime_error_file
                 process = subprocess.call(cmd_str, shell=True)
             else:
                 process = subprocess.call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file + " 2> " + temp_runtime_error_file, shell=True)
 
-            # Runtime error during process execution (ignore warning errors)
+            # Runtime error during process execution 
             if process != 0:
-                print("Exit code: " + str(process))
                 execution_output = 'Runtime error!'
                 ret["exception_type"] = "error"
                 ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
@@ -116,8 +116,9 @@ class CSpecifics():
             f = open(temp_runtime_error_file, 'r')
             runtime_error = f.read()
             if runtime_error:
-                print("===== safeexec runtime error =====\n", runtime_error, "==========")   # To system error log. Probably better to activity log.
-                ret["runtime_error"] = runtime_error
+                execution_output = 'Runtime error!'
+                ret["exception_type"] = "error"
+                ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
             f.close()
 
             # Remove escape sequences in case of a string instance

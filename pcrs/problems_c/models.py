@@ -64,8 +64,8 @@ class Submission(AbstractSubmission):
                 run["exception"] = self.treat_exception_text(run["exception"])
             else:
                 del(run["exception"])
-                if "runtime_error" in run and run["runtime_error"]:
-                    run["runtime_error"] = run["runtime_error"]
+            if run.get("runtime_error", ' ') != ' ':
+                run["exception"] = "\n".join([run.get("exception", ''), run["runtime_error"]])
 
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=run['passed_test'])
@@ -77,14 +77,17 @@ class Submission(AbstractSubmission):
             results.append(run)
 
         # Clear exec file created by GCC during compilation process
-        if len(self.problem.testcase_set.all()) > 0:
-            runner.clear_exec_file(runner.compilation_ret["temp_gcc_file"])
+        runner.clear_exec_file(runner.compilation_ret["temp_gcc_file"])
 
         # Condition for editor running code - no testcases, just result
         if self.problem.id == 9999999:
             run = runner.run_test("", "")
             if run["exception"] != " ":
                 run["exception"] = self.treat_exception_text(run["exception"])
+            else:
+                del(run["exception"])
+            if run.get("runtime_error", ' ') != ' ':
+                run["exception"] = "\n".join([run.get("exception", ''), run["runtime_error"]])
             run['test_input'], run['expected_output'] = None, None
             results.append(run)
 
