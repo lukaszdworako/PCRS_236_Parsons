@@ -55,7 +55,7 @@ class EditorForm(CrispyFormMixin, forms.Form):
 
         self.trace_button = Submit('Trace', value='Trace', css_class='debugBtn pull-right')
         self.fields['code_box'].initial = ''
-        layout_fields = (Fieldset('', 'code_box'), Div(self.trace_button))
+        layout_fields = (Fieldset('', 'code_box'), Div(self.trace_button, css_class="floatdiv"))
         self.helper.layout = Layout(*layout_fields)
 
 
