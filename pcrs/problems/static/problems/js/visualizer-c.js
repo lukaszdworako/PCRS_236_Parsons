@@ -28,6 +28,7 @@ var group_id_to_var_name = {};
 var group_id_to_array_id = {};
 var array_id_to_group_id = {};
 var value_list = {};
+var name_table_vars = {};
 
 // Keeps track of how many stack frames have been created for a function
 var stack_frame_levels = {};
@@ -226,6 +227,7 @@ function executeCVisualizer(option, data, newCode) {
          */
          console.log("");
         value_list = {};
+        name_table_vars = {};
         debugger_data = data;
         var removedLines;
         var start_line = debugger_data["steps"][0]["student_view_line"];
@@ -298,7 +300,7 @@ function executeCVisualizer(option, data, newCode) {
                 $('#new_debugger_table_heap').empty();
                 //clear val list
                 value_list = {};
-
+                name_table_vars = {};
                 //Clear stdout
                 cur_stdout= "";
                 $("#std-out-textbox").html(cur_stdout);
@@ -415,6 +417,8 @@ function executeCVisualizer(option, data, newCode) {
                 // Remove the previous stack frame and name table of this function
                 $("#name-table-"+most_recently_returned).remove();
                 remove_stack_table(json_step['returned_fn_call'])
+                to_remove_stack = name_table_vars[most_recently_returned]
+                to_remove_stack[to_remove_stack.length -1].push(['return'])
             }
 
             //Case where it has standard output
@@ -426,6 +430,8 @@ function executeCVisualizer(option, data, newCode) {
         else if(update_type == "prev") {
             // This just recreates the memory tables from the beginning up to one step before
             remove_from_memory_table();
+
+            check_rm_return_nametable(json_step);
 
             //Process JSON here to go backward a line
             if(json_step.hasOwnProperty('changed_vars')) {
@@ -598,9 +604,10 @@ function executeCVisualizer(option, data, newCode) {
                 var cur_frame = $('#names-'+table_name+':first'); // Only take the top stack frame with this name
 
                 // Check if there's a current frame up for this:
+                var stack_frame_level = 1;
                 if(cur_frame.length == 0) {
                     // If not, create a new stack frame for it
-                    var stack_frame_level = stack_frame_levels[table_name];
+                    stack_frame_level = stack_frame_levels[table_name];
                     add_name_table_frame(table_name, stack_frame_level);
                 }
 
@@ -653,7 +660,29 @@ function executeCVisualizer(option, data, newCode) {
                     name_tbody.append(name_tr);
                 }
 
+                name_of_stack = func_name+'-'+stack_frame_level
+                current_stack = name_table_vars[name_of_stack]
+                //If the stack frame doesn't exist in name_table_vars yet add it
+                if (!current_stack){
+                    name_table_vars[name_of_stack] = []
+                    current_stack = name_table_vars[name_of_stack]
+                }
 
+                current_frame = current_stack[current_stack.length -1]
+                //If there are no frames for this stack yet
+                if (!current_frame) {
+                    current_stack.push([])
+                    current_frame = current_stack[0]
+                }
+                //Create a new frame within the stack
+                if ((current_frame[current_frame.length -1])&&(current_frame[current_frame.length -1][0] === "return") && (current_frame[current_frame.length -1].length === 1)){
+                    current_stack.push([])
+                    current_frame = current_stack[current_stack.length -1]
+                }
+
+                //Now append the var name and type to the dictionary 
+                current_frame.push([changed_var['var_name'],changed_var['type']])
+                
                 var name_row = $('#name-body-'+table_name+":first tr[id='"+changed_var['var_name']+"']");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
@@ -2096,6 +2125,24 @@ function executeCVisualizer(option, data, newCode) {
         }
 
         return_to_clr = '#'+table_name+'-return';
+
+        // Check if there's a current frame up for this:
+        var stack_frame_level = stack_frame_level = stack_frame_levels[json_step['function']];
+        if (!stack_frame_level){
+            stack_frame_level = 1;
+        }
+
+        //Lookup this table's contents in our name table list
+        var stack_func = name_table_vars[table_name+'-'+stack_frame_level]
+        var stack_frame = stack_func[stack_func.length -1]
+        // if (stack_frame){
+        //     for (int i = 0; i<stack_frame.length; i++) {
+        //         //Add a row to the existing name table
+        //         $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+  '"> <td colspan="2">' + return_data + '</td>' +
+        //         '</tr>');                
+        //     }
+        // }
+
         //Add a row to the existing name table
         $('#name-body-'+table_name).append('<tr id="'+table_name+'-return"> <td colspan="2">' + return_data + '</td>' +
         '</tr>');
@@ -2195,6 +2242,31 @@ function executeCVisualizer(option, data, newCode) {
         $("#std-out-textbox").html(cur_stdout);
     }
 
+    //Checks if we just returned from a function and then clicked prev, if so, just remove the return value from the function's
+    //name_table_vars array
+    function check_rm_return_nametable(json_step){
+        if (json_step.hasOwnProperty('return')) {
+            // Check if there's a current frame up for this:
+            var stack_frame_level = stack_frame_level = stack_frame_levels[json_step['function']];
+            if (!stack_frame_level){
+                stack_frame_level = 1;
+            }
+
+            current_func = name_table_vars[json_step['function']+'-'+stack_frame_level];
+            current_frame = current_func[current_func.length-1];
+            if ((current_frame[current_frame.length-1]) && (current_frame[current_frame.length -1][0] === "return")){
+                //Pop the last element of current_frame
+                current_frame.pop();
+
+                //If the current frame has no more in it, remove it from the dictionary
+                if (current_frame.length == 0){
+                    var index = current_func.indexOf(current_frame);
+                    current_func.splice(index, 1);
+                }
+            }
+
+        }
+    }
 
     //Applies the most recent backward-changes of the current step to the name table: the only time this might be
     //an addition is if a variable got freed on the heap in the last step, adding it back
@@ -2222,6 +2294,26 @@ function executeCVisualizer(option, data, newCode) {
 
                     var to_remove = json_step['changed_vars'][i]['var_name'].toString();
                     $('#name-body-'+table_name+':first tr[id='+to_remove+']').remove();
+
+                    // Check if there's a current frame up for this:
+                    var stack_frame_level = stack_frame_level = stack_frame_levels[json_step['function']];
+                    if (!stack_frame_level){
+                        stack_frame_level = 1;
+                    }
+
+                    current_func = name_table_vars[json_step['function']+'-'+stack_frame_level];
+                    current_frame = current_func[current_func.length-1];
+                    //Find and remove the item from the current frame
+                    item_removing = [to_remove, json_step['changed_vars'][i]['type']];
+                    index = current_frame.indexOf(item_removing);
+                    current_frame.splice(index, 1);
+
+                    //If the current frame has no more in it, remove it from the dictionary
+                    if (current_frame.length == 0){
+                        var index = current_func.indexOf(current_frame);
+                        current_func.splice(index, 1);
+                    }
+
 
                     //Check if the table is now empty from this removal, remove if so
                     table_id = '#names-'+table_name;
