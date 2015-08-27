@@ -173,7 +173,7 @@ class CSpecifics():
         # Naming the temporary error file
         temp_error_file = self.temp_path + user + self.date_time + "_error.out"
         # Compilation flags
-        flags = " -Wall"
+        flags = " -Wall -std=c11"
 
         ret = {"temp_gcc_file": temp_gcc_file}
 
