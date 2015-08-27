@@ -145,11 +145,13 @@ class CVisualizer:
             if start_other_lines:
                 raise Exception("Preprocessor Directives such as #include and _Generic must be at the top of your code")
             self.removed_lines.append(line)
-            return '\r'
+            return ''
         else:
             #If the line is anything other than blank, we've started other const_node
             if (line != "") and ('#' not in line):
                 start_other_lines = True
+            if "#include <stdio.h>" not in self.removed_lines:
+                self.removed_lines.insert(0, "#include <stdio.h>")
             return line
 
     #RetFnCall means it just returned from a previous function call
@@ -1827,15 +1829,8 @@ class CVisualizer:
         #Going through each function and adding all the print statements
         self.recurse_by_function(ast)
 
-        print("-----------------------")
-        #ast.show()
-        print("-----------------------")
-
         #Turning the new ast back into C code
         generator = c_generator.CGenerator()
-        print("\n".join(self.removed_lines))
-        print(generator.visit(ast))
-        #print("{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast)))
-
-        #return "{0}{1}".format("\n".join(self.removed_lines), generator.visit(ast))
-        return generator.visit(ast)
+        #print("\n".join(self.removed_lines))
+        #print(generator.visit(ast))
+        return "{0}\n{1}".format("\n".join(self.removed_lines), generator.visit(ast))
