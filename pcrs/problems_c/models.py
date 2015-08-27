@@ -77,7 +77,8 @@ class Submission(AbstractSubmission):
             results.append(run)
 
         # Clear exec file created by GCC during compilation process
-        runner.clear_exec_file(runner.compilation_ret["temp_gcc_file"])
+        if "temp_gcc_file" in runner.compilation_ret:
+            runner.clear_exec_file(runner.compilation_ret["temp_gcc_file"])
 
         # Condition for editor running code - no testcases, just result
         if self.problem.id == 9999999:
