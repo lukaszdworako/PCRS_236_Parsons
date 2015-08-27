@@ -663,12 +663,16 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
         global pointing_to_type
+        global str_lit
 
+        str_lit = False
+        #pdb.set_trace()
         array_access = ""
         array_depth = 0
         ptr_depth = 0
         if isUnary:
             temp_node = node.expr
+
         else:
             temp_node = node.lvalue
         while isinstance(temp_node, c_ast.UnaryOp):
@@ -686,6 +690,11 @@ class CVisualizer:
             #add in case for *(ptr + var) = something, currently only for constant
             var_name_val = '*'*ptr_depth+'('+(str)(temp_node.left.name)+array_access+(str)(temp_node.op)+(str)(temp_node.right.value)+')'
             node_name = temp_node.left.name
+        elif isinstance(temp_node, c_ast.StructRef):
+            temp_generator = c_generator.CGenerator()
+            temp_name_val = (str)(temp_generator.visit(temp_node))
+            var_name_val = '*'*ptr_depth+(str)(temp_name_val)+array_access
+            node_name = temp_name_val
         else:
             var_name_val = '*'*ptr_depth+(str)(temp_node.name)+array_access
             node_name = temp_node.name
@@ -698,7 +707,6 @@ class CVisualizer:
         pointing_to_type = stripped_vartype + ' ' + '*'*(ptr_depth-1)
 
         #Check if we're on the last level of the pointer, otherwise the thing it's pointing to is also a pointer
-
         array_dict_entry = self.array_dict.get(node_name)
         if array_dict_entry == None:
             dict_ptr_depth = self.ptr_dict.get(node_name)
@@ -706,15 +714,18 @@ class CVisualizer:
         else: 
             dict_ptr_depth = array_dict_entry[4]
             dict_array_depth = array_dict_entry[3]
-        if ptr_depth+array_depth == dict_ptr_depth + dict_array_depth:
+        if array_depth+ptr_depth == dict_array_depth+dict_ptr_depth:
             var_typerep = self.primitive_types.get(stripped_vartype)
-            #it can't be pointing to a full string, only a character - this is the case for string lits
-            # if var_typerep == '%s':
-            #     var_typerep = '%p'
         else:
             var_typerep = '%p'
 
-        type_of_var = unstripped_vartype.replace("*", "", ptr_depth).replace("[]", "")
+        if var_typerep == None:
+            var_typerep = '%p'
+
+        type_of_var = unstripped_vartype.replace("*", "", ptr_depth).replace("[]", "").rstrip()
+
+        if type_of_var == "char *":
+            str_lit = True
 
         actual_type = self.typedef_dict.get(type_of_var)
         if actual_type != None:
@@ -987,7 +998,11 @@ class CVisualizer:
         while isinstance(temp_val, c_ast.ArrayRef):
             temp_val = temp_val.name
 
-        var_name_val = (str)(temp_val.name)
+        if isinstance(temp_val, c_ast.StructRef):
+            temp_generator = c_generator.CGenerator()
+            var_name_val = (str)(temp_generator.visit(temp_val))
+        else:
+            var_name_val = (str)(temp_val.name)
 
         cur_array_dict = self.array_dict.get(var_name_val)
 
@@ -1252,6 +1267,7 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
+        #pdb.set_trace()
         ptr_depth = 0
         #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
@@ -1266,7 +1282,11 @@ class CVisualizer:
                 array_name = str_lit_ptr.name
                 array_len = len((str)(node.init.value))-2
             except:
-                array_name = str_lit_ptr.lvalue.name
+                if isinstance(str_lit_ptr.lvalue, c_ast.StructRef) or isinstance(str_lit_ptr.lvalue, c_ast.ArrayRef):
+                    temp_generator = c_generator.CGenerator()
+                    array_name = (str)(temp_generator.visit(str_lit_ptr.lvalue)) 
+                else:
+                    array_name = str_lit_ptr.lvalue.name
                 array_len = len((str)(node.rvalue.value))-2
 
         #otherwise it's an array of str lit, passing in our own const node 
@@ -1652,11 +1672,15 @@ class CVisualizer:
         # self.amt_after += 1
 
     def handle_types_variable_passed(self, parent, index, variable_passed, func_name):
-            #Straight ID
-            
+
             if isinstance(variable_passed, c_ast.ID):
                 var_name = variable_passed.name
                 self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name)
+
+            elif isinstance(variable_passed, c_ast.StructRef):
+                temp_generator = c_generator.CGenerator()
+                var_name = (str)(temp_generator.visit(variable_passed))
+                self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name)                
             #binary op, like x+1 or 1+x - we'll just get value of x, run through this function until we get to an ID
             elif isinstance(variable_passed, c_ast.BinaryOp):
                 self.handle_types_variable_passed(parent, index, variable_passed.left, func_name)
@@ -1845,5 +1869,5 @@ class CVisualizer:
         #Turning the new ast back into C code
         generator = c_generator.CGenerator()
         #print("\n".join(self.removed_lines))
-        #print(generator.visit(ast))
+        print(generator.visit(ast))
         return "{0}\n{1}".format("\n".join(self.removed_lines), generator.visit(ast))
