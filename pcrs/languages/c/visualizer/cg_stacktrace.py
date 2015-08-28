@@ -240,7 +240,6 @@ class CVisualizer:
 
             var_uninitialized = (str)(self.item_delimiter) +"uninitialized:" + (str)(is_uninit)
 
-            #pdb.set_trace()
             #If struct_uninit is anything other than none, this print statement is part of a struct - set it to
             #whatever struct_uninit is instead.
             if struct_uninit != None:
@@ -321,7 +320,6 @@ class CVisualizer:
         i = 0
         while i < len(ast.ext):
             if isinstance(ast.ext[i], c_ast.FuncDef):
-                #pdb.set_trace()
                 temp_node = ast.ext[i].decl.type.type
 
                 ptr_depth = 0
@@ -335,7 +333,7 @@ class CVisualizer:
                     temp_node = temp_node.type
                 tname = temp_node.names[0] + " "+"[]"*array_depth + " " +"*"*ptr_depth
 
-                var_dict_add = {(str)(ast.ext[i].decl.name):tname}
+                var_dict_add = {(str)(ast.ext[i].decl.name):tname.rstrip()}
                 self.func_list.update(var_dict_add)
             i+=1
 
@@ -676,7 +674,6 @@ class CVisualizer:
         global str_lit
 
         str_lit = False
-        #pdb.set_trace()
         array_access = ""
         array_depth = 0
         ptr_depth = 0
@@ -753,7 +750,6 @@ class CVisualizer:
         global is_uninit
         global var_typerep
         global set_heap_struct
-        #pdb.set_trace()
         #TODO: change this to work for both assign and decl vars, both have FuncCall under them which contains the malloc
         #then add to the size variable what the exprlist under the malloc funccall is.
         clean_name = struct_name_val + (str)(node_name.split('[', 1)[0])
@@ -810,7 +806,6 @@ class CVisualizer:
             for declaration in in_struct_list:
                 
                 set_heap_struct = True
-                #pdb.set_trace()
                 new_assign_node = self.create_assign_malloc_node(clean_name, declaration.name, declaration.type, malloc_node.coord.line)
 
                 self.extra_adder = self.amt_after
@@ -1277,7 +1272,6 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
-        #pdb.set_trace()
         ptr_depth = 0
         #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
@@ -1470,7 +1464,6 @@ class CVisualizer:
             #unaryop case, such as x++
             if isinstance(node_to_consider, c_ast.UnaryOp):
                 #Case for pointers such as *x++
-                #pdb.set_trace()
                 if isinstance(node_to_consider.expr, c_ast.UnaryOp) or isinstance(node_to_consider.expr, c_ast.ArrayRef):
                     self.set_assign_ptr_vars(node_to_consider, True)
                     self.add_after_node(parent, index+to_add_index, func_name, False, True, False, False)
@@ -1559,7 +1552,6 @@ class CVisualizer:
 
     #Check if we're declaring the node as a function inside our program: if so, do what we need to and return true. Otherwise just return false
     def try_decl_func(self, parent, index, node_to_consider, func_name, isPtr):
-        #pdb.set_trace()
         node_array = []
         self.check_for_funccall(node_to_consider.init, node_array)
         funccall_node = None
@@ -1619,7 +1611,6 @@ class CVisualizer:
         print_node = self.create_printf_node(parent[index], func_name, False, False, False, False, True, False, False, False, False, False, False, False)
         parent.insert(index, print_node)
         to_add_index += 1
-        self.amt_after += 1
         self.print_funccall_not_prog(parent, index+to_add_index, func_name)
 
     def print_stderr(self, parent, index, func_name):
@@ -1628,7 +1619,6 @@ class CVisualizer:
         print_node = self.create_printf_node(parent[index], func_name, False, False, False, False, False, True, False, False, False, False, False, False)
         parent.insert(index, print_node)
         to_add_index += 1
-        self.amt_after += 1
 
     def handle_free(self, parent, index, func_name):
         #global type_of_var
@@ -1718,7 +1708,6 @@ class CVisualizer:
 
     #Actually set the variables - only have depth if it was an arrayref, in which case, do something a bit different
     def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name, depth=0):
-        pdb.set_trace()
         array_dict_entry = self.array_dict.get(name_val)
 
         is_str_lit = self.set_funccall_changed_vars(id_node, name_val)
@@ -1871,7 +1860,7 @@ class CVisualizer:
 
         #Finding all functions in the program so we can save them in a list
         self.find_all_function_decl(ast)
-
+        print(self.func_list)
         #Initializing a malloc size variable in the code
         malloc_size_var = self.create_new_var_node("int", None, self.malloc_size_var_name)
         ast.ext.insert(0, malloc_size_var)
