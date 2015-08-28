@@ -56,7 +56,7 @@ class Submission(AbstractSubmission):
         """
 
         results = []
-        runner = CSpecifics(self.user.username, self.mod_submission)
+        runner = CSpecifics(self.user.username, self.mod_submission, self.hidden_lines_list == [])
         for testcase in self.problem.testcase_set.all():
             run = runner.run_test(testcase.test_input, testcase.expected_output)
             # Modify compilation and warning messages suppressing hidden code
@@ -69,11 +69,13 @@ class Submission(AbstractSubmission):
 
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=run['passed_test'])
-            run['test_input'], run['expected_output'] = None, None
+            run['test_input'] = None
+            run['expected_output'] = testcase.expected_output.strip().replace('\n', '').replace('\r', '')
             run['test_desc'] = testcase.description
+            run['debug'] = False
             if testcase.is_visible:
                 run['test_input'] = " ".join(["'{0}'".format(c.strip('"')) for c in shlex.shlex(testcase.test_input)])
-                run['expected_output'] = testcase.expected_output
+                run['debug'] = runner.visualizable
             results.append(run)
 
         # Clear exec file created by GCC during compilation process
@@ -141,11 +143,12 @@ class Submission(AbstractSubmission):
                 i = 0
                 for testcase in self.problem.testcase_set.all():
                     run = {}
-                    run['test_input'], run['expected_output'] = None, None
-                    run['test_desc'] = testcase.description
+                    run['test_input'] = None
+                    run['expected_output'] = testcase.expected_output.strip().replace('\n', '').replace('\r', '')
+                    run['debug'] = False
                     if testcase.is_visible:
                         run['test_input'] = testcase.test_input
-                        run['expected_output'] = testcase.expected_output
+                        run['debug'] = runner.visualizable
                     run['test_val'] = code_return['tests'][i]['real_output']
                     run['passed_test'] = code_return['tests'][i]['passed']
                     run['exception_type'] = code_return['exception_type']
@@ -214,7 +217,7 @@ class Submission(AbstractSubmission):
                 if not hidden_error:
                     hidden_error = True
                     split_warning = re.split(r'[0-9]+:[0-9]+:\s(?:warning:|error:)', exception_line)[1]
-                    split_warning = split_warning[:split_warning.find('\'')]
+                    split_warning = split_warning[:split_warning.find('<br')]    # split at the <br
                     exception_line = "Please check the exercise description. There's an issue in your code:<br />&nbsp;&nbsp;{0}".format(split_warning)
                 else:
                     exception_line = ""
@@ -246,7 +249,7 @@ class Submission(AbstractSubmission):
             student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
             student_code_key_len = len(student_code_key)
             student_code_key_list_len = len(student_code_key_list)
-            
+
             # Could not find student code
             if student_code_key_list_len == 0:
                 raise Exception("No student code found!")

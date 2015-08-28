@@ -47,11 +47,12 @@ class Submission(AbstractSubmission):
             TestRun.objects.create(submission=self, testcase=testcase,
                                    test_passed=passed)
 
-            run['test_input'], run['expected_output'] = None, None
+            run['test_input'], run['expected_output'] = None, testcase.expected_output
             run['test_desc'] = testcase.description
+            run['debug'] = False
             if testcase.is_visible:
                 run['test_input'] = testcase.test_input
-                run['expected_output'] = testcase.expected_output
+                run['debug'] = True
             results.append(run)
         return results, error
 

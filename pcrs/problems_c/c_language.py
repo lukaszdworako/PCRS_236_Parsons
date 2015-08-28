@@ -35,9 +35,10 @@ class CSpecifics():
     # Problem source code
     submission = ""
 
-    def __init__(self, username, submission):
+    def __init__(self, username, submission, visualizable=False):
         self.username = username
         self.submission = submission
+        self.visualizable = visualizable
 
         self.backslash_hash = uuid.uuid4().hex
 
@@ -106,17 +107,17 @@ class CSpecifics():
 
             # Remove escape sequences in case of a string instance
             if isinstance(expected_output, str):
-                expected_output_tmp = expected_output.replace('\n', "").replace('\r', "").replace(" ", "")
+                expected_output_tmp = expected_output.replace('\n', '').replace('\r', '').replace(' ', '')
             else:
                 expected_output_tmp = expected_output
 
             # Remove escape sequences in case of a string instance
             if isinstance(execution_output, str):
-                execution_output_tmp = execution_output.replace('\n', "").replace('\r', "").replace(" ", "")
+                execution_output_tmp = execution_output.replace('\n', '').replace('\r', '').replace(' ', '')
             else:
                 execution_output_tmp = execution_output
 
-            ret["test_val"] = execution_output_tmp
+            ret["test_val"] = execution_output.strip().replace('\n', '').replace('\r', '')
             ret["passed_test"] = False if expected_output_tmp != execution_output_tmp else True
 
         except CompilationError as e:

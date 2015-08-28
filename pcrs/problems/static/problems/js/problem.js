@@ -649,6 +649,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        var passed = current_testcase.passed_test;
 	        var testcaseInput = current_testcase.test_input;
 	        var testcaseOutput = current_testcase.expected_output;
+            var debug = current_testcase.debug;
 	        var result = create_output(current_testcase.test_val);
 	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
 
@@ -668,34 +669,25 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                          current_testcase.exception + '</th>');
 	        }
 	        else if (!(language == 'c' && "exception" in current_testcase && current_testcase.exception_type == "error")){
+                newRow.append('<td class="description">' + description + '</td>');
 	            if (testcaseInput != null) {
-	                newRow.append('<td class="description">' +
-	                               description + '</td>');
-
 	                newRow.append('<td class="expression"><div class="expression_div">' +
 	                               testcaseInput + '</div></td>');
-
-                    newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
-	                           ''+'</div></div></td>');
                 }
 	            else {
-	                newRow.append('<td class="description">' + description + '</td>');
-
 	                newRow.append('<td class="expression">' +
 	                              "Hidden Test" +'</td>');
-
-	                newRow.append('<td class="expected">' +
-	                              "Hidden Result" +'</td>');
 	            }
-
+                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
+                               ''+'</div></div></td>');
 	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
 	                           ''+'</div></div></td>');
 
 	            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
-	            $('#current_testcase'+i).attr('id', "");
+                document.getElementById("current_testcase"+i).removeAttribute('id');
 
 	            renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
-	            $('#exp_test_val').attr('id',"");
+	            document.getElementById("exp_test_val"+i).removeAttribute('id');
 
 	            newRow.append('<td class="passed"></td>');
 
@@ -713,7 +705,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
-	            if (testcaseInput != null){
+	            if (debug){
 	                // newRow.append('<td class="debug"><button id="' +
 	                //                div_id +"_"+i + '" class="debugBtn" type="button"' +
 	                //               ' >Trace</button></td>');
@@ -724,7 +716,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{
-	                newRow.append('<td class="debug"></td>')
+	                newRow.append('<td class="debug">-</td>')
 	            }
 	            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
 	                           testcaseOutput+'. Result: '+result+'</a>');

@@ -39,7 +39,7 @@ def visualizer_details(request):
         add_params['user'] = request.META["CSRF_COOKIE"]
 
         # Create a language instance
-        gen = CSpecifics(add_params['user'], clean_code)
+        gen = CSpecifics(add_params['user'], clean_code, "[hidden]" in starter_code)
 
         print("GEN IS :")
         print(gen)
@@ -80,7 +80,7 @@ def new_visualizer_details(request):
         add_params['user'] = request.META["CSRF_COOKIE"]
 
         # Create a language instance
-        gen = CSpecifics(add_params['user'], clean_code)
+        gen = CSpecifics(add_params['user'], clean_code, hidden_lines_list == [])
 
         #PROBLEM HERE---
         ret = gen.get_exec_trace(clean_code, add_params, hidden_lines_list)
