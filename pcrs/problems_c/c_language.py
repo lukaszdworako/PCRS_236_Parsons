@@ -385,7 +385,6 @@ class CSpecifics():
 
 
     def parse_var(self, line_info):
-        #pdb.set_trace()
         current_var = dict(line_info)
         # Pad each hex value to the length of max_size
         # Arbitrarily chosen size of 8 bytes for anything without a max_size specified
@@ -439,8 +438,7 @@ class CSpecifics():
 
             # Remove [] from the type, then remove * until we've reduced the levels enough
             current_var['type'] = current_var['type'].replace('[]','', name_levels)
-            total_levels = name_levels + type_levels
-            levels_left = total_levels - name_levels
+            levels_left = name_levels-type_levels
             current_var['type'] = current_var['type'].replace('*','', levels_left)
 
             current_var['type'] = current_var['type'].strip()
