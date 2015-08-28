@@ -177,10 +177,6 @@ class CVisualizer:
         if onStdOut:
             std_out = (str)(self.item_delimiter) + "std_out:"
 
-        std_err = ""
-        if onStdErr:
-            std_err = (str)(self.item_delimiter) + "std_err:"
-
         on_return = ""
         if onReturn:
             #return_type contains function's return type (ie, int main(); would be int)
@@ -283,7 +279,12 @@ class CVisualizer:
             self.var_type_dict.update(var_dict_add)
 
         #Finished changed variable block
-        str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + on_return + var_info + std_out + std_err
+        str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + on_return + var_info + std_out
+        
+        #Just return if on standard out, don't add a new print node
+        if onStdOut:
+            return str_to_add
+        
         add_const = c_ast.Constant('string', '"'+str_to_add+'"')
 
         all_items_array = [add_const, add_id_addr, add_id_hex, add_id_size, add_id_ptr_size, add_id_val, add_return_val]
@@ -1608,9 +1609,16 @@ class CVisualizer:
     def print_stdout(self, parent, index, func_name):
         global to_add_index
 
-        print_node = self.create_printf_node(parent[index], func_name, False, False, False, False, True, False, False, False, False, False, False, False)
-        parent.insert(index, print_node)
+        #Just stick a node here in case we have a function call after it, want to make sure it handles properly
+        placeholder_node = self.create_printf_node(parent[index], func_name, False, False, False, False, False, False, False, False, False, False, False, False)
+        parent.insert(index, placeholder_node)
         to_add_index += 1
+
+        node_to_mod = parent[index+to_add_index]
+        string_to_add = self.create_printf_node(node_to_mod, func_name, False, False, False, False, True, False, False, False, False, False, False, False)
+        const_string = node_to_mod.args.exprs[0].value
+        const_string = '"'+string_to_add + const_string[1:]
+        node_to_mod.args.exprs[0].value = const_string
         self.print_funccall_not_prog(parent, index+to_add_index, func_name)
 
     def print_stderr(self, parent, index, func_name):
