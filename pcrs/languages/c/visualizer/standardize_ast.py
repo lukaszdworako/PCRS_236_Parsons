@@ -40,6 +40,4 @@ class NormalizeWalker(c_ast.NodeVisitor):
         # for (int i = 0; i < 5; i++, g--)
 
         for (child_type, child_node) in node.children():
-            print(child_type)
-            print(child_node)
             self.visit(child_node)
