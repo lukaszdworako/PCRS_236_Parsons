@@ -73,8 +73,6 @@ class CSpecifics():
             self.compilation_ret = self.compile_source_code(user, user_script, deny_warnings)
         # Naming the temporary output file
         temp_output_file = self.temp_path + user + self.date_time + ".out"
-        # Naming the temporary runtime error file
-        temp_runtime_error_file = self.temp_path + user + self.date_time + "_runtime_error.out"
         try:
             ret["exception_type"] = self.compilation_ret["exception_type"]
             ret["exception"] = self.compilation_ret["exception"]
@@ -96,29 +94,14 @@ class CSpecifics():
                                 + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID \
                                 + " -T " + max_time_sec + " -F " + max_number_files \
                                 + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"] \
-                                + " " + test_input + " > /dev/null 2> " + temp_runtime_error_file
-                process = subprocess.call(cmd_str, shell=True)
+                                + " " + test_input + " > /dev/null 2> /dev/null"
+                subprocess.check_call(cmd_str, shell=True)
             else:
-                process = subprocess.call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file + " 2> " + temp_runtime_error_file, shell=True)
-
-            # Runtime error during process execution 
-            if process != 0:
-                execution_output = 'Runtime error!'
-                ret["exception_type"] = "error"
-                ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
+                process = subprocess.check_call(self.compilation_ret["temp_gcc_file"] + " " + test_input + " > " + temp_output_file + " 2> /dev/null", shell=True)
 
             # Getting the execution output
             f = open(temp_output_file, 'r', encoding="ISO-8859-1")
             execution_output = f.read()
-            f.close()
-
-            # Getting the run time error output
-            f = open(temp_runtime_error_file, 'r')
-            runtime_error = f.read()
-            if runtime_error:
-                execution_output = 'Runtime error!'
-                ret["exception_type"] = "error"
-                ret["runtime_error"] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
             f.close()
 
             # Remove escape sequences in case of a string instance
@@ -138,12 +121,19 @@ class CSpecifics():
 
         except CompilationError as e:
             ret["passed_test"] = False
-            ret["exception_type"] = 'error'
-            ret["test_val"] = ret["exception"]
+            ret['exception_type'] = 'error'
+            ret['exception'] = "Compilation error"
+            ret['test_val'] = ret["exception"]
 
         except SyntaxError as e:
             ret["exception_type"] = 'error'
             ret["exception"] = str(e)
+            ret['passed_test'] = False
+            ret['test_val'] = str(e)
+
+        except subprocess.CalledProcessError as e:
+            ret['exception_type'] = 'error'
+            ret['runtime_error'] = "Runtime error!<br />Please check your code for errors such as segmentation faults."
             ret['passed_test'] = False
             ret['test_val'] = str(e)
 
@@ -157,10 +147,6 @@ class CSpecifics():
             # Deleting temporary files
             try:
                 os.remove(temp_output_file)
-            except OSError:
-                pass
-            try:
-                os.remove(temp_runtime_error_file)
             except OSError:
                 pass
             return ret
