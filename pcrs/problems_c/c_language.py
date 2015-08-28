@@ -116,7 +116,7 @@ class CSpecifics():
             else:
                 execution_output_tmp = execution_output
 
-            ret["test_val"] = execution_output
+            ret["test_val"] = execution_output_tmp
             ret["passed_test"] = False if expected_output_tmp != execution_output_tmp else True
 
         except CompilationError as e:
