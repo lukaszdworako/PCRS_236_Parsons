@@ -321,20 +321,10 @@ class CVisualizer:
         i = 0
         while i < len(ast.ext):
             if isinstance(ast.ext[i], c_ast.FuncDef):
-                #pdb.set_trace()
-                temp_node = ast.ext[i].decl.type.type
-
-                ptr_depth = 0
-                array_depth = 0
-                #Loop until it's an ID type, which is the base type
-                while not isinstance(temp_node, c_ast.IdentifierType):
-                    if isinstance(temp_node, c_ast.PtrDecl):
-                        ptr_depth += 1
-                    elif isinstance(temp_node, c_ast.ArrayDecl):
-                        array_depth += 1
-                    temp_node = temp_node.type
-                tname = temp_node.names[0] + " "+"[]"*array_depth + " " +"*"*ptr_depth
-
+                if isinstance(ast.ext[i].decl.type.type, c_ast.PtrDecl):
+                    tname = ast.ext[i].decl.type.type.type.type.names[0] + " *"
+                else:
+                    tname = ast.ext[i].decl.type.type.type.names[0]
                 var_dict_add = {(str)(ast.ext[i].decl.name):tname}
                 self.func_list.update(var_dict_add)
             i+=1
@@ -1470,8 +1460,7 @@ class CVisualizer:
             #unaryop case, such as x++
             if isinstance(node_to_consider, c_ast.UnaryOp):
                 #Case for pointers such as *x++
-                #pdb.set_trace()
-                if isinstance(node_to_consider.expr, c_ast.UnaryOp) or isinstance(node_to_consider.expr, c_ast.ArrayRef):
+                if isinstance(node_to_consider.expr, c_ast.UnaryOp):
                     self.set_assign_ptr_vars(node_to_consider, True)
                     self.add_after_node(parent, index+to_add_index, func_name, False, True, False, False)
                 #Non-pointer unaryops
@@ -1718,7 +1707,6 @@ class CVisualizer:
 
     #Actually set the variables - only have depth if it was an arrayref, in which case, do something a bit different
     def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name, depth=0):
-        pdb.set_trace()
         array_dict_entry = self.array_dict.get(name_val)
 
         is_str_lit = self.set_funccall_changed_vars(id_node, name_val)
