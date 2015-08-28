@@ -919,7 +919,8 @@ class CVisualizer:
                     level_size = self.create_new_var_node('int', temp_len_val)
                 #case where there's no size specified and no initlist - will deal more with this later
                 except:
-                    pass
+                    size_val = c_ast.ID('(unsigned long)(sizeof(' + struct_name_val+node.name +'))')
+                    level_size = self.create_new_var_node('int', size_val)
             else:
                 level_size = self.create_new_var_node('int', temp_array.dim)
 
@@ -1809,18 +1810,27 @@ class CVisualizer:
             #Loop through all the variables in the header, each of them will be handled as a declaration node
             header_vars = parent[index].decl.type.args.params
             for i in range(0, len(header_vars)):
+                array_var = False
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
                     self.set_decl_ptr_vars(header_vars[i], "")
                     header_var_ptr = True
+                elif isinstance(self.get_decl_type(header_vars[i]), c_ast.ArrayDecl):
+                    pdb.set_trace()
+                    self.set_decl_array(parent[index].body.block_items, 0, header_vars[i], "")
+                    header_var_ptr = False
+                    array_var = True
                 else:
                     self.set_decl_vars(header_vars[i], "")
 
                     header_var_ptr = False
                 global is_uninit
                 is_uninit = False
-                print_node = self.create_printf_node(parent[index], func_name, True, True, False, False, False, False, header_var_ptr, False, False, False, False, False)
+                print_node = self.create_printf_node(parent[index], func_name, True, True, False, False, False, False, header_var_ptr, False, array_var, False, False, False)
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
+
+                if array_var:
+                    self.print_array_extra_nodes(parent[index].body.block_items, 1+to_add_index)
 
         #Otherwise just set a print node with no changed vars
         else:
