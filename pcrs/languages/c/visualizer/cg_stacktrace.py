@@ -115,6 +115,9 @@ class CVisualizer:
         #used in the add_after_node function
         self.extra_adder = 0
 
+        #List of vars on the heap, mostly to keep track of if a str lit is in data or heap
+        self.heap_list = []
+
         #WILL CHANGE THIS TO BE VARIABLE SPECIFIC INSTEAD OF HELLO WORLD, ONCE WE FIGURE OUT WHAT WE NEED
     def old_create_printf_node(self):
         add_id = c_ast.ID('printf')
@@ -229,7 +232,7 @@ class CVisualizer:
                 location_info = "data"
                 is_global = (str)(self.item_delimiter) +"global:True"
 
-            if isStrLit:
+            if isStrLit and not onHeap:
                 location_info = "data"
 
             var_location = (str)(self.item_delimiter) +"location:"+location_info
@@ -424,7 +427,6 @@ class CVisualizer:
 
         print(parent[index])
         #Check for the current node's type and handle:
-
         #Case for variable declaration
         if isinstance(parent[index], c_ast.Decl):
             if isinstance(parent[index].type, c_ast.Struct):
@@ -779,6 +781,8 @@ class CVisualizer:
         var_new_val = True
         is_uninit = True
 
+        self.heap_list.append(var_name_val)
+
     #node is the assign or decl
     def set_heap_struct_vars(self, parent, index, func_name ,node_name, malloc_node, struct_name_val=""):
         #This is used in the set_assign_vars section to tell it that we just set a heap struct, so we should actually
@@ -1111,8 +1115,8 @@ class CVisualizer:
             self.amt_after += 1
 
     def add_after_all_nodes(self, parent, index, func_name, isReturning, isPtr, isHeap, isArray):
-        print_node = self.create_printf_node(parent[index], func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
-        parent.insert(index+1, print_node)
+        print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, isReturning, False, False, isPtr, isHeap, isArray, False, False, False)
+        parent.insert(index+self.amt_after+1+to_add_index, print_node)
         self.amt_after += 1
 
     #index here will be where we should start inserting nodes
@@ -1264,6 +1268,7 @@ class CVisualizer:
 
     #This creates a string lit array for the node at parent, index
     #const_node is only passed in if it's part of an array declaration, otherwise ignore
+    #Returns true if variable is on the heap, false if on data
     def handle_str_lit_array(self, parent, index, node,const_node_name=None, const_node=None):
 
         global to_add_index
@@ -1273,14 +1278,15 @@ class CVisualizer:
         global is_uninit
         global ptr_depth
         global var_typerep
+        global pointing_to_type
 
         ptr_depth = 0
+        on_heap = False
         #size_nodes contains nodes of int variables which hold the size of each level of the array
         size_nodes = []
         #temp_var_nodes will hold temporary int variable nodes that are initialized the first time we see the array,
         #to be used every time we loop through this particular array
         temp_var_nodes = []
-
         #if it's not an array of string lit 
         if const_node == None:
             str_lit_ptr = node
@@ -1288,12 +1294,19 @@ class CVisualizer:
                 array_name = str_lit_ptr.name
                 array_len = len((str)(node.init.value))-2
             except:
-                if isinstance(str_lit_ptr.lvalue, c_ast.StructRef) or isinstance(str_lit_ptr.lvalue, c_ast.ArrayRef):
-                    temp_generator = c_generator.CGenerator()
-                    array_name = (str)(temp_generator.visit(str_lit_ptr.lvalue)) 
-                else:
-                    array_name = str_lit_ptr.lvalue.name
-                array_len = len((str)(node.rvalue.value))-2
+                try:
+                    if isinstance(str_lit_ptr.lvalue, c_ast.StructRef) or isinstance(str_lit_ptr.lvalue, c_ast.ArrayRef):
+                        temp_generator = c_generator.CGenerator()
+                        array_name = (str)(temp_generator.visit(str_lit_ptr.lvalue)) 
+                    else:
+                        array_name = str_lit_ptr.lvalue.name
+                    array_len = len((str)(node.rvalue.value))-2
+                except:
+                    if '*'+var_name_val in self.heap_list:
+                        on_heap = True
+                        pointing_to_type = 'char'                       
+                    array_name = '('+var_name_val+')'
+                    array_len = None
 
         #otherwise it's an array of str lit, passing in our own const node 
         else:
@@ -1302,9 +1315,14 @@ class CVisualizer:
 
         array_depth = 1
         #Adding a variable to hold the size of this array level, and keeping it in size_nodes array
-        
-        temp_len_val = c_ast.Constant('int', (str)(array_len))
-        level_size = self.create_new_var_node('int', temp_len_val)
+    
+        if array_len:        
+            temp_len_val = c_ast.Constant('int', (str)(array_len))
+            level_size = self.create_new_var_node('int', temp_len_val)
+        else:
+            size_val = c_ast.ID('(unsigned long)(sizeof(' + array_name +'))')
+            level_size = self.create_new_var_node('int', size_val)
+
         size_nodes.append(level_size)
 
         #Adding a variable to hold the temporary size variables, will actually insert them into the parent after
@@ -1321,6 +1339,8 @@ class CVisualizer:
         var_name_val = array_name
 
         var_new_val = True
+        if on_heap:
+            var_new_val = False
         is_uninit = False
 
         array_dict_add = {(str)(var_name_val):[(str)(type_of_var), size_nodes, temp_var_nodes, array_depth, ptr_depth]}
@@ -1342,7 +1362,7 @@ class CVisualizer:
 
         print(self.array_dict)
 
-        return False
+        return on_heap
 
     #This function is distinct from the above, as above creates a string lit array for any str lit types, while
     #this one particularly handles cases where someone declares an array and its contents are str lits.
@@ -1395,7 +1415,6 @@ class CVisualizer:
             node_to_consider = node
         else:
             node_to_consider = parent[index+to_add_index]
-
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
 
@@ -1431,7 +1450,7 @@ class CVisualizer:
 
             #Pointer declaration
             elif isinstance(self.get_decl_type(node_to_consider), c_ast.PtrDecl):
-                
+                #pdb.set_trace()
                 is_struct = self.set_decl_ptr_vars(node_to_consider, struct_name_val)
 
                 #Check for function initialization, otherwise just add normally
@@ -1445,7 +1464,7 @@ class CVisualizer:
                             is_struct = self.set_heap_struct_vars(parent, index, func_name,node_to_consider.name, node_to_consider.init, struct_name_val)
                             if not is_struct:
                                 self.set_heap_vars(parent, index+to_add_index, node_to_consider.name, node_to_consider.init, struct_name_val)
-                                print_node = self.create_printf_node(parent[index+1+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
+                                print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                                 parent.insert(index+1+self.amt_after+to_add_index, print_node)
                                 self.amt_after += 1
                     except:
@@ -1582,9 +1601,10 @@ class CVisualizer:
                 self.check_for_funccall(variable_passed.expr, node_array)
 
 
-    def call_funcs_for_str_lit(self, parent, index, func_name, node):
-        self.handle_str_lit_array(parent, index, node)
-        print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, False, True, False, False, True)
+    def call_funcs_for_str_lit(self, parent, index, func_name, node, funccall= None):
+        on_heap = self.handle_str_lit_array(parent, index, node)
+        
+        print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, on_heap, True, False, False, True)
         parent.insert(index+to_add_index+1+self.amt_after, print_node)
         self.amt_after += 1
         self.print_array_extra_nodes(parent, index+to_add_index+self.amt_after+1)
@@ -1673,8 +1693,9 @@ class CVisualizer:
     def print_funccall_not_prog(self, parent, index, func_name):
         #Loop through all the arguments we're passing this function, print out each of their values after the function
         for variable_passed in parent[index].args.exprs:
+            
             self.handle_types_variable_passed(parent, index, variable_passed, func_name)
-        
+            
         #Add this in without any changed vars just to show we got to this line, incase we didn't have any vars in the funccall
 
         # print_node = self.create_printf_node(parent, index, func_name, False, False, False, False, False, False, False, False, False, False, False, False)
@@ -1700,7 +1721,20 @@ class CVisualizer:
             #QUESTION - Should i check the val of the pointer, the thing it's pointing to, or both?
 
             elif isinstance(variable_passed, c_ast.UnaryOp):
-                self.handle_types_variable_passed(parent, index, variable_passed.expr, func_name)
+                #It's a pointer, just pass it through
+                if variable_passed.op == "*":
+                    cur_ptrref = variable_passed
+                    ptr_depth = 0
+                    while isinstance(cur_ptrref, c_ast.UnaryOp) and cur_ptrref.op =="*":
+                        ptr_depth += 1
+                        cur_ptrref = cur_ptrref.expr
+
+                    generator = c_generator.CGenerator()
+                    var_name = (str)(generator.visit(variable_passed))
+                    self.handle_funccall_var_changes(parent, index, variable_passed, var_name, func_name, ptr_depth)
+                        
+                else:
+                    self.handle_types_variable_passed(parent, index, variable_passed.expr, func_name)
             #ArrayRef, like x[1]
             elif isinstance(variable_passed, c_ast.ArrayRef):
 
@@ -1736,7 +1770,7 @@ class CVisualizer:
 
         #Now handle cases where it got assigned to a str lit: loop through it: FIX THIS
         if is_str_lit:
-            self.call_funcs_for_str_lit(parent, index+self.amt_after, func_name, parent[index+self.amt_after])
+            self.call_funcs_for_str_lit(parent, index, func_name, parent[index+self.amt_after], True)
 
 
     #Set the variables to be used in the print statements for the changed funccall vars
@@ -1748,6 +1782,7 @@ class CVisualizer:
         global ptr_depth
         global var_typerep
 
+        #pdb.set_trace()
         is_str_lit = False
         ptr_depth = 0
         
@@ -1759,6 +1794,7 @@ class CVisualizer:
             var_name_val = name_val
 
         type_of_var = (str)(self.var_type_dict.get(name_val)).replace("[]", "").strip()
+
         var_typerep = self.primitive_types.get(type_of_var)
 
         if type_of_var == "char *":
@@ -1815,7 +1851,6 @@ class CVisualizer:
                     self.set_decl_ptr_vars(header_vars[i], "")
                     header_var_ptr = True
                 elif isinstance(self.get_decl_type(header_vars[i]), c_ast.ArrayDecl):
-                    pdb.set_trace()
                     self.set_decl_array(parent[index].body.block_items, 0, header_vars[i], "")
                     header_var_ptr = False
                     array_var = True
