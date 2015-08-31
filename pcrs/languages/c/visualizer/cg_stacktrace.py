@@ -746,7 +746,7 @@ class CVisualizer:
 
 
     #node is the assign or decl
-    def set_heap_vars(self, parent, index, node_name, malloc_node, struct_name_val):
+    def set_heap_vars(self, parent, index, node_name, malloc_node, struct_name_val, from_decl):
         global type_of_var
         global var_name_val
         global var_new_val
@@ -771,7 +771,10 @@ class CVisualizer:
         if ptr_depth == None or struct_name_val != "":
             ptr_depth = 0
 
-        var_name_val = '*'*ptr_depth+ struct_name_val+(str)(node_name)
+        if from_decl:
+            var_name_val = '*'+ struct_name_val+(str)(node_name)
+        else:
+            var_name_val = '*'*ptr_depth+ struct_name_val+(str)(node_name)
 
         if '->' in var_name_val:
             type_of_var = parent_type
@@ -1415,6 +1418,8 @@ class CVisualizer:
             node_to_consider = node
         else:
             node_to_consider = parent[index+to_add_index]
+
+        #pdb.set_trace()
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
 
@@ -1463,7 +1468,7 @@ class CVisualizer:
                         if node_to_consider.init.name.name == 'malloc':
                             is_struct = self.set_heap_struct_vars(parent, index, func_name,node_to_consider.name, node_to_consider.init, struct_name_val)
                             if not is_struct:
-                                self.set_heap_vars(parent, index+to_add_index, node_to_consider.name, node_to_consider.init, struct_name_val)
+                                self.set_heap_vars(parent, index+to_add_index, node_to_consider.name, node_to_consider.init, struct_name_val, True)
                                 print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                                 parent.insert(index+1+self.amt_after+to_add_index, print_node)
                                 self.amt_after += 1
@@ -1620,7 +1625,7 @@ class CVisualizer:
                 is_struct = self.set_heap_struct_vars(parent, index, func_name,var_name, node, struct_name_val)
                 
                 if not is_struct:
-                    self.set_heap_vars(parent, index+to_add_index+self.extra_adder, var_name, node.rvalue, struct_name_val)
+                    self.set_heap_vars(parent, index+to_add_index+self.extra_adder, var_name, node.rvalue, struct_name_val, False)
                     print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                     parent.insert(index+2+self.extra_adder+to_add_index, print_node)
                     self.amt_after += 1
