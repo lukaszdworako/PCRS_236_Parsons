@@ -787,6 +787,7 @@ class CVisualizer:
         var_new_val = True
         is_uninit = True
 
+        #pdb.set_trace()
         self.heap_list.append(var_name_val)
 
     #node is the assign or decl
@@ -1308,7 +1309,7 @@ class CVisualizer:
                         array_name = str_lit_ptr.lvalue.name
                     array_len = len((str)(node.rvalue.value))-2
                 except:
-                    if '*'+var_name_val in self.heap_list:
+                    if '*'+var_name_val.replace(" ", "") in self.heap_list:
                         on_heap = True
                         pointing_to_type = 'char'                       
                     array_name = '('+var_name_val+')'
@@ -1626,7 +1627,7 @@ class CVisualizer:
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
         try:
-            pdb.set_trace()
+            
             if node.rvalue.name.name == 'malloc':
                 if isinstance(node.lvalue, c_ast.StructRef):
                     #temp_generator = c_generator.CGenerator()
@@ -1768,8 +1769,7 @@ class CVisualizer:
     #Actually set the variables - only have depth if it was an arrayref, in which case, do something a bit different
     def handle_funccall_var_changes(self, parent, index, id_node, name_val, func_name, print_to_add_index, depth=0):
         array_dict_entry = self.array_dict.get(name_val)
-
-        pdb.set_trace()
+        
         is_str_lit = self.set_funccall_changed_vars(id_node, name_val, depth)
         
         #Not an array, could be straight var or part of an array but the element itself isnt one
@@ -1815,6 +1815,7 @@ class CVisualizer:
             arr_depth += 1
             temp_array = temp_array.name
 
+        name_val = name_val.replace(" ", "")
         type_of_var = (str)(self.var_type_dict.get(name_val)).replace("[]", "").strip().replace("*", "", arr_depth)
 
         var_typerep = self.primitive_types.get(type_of_var)
