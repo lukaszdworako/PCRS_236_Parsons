@@ -17,19 +17,6 @@ var debugger_data = null;
 
 function bindDebugButton(buttonId) {
     /**
-    * For coding problems bing a given "Debug" button to start code visualizer
-    */
-
-    $('#'+ buttonId).bind('click', function() {
-        var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
-        setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId, "old")}, 250
-        );
-    });
-}
-
-function bindNewDebugButton(buttonId) {
-    /**
     * For coding problems bing a given New "Debug" button to start code visualizer
     */
 
@@ -712,7 +699,6 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                     newRow.append('<td class="debug"><button id="new' +
                                    div_id +"_"+i + '" class="debugBtn" type="button"' +
                                   ' >Trace</button></td>');
-                    bindNewDebugButton(div_id+"_"+i);
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{
