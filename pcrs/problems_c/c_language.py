@@ -519,7 +519,7 @@ class CSpecifics():
 
         # Split the output into blocks of print statements
         print_blocks = code_output.split(block_delim)
-        #pdb.set_trace()
+        
         #This will keep track of the line that a function call most recently originated from -
         #update as function calls happen
         most_recent_funccall_line = 0
