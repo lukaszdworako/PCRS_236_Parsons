@@ -282,8 +282,9 @@ class CVisualizer:
                 cur_array_dict = self.array_dict.get(var_name_val)
                 add_id_size = c_ast.ID('(unsigned long)(sizeof(' + cur_array_dict[0]+ '*'*cur_array_dict[4] +'))')
 
-            var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
-            self.var_type_dict.update(var_dict_add)
+            if var_name_val not in self.var_type_dict:
+                var_dict_add = {(str)(var_name_val):(str)(type_of_var)}
+                self.var_type_dict.update(var_dict_add)
 
         #Finished changed variable block
         str_to_add = (str)(self.print_wrapper) + line_no + function + returning_func + on_entry + on_return + var_info + std_out
@@ -777,7 +778,6 @@ class CVisualizer:
 
         node_name = var_name_val.replace("*", "").replace("[]", "").strip()
 
-        #pdb.set_trace()
         if from_decl:
             var_name_val = '*'+ struct_name_val+(str)(node_name)
         else:
@@ -791,7 +791,6 @@ class CVisualizer:
         var_new_val = True
         is_uninit = True
 
-        #pdb.set_trace()
         self.heap_list.append(var_name_val)
 
     #node is the assign or decl
@@ -1429,7 +1428,6 @@ class CVisualizer:
         else:
             node_to_consider = parent[index+to_add_index]
 
-        #pdb.set_trace()
         #If new, this was a Declaration. Handle diff. types of declarations differently
         if new:
 
@@ -1622,6 +1620,7 @@ class CVisualizer:
         if func_entry:
             prev_amt_after = self.amt_after
             node_to_print = node
+        
         on_heap = self.handle_str_lit_array(parent, index, node)
          
         #CHANGED THIS TO NODE INSTEAD OF PARENT[INDEX+TO_ADD_INDEX] - MAY NEED TO CHANGE BACK
@@ -1968,5 +1967,5 @@ class CVisualizer:
         generator = c_generator.CGenerator()
         #print("\n".join(self.removed_lines))
         print(generator.visit(ast))
-        pdb.set_trace()
+        
         return "{0}\n{1}".format("\n".join(self.removed_lines), generator.visit(ast))
