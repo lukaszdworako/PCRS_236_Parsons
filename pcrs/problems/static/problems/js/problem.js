@@ -348,6 +348,9 @@ function getTestcases(div_id) {
             call_path = root + '/problems/c/editor/run';
             clean_code = myCodeMirrors[div_id].getValue();
         }
+
+        // For reporting bugs
+        document.getElementById('feedback_code').value = clean_code;
     }
     else if (language == 'sql'){
         call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
