@@ -272,24 +272,30 @@ class CSpecifics():
         #Each element of stack trace contains a dictionary for a
         #function in the code(one element per function, ie. stacktrace[0]
         #is the main function, etc)
-
-        mod_user_script = c_visualizer.add_printf(user_script)
-
+        try:
+            mod_user_script = c_visualizer.add_printf(user_script)
+        except:
+            return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
         #logger.info("--------------")
         #print(mod_user_script)
         #logger.info("--------------")
         # Compile and run the modified source code and remove compiled file
-        code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
+        try:
+            code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
+        except:
+            return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
             # Get the proper encoding for the javascript visualizer
-            json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer, hidden_lines_list)
-            return json_output
-
+            try:
+                json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer, hidden_lines_list)
+                return json_output
+            except:
+                return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
         else:
             # Return error to user, we will remove this once we put to production
             #TODO: Compiler is letting users declare function header variables with no type, but this messes up visualizer - change this to restrict!!! - Julianna
-            return {"error": code_output}
+            return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
 
     def get_download_mimetype(self):
         """ Return string with mimetype. """
