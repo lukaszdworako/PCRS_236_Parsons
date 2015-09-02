@@ -771,6 +771,9 @@ class CVisualizer:
         if ptr_depth == None or struct_name_val != "":
             ptr_depth = 0
 
+        node_name = var_name_val.replace("*", "").replace("[]", "").strip()
+
+        #pdb.set_trace()
         if from_decl:
             var_name_val = '*'+ struct_name_val+(str)(node_name)
         else:
@@ -1623,6 +1626,7 @@ class CVisualizer:
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
         try:
+            pdb.set_trace()
             if node.rvalue.name.name == 'malloc':
                 if isinstance(node.lvalue, c_ast.StructRef):
                     #temp_generator = c_generator.CGenerator()
@@ -1886,7 +1890,6 @@ class CVisualizer:
                 self.amt_after += 1
 
                 if type_of_var == "char *":
-                    pdb.set_trace()
                     self.call_funcs_for_str_lit(parent[index].body.block_items, 0, func_name, parent[index], True)
 
                 if array_var:
