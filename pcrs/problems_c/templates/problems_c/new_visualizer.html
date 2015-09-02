@@ -45,8 +45,17 @@
       </div>
     </div>
     <div class="pcrs-modal-footer">
-      <button class="debugBtn" type="button" id="toggle-hex-button">
-        Toggle Hex
+          <form method="post" action="https://mcs.utm.utoronto.ca/~peters43/cgi-bin/pcrs_feedback.cgi" id="feedback" target="_blank">
+                <input type="hidden" name="url" id="feedback_url" value="{{ request.META.HTTP_HOST }}{{ request.get_full_path }}" />
+                <input type="hidden" name="code" id="feedback_code" value="" />
+          </form>
+      {% if report_bugs %}
+          <button type="submit" class="reg-button" form="feedback">
+            Report Bug <span class="at">Report Bug</span>
+          </button>
+      {% endif %}
+      <button type="button" class="debugBtn" id="toggle-hex-button">
+        Toggle Hex <span class="at">Toggle Hex</span>
       </button>
       <button type="button" class="reg-button" data-dismiss="modal">
         Close <span class="at">Close Debugger</span>

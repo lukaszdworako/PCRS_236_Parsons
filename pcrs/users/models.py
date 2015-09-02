@@ -273,7 +273,7 @@ def insert_master_section(sender, **kwargs):
 
 class AbstractLimitedVisibilityObject(models.Model):
     visibility = models.CharField(choices=VISIBILITY_LEVELS, max_length=10,
-                                  default='closed', blank=True, null=False)
+                                  default='open', blank=True, null=False)
 
     class Meta:
         abstract = True
