@@ -1606,13 +1606,19 @@ class CVisualizer:
                 self.check_for_funccall(variable_passed.expr, node_array)
 
 
-    def call_funcs_for_str_lit(self, parent, index, func_name, node, funccall= None):
+    def call_funcs_for_str_lit(self, parent, index, func_name, node, func_entry= None):
+        prev_amt_after = 0
+        node_to_print = parent[index+to_add_index]
+        if func_entry:
+            prev_amt_after = self.amt_after
+            node_to_print = node
         on_heap = self.handle_str_lit_array(parent, index, node)
-        
-        print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, on_heap, True, False, False, True)
-        parent.insert(index+to_add_index+1+self.amt_after, print_node)
+         
+        #CHANGED THIS TO NODE INSTEAD OF PARENT[INDEX+TO_ADD_INDEX] - MAY NEED TO CHANGE BACK
+        print_node = self.create_printf_node(node_to_print , func_name, False, True, False, False, False, False, False, on_heap, True, False, False, True)
+        parent.insert(index+to_add_index+1+self.amt_after-prev_amt_after, print_node)
         self.amt_after += 1
-        self.print_array_extra_nodes(parent, index+to_add_index+self.amt_after+1)
+        self.print_array_extra_nodes(parent, index+to_add_index+self.amt_after+1-prev_amt_after)
 
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
@@ -1777,7 +1783,7 @@ class CVisualizer:
 
         #Now handle cases where it got assigned to a str lit: loop through it: FIX THIS
         if is_str_lit:
-            self.call_funcs_for_str_lit(parent, index-print_to_add_index, func_name, parent[index+self.amt_after], True)
+            self.call_funcs_for_str_lit(parent, index-print_to_add_index, func_name, parent[index+self.amt_after], False)
 
 
     #Set the variables to be used in the print statements for the changed funccall vars
@@ -1864,6 +1870,7 @@ class CVisualizer:
                 if isinstance(self.get_decl_type(header_vars[i]), c_ast.PtrDecl):
                     self.set_decl_ptr_vars(header_vars[i], "")
                     header_var_ptr = True
+                    
                 elif isinstance(self.get_decl_type(header_vars[i]), c_ast.ArrayDecl):
                     self.set_decl_array(parent[index].body.block_items, 0, header_vars[i], "")
                     header_var_ptr = False
@@ -1878,6 +1885,10 @@ class CVisualizer:
                 parent[index].body.block_items.insert(0, print_node)
                 self.amt_after += 1
 
+                if type_of_var == "char *":
+                    pdb.set_trace()
+                    self.call_funcs_for_str_lit(parent[index].body.block_items, 0, func_name, parent[index], True)
+
                 if array_var:
                     self.print_array_extra_nodes(parent[index].body.block_items, 1+to_add_index)
 
@@ -1886,6 +1897,9 @@ class CVisualizer:
             print_node = self.create_printf_node(parent[index], func_name, True, False, False, False, False, False, False, False, False, False, False, False)
             parent[index].body.block_items.insert(0, print_node)
             self.amt_after += 1
+
+        #Set this to 0 since we technically didn't add anything after the outer funccall node: it was all inside
+        self.amt_after = 0
 
 
     def add_printf(self, user_script):
