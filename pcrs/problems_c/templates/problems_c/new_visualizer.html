@@ -46,8 +46,8 @@
     </div>
     <div class="pcrs-modal-footer">
           <form method="post" action="https://mcs.utm.utoronto.ca/~peters43/cgi-bin/pcrs_feedback.cgi" id="feedback" target="_blank">
-                <input type="hidden" name="url" id="feedback_url" value="{{ request.get_full_path }}">
-                <input type="hidden" name="code" id="feedback_code" value="">
+                <input type="hidden" name="url" id="feedback_url" value="{{ request.META.HTTP_HOST }}{{ request.get_full_path }}" />
+                <input type="hidden" name="code" id="feedback_code" value="" />
           </form>
       {% if report_bugs %}
           <button type="submit" class="reg-button" form="feedback">

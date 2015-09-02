@@ -1,4 +1,15 @@
 {% if user %}
+
+    {% if report_bugs %}
+    <ul class="pcrs-navbar-nav">
+        <li>
+            <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Bug%20Report">
+                <i class="pcrs-feedback-icon" title="Send Bug Report or Feedback"></i>
+            </a>
+        </li>
+    </ul>
+    {% endif %}
+
     <ul class="pcrs-navbar-nav">
         <li>
             <a href="{{ site_prefix }}/settings">
