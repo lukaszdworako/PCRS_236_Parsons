@@ -8,9 +8,6 @@
             {% endblock %}
         {% endautoescape %}
 
-
-{#        <span class="align-right">#}
-
         {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             {% block instructor_options %}
                 <span class="widget_controls">
@@ -27,27 +24,23 @@
 
         {% if not user.use_simpleui %}
             <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}">
+                <span class="align-right">
                 {% if mark|default_if_none:'-' == problem.max_score %}
-                    <span class="widget_complete widget_mark"
-                          title="Progress so far">
-                    {% include "pcrs/checkmark_complete.html" %}
+                    <span class="green-checkmark-icon" title="Progress so far: complete"></span>
                 {% else %}
                     {% if mark|length > 0 %}
-                        <span class="widget_incomplete widget_mark"
-                              title="Progress so far">
+                        <span class="incomplete_problem" title="Progress so far: " + {{ mark }} + " of " + {{ problem.max_score }}>
                     {% else %}
-                        <span class="widget_not_attempted widget_mark"
-                              title="Progress so far"></span>
+                        <span class="incomplete_problem" title="Progress so far: not attempted">
                     {% endif %}
-                    <sup> {{ mark|default_if_none:'-' }} </sup>
-                    /
-                    <sub> {{ problem.max_score }} </sub>
-                </span>
+                            <span class="nonreactive_score">
+                                <sup>{{ mark|default_if_none:'-' }}</sup>/<sub>{{ problem.max_score }}</sub>
+                            </span>
+                    </span>
                 {% endif %}
             </span>
         {% endif %}
 
-{#        </span>#}
     </h3>
 {% endblock %}
 

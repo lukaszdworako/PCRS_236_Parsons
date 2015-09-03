@@ -35,22 +35,27 @@ var ProblemScore = React.createClass({displayName: 'ProblemScore',
 
     render: function () {
         var maxScore = this.props.item.max_score;
+        var progress = ": not attempted";
 
         var score;
         if (this.state.score != null && this.state.score == maxScore) {
             score = React.DOM.span({className: "green-checkmark-icon"});
+            progress = ": complete";
         }
 
         else {
             score = (
-                React.DOM.span(null, 
-                    React.DOM.sup(null, this.state.score != null ? this.state.score : '-'), 
-                "/", 
+                React.DOM.span(null,
+                    React.DOM.sup(null, this.state.score != null ? this.state.score : '-'),
+                "/",
                     React.DOM.sub(null, maxScore)
                 ));
+                if (this.state.score != null) {
+                    progress = ": " + this.state.score + " of " + maxScore;
+                }
         }
 
-        return (React.DOM.span({title: "Progress so far", className: "align-right"}, 
+        return (React.DOM.span({title: "Progress so far" + progress, className: "align-right"},
             score
         ));
     }
@@ -91,13 +96,13 @@ var NavigationBar = React.createClass({displayName: 'NavigationBar',
         });
 
         return (
-                React.DOM.ul({className: "pcrs-sidenav"}, 
-                    items, 
-                    React.DOM.div({className: "row"}, 
-                        React.DOM.a({className: "side-bar-arrow", href: data.prev_url}, 
+                React.DOM.ul({className: "pcrs-sidenav"},
+                    items,
+                    React.DOM.div({className: "row"},
+                        React.DOM.a({className: "side-bar-arrow", href: data.prev_url},
                             React.DOM.span({className: prevClass})
-                        ), 
-                        React.DOM.a({className: "side-bar-arrow", href: data.next_url}, 
+                        ),
+                        React.DOM.a({className: "side-bar-arrow", href: data.next_url},
                             React.DOM.span({className: nextClass})
                         )
                     )
@@ -116,8 +121,8 @@ var NavigationBarItem = React.createClass({displayName: 'NavigationBarItem',
             component = ProblemStatusIndicator({item: this.props.item})
         }
         return(
-            React.DOM.div({className: "side-bar-el"}, 
-                React.DOM.a({href: "#" + this.props.item.id}, 
+            React.DOM.div({className: "side-bar-el"},
+                React.DOM.a({href: "#" + this.props.item.id},
                 component
                 )
             )
