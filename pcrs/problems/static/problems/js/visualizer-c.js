@@ -169,7 +169,6 @@ function executeCVisualizer(option, data, newCode) {
          * Verify trace does not contain errors and create visualizer,
          * othervise don't enter visualization mode.
          */
-         console.log("");
         value_list = {};
         name_table_vars = {};
         debugger_data = data;
@@ -624,9 +623,9 @@ function executeCVisualizer(option, data, newCode) {
                     current_frame = current_stack[current_stack.length -1]
                 }
 
-                //Now append the var name and type to the dictionary 
+                //Now append the var name and type to the dictionary
                 current_frame.push([changed_var['var_name'],changed_var['type']])
-                
+
                 var name_row = $('#name-body-'+table_name+":first tr[id='"+changed_var['var_name']+"']");
 
                 var group_start_addr = parseInt(name_row.attr("data-address"), 16);
@@ -2083,7 +2082,7 @@ function executeCVisualizer(option, data, newCode) {
         //     for (int i = 0; i<stack_frame.length; i++) {
         //         //Add a row to the existing name table
         //         $('#name-body-'+table_name).append('<tr id="'+table_name+'-'+  '"> <td colspan="2">' + return_data + '</td>' +
-        //         '</tr>');                
+        //         '</tr>');
         //     }
         // }
 
@@ -2380,7 +2379,7 @@ function executeCVisualizer(option, data, newCode) {
                 if (had_more_vals == false) {
                     //If the val no longer exists, just set its value to null but keep in the list
                     if (history.length == 0) {
-                        value_list[val_address]["value"] = null;    
+                        value_list[val_address]["value"] = null;
                     }
                     else {
                         value_list[val_address]["value"] = history[history.length-1];
@@ -2414,7 +2413,7 @@ function executeCVisualizer(option, data, newCode) {
 
             //If the val no longer exists, just set its value to null but keep in the list
             if (history.length == 0) {
-                value_list[val_address]["value"] = null;    
+                value_list[val_address]["value"] = null;
             }
             else {
                 value_list[val_address]["value"] = history[history.length-1];
