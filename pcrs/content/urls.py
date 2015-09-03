@@ -17,12 +17,8 @@ from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
 
 
-challenge_page_view = ContentPageView
+challenge_page_view = ReactiveContentPageView
 quests_page_view = QuestsView
-
-if settings.REACT:
-    challenge_page_view = ReactiveContentPageView
-
 if settings.QUESTS_LIVE:
     quests_page_view = ReactiveQuestsView
 
