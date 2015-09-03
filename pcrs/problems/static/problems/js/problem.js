@@ -697,7 +697,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            if (debug){
                         newRow.append('<td class="debug"><button id="' 
                                   + div_id +"_"+i + '" class="debugBtn" type="button"' +
-                                  ' >Trace</button></td>');
+                                  ' data-toggle="modal" data-target="#visualizerModal">Trace</button></td>');
 	                bindDebugButton(div_id+"_"+i);
 	            }
 	            else{
