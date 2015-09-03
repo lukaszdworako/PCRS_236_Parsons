@@ -25,10 +25,6 @@ DEBUG = not PRODUCTION
 SQL_DEBUG = False                   # Suppresses logging of SQL queries
 TEMPLATE_DEBUG = DEBUG
 
-# controls if a reactive content page should be used
-# reactive content page is live updated and updates content pages in other tabs
-REACT = True
-
 # controls if live-updated quests page should be used
 # live page receives updates from socket.io to update when items are completed
 QUESTS_LIVE = False
