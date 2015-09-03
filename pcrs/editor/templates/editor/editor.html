@@ -21,10 +21,6 @@
 {% block content %}
     {% include "problems_c/visualizer.html" %}
 
-	{% with "problems_"|add:problem.language|add:"/code_trace.html" as URL %}
-    	{% include URL %}
-    {% endwith %}
-
     {% with problem.language|add:"-1"|add:"-editor" as tag %}
   		<div id={{ tag }} class="code-mirror-wrapper">
     {% endwith %}
