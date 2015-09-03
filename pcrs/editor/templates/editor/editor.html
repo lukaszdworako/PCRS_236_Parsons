@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-    {% include "problems_c/new_visualizer.html" %}
+    {% include "problems_c/visualizer.html" %}
 
 	{% with "problems_"|add:problem.language|add:"/code_trace.html" as URL %}
     	{% include URL %}

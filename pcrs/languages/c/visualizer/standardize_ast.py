@@ -38,6 +38,5 @@ class NormalizeWalker(c_ast.NodeVisitor):
 
         # TODO: ExprList in "init" or "next"
         # for (int i = 0; i < 5; i++, g--)
-
         for (child_type, child_node) in node.children():
             self.visit(child_node)

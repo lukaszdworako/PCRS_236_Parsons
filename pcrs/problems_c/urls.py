@@ -62,8 +62,6 @@ urlpatterns = patterns('',
 
     url(r'^visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
 
-    url(r'^new-visualizer-details$', st_async_requests.new_visualizer_details, name='new visualizer details'),
-
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',
         MonitoringView.as_view(model=Problem),

@@ -3,7 +3,7 @@
 # Can provide a single file to compile
 if [ -z "$1" ]
 then
-    FILES="new-visualizer
+    FILES="visualizer
     edit_challenge
     challenge_page
     quest_list

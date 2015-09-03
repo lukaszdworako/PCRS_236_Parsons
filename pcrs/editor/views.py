@@ -122,16 +122,3 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
             'max_score': self.object.problem.max_score}, cls=DateEncoder),
         mimetype='application/json')
 
-
-    #         var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
-    # executeGenericVisualizer("gen_execution_trace_params", postParams);
-
-    # console.log(newCode);
-
-    # $.post(root + '/problems/' + language + '/visualizer-details',
-    #         postParams,
-    #         function(data) {
-    #             executeGenericVisualizer("create_visualizer", data, newCode);
-    #         },
-    #     "json")
-    #  .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });

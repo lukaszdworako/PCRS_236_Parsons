@@ -129,17 +129,11 @@ function executeCVisualizer(option, data, newCode) {
 /**
  * C visualizer representation.
  */
-    var newOrOld = "new";     // By default, use the new vis
     switch(option) {
 
         case "create_visualizer":
             if(!errorsInTraceC(data)) {
-                if(newOrOld == "old") {
                     createVisualizer(data, newCode);
-                }
-                else {
-                    createNewVisualizer(data, newCode);
-                }
             }
             break;
 
@@ -171,56 +165,6 @@ function executeCVisualizer(option, data, newCode) {
     }
 
     function createVisualizer(data, newCode) {
-        /**
-         * Verify trace does not contain errors and create visualizer,
-         * otherwise don't enter visualization mode.
-         */
-
-        debugger_data = data;
-
-        if(!c_debugger_load) {
-            c_debugger_load = true;
-
-            // Refresh Code Mirror
-            $('#visualizerModal').on('shown.bs.modal', function () {
-                myCodeMirrors[debugger_id].refresh();
-            });
-
-            // Bind debugger buttons
-            $('#previous_debugger').bind('click', function () {
-                if (debugger_index >= 1) {
-                    debugger_index--;
-                }
-                update_debugger_table(debugger_data);
-            });
-
-            $('#next_debugger').bind('click', function () {
-                if (typeof (data[debugger_index + 1]) != 'undefined') {
-                    debugger_index++;
-                    update_debugger_table(debugger_data);
-                }
-            });
-
-            $('#reset_debugger').bind('click', function () {
-                debugger_index = 0;
-                update_debugger_table(debugger_data);
-            });
-        }
-
-        debugger_index = 0;
-        last_stepped_line_debugger = 0;
-
-        myCodeMirrors[debugger_id].setValue(newCode);
-
-        // Initialize debugger for the first time
-        update_debugger_table(debugger_data);
-
-        $('#visualizerModal').modal('show');
-
-    }
-
-    /*FOR THE NEW VISUALIZER*/
-    function createNewVisualizer(data, newCode) {
         /**
          * Verify trace does not contain errors and create visualizer,
          * othervise don't enter visualization mode.

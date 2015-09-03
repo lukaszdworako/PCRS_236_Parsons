@@ -20,17 +20,17 @@ function bindDebugButton(buttonId) {
     * For coding problems bing a given New "Debug" button to start code visualizer
     */
 
-    $('#'+"new"+buttonId).bind('click', function() {
+    $('#'+buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
             $('#waitingModal').modal('show');
-            prepareVisualizer("debug", testcaseCode, buttonId, "new")
+            prepareVisualizer("debug", testcaseCode, buttonId)
             $('#waitingModal').modal('hide');
         }, 250);
     });
 }
 
-function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
+function prepareVisualizer(option, testcaseCode, buttonId) {
     /**
      * Prepare Coding problem visualizer
      */
@@ -44,23 +44,22 @@ function prepareVisualizer(option, testcaseCode, buttonId, newOrOld) {
     } else if (language == 'c') {
         newCode = addHashkey(key);
     }
-    getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld);
+    getVisualizerComponents(newCode, testcaseCode, problemId);
 }
 
 
-function getVisualizerComponents(newCode, testcaseCode, problemId, newOrOld) {
+function getVisualizerComponents(newCode, testcaseCode, problemId) {
     /**
      * Get Components for coding problem visualization
      */
 
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
-    executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);
+    executeGenericVisualizer("gen_execution_trace_params", postParams, '');
 
-    visualizerDetailsTarget = newOrOld == 'old' ? '/visualizer-details' : '/new-visualizer-details';
-    $.post(root + '/problems/' + language + visualizerDetailsTarget,
+    $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data, newCode, newOrOld);
+                executeGenericVisualizer("create_visualizer", data, newCode);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -696,11 +695,8 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
 	            if (debug){
-	                // newRow.append('<td class="debug"><button id="' +
-	                //                div_id +"_"+i + '" class="debugBtn" type="button"' +
-	                //               ' >Trace</button></td>');
-                    newRow.append('<td class="debug"><button id="new' +
-                                   div_id +"_"+i + '" class="debugBtn" type="button"' +
+                        newRow.append('<td class="debug"><button id="' 
+                                  + div_id +"_"+i + '" class="debugBtn" type="button"' +
                                   ' >Trace</button></td>');
 	                bindDebugButton(div_id+"_"+i);
 	            }

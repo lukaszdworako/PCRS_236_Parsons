@@ -29,17 +29,15 @@ $(document).ready(function() {
 });
 
 function start_editor_visualizer(user_code, code_wrapper_id) {
-    newOrOld = "new"; // Will be removed later on
-
     var postParams = { 'language' : language, 'user_code' : user_code };
 
-    executeGenericVisualizer("gen_execution_trace_params", postParams, newOrOld);
+    executeGenericVisualizer("gen_execution_trace_params", postParams, '');
 
-    visualizerDetailsTarget = '/new-visualizer-details-editor';
+    visualizerDetailsTarget = '/visualizer-details-editor';
     $.post(root + '/editor' + visualizerDetailsTarget,
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data, user_code, newOrOld);
+                executeGenericVisualizer("create_visualizer", data, user_code);
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });

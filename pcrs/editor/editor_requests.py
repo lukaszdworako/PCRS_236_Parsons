@@ -11,7 +11,7 @@ from pprint import pprint
 import pdb
 
 
-def new_visualizer_details_editor(request):
+def visualizer_details_editor(request):
     """
         Return json encoded dictionary ret containing trace required
         for the new C visualizer.
