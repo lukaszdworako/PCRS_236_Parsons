@@ -8,7 +8,7 @@
             {% endblock %}
         {% endautoescape %}
 
-        <span class="problem-score" id="{{ problem.get_uri_id }}"></span>
+        <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}"></span>
 
         {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             <span class="widget_controls">

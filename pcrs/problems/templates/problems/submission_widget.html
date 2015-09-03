@@ -21,12 +21,12 @@
                     <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
                             class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
-                    </span>
+                </span>
             {% endblock %}
         {% endif %}
 
         {% if not user.use_simpleui %}
-            <span class="problem-score" id="score-{{ item.get_uri_id }}">
+            <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}">
                 {% if mark|default_if_none:'-' == problem.max_score %}
                     <span class="widget_complete widget_mark"
                           title="Progress so far">
