@@ -54,6 +54,7 @@ class Submission(AbstractSubmission):
                 run['test_input'] = testcase.test_input
                 run['debug'] = True
             results.append(run)
+
         return results, error
 
 

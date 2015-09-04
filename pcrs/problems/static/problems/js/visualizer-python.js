@@ -1,3 +1,5 @@
+var pythonVisError = false;
+
 function executePythonVisualizer(option, data) {
 /**
  * Python visualizer representation.
@@ -26,11 +28,7 @@ function executePythonVisualizer(option, data) {
      * Verify trace does not contain errors and create visualizer,
      * othervise don't enter visualization mode.
      */
-        if (errorsInTracePy(data)) {
-            changeView("edit-code");
-        }
-
-        else {
+        if (!errorsInTracePy(data)) {
             // assign global
             visualizer = createVisualizerPy(data);
             visualizer.updateOutput();
@@ -53,14 +51,13 @@ function executePythonVisualizer(option, data) {
         // don't enter visualize mode if there are killer errors:
         var errors_caught = false;
 
-
         if (data.exception) {
             alert(data.exception);
             errors_caught = true;
-
+            pythonVisError = true;
         }
-
         else {
+            pythonVisError = false;
             trace = data.trace;
 
             if (trace.length == 0) {

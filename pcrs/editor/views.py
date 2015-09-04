@@ -105,8 +105,6 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
 
         logger = logging.getLogger('activity.logging')
 
-        logger.info("RESULTS WERE " + (str)(results[0]) )
-
         logger.info(str(localtime(self.object.timestamp)) + " | " +
                     str(user) + " | Submit " +
                     str(problem.get_problem_type_name()) + " " +

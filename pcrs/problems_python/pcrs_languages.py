@@ -7,7 +7,7 @@ import subprocess
 
 def set_path_to_languages():
     ''' Add all subdirectories in directory language to python path. '''
-    
+
     lang_dir = '../languages/'
 
     module_dir = os.path.dirname(__file__)  # get current directory
@@ -18,18 +18,18 @@ def set_path_to_languages():
         lang_path = os.path.join(abs_path, fn)
         if os.path.isdir(lang_path):
             sys.path.append(lang_path)
-            
+
 
 
 class GenericLanguage(object):
-    ''' Generic language representation. To add programming language, specify it 
-        in self.lang and define corresponding language class. 
+    ''' Generic language representation. To add programming language, specify it
+        in self.lang and define corresponding language class.
     '''
 
     def __init__(self, language=None):
-        self.extensions = {'python' : '.py'}        
+        self.extensions = {'python' : '.py'}
 
-        if language == "python": 
+        if language == "python":
             self.lang = PythonSpecifics()
 
 
@@ -43,12 +43,12 @@ class GenericLanguage(object):
         return self.lang.run_test(user_script, test_input, exp_output)
 
     def get_download_mimetype(self):
-        return self.lang.get_download_mimetype()    
-            
+        return self.lang.get_download_mimetype()
+
 
 class BaseLanguage(object):
-    ''' Base language representation with required methods provided. 
-        No visualizer support is included by default. 
+    ''' Base language representation with required methods provided.
+        No visualizer support is included by default.
     '''
 
     def encode_str(self, target_value):
@@ -60,20 +60,20 @@ class BaseLanguage(object):
 
 
 class PythonSpecifics(BaseLanguage):
-    ''' Representation of Python language (visualizer supported): 
-        * string encoding in visualizer format, 
+    ''' Representation of Python language (visualizer supported):
+        * string encoding in visualizer format,
         * generation of execution trace for visualizer,
         * running tests
     '''
 
-    def encode_str(self, target_value): 
+    def encode_str(self, target_value):
         ''' Encode string target_value in visualizer format. '''
 
         # pg_logger_v3.exec_script_str(tc.test_output, False, False, True)
 
         try:
-            
-            script = [  "import sys", 
+
+            script = [  "import sys",
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
@@ -81,39 +81,39 @@ class PythonSpecifics(BaseLanguage):
                         "expected_val =" + str(target_value),
                         "print(pg_encoder.encode(expected_val, True))",
                         "exit()"]
-                        
+
             p = self.run_subprocess(script)
             p.wait(timeout=1)
-            
+
             output = p.stdout.readlines()
             trace = eval(output[-1].decode().strip())
-            
+
             stderr_output = p.stderr.readlines()
-            
+
             p.stdout.close()
             p.stderr.close()
-            
+
             if len(stderr_output) > 0:
                 trace = None
-                
-        except TimeoutExpired as ex: 
+
+        except TimeoutExpired as ex:
             p.kill()
             trace = None
 
         except Exception as e:
             print(e)
             trace = str(e)
-                 
+
         return trace
 
     def get_exec_trace(self, user_script, add_params):
         ''' Get execution trace of string user_script providing additional parameters. '''
-        
-        try: 
+
+        try:
             cumulative_mode = add_params["cumulative_mode"].capitalize()
             heap_primitives = add_params["heap_primitives"].capitalize()
-        
-            script = [  "import sys", 
+
+            script = [  "import sys",
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
@@ -122,39 +122,39 @@ class PythonSpecifics(BaseLanguage):
                         "code_lines =" + str(user_script.split("\n")),
                         "code = '\\n'.join(code_lines)",
                         "print(pg_logger_v3.exec_script_str(code," +\
-                                                                cumulative_mode + "," + 
+                                                                cumulative_mode + "," +
                                                                 heap_primitives +" ))",
                         "exit()"]
-        
+
             p = self.run_subprocess(script)
             p.wait(timeout=3)
-            
+
             output = p.stdout.readlines()
             data = output[-1].decode()
-            
+
             stderr_output = p.stderr.readlines()
-            
+
             p.stdout.close()
             p.stderr.close()
-            
+
             if len(stderr_output) > 0:
                 # print(stderr_output)
                 exc = stderr_output[-1].decode()
                 data = {'trace' : None, 'exception' : exc }
-                
-            else: 
-                data = eval(data)            
-                
-        except TimeoutExpired as ex: 
+
+            else:
+                data = eval(data)
+
+        except TimeoutExpired as ex:
             p.kill()
             data = {'trace' : None, 'exception' : 'Infinite loop or memory error' }
-            
+
         except Exception as e:
             print(e)
             data = {'trace' : None, 'exception' : 'Unknown error' }
-          
+
         return data
-        
+
 
     def run_test(self, user_script, test_input, exp_output):
         ''' Return dictionary ret containing results of a testrun.
@@ -163,19 +163,19 @@ class PythonSpecifics(BaseLanguage):
             'passed_test' -> boolean
             'exception' (only if exception occurs) -> exception message.
         '''
-        
+
         try:
-            ret = {}          
+            ret = {}
             user_script = str(user_script)
             test_input = str(test_input)
             exp_output = str(exp_output)
 
             # calling the resulting value is always last
-            test_params = test_input.split('; ')            
-           
+            test_params = test_input.split('; ')
+
             code_lines = self.sanitize_user_script(user_script)
-            
-            script = [  "import sys, os", 
+
+            script = [  "import sys, os",
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
@@ -198,14 +198,14 @@ class PythonSpecifics(BaseLanguage):
 
             p = self.run_subprocess(script)
             p.wait(timeout=2)
-            
+
             stderr_output = p.stderr.readlines()
             if len(stderr_output) > 0:
                 ret["exception"] = stderr_output[-1].decode()
                 ret['passed_test'] = False
                 ret['test_val'] = ret["exception"]
-                
-            else: 
+
+            else:
                 # ignore user print statements
                 output = p.stdout.readlines()[-3: ]
                 test_val = output[0].decode().strip()
@@ -218,25 +218,25 @@ class PythonSpecifics(BaseLanguage):
 
             p.stdout.close()
             p.stderr.close()
- 
-        except TimeoutExpired as ex: 
+
+        except TimeoutExpired as ex:
             ret["exception"] = str(ex)
             ret['passed_test'] = False
             ret['test_val'] = "Infinite loop or memory error"
             p.kill()
-            
+
         except Exception as e:
-            ret["exception"] = str(e) 
+            ret["exception"] = str(e)
             ret['passed_test'] = False
             ret['test_val'] = str(e)
 
-        finally: 
+        finally:
             return ret
 
     def run_subprocess(self, script):
         """ Run python subprocess executed with provided script. Return process p. """
 
-        command = ['python']     
+        command = ['python']
         module_dir = os.path.dirname(__file__)
         file_path = os.path.join(module_dir, '../languages/python/')
         abs_path = os.path.abspath(file_path)
@@ -246,14 +246,14 @@ class PythonSpecifics(BaseLanguage):
         for line in script:
             p.stdin.write(bytearray(line + "\n", 'utf-8'))
         p.stdin.close()
-        return p        
+        return p
 
     def sanitize_user_script(self, user_script):
-        ''' Return list of strings code_lines consisting of lines of code 
+        ''' Return list of strings code_lines consisting of lines of code
             after removing unsafe imports and not allowed builtins.
         '''
 
-        safe_imports = ['math', 'random', 'datetime', 'functools', 'operator', 
+        safe_imports = ['math', 'random', 'datetime', 'functools', 'operator',
                         'string', 'collections', 're', 'json', 'heapq', 'bisect']
 
         BANNED_BUILTINS = ('reload', 'input', 'apply', 'open', 'compile',
@@ -264,8 +264,8 @@ class PythonSpecifics(BaseLanguage):
         code_lines = user_script.split("\n")
 
         i = 0
-        while(i < len(code_lines)): 
-            line = code_lines[i]               
+        while(i < len(code_lines)):
+            line = code_lines[i]
             if "import " in line:
                 ind = line.find("import")
                 pre_import = line[: ind + 7]
@@ -277,16 +277,16 @@ class PythonSpecifics(BaseLanguage):
                     else:
                         j += 1
                 new_code_line = pre_import + ", ".join(import_list)
-                if new_code_line == pre_import:   
+                if new_code_line == pre_import:
                     # if import consisted only of banned input, remove it
-                    code_lines[i] = "" 
+                    code_lines[i] = ""
                 else:
                     code_lines[i] = new_code_line
 
             # remove lines with banned builtins
             for banned_builtin in BANNED_BUILTINS:
                 if banned_builtin in line:
-                    code_lines[i] = "" 
+                    code_lines[i] = ""
 
             i += 1
         return code_lines
@@ -296,6 +296,6 @@ class PythonSpecifics(BaseLanguage):
         ''' Return string with mimetype. '''
 
         return 'application/x-python'
-       
-        
-        
+
+
+

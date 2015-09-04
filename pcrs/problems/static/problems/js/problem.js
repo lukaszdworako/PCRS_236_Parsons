@@ -11,6 +11,7 @@ var debugger_id = "";
 var debugger_index = 0;
 var last_stepped_line_debugger = 0;
 var c_debugger_load = false;
+var visPostComplete = true;
 var debugger_data = null;
 //root is a global variable from base.html
 
@@ -40,7 +41,7 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
     var newCode = myCodeMirrors[key].getValue() + "\n";
 
     if (language == 'python') {
-        newCode += (option == "viz") ? myCodeMirrors[key].getValue() : testcaseCode;
+        newCode += testcaseCode;
     } else if (language == 'c') {
         newCode = addHashkey(key);
     }
@@ -55,11 +56,13 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
 
     var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
     executeGenericVisualizer("gen_execution_trace_params", postParams, '');
+    visPostComplete = false;
 
     $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
                 executeGenericVisualizer("create_visualizer", data, newCode);
+                visPostComplete = true;
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -74,7 +77,7 @@ function getHistory(div_id){
     var postParams = { csrftoken: csrftoken };
     var problem_path = "";
 
-    check_language(div_id);
+    var language = check_language(div_id);
     if (language == 'python'){
         problem_path = root + '/problems/python/' + div_id.split("-")[1]+'/history';
     }
@@ -202,7 +205,7 @@ function add_history_entry(data, div_id, flag){
         $('#'+div_id).find('#history_accordion').prepend(entry);
     }
 
-    check_language(div_id);
+    var language = check_language(div_id);
     if (language == "python"){
         create_to_code_mirror("python", 3, "history_mirror_"
                                                 + data['problem_pk']
@@ -314,48 +317,28 @@ function getTestcases(div_id) {
     /**
      * Submit code from div_id and get back the test cases
      */
-    var clean_code;
-
-    if(language == 'c'){
-        clean_code = addHashkey(div_id);
-    }else{
-        clean_code = myCodeMirrors[div_id].getValue();
-    }
+    var clean_code = myCodeMirrors[div_id].getValue();
+    var language = check_language(div_id);
 
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
-        clean_code = clean_code.replace('\t',"    ");
+        clean_code = clean_code.replace('\t', '    ');
     }
 
     var call_path = "";
 
-    check_language(div_id);
-    if (language == 'python'){
-        call_path = root + '/problems/python/'+div_id.split("-")[1]+'/run';
-    }
-    else if (language == 'c'){
-        var problem_number = div_id.split("-")[1];
-        var if_editor = div_id.split("-")[2];
+    var if_editor = div_id.split("-")[2];
+    if (if_editor == null) {
+        call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
 
-        //If it's not part of the code editor, get path normally
-        if (if_editor == null){
-            call_path = root + '/problems/c/'+div_id.split("-")[1]+'/run';
+        if (language == 'c') {
+            clean_code = addHashkey(div_id);
+            // For reporting bugs
+            document.getElementById('feedback_code').value = clean_code;
         }
-        //Otherwise it's part of the code editor, set number to 9999999
-        //and set the code to not have hashes
-        else {
-            call_path = root + '/problems/c/editor/run';
-            clean_code = myCodeMirrors[div_id].getValue();
-        }
-
-        // For reporting bugs
-        document.getElementById('feedback_code').value = clean_code;
     }
-    else if (language == 'sql'){
-        call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
-    }
-    else if (language == 'ra'){
-        call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
+    else {     // editor
+        call_path = root + '/problems/' + language + '/editor/run';
     }
 
     var postParams = { csrftoken: csrftoken, submission: clean_code };
@@ -378,33 +361,31 @@ function getTestcases(div_id) {
                     error_msg = data['results'][1];
                 }
 
-                var isEditor = ($("p.widget_title").text().indexOf("C Editor") >= 0);
-
-                if (use_simpleui == 'False' && !isEditor){
+                if (use_simpleui == 'False' && !if_editor){
                     $("#"+div_id).find("#grade-code").show();
                 }
 
                 var score = data['score'];
                 var max_score = data['max_score'];
-                var desider = score == max_score;
+                var decider = score == max_score;
 
-                if (!isEditor){
-
-                    $('#'+div_id).find('#alert')
-                        .toggleClass("red-alert", !desider);
+                if (!if_editor){
 
                     $('#'+div_id).find('#alert')
-                        .toggleClass("green-alert", desider);
+                        .toggleClass("red-alert", !decider);
 
                     $('#'+div_id).find('#alert')
-                        .children('icon')
-                        .toggleClass("remove-icon", !desider);
+                        .toggleClass("green-alert", decider);
 
                     $('#'+div_id).find('#alert')
                         .children('icon')
-                        .toggleClass("ok-icon", desider);
+                        .toggleClass("remove-icon", !decider);
 
-                    if (desider){
+                    $('#'+div_id).find('#alert')
+                        .children('icon')
+                        .toggleClass("ok-icon", decider);
+
+                    if (decider){
                         $('#'+div_id).find('#alert')
                             .children('span')
                             .text("Your solution is correct!");
@@ -424,12 +405,12 @@ function getTestcases(div_id) {
                                         data['best'],
                                         data['past_dead_line'],
                                         data['sub_pk'],
-                                        max_score);
+                                         max_score);
                 }
                 else if (language == 'c'){
                     // Handle C error and warning messages
                     dont_visualize = handleCMessages(div_id, testcases);
-                    if (!isEditor){
+                    if (!if_editor){
                         prepareGradingTable(div_id,
                                             data['best'],
                                             data['past_dead_line'],
@@ -465,7 +446,6 @@ function getTestcases(div_id) {
         function(jqXHR, textStatus, errorThrown) {
             // Deactivate loading pop-up
             $('#waitingModal').modal('hide');
-            console.log(textStatus);
         });
 }
 
@@ -695,7 +675,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
 	            if (debug){
-                        newRow.append('<td class="debug"><button id="' 
+                        newRow.append('<td class="debug"><button id="'
                                   + div_id +"_"+i + '" class="debugBtn" type="button"' +
                                   ' data-toggle="modal" data-target="#visualizerModal">Trace</button></td>');
 	                bindDebugButton(div_id+"_"+i);
@@ -823,6 +803,7 @@ function check_language(container){
     else{
         language = '';
     }
+    return language;
 }
 
 function escapeRegExp(string) {
@@ -1018,7 +999,7 @@ $(document).ready(function() {
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
 
-        check_language(all_wrappers[x].id);
+        var language = check_language(all_wrappers[x].id);
         if (language == "python"){
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),

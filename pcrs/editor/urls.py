@@ -9,8 +9,8 @@ from editor import editor_requests
 urlpatterns = patterns('',
     url(r'^c/submit$',
         EditorView.as_view(template_name='editor/editor.html', model=c_models.Submission, pType='c')),
-    url(r'^visualizer-details-editor$', editor_requests.visualizer_details_editor, name='visualizer_details_editor'),
-
     url(r'^python/submit$',
         EditorView.as_view(template_name='editor/editor.html', model=python_models.Submission, pType='python')),
+
+    #url(r'^visualizer-details-editor$', editor_requests.visualizer_details_editor, name='visualizer_details_editor'),
 )
