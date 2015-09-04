@@ -430,7 +430,6 @@ class CVisualizer:
         self.amt_after = 0
         self.extra_adder = 0
 
-        print(parent[index])
         #Check for the current node's type and handle:
         #Case for variable declaration
         if isinstance(parent[index], c_ast.Decl):
@@ -495,7 +494,6 @@ class CVisualizer:
         #If there's a node after this one, check if it's a return statement amt_after nodes after the current one
         try:
             if isinstance(parent[index+self.amt_after+1], c_ast.Return):
-                print("RETURN CASE")
                 self.handle_return(parent, index, func_name)
         except:
             pass
@@ -524,8 +522,6 @@ class CVisualizer:
         struct_dict_add = {(str)(node.type.name):node.type.decls}
         self.struct_dict.update(struct_dict_add)
 
-        print(self.struct_dict)
-
     def add_to_typedef_dict(self, node):
         #If it's a struct typedef, add struct name and also add to struct dict
         if isinstance(node.type.type, c_ast.Struct):
@@ -537,8 +533,6 @@ class CVisualizer:
 
         typedef_dict_add = {(str)(node.name):actual_type}
         self.typedef_dict.update(typedef_dict_add)
-
-        print(self.typedef_dict)
 
     def get_funccall_funcname(self, node):
         return node.name.name
@@ -642,7 +636,6 @@ class CVisualizer:
             ptr_depth += 1
             temp_node = temp_node.type
 
-        #print("ptr depth is "+(str)(ptr_depth))
         try:
             clean_type = temp_node.type.type.names[0]
         except:
@@ -977,8 +970,6 @@ class CVisualizer:
         self.array_dict.update(array_dict_add)
         ptr_dict_add = {(str)(var_name_val):(int)(ptr_depth)}
         self.ptr_dict.update(ptr_dict_add)
-        #Now we're done adding it to the dictionary
-        print(self.array_dict)
 
         #Initialize the temporary variables which will store size in later for loops
         #Put them before the array decl node
@@ -990,8 +981,6 @@ class CVisualizer:
         for size_node in size_nodes:
             parent.insert(index, size_node)
             to_add_index+=1
-
-        print(self.array_dict)
 
         if ptr_depth >0:
             return True
@@ -1358,9 +1347,6 @@ class CVisualizer:
         array_dict_add = {(str)(var_name_val):[(str)(type_of_var), size_nodes, temp_var_nodes, array_depth, ptr_depth]}
         self.array_dict.update(array_dict_add)
 
-        #Now we're done adding it to the dictionary
-        print(self.array_dict)
-
         #Initialize the temporary variables which will store size in later for loops
         #Put them before the array decl node we're goign to declare below
         for temp_var_node in temp_var_nodes:
@@ -1371,8 +1357,6 @@ class CVisualizer:
         for size_node in size_nodes:
             parent.insert(index+to_add_index+1, size_node)
             self.amt_after+=1
-
-        print(self.array_dict)
 
         return on_heap
 
@@ -1404,8 +1388,6 @@ class CVisualizer:
 
         #Got to the string constant, handle
         if not(isinstance(cur_node, c_ast.InitList)):
-            print(array_name)
-
             self.handle_str_lit_array(parent, index, parent[index],array_name,cur_node)
             print_node = self.create_printf_node(init_parent[init_index], func_name, False, True, False, False, False, False, False, False, True, False, False, True)
             parent.insert(index+self.amt_after+1, print_node)
@@ -1785,7 +1767,6 @@ class CVisualizer:
             self.add_after_all_nodes(parent, index-print_to_add_index, func_name, False, False, False, False)
 
         else:
-            print("array - add this")
             isPtr = False
             if var_typerep == '%p':
                 isPtr == True
@@ -1921,7 +1902,6 @@ class CVisualizer:
 
         #Need to save user_script in a temp file so that we can run it
         temp_c_file = self.temp_path + self.user + self.date_time + ".c"
-        print("TEMP PATH IS -------"+(str)(self.temp_path))
         try:
             # Creating the C file, and create the temp directory if it doesn't exist
             try:
@@ -1951,12 +1931,8 @@ class CVisualizer:
         except OSError:
             pass
 
-        ast.show()
-        print("-----------------------")
-
         #Finding all functions in the program so we can save them in a list
         self.find_all_function_decl(ast)
-        print(self.func_list)
         #Initializing a malloc size variable in the code
         malloc_size_var = self.create_new_var_node("int", None, self.malloc_size_var_name)
         ast.ext.insert(0, malloc_size_var)
@@ -1965,7 +1941,5 @@ class CVisualizer:
 
         #Turning the new ast back into C code
         generator = c_generator.CGenerator()
-        #print("\n".join(self.removed_lines))
-        print(generator.visit(ast))
         
         return "{0}\n{1}".format("\n".join(self.removed_lines), generator.visit(ast))

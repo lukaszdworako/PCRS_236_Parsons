@@ -1,7 +1,0 @@
-name:num line:4 val:16 address:0x7fff37d16c5c
-name:c1 line:5 val:a address:0x7fff37d16c5a
-name:c2 line:6 val: address:0x7fff37d16c5b
-name:c2 line:7 val:b address:0x7fff37d16c5b
-name:big_num line:8 val:3000000000 address:0x7fff37d16c60 size:8
-name:ptr line:9 val:0x7fff37d16c5c address:0x7fff37d16c68 size:8
-name:ptr line:10 val:32 address:0x7fff37d16c5c

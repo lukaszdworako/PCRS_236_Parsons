@@ -1,6 +1,0 @@
-var: l val: 1 addr:0x7fff8a433054
-var: m val: 5 addr:0x7fff8a433058
-var: k val: junk addr:0x7fff8a43305c
-var: i, j val: 1, 5 addr: 0x7fff8a43302c, 0x7fff8a433028 
-var: q val: 6 addr:0x7fff8a43303c
-k is 6
