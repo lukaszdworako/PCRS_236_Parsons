@@ -26,6 +26,11 @@
                     {% endif %}
                     </span>
                     {{ challenge.name }}
+
+                    <a class="searchable_content attempt-btn" type="button" title="Attempt" href="{{ challenge.get_absolute_url }}/1">
+                        <i class="doc-icon"></i>
+                    </a>
+
                     {% if completed == total and total != 0 %}
                         <div class="challenge-mark-complete">
                     {% elif total != 0 %}
