@@ -254,7 +254,8 @@ class PythonSpecifics(BaseLanguage):
         '''
 
         safe_imports = ['math', 'random', 'datetime', 'functools', 'operator',
-                        'string', 'collections', 're', 'json', 'heapq', 'bisect']
+                        'string', 'collections', 're', 'json', 'heapq', 'bisect'
+                        ,'numpy', 'scipy']
 
         BANNED_BUILTINS = ('reload', 'input', 'apply', 'open', 'compile',
                            'file', 'eval', 'exec', 'execfile',
@@ -263,10 +264,27 @@ class PythonSpecifics(BaseLanguage):
 
         code_lines = user_script.split("\n")
 
+        import_statement = "import {0}"
+        import_as_variable = "{0} = {1}"
+        import_as_modules = []
+
         i = 0
         while(i < len(code_lines)):
             line = code_lines[i]
-            if "import " in line:
+            # hack for import as statements; imports the module and sets
+            # the variable after "as" to point to that module
+            if ("import " in line) and ("as " in line):
+                short_ind = line.find("as")
+                short_name = line[short_ind + 3:].split()[0]
+                import_ind = line.find("import")
+                import_name = line[import_ind + 7:].split()[0]
+                if import_name in safe_imports:
+                    code_lines[i] = import_statement.format(import_name)
+                    import_as_modules.append(import_as_variable.format(short_name, import_name))
+                else:
+                    code_lines[i] = ""
+
+            elif "import " in line:
                 ind = line.find("import")
                 pre_import = line[: ind + 7]
                 import_list = line[ind + 7:].split()
@@ -289,6 +307,7 @@ class PythonSpecifics(BaseLanguage):
                     code_lines[i] = ""
 
             i += 1
+        code_lines += import_as_modules
         return code_lines
 
 
