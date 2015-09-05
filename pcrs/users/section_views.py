@@ -8,7 +8,6 @@ from django.views.generic.detail import SingleObjectMixin
 from django.utils.html import strip_tags
 from django.contrib.contenttypes.models import ContentType
 
-from content.models import ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from problems.models import (get_problem_content_types,
@@ -95,22 +94,16 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         for ctype in problem_types:
             for problem in ctype.model_class().objects\
                     .select_related('challenge')\
-                    .filter(challenge__quest=quest, visibility='open')\
-                    .order_by('id'):
+                    .filter(challenge__quest=quest, visibility='open'):
                 section_problems.append(problem)
                 problem_ids.append(problem.pk)
 
-        #query database for order of problems and sort problems accordingly
-        sorted_section_problems = []
-        content_sequence_items = ContentSequenceItem.objects.filter(object_id__in=problem_ids)\
-                                 .order_by('content_page__id', 'order')
-        for item in content_sequence_items:
-            try:
-                sorted_section_problems.append([problem for problem in section_problems if problem.pk == item.object_id][0])
-            except Exception as e:
-                print(e)
-                trace = str(e)
-
+        #sort problems according to their display order
+        challenges = quest.challenge_set.all()
+        pages = [page for page_list in [challenge.contentpage_set.all() for challenge in challenges]
+                      for page in page_list]
+        sorted_section_problems = [seq_item.content_object for item_list in [page.contentsequenceitem_set.all() for page in pages] \
+                                                           for seq_item in item_list if "problem" in seq_item.content_object.get_pretty_name() and seq_item.content_object.pk in problem_ids]
 
         # collect the problem ids, names, and max_scores, and for_credit
         problems, names, max_scores, for_credit_row = [], ['problem name (url)'], ['max scores'], ['for credit?']
