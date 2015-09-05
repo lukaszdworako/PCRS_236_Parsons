@@ -155,6 +155,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
 
     class Meta:
         # a problem can be in a single content page
+        ordering = ['order']
         unique_together = ['content_type', 'object_id', 'content_page']
 
     @classmethod

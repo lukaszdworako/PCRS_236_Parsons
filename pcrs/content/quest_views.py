@@ -132,7 +132,7 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
 
         # 2 queries
         context['challenges'] = {
-            q.pk: q.challenge_set.all()  # .order_by('order')
+            q.pk: q.challenge_set.all()
             for q in Quest.objects.prefetch_related('challenge_set').all()
         }
 
