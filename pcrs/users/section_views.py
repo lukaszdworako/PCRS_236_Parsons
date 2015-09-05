@@ -113,18 +113,18 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
 
         # collect the problem ids, names, and max_scores, and for_credit
-        problems, names, max_scores, for_credit_row = [], [], [], []
+        problems, names, max_scores, for_credit_row = [], ['problem name (url)'], ['max scores'], ['for credit?']
         for problem in sorted_section_problems:
                 # include for_credit and/or not for_credit problems
                 is_graded = problem.challenge.is_graded
                 if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
                     problems.append((ctype.app_label, problem.pk))
-                    names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' ') + ' / ' + str(problem.pk))
+                    names.append("{0} ({1})".format(problem.name.strip() or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
                     max_scores.append(problem.max_score)
                     for_credit_row.append(is_graded)
-        writer.writerow(['problems/ID'] + names)
-        writer.writerow(['users/max_scores'] + max_scores)
-        writer.writerow(['for credit'] + for_credit_row)
+        writer.writerow(names)
+        writer.writerow(max_scores)
+        writer.writerow(for_credit_row)
 
         # collect grades for each student
         results = defaultdict(dict)
