@@ -37,8 +37,9 @@ $(document).ready(function() {
     }
     else if (language == "c") {
         myCodeMirrors[code_wrapper_id] = to_code_mirror("c", 'text/x-csrc', $(code_wrapper).find("#div_id_code_box"), '', false);
+        myCodeMirrors[code_wrapper_id].getDoc().setValue("#include <stdio.h>\n\nint main() {\n\n    return 0;\n}");
 
-        preventDeleteLastLine(code_wrapper_id)
+        preventDeleteLastLine(code_wrapper_id);
     }
 
     $(code_wrapper).find('#submit-id-trace').click(function(event) {
