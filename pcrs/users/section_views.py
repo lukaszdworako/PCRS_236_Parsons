@@ -1,5 +1,6 @@
 from collections import defaultdict
 import csv
+import time
 
 from django.http import HttpResponse
 from django.views.generic import FormView
@@ -73,8 +74,8 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         initial = super().get_initial()
         initial['section'] = self.get_object()
         return initial
-       
-                
+
+
     def form_valid(self, form):
         section = form.cleaned_data['section']
         quest = form.cleaned_data['quest']
@@ -83,11 +84,12 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=report.csv'
+        response['Content-Disposition'] = 'attachment; filename={0}-{1}-{2}.csv'.\
+                format(str(section).replace(" @ ", "_"), quest.name.replace(" ", "_"), time.strftime("%m%d%y"))
         writer = csv.writer(response)
 
         # query database for this section's problems
-        problem_types = get_problem_content_types()  
+        problem_types = get_problem_content_types()
         section_problems = []
         problem_ids = []
         for ctype in problem_types:
@@ -108,7 +110,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             except Exception as e:
                 print(e)
                 trace = str(e)
-                
+
 
         # collect the problem ids, names, and max_scores, and for_credit
         problems, names, max_scores, for_credit_row = [], [], [], []
