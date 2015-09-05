@@ -21,7 +21,7 @@ $(document).ready(function() {
     if (language == "python"){
         myCodeMirrors[code_wrapper_id] = to_code_mirror("python", 3, $(code_wrapper).find("#div_id_code_box"), '', false);
         $(code_wrapper).find('#submit-id-trace').hide()
-        $(code_wrapper).append($('<button id="python_trace_btn" class="debugBtn pull-right" type="button" data-target="#visualizerModal">New Trace</button>'));
+        $(code_wrapper).append($('<button id="python_trace_btn" class="debugBtn pull-right" type="button" data-target="#visualizerModal">Trace</button>'));
         $('#python_trace_btn').bind('click', function() {
             var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
             var user_code = myCodeMirrors[div_id].getValue();
