@@ -44,11 +44,11 @@ class SectionForm(CrispyFormMixin, forms.ModelForm):
             self.helper.layout.append(ButtonHolder(self.save_button))
 
 
-class QuestGradeForm(CrispyFormMixin, forms.Form):  
-    
+class QuestGradeForm(CrispyFormMixin, forms.Form):
+
     OPTIONS = (('fc','For credit'),
                ('nfc','Not for credit'))
-    
+
     section = forms.ModelChoiceField(Section.objects.all(),
                                      widget=forms.HiddenInput())
     quest = forms.ModelChoiceField(Quest.objects.all())
@@ -65,7 +65,7 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
         export_button = Submit('submit', 'Export grade file',
                                css_class='btn-success pull-right')
         self.helper.layout = Layout(
-            Fieldset('Get grade report for this section', 'quest', 'section', 'for_credit'),
+            Fieldset('Get grade report for this section', 'section', 'quest', 'for_credit', 'active'),
             ButtonHolder(export_button)
         )
 

@@ -66,7 +66,7 @@ class TestCodingProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.object = self.model.objects.create(pk=1, name='test_problem',
-                                                visibility='draft')
+                                                visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         self.post_data = {
@@ -163,7 +163,7 @@ class TestCodingProblemClearView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.object = self.model.objects.create(pk=1, name='test_problem',
-                                                visibility='draft')
+                                                visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
@@ -189,7 +189,7 @@ class TestCodingProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.object = self.model.objects.create(pk=1, name='test_problem',
-                                                visibility='draft')
+                                                visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object,
@@ -228,7 +228,7 @@ class TestCodingProblemAddTestcaseView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(pk=1, name='test_problem',
-                                                 visibility='draft')
+                                                 visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
     def test_add_minimal(self):
@@ -312,7 +312,7 @@ class TestCodingProblemAddTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
 
     def setUp(self):
         self.problem = self.model.objects.create(pk=1, name='test_problem',
-                                                 visibility='draft')
+                                                 visibility='open')
         self.assertTrue(self.model.objects.filter(pk=1).exists())
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
@@ -348,9 +348,9 @@ class TestUpdateTestcaseView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(pk=1, name='test_problem',
-                                                 visibility='draft')
+                                                 visibility='open')
         self.problem2 = self.model.objects.create(pk=2, name='test_problem2',
-                                                  visibility='draft')
+                                                  visibility='open')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
@@ -473,9 +473,9 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
 
     def setUp(self):
         self.problem = self.model.objects.create(pk=1, name='test_problem',
-                                                 visibility='draft')
+                                                 visibility='open')
         self.problem2 = self.model.objects.create(pk=2, name='test_problem2',
-                                                  visibility='draft')
+                                                  visibility='open')
         TestCase.objects.create(test_input='question', expected_output='42',
                                 pk=1, problem=self.problem)
 
@@ -605,7 +605,7 @@ class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = Problem.objects.create(pk=1, name='test_problem',
-                                              visibility='draft')
+                                              visibility='open')
 
         TestCase(pk=1, problem=self.problem, test_input='question',
                  expected_output='42').save()

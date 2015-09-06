@@ -197,7 +197,7 @@ class SubmissionViewMixin:
         if self.request.user.is_ta:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'),
-                                     visibility__in=['open', 'draft'])
+                                     visibility__in=['open'])
         else:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'))

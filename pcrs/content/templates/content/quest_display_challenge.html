@@ -3,10 +3,10 @@
 {% if challenge.is_visible_to_students %}
     <div class="pcrs-panel">
         {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
-            {% if completed == 0 %}
+            {% if completed == 0 and total != 0 %}
                 <div class="challenge-not-attempted">
-            {% elif completed == total and total != 0 %}
-                <div class="challenge-complete">
+            {% elif completed == total %}
+                <div class="challenge-completed">
             {% else %}
                 <div class="challenge-attempted">
             {% endif %}
@@ -25,18 +25,16 @@
                            title="Practice Challenge"></i>
                     {% endif %}
                     </span>
-                    {{ challenge.name }}
 
-                    <a class="searchable_content attempt-btn" type="button" title="Attempt" href="{{ challenge.get_absolute_url }}/1">
-                        <i class="doc-icon"></i>
+                    {{ challenge.name }}
+                    <a type="button" title="Attempt" href="{{ challenge.get_absolute_url }}/1">
+                        <i class="attempt-btn"></i>
                     </a>
 
-                    {% if completed == total and total != 0 %}
+                    {% if completed == total %}
                         <div class="challenge-mark-complete">
-                    {% elif total != 0 %}
-                        <div class="challenge-mark-incomplete">
                     {% else %}
-                        <div class="challenge-mark-unknown">
+                        <div class="challenge-mark-incomplete">
                     {% endif %}
                         <br class="info-sm">
                         {% if challenge.is_graded %}

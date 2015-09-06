@@ -64,12 +64,12 @@ class TestProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.object = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         self.post_data = {
             'description': 'test_problem',
-            'visibility': 'draft'
+            'visibility': 'open'
         }
 
     def test_change_question(self):
@@ -117,7 +117,7 @@ class TestProblemClearView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.object = self.model.objects.create(pk=1, description='test_problem',
-                                                visibility='draft')
+                                                visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.object, user=self.student,
@@ -141,7 +141,7 @@ class TestProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.problem, user=self.student,
@@ -177,7 +177,7 @@ class TestProblemAddOptionView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
     def test_add_correct(self):
@@ -276,7 +276,7 @@ class TestProblemAddOptionViewWithSubmissions(CourseStaffViewTestMixin,
 
     def setUp(self):
         self.problem = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
         CourseStaffViewTestMixin.setUp(self)
 
         Submission.objects.create(problem=self.problem, user=self.student,
@@ -346,7 +346,7 @@ class TestOptionUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
         Option(pk=1, problem=self.problem, answer_text='42').save()
         self.assertTrue(self.problem.option_set.exists())
 
@@ -457,7 +457,7 @@ class TestUpdateOptionViewWithSubmissions(CourseStaffViewTestMixin,
 
     def setUp(self):
         self.problem = self.model.objects.create(
-            pk=1, description='test_problem', visibility='draft')
+            pk=1, description='test_problem', visibility='open')
 
         Option(pk=1, problem=self.problem, answer_text='42').save()
         self.assertTrue(self.problem.option_set.exists())
@@ -575,7 +575,7 @@ class TestDeleteOptionView(CourseStaffViewTestMixin, test.TestCase):
 
     def setUp(self):
         self.problem = Problem.objects.create(pk=1, description='test_problem',
-                                              visibility='draft')
+                                              visibility='open')
 
         Option(pk=1, problem=self.problem, answer_text='42').save()
         self.assertTrue(self.problem.option_set.exists())

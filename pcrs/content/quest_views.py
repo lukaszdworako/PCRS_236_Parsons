@@ -159,10 +159,11 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
         return context
 
     def get_queryset(self):
-        return SectionQuest.objects \
-            .filter(section=self.get_section()) \
-            .filter(visibility='open', open_on__lt=now()) \
-            .select_related('quest')
+        all_quests = SectionQuest.objects
+        if not self.get_section().is_master():
+            all_quests = all_quests.filter(section=self.get_section()) \
+                                   .filter(visibility='open', open_on__lt=now())
+        return all_quests.select_related('quest')
 
 
 class ReactiveQuestsView(ProtectedViewMixin, TemplateView):

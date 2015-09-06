@@ -4,29 +4,32 @@
 {% block object_info %}
 {% if object.id != 9999999 %}
 <div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
-    <div class="pcrs-panel">
+    <div class="pcrs-panel pcrs-panel-title">
         <h4 class="pcrs-panel-title problem-panel">
             <a href="#quest_collapse_{{ object.pk }}"
                data-parent="quest_accordion_{{ object.pk }}"
                class="collapsed"
                data-toggle="collapse">
                 <i class="collapse-indicator"></i>
-                <span title="{{ object.description|striptags|truncatechars:50 }}">
-                    {{ object.name|striptags|truncatechars:150 }}&nbsp;|&nbsp;{{ object.challenge|striptags|truncatechars:150 }}
+                <span title="{{ object.name|striptags }}">
+                    {{ object.name|striptags }}
+                    {% if object.challenge %}
+                        ({{ object.challenge|striptags }})
+                    {% endif %}
                 </span>
-                <div class="info">
-                        <br class="info-sm">
-                        <a class="searchable_content attempt-btn" type="button" title="Attempt" href="{{ object.get_absolute_url }}/submit">
-                            <i class="doc-icon"></i>
-                        </a>
-                        {% if user.is_instructor or user.is_ta %}
-                        <span>
-                            {% block item_controls %}
-                                {% include "pcrs/buttons/edit.html" %}
-                            {% endblock %}
-                        </span>
-                        {% endif %}
-                </div>
+
+                <fieldset>
+                    {% if user.is_instructor or user.is_ta %}
+                        {% block item_controls %}
+                            <a style="color:black" class="pull-right" title="Edit {{ object.name }}"  href="{{ object.get_absolute_url }}">&nbsp;
+                                <i class="pencil-icon"></i>
+                            </a>
+                        {% endblock %}
+                    {% endif %}
+                    <a style="color:black" class="pull-right" type="button" title="Attempt" href="{{ object.get_absolute_url }}/submit">
+                        <i class="attempt-btn"></i>
+                    </a>
+                </fieldset>
             </a>
         </h4>
     </div>
