@@ -46,7 +46,7 @@ function update_marks(div_id, score, max_score){
                 detail: {
                     id: problem.type + "-" + problem.pk,
                     problem: {problem_type: problem.type, pk: problem.pk},
-                    status: { attempted: true, completed: score==max_score },
+                    status: { attempted: true, completed: score>=max_score },
                     score: score
                  }
             })
