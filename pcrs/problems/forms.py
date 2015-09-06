@@ -68,7 +68,7 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
                                     css_class='green-button-right')
-        if problem.name != 'blank' and not simpleui:
+        if not (problem.name == 'blank' or problem.challenge == None or simpleui):
             history_css = 'reg-button'
         else:
             history_css = 'reg-button hidden'
