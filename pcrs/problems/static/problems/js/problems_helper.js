@@ -12,18 +12,18 @@ function update_marks(div_id, score, max_score){
 
     var problem = get_problem_type_and_id(div_id);
 
-    if (score == max_score){
+    if (score >= max_score){
         new_title += 'complete';
 
         var problem_score = $('#'+div_id).find('.incomplete_problem');
         problem_score.removeClass();
-        problem_score.addClass("green-checkmark-icon"); 
+        problem_score.addClass("green-checkmark-icon");
         problem_score.prop('title', new_title);
 
         /* For nonreactive pages */
         var nonreactive_span = $('#'+div_id).find('.nonreactive_score');
         nonreactive_span.empty();
-        
+
         side_bar.removeClass();
         side_bar.addClass("problem-complete");
 
