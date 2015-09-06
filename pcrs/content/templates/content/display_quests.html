@@ -18,7 +18,9 @@
                         {% if quest.is_past_due %}
                             Submission closed :
                         {% else %}
-                            Due date :
+                            {% if quest.due_on %}
+                                Due date :
+                            {% endif %}
                         {% endif %}
                         <br class="info-sm">
                         {{ quest.due_on|default:'' }}
