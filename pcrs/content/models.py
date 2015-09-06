@@ -203,7 +203,10 @@ class ContentPage(AbstractSelfAwareModel):
         3. the quest is visible to the section
         4. the quest has been released to the section
         """
-        return cls.objects.select_related('challenge').filter(
+        if section.is_master():
+            return cls.objects.select_related('challenge')
+        else:
+            return cls.objects.select_related('challenge').filter(
             challenge__visibility='open',
             challenge__quest__sectionquest__section=section,
             challenge__quest__mode='live',

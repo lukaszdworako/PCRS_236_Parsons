@@ -139,21 +139,19 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
         # 2 queries
         context['pages'] = {
             c.pk: c.contentpage_set.all()
-            for c in Challenge.objects.all().prefetch_related('contentpage_set')
+            for c in Challenge.objects.prefetch_related('contentpage_set').all()
         }
 
         # 2 queries
         context['items'] = {
             page.pk: page.contentsequenceitem_set.all()
-            for page in ContentPage.objects.prefetch_related(
-            'contentsequenceitem_set').all()
+            for page in ContentPage.objects.prefetch_related('contentsequenceitem_set').all()
         }
 
         # 2 queries
         context['content_objects'] = {
             item.pk: item.content_object
-            for item in
-            ContentSequenceItem.objects.prefetch_related('content_object').all()
+            for item in ContentSequenceItem.objects.prefetch_related('content_object').all()
         }
 
         return context
