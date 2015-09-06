@@ -47,7 +47,10 @@
             <div id="challenges" class="tab-content">
                 {% for challenge in challenges %}
                     <div id="{{ challenge.pk }}" class="challenge">
-                        <a style="color:white" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="View {{ challenge.name }}"> {{challenge.name}} </a>
+                        {{challenge.name}}
+                        <a class="pull-right" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="Edit {{ challenge.name }}">
+                            <i style="color:white" class="pencil-icon"></i>
+                        </a>
                         <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                     </div>
 
@@ -73,7 +76,9 @@
                             </div>
                         </div>
                             <div class="pull-right">
-                                {% include 'pcrs/buttons/edit.html' %}
+                                <a class="pull-right" target="_blank" title="Edit {{ object.name }}"  href="{{ object.get_absolute_url }}">&nbsp;
+                                    <i class="pencil-icon"></i>
+                                </a>
                             </div>
                         {% if not object.is_live %}
                             <div class="red-label pull-right">Under
@@ -98,8 +103,11 @@
                                     <i class="close"
                                        title="Remove {{ challenge.name }} from {{ object.name }}">
                                     </i>
-                                <a style="color:white" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="View {{ challenge.name }}"> {{challenge.name}} </a>
-                                <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
+                                    {{challenge.name}}
+                                    <a class="pull-right" target="_blank" title="Edit {{ challenge.name }}"  href="{{ challenge.get_absolute_url }}">&nbsp;
+                                        <i style="color: white" class="pencil-icon"></i>
+                                    </a>
+                                    <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                                 </div>
                             {% endfor %}
                         </div>
