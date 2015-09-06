@@ -388,9 +388,9 @@ function getTestcases(div_id) {
                     if (decider){
                         $('#'+div_id).find('#alert')
                             .children('span')
-                            .text("Your submission is complete.");
+                            .text("Your submission is correct!");
 
-                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution has been recorded!");
+                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
                     }
                     else{
                         $('#'+div_id).find('#alert')

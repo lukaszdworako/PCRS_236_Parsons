@@ -198,7 +198,7 @@ function submit_mc(submission, problem_pk, div_id) {
                 var score = data['score'];
                 var max_score = data['max_score'];
 
-                var desider = score == max_score;
+                var desider = score >= max_score;
                 $(display_element)
                     .toggleClass("red-alert", !desider);
                 $(display_element)
@@ -212,8 +212,8 @@ function submit_mc(submission, problem_pk, div_id) {
                 if (desider){
                     $(display_element)
                         .children('span')
-                        .text("Your solution is correct!");
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
+                        .text("Your solution is complete.");
+                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is complete.");
                 }
                 else{
                     $(display_element)
