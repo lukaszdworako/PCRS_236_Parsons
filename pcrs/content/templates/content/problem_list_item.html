@@ -7,12 +7,21 @@
         <span class="at">Move {{ problem.name }} to a page</span>
     </button>
 
-    <i class="edit-icon"></i>
-        <button class="btn-object-visibility visibility-{{problem.visibility}}"
-                title="Visibility {{problem.visibility}}">
-                    <span class="at">{{ problem.name }} Visibility {{problem.visibility}}</span>
-        </button>
-    <b class="searchable_content">{{ problem }}</b>
+    <button class="btn-object-visibility visibility-{{problem.visibility}}"
+            title="Visibility {{problem.visibility}}">
+                <span class="at">{{ problem.name }} Visibility {{ problem.visibility }}</span>
+    </button>
+    <span class="searchable_content">
+        {% if problem.name %}
+            <b>{{ problem.name }}</b>
+        {% endif %}
+        <a class="pull-right" href="{{ problem.get_absolute_url }}" target="_blank" title="Edit {{ problem.name }}">
+            <i style="color:navy" class="pencil-icon"></i>
+        </a>
+        <br />
+        {{ problem.description }}
+    </span >
+
     {% with object=problem %}
         {% include "pcrs/tags.html" %}
     {% endwith %}

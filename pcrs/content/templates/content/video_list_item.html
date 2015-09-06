@@ -6,9 +6,11 @@
     <button class="at" id="btn-object-add">
         <span class="at">Move {{ item.name }} to a page</span>
     </button>
-    &nbsp;
     <i class="video-icon"></i>
     <b class="searchable_content">{{ item.name }}</b>
+    <a class="pull-right" href="{{ item.get_absolute_url }}" target="_blank" title="Edit {{ item.name }}">
+        <i style="color:navy" class="pencil-icon"></i>
+    </a>
     {% with object=item %}
         {% include "pcrs/tags.html" %}
     {% endwith %}

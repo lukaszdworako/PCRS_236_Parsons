@@ -88,7 +88,9 @@
                         <div class="tab-pane" id="{{ label }}-tab">
                             <div class="items item-list" id="{{ label }}">
                                 {% for problem in problems|get_item:label %}
-                                    {% include "content/problem_list_item.html" %}
+                                    {% if problem.name != "blank" %}
+                                        {% include "content/problem_list_item.html" %}
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
