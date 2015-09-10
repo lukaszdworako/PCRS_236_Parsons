@@ -38,7 +38,6 @@ class EditorViewMixin:
             p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code=starter, id=9999999, language="c")
         elif self.pType == 'python':
         	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="python")
-       	logging.info(p.name)
         return p
 
     def get_form_kwargs(self):
@@ -60,7 +59,6 @@ class EditorViewMixin:
         submission_code = request.POST.get('submission', '')
         results, error = [], None
         if submission_code:
-            logging.info(submission_code)
             if self.pType == 'python':
             	submission = python_models.Submission(user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)

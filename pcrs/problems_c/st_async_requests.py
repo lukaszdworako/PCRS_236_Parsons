@@ -1,8 +1,6 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from pprint import pprint
-
 import json
 
 from problems_c.c_language import *
@@ -10,8 +8,6 @@ from problems_c.c_utilities import *
 from problems_c.models import Problem
 import logging
 import traceback
-
-import pdb
 
 
 def visualizer_details(request):
@@ -58,7 +54,6 @@ def visualizer_details(request):
     except Exception as e:
         tb = e.__traceback__
         traceback.print_tb(tb)
-        print(e)
         ret['exception'] = str(e)
 
     json_output = json.dumps(ret, indent=None)
