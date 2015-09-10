@@ -333,12 +333,14 @@ function getTestcases(div_id) {
 
         if (language == 'c') {
             clean_code = addHashkey(div_id);
-            // For reporting bugs
-            document.getElementById('feedback_code').value = clean_code;
         }
     }
     else {     // editor
         call_path = root + '/problems/' + language + '/editor/run';
+    }
+
+    if (language == 'c') {
+        document.getElementById('feedback_code').value = clean_code;
     }
 
     var postParams = { csrftoken: csrftoken, submission: clean_code };
