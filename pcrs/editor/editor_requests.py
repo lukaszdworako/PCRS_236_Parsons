@@ -7,9 +7,6 @@ from problems_c.c_utilities import *
 from problems_c.models import Problem
 import logging
 
-from pprint import pprint
-import pdb
-
 
 def visualizer_details_editor(request):
     """

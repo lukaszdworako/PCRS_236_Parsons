@@ -14,7 +14,6 @@ import ast
 import struct
 
 from pprint import pprint
-import pdb
 
 class CompilationError(Exception):
     pass
@@ -276,9 +275,6 @@ class CSpecifics():
             mod_user_script = c_visualizer.add_printf(user_script)
         except:
             return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
-        #logger.info("--------------")
-        #print(mod_user_script)
-        #logger.info("--------------")
         # Compile and run the modified source code and remove compiled file
         try:
             code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
@@ -528,9 +524,8 @@ class CSpecifics():
         for print_statement in filter(None, print_blocks):
             # Make a dictionary out of all of parts of the line
             line_info_list = print_statement.split(print_delim)
-            pprint(line_info_list)
+            #pprint(line_info_list)
             line_info = { info.split(':',1)[0]: info.split(':',1)[1] for info in line_info_list }
-            print(line_info)
 
             if 'global' in line_info:
                 current_var = self.parse_var(line_info)
@@ -618,5 +613,5 @@ class CSpecifics():
         # Append the last step
         json_output["steps"].append(current_step)
 
-        pprint(json_output)
+        #pprint(json_output)
         return json_output
