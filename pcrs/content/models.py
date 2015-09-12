@@ -405,7 +405,7 @@ class SectionQuest(AbstractLimitedVisibilityObject):
     """
     section = models.ForeignKey(Section)
     quest = models.ForeignKey('Quest')
-    open_on = models.DateTimeField(blank=True, null=True)
+    open_on = models.DateTimeField(default=datetime.datetime.now, blank=True)
     due_on = models.DateTimeField(blank=True, null=True)
 
     class Meta:
