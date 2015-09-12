@@ -41,7 +41,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
 
     @property
     def format(self):
-        if "media/public" in self.link:      # Hack for MYMEDIA
+        if "media" in self.link and ("public" in self.link or "uoft" in self.link):       # Hack for MYMEDIA
             return 'rtmp/mp4'
         else:
             return 'video/mp4'
