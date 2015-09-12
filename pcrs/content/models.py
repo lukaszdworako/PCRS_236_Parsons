@@ -31,8 +31,8 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
 
     @property
     def url(self):
-        if "media/public" in self.link:      # Hack for MYMEDIA
-            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+        if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
+            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{0}'.format(self.link)
         elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
             tag = self.link.find("?v=")
             return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
