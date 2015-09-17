@@ -101,7 +101,7 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 self.queryset = self.model.objects\
                                     .filter(content_page=self.get_page())\
                                     .prefetch_related('content_object').all()
-            except DoesNotExist:
+            except ContentPage.DoesNotExist:
                 self.queryset = None
         return self.queryset
 
@@ -135,10 +135,11 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 .get_best_attempts_before_deadlines(user, section)
             context['best'][content_type.app_label] = best
 
-        context['next'] = self.page.next()
-        context['num_pages'] = self.page.challenge.contentpage_set.count()
-        context['forms'] = self._get_forms()
-        context['watched'] = WatchedVideo.get_watched_pk_list(user)
+        if self.page:
+            context['next'] = self.page.next()
+            context['num_pages'] = self.page.challenge.contentpage_set.count()
+            context['forms'] = self._get_forms()
+            context['watched'] = WatchedVideo.get_watched_pk_list(user)
         return context
 
 
@@ -157,9 +158,10 @@ class ReactiveContentPageView(ContentPageView):
         context['content_page'] = self.page
         context['best'] = {}
 
-        context['next'] = self.page.next()
-        context['num_pages'] = self.page.challenge.contentpage_set.count()
-        context['forms'] = self._get_forms()
+        if self.page:
+            context['next'] = self.page.next()
+            context['num_pages'] = self.page.challenge.contentpage_set.count()
+            context['forms'] = self._get_forms()
         return context
 
 
