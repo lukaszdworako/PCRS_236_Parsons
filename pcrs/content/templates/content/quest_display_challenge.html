@@ -26,9 +26,11 @@
                 </span>
 
                 {{ challenge.name }}
-                <a type="button" title="Attempt" href="{{ challenge.get_absolute_url }}/1">
-                    <i class="attempt-btn"></i>
-                </a>
+                {% if challenge.get_first_page_url %}
+                    <a type="button" title="Attempt" href="{{ challenge.get_first_page_url }}">
+                        <i class="attempt-btn"></i>
+                    </a>
+                {% endif %}
 
                 {% if completed == total %}
                     <div class="challenge-mark-complete">

@@ -97,9 +97,12 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
 
     def get_queryset(self):
         if self.queryset is None:
-            self.queryset = self.model.objects\
-                .filter(content_page=self.get_page())\
-                .prefetch_related('content_object').all()
+            try:
+                self.queryset = self.model.objects\
+                                    .filter(content_page=self.get_page())\
+                                    .prefetch_related('content_object').all()
+            except DoesNotExist:
+                self.queryset = None
         return self.queryset
 
     def _get_forms(self):
