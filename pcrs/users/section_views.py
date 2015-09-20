@@ -127,14 +127,9 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             for record in grades:
                 problem = (ctype.app_label,
                            record['problem'])
-                if record['user'] == 'zhuyi14':
-                    print("----- Recording ----- Problem: {0}, Score: {1}".format(problem, record['best']))
                 results[record['user']][problem] = record['best']
 
         for student_id, score_dict in results.items():
-            if student_id == 'zhuyi14':
-                for problem in problems:
-                    print("----- Problem: {0}, Score: {1}".format(problem, score_dict.get(problem, '-')))
             writer.writerow(([student_id] +
                             [score_dict.get(problem, '') for problem in problems]))
 
