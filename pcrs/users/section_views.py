@@ -111,7 +111,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                 # include for_credit and/or not for_credit problems
                 is_graded = problem.challenge.is_graded
                 if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
-                    problems.append((ctype.app_label, problem.pk))
+                    problems.append(("problems_" + problem.get_problem_type_name(), problem.pk))
                     names.append("{0} ({1})".format(problem.name.strip() or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
                     max_scores.append(problem.max_score)
                     for_credit_row.append(is_graded)
@@ -127,13 +127,18 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             for record in grades:
                 problem = (ctype.app_label,
                            record['problem'])
+                if record['user'] == 'zhuyi14':
+                    print("----- Recording ----- Problem: {0}, Score: {1}".format(problem, record['best']))
                 results[record['user']][problem] = record['best']
 
         for student_id, score_dict in results.items():
+            if student_id == 'zhuyi14':
+                for problem in problems:
+                    print("----- Problem: {0}, Score: {1}".format(problem, score_dict.get(problem, '-')))
             writer.writerow(([student_id] +
                             [score_dict.get(problem, '') for problem in problems]))
 
-        # collect students in the section who has not submitted anything
+        # collect students in the section who have not submitted anything
 
         for student in PCRSUser.objects.get_students(active_only=active_only)\
                                        .filter(section=section)\
