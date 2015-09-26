@@ -112,7 +112,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                 is_graded = problem.challenge.is_graded
                 if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
                     problems.append(("problems_" + problem.get_problem_type_name(), problem.pk))
-                    names.append("{0} ({1})".format(problem.name.strip() or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
+                    names.append("{0} ({1})".format(problem.name or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
                     max_scores.append(problem.max_score)
                     for_credit_row.append(is_graded)
         writer.writerow(names)
