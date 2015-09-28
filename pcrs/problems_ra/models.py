@@ -103,6 +103,7 @@ class Submission(AbstractSubmission):
                 TestRun(submission=self, testcase=testcase,
                         test_passed=result['passed']).save()
                 result['testcase'] = testcase.id
+                result['test_desc'] = str(testcase)
                 results.append(result)
                 if result['error']:
                     error = self.parse_sql_error(result['error'])

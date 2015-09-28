@@ -468,6 +468,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
     //error ra
     if (error_msg != null){
         table_location.append("<div class='red-alert'>"+error_msg+"</div>");
+
+        var test = {'visible': false,
+                    'input': null,
+                    'output': null,
+                    'passed': false,
+                    'description': error_msg};
+        tests.push(test);
+
         error_msg = null;
     }
     else{
@@ -574,6 +582,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
 
                 table_location.append(main_table);
             }
+
+	    var test = {'visible':current_testcase['visible'],
+	                'input': null,
+	                'output': null,
+	                'passed': current_testcase['passed'],
+	                'description': current_testcase['test_desc']};
+
+	    tests.push(test);
         }
     }
     var data = {'sub_time':new Date(),
@@ -584,7 +600,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             'problem_pk':div_id.split("-")[1],
             'sub_pk':sub_pk,
             'out_of':max_score,
-            'tests': table_location};
+            'tests': tests};
     if (best && !data['past_dead_line']){
         update_marks(div_id, score, max_score);
     }
