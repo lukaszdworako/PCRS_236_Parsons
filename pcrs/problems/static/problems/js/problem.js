@@ -77,6 +77,8 @@ function getHistory(div_id){
     var postParams = { csrftoken: csrftoken };
     var problem_path = "";
 
+    // Empty the accordion, in case any manual insertions were performed.
+
     var language = check_language(div_id);
     if (language == 'python'){
         problem_path = root + '/problems/python/' + div_id.split("-")[1]+'/history';
@@ -93,6 +95,7 @@ function getHistory(div_id){
     $.post(problem_path,
         postParams,
         function(data){
+            window[div_id+'_history_init'] = 1;
             show_history(data, div_id);
         },
         'json')
@@ -105,6 +108,11 @@ function add_history_entry(data, div_id, flag){
      * Add "data" to the history inside the given "div_id"
      * "flag" 0 appends anf "flag" 1 prepends
      */
+
+    // Exit if the history window has not been requested by the user
+    if (!window[div_id+'_history_init']) {
+        return;
+    }
 
     var sub_time = new Date(data['sub_time']);
     var panel_class = "pcrs-panel-default";
