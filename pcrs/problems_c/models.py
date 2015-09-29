@@ -17,7 +17,6 @@ from json import loads, dumps
 from requests import post
 from hashlib import sha1
 import re
-import shlex
 import bisect
 from problems_c.c_utilities import *
 
@@ -74,7 +73,7 @@ class Submission(AbstractSubmission):
             run['test_desc'] = testcase.description
             run['debug'] = False
             if testcase.is_visible:
-                run['test_input'] = " ".join(["'{0}'".format(c.strip('"')) for c in shlex.shlex(testcase.test_input)])
+                run['test_input'] = " ".join(['"{0}"'.format(c.strip('"')) for c in testcase.test_input.split()])
                 run['debug'] = runner.visualizable
             results.append(run)
 
