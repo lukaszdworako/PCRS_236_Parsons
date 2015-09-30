@@ -40,8 +40,13 @@ def combine_user_code_starter_code(problem_id, user_submission, starter_code):
     student_code_key_list_len = len(student_code_key_list)
 
     # Could not find student code
-    if len(student_code_key_list) == 0 or len(student_code_key_list) % 2 != 0:
+    if len(student_code_key_list) == 0:
         raise Exception("No student code found!")
+
+    # Extra hash at the end of the student code
+    odd_key_list_len = len(student_code_key_list) % 2 != 0
+    if odd_key_list_len:
+        student_code_key_list.pop()
 
     # Get student code from submission and add it to the official exercise (from the database)
     student_code_list = []
