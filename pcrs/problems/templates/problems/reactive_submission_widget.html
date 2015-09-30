@@ -12,6 +12,9 @@
 
         {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             <span class="widget_controls">
+            <a href="{{ problem.get_absolute_url }}">
+            <i style="color:navy" class="pencil-icon"></i><span class="at">Edit {{ problem.name }}"</span></a>
+
             <a href="{{ problem.get_browse_submissions_url }}"><i
                     class="openfolder-icon"></i><span
                     class="at">Submissions for {{ problem.name }}</span></a>
