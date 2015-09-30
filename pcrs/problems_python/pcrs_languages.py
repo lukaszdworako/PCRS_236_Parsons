@@ -236,7 +236,7 @@ class PythonSpecifics(BaseLanguage):
     def run_subprocess(self, script):
         """ Run python subprocess executed with provided script. Return process p. """
 
-        command = ['python']
+        command = ['python3']
         module_dir = os.path.dirname(__file__)
         file_path = os.path.join(module_dir, '../languages/python/')
         abs_path = os.path.abspath(file_path)
