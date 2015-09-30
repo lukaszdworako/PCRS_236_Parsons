@@ -11,15 +11,15 @@
         {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             {% block instructor_options %}
                 <span class="widget_controls">
-                    <a href="{{ problem.get_absolute_url }}"><i
+                    <a href="{{ problem.get_absolute_url }} title="Edit"><i
                             class="pencil-icon"></i><span 
                             class="at">Edit {{ problem.name }}"</span></a>
 
-                    <a href="{{ problem.get_browse_submissions_url }}"><i
+                    <a href="{{ problem.get_browse_submissions_url }}" title="Browse submissions"><i
                             class="openfolder-icon"></i><span
                             class="at">Submissions for {{ problem.name }}</span></a>
 
-                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
+                    <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
                             class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
                 </span>
