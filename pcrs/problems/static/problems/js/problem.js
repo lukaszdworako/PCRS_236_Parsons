@@ -643,7 +643,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        var description = current_testcase.test_desc;
 	        var passed = current_testcase.passed_test;
 	        var testcaseInput = current_testcase.test_input;
-	        var testcaseOutput = current_testcase.expected_output;
+	        var testcaseOutput = create_output(current_testcase.expected_output);
             var debug = current_testcase.debug;
 	        var result = create_output(current_testcase.test_val);
 	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);

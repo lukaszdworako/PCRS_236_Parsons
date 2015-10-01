@@ -214,7 +214,7 @@ class PythonSpecifics(BaseLanguage):
 
                 ret['test_val'] = eval(test_val)
                 ret['passed_test'] = eval(passed_test)
-                ret['exp_test_val'] = eval(exp_test_val)
+                ret['expected_output'] = eval(exp_test_val)
 
             p.stdout.close()
             p.stderr.close()
