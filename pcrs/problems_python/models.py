@@ -54,7 +54,6 @@ class Submission(AbstractSubmission):
                 run['debug'] = True
             else:
                 run['test_input'] = None
-                run['expected_output'] = None
             results.append(run)
 
         return results, error
