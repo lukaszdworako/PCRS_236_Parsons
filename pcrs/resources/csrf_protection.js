@@ -1,5 +1,5 @@
 $(document).ajaxError(function () {
-    alert('Something went wrong.');
+    alert('Error: Action did not complete. Usually, this occurs when authentication expires. Try loading PCRS in another tab to refresh your session, and then try the action again. If you are submitting an exercise, do not forget to copy (and save) the code, in case your page is reloaded.');
 });
 
 var csrftoken = getCookie('csrftoken');
