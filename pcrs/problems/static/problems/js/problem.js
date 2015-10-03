@@ -687,7 +687,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                     document.getElementById("current_testcase"+i).removeAttribute('id');
 
                     if (language == 'python') {
-                        renderData_ignoreID(current_testcase.expected_output, $('#current_testcase'+i));
+                        renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
                     }
                     else { // language == 'c'
                         $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
