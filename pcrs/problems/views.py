@@ -257,7 +257,18 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
-        results = self.record_submission(request)
+        try:
+            results = self.record_submission(request)
+        except AttributeError:       # Anonymous user
+            return HttpResponse(json.dumps({
+                                'results': ([], "Your session has expired. Please copy your submission (to save it) and refresh the page before submitting again."),
+                                'score': 0,
+                                'sub_pk': 0,
+                                'best': False,
+                                'past_dead_line': False,
+                                'max_score': 1}, cls=DateEncoder),
+                                mimetype='application/json')
+        
         problem = self.get_problem()
         user, section = self.request.user, self.get_section()
 
