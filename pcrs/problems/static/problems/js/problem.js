@@ -643,7 +643,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        var description = current_testcase.test_desc;
 	        var passed = current_testcase.passed_test;
 	        var testcaseInput = current_testcase.test_input;
-	        var testcaseOutput = current_testcase.expected_output;
+	        var testcaseOutput = create_output(current_testcase.expected_output);
             var debug = current_testcase.debug;
 	        var result = create_output(current_testcase.test_val);
 	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
@@ -678,10 +678,20 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
 	                           ''+'</div></div></td>');
 
-	            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
-                document.getElementById("current_testcase"+i).removeAttribute('id');
+                    if (language == 'python') {
+	                renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+                    }
+                    else { // language == 'c'
+                        $('#current_testcase'+i).append('<span class="stringObj">' + current_testcase.test_val + '</span>')
+                    }
+                    document.getElementById("current_testcase"+i).removeAttribute('id');
 
-	            renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
+                    if (language == 'python') {
+                        renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
+                    }
+                    else { // language == 'c'
+                        $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
+                    }
 	            document.getElementById("exp_test_val"+i).removeAttribute('id');
 
 	            newRow.append('<td class="passed"></td>');

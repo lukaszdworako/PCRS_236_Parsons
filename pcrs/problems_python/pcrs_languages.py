@@ -214,7 +214,7 @@ class PythonSpecifics(BaseLanguage):
 
                 ret['test_val'] = eval(test_val)
                 ret['passed_test'] = eval(passed_test)
-                ret['exp_test_val'] = eval(exp_test_val)
+                ret['expected_output'] = eval(exp_test_val)
 
             p.stdout.close()
             p.stderr.close()
@@ -236,7 +236,7 @@ class PythonSpecifics(BaseLanguage):
     def run_subprocess(self, script):
         """ Run python subprocess executed with provided script. Return process p. """
 
-        command = ['python']
+        command = ['python3']
         module_dir = os.path.dirname(__file__)
         file_path = os.path.join(module_dir, '../languages/python/')
         abs_path = os.path.abspath(file_path)
