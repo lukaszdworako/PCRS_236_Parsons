@@ -1,5 +1,4 @@
 import logging
-import pdb
 # --------------------------------------------------------------- #
 #        Supporting functions - cg_stacktrace constructor         #
 # --------------------------------------------------------------- #
@@ -25,7 +24,6 @@ def get_current_date():
 
 def add_break_line_after_token(user_script, tokens):
     """Add \n scape sequence at the end of every ;."""
-    logger = logging.getLogger('activity.logging')
     index = 0
     line_count = 1
     extra_scape_sequence_list = []
@@ -149,7 +147,6 @@ def search_dictionary(list, lookup):
 def get_variables_details_func_signature(line, line_number):
     """Get full details on variables located in function signature"""
 
-    #pdb.set_trace()
     attributes = get_variables_inside_brackets(line)
     logger = logging.getLogger('activity.logging')
     attributes = attributes.strip()
