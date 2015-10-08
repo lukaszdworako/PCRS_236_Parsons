@@ -250,8 +250,6 @@ class CSpecifics():
             'exception' (only if exception occurs) -> exception message.
             'trace' -> program trace.
         """
-        logger = logging.getLogger('activity.logging')
-
         user = add_params['user']
         test_input = add_params['test_case']
         deny_warnings = True
@@ -274,11 +272,15 @@ class CSpecifics():
         try:
             mod_user_script = c_visualizer.add_printf(user_script)
         except:
+            logger = logging.getLogger('activity.logging')
+            logger.info("Visualization error: add_printf failed\n" + user_script + "\n=====")
             return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
         # Compile and run the modified source code and remove compiled file
         try:
             code_output = self.run_test_visualizer(test_input, user, mod_user_script, deny_warnings)
         except:
+            logger = logging.getLogger('activity.logging')
+            logger.info("Visualization error: run_test_visualizer failed\n" + user_script + "\n=====")
             return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
 
         if 'exception_type' in code_output and code_output['exception_type'] != 'error':
@@ -287,10 +289,14 @@ class CSpecifics():
                 json_output = self.code_output_to_json((str)(code_output.get("test_val")), c_visualizer, hidden_lines_list)
                 return json_output
             except:
+                logger = logging.getLogger('activity.logging')
+                logger.info("Visualization error: code_output_to_json failed\n" + user_script + "\n=====")
                 return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
         else:
             # Return error to user, we will remove this once we put to production
             #TODO: Compiler is letting users declare function header variables with no type, but this messes up visualizer - change this to restrict!!! - Julianna
+            logger = logging.getLogger('activity.logging')
+            logger.info("Visualization error: exception in code_output\n" + code_output['exception'] + "\n=====" + user_script + "\n=====")
             return {"error": "Sorry, there was a problem with Visualization: The code you have tried to visualize is not handled yet"}
 
     def get_download_mimetype(self):
