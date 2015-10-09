@@ -1,9 +1,6 @@
 from languages.c.visualizer.cg_stacktrace_functions import *
 from languages.c.visualizer.standardize_ast import NormalizeWalker
 
-import problems_c.models
-import logging
-import pdb
 import uuid
 import sys
 import os

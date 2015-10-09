@@ -43,7 +43,7 @@ def visualizer_details(request):
 
         if 'error' in ret:
             error = ret['error']
-            exception_msg = ""
+            exception_msg = error
             if 'exception' in error:
                 exception_msg = error['exception']
             elif 'runtime_error' in error:
@@ -52,9 +52,9 @@ def visualizer_details(request):
             ret = { 'exception': exception_msg }
 
     except Exception as e:
-        tb = e.__traceback__
-        traceback.print_tb(tb)
-        ret['exception'] = str(e)
+        #tb = e.__traceback__
+        #traceback.print_tb(tb)
+        ret['exception'] = "visualizer_details: " + str(e)
 
     json_output = json.dumps(ret, indent=None)
     return HttpResponse(json_output)
