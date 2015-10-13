@@ -112,7 +112,6 @@ function add_mc_history_entry(data, div_id, flag){
     if (data['best'] && !data['past_dead_line']){
         panel_class = "pcrs-panel-star";
         star_text = '<icon style="font-size:1.2em" class="star-icon"> </icon>';
-        console.log($('#'+div_id).find('#history_accordion').find(".star-icon"));
         $('#'+div_id).find('#history_accordion').find(".star-icon").removeClass("star-icon");
         $('#'+div_id).find('#history_accordion').find(".pcrs-panel-star")
             .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
@@ -193,33 +192,35 @@ function submit_mc(submission, problem_pk, div_id) {
                         .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
                 }
                 var display_element = $('#multiple_choice-'+problem_pk)
-                    .find("#alert");
+                    .find('#alert');
 
                 var score = data['score'];
                 var max_score = data['max_score'];
 
-                var desider = score >= max_score;
+                var is_correct = score >= max_score;
                 $(display_element)
-                    .toggleClass("red-alert", !desider);
+                    .toggleClass('red-alert', !is_correct);
                 $(display_element)
-                    .toggleClass("green-alert", desider);
-                $(display_element)
-                    .children('icon')
-                    .toggleClass("remove-icon", !desider);
+                    .toggleClass('green-alert', is_correct);
                 $(display_element)
                     .children('icon')
-                    .toggleClass("ok-icon", desider);
-                if (desider){
+                    .toggleClass('remove-icon', !is_correct);
+                $(display_element)
+                    .children('icon')
+                    .toggleClass('ok-icon', is_correct);
+                if (is_correct){
                     $(display_element)
                         .children('span')
-                        .text("Your solution is complete.");
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is complete.");
+                        .text('Your solution is complete.');
+                    $('#'+div_id).find('.screen-reader-text').prop('title', 'Your solution is complete.');
                 }
                 else{
-                    $(display_element)
-                        .children('span')
-                        .text("Your solution is either incorrect or incomplete!");
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is either incorrect or incomplete!");
+                    var alert_msg = 'Your solution is either incorrect or incomplete!';
+                    if (data['error_msg']){
+                        alert_msg = data['error_msg'];
+                    }
+                    $(display_element).children('span').text(alert_msg);
+                    $('#'+div_id).find('.screen-reader-text').prop('title', alert_msg);
                 }
 
                 mc_options = $('#'+div_id).find('[id^="id_options_"]');
