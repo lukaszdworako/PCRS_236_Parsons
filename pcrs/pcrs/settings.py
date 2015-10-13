@@ -18,7 +18,9 @@ USE_SAFEEXEC = True               # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
 SAFEEXEC_GROUPID = "1005"
 
+# Session information
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
+SESSION_COOKIE_AGE = 86400       # One day, in seconds
 
 PRODUCTION = False
 DEBUG = not PRODUCTION
