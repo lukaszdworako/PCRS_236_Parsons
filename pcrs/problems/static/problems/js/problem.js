@@ -662,21 +662,22 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
 	        gradingTable.append(newRow);
 
-	        if (language != 'c' && "exception" in current_testcase){
+	        if ("exception" in current_testcase){
+                    
 	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
 	                          current_testcase.exception + '</th>');
 	        }
-	        else if (!(language == 'c' && "exception" in current_testcase && current_testcase.exception_type == "error")){
-                newRow.append('<td class="description">' + description + '</td>');
+	        else {
+                    newRow.append('<td class="description">' + description + '</td>');
 	            if (testcaseInput != null) {
 	                newRow.append('<td class="expression"><div class="expression_div">' +
 	                               testcaseInput + '</div></td>');
-                }
+                    }
 	            else {
 	                newRow.append('<td class="expression">' +
 	                              "Hidden Test" +'</td>');
 	            }
-                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
+                    newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
                                ''+'</div></div></td>');
 	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
 	                           ''+'</div></div></td>');
