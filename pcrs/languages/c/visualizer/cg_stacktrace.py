@@ -602,14 +602,15 @@ class CVisualizer:
     def set_struct_vars(self, parent, index, node, struct_type_name, func_name, struct_full_name=""):
 
         global struct_uninit
-        struct_uninit = True
+        struct_uninit = None
         cur_struct = self.struct_dict.get(struct_type_name)
 
-        struct_full_name += node.name + "."
-
-        #This means it's initialized
-        if node.init:
-            struct_uninit = False
+        try:
+            struct_full_name += node.name + "."
+            #if node.init:
+            #     struct_uninit = False
+        except AttributeError: # pointer assignment
+            struct_full_name += node.lvalue.name + "->"
 
         #Loop through all the declaration nodes saved in the current struct
         for declaration in cur_struct:
@@ -784,7 +785,7 @@ class CVisualizer:
         self.heap_list.append(var_name_val)
 
     #node is the assign or decl
-    def set_heap_struct_vars(self, parent, index, func_name ,node_name, malloc_node, struct_name_val=""):
+    def set_heap_struct_vars(self, parent, index, func_name, node_name, malloc_node, struct_name_val=""):
         #This is used in the set_assign_vars section to tell it that we just set a heap struct, so we should actually
         #tell the front end that the variable is new, as we want this assignment var to show up on the stack nametable
         global set_heap_struct
@@ -798,6 +799,8 @@ class CVisualizer:
 
         parent_type = (str)(self.var_type_dict.get(clean_name))
         type_of_var = parent_type.replace("*", "").replace("[]", "").strip()
+        if type_of_var.startswith("struct "):
+            type_of_var = type_of_var.split(" ")[1]
         actual_type = self.typedef_dict.get(type_of_var)
         if actual_type != None:
             type_of_var = actual_type
@@ -808,29 +811,33 @@ class CVisualizer:
             return False
         else:
             #Loop through each declaration node, create a temporary assignment node for each and run it through print_changed_vars
-            for declaration in in_struct_list:
+            original_extra = self.extra_adder
+            try:
+                for declaration in in_struct_list:
 
-                set_heap_struct = True
-                new_assign_node = self.create_assign_malloc_node(clean_name, declaration.name, declaration.type, malloc_node.coord.line)
+                    set_heap_struct = True
+                    new_assign_node = self.create_assign_malloc_node(clean_name, declaration.name, declaration.type, malloc_node.coord.line)
+                    self.extra_adder = self.amt_after
 
-                self.extra_adder = self.amt_after
+                    struct_name_val = clean_name+"->"+declaration.name
 
-                struct_name_val = clean_name+"->"+declaration.name
+                    if isinstance(declaration.type, c_ast.PtrDecl):
+                        #We call this function which recurses through ptr depth, adds to the ptr dict, and gets our type of var for us
+                        self.set_decl_ptr_vars(declaration, clean_name+"->")
 
-                if isinstance(declaration.type, c_ast.PtrDecl):
-                    #We call this function which recurses through ptr depth, adds to the ptr dict, and gets our type of var for us
-                    self.set_decl_ptr_vars(declaration, clean_name+"->")
-                    var_dict_add = {(str)(struct_name_val):type_of_var}
-
-                else:
-                    #add this to the var_type_dict
-                    try:
-                        var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.names[0])}
-                    except:
-                        var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.name)}
-                self.var_type_dict.update(var_dict_add)
-                self.print_changed_vars(parent, index, func_name, False, new_assign_node, struct_name_val)
-                set_heap_struct = False
+                        var_dict_add = {(str)(struct_name_val):type_of_var}
+                    else:
+                        #add this to the var_type_dict
+                        try:
+                            var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.names[0])}
+                        except:
+                            var_dict_add = {(str)(struct_name_val):(str)(declaration.type.type.name)}
+                    self.var_type_dict.update(var_dict_add)
+                    self.print_changed_vars(parent, index, func_name, False, new_assign_node, struct_name_val)
+                    set_heap_struct = False
+            except AttributeError:
+                # Occurs when attempting to print a struct in an uninitialized pointer.
+                self.extra_adder = original_extra
             return True
 
     def create_assign_malloc_node(self, clean_name, declaration_name, decl_type, malloc_node_line):
@@ -1493,14 +1500,26 @@ class CVisualizer:
                 if node_to_consider.lvalue.name in self.ptr_dict:
                     ptr_assign = True
 
-                    #This is the case where we have a pointer tht points to a string: can only happen w/ string lit, so
-                    #we're still pointing to an address, which then points to a char array on data, hence %p for address
                     try:
+                        typname = self.var_type_dict[node_to_consider.lvalue.name]
+                        # Handling pointers to structs (but not pointers to pointers to structs)
+                        if "struct" in typname and self.ptr_dict[node_to_consider.lvalue.name] == 1:
+                            struct_name = typname.split()[1]   # Want the second part of "struct ____ *"
+                            self.add_after_node(parent, index, func_name, False, ptr_assign, False, False)
+                            self.try_malloc(parent, index+to_add_index, func_name, node_to_consider.lvalue.name, node_to_consider, struct_name_val)
+                            return
+                            
+                    except Exception as e:
+                        print("Badness in pointer to struct handling", e)
+                        pass
+
+                    try:
+                        # Handling string literal: the right hand-side is a string
                         if node_to_consider.rvalue.type == 'string':
                             str_lit = True
                             global var_typerep
                             var_typerep = '%p'
-                    except:
+                    except AttributeError:    # Getting type from an rvalue that is an expression
                         pass
                 else:
                     ptr_assign = False
@@ -1508,8 +1527,7 @@ class CVisualizer:
                 #If it's a function call assignment for a function in our program,
                 #ensure there's a print statement in front of it too
                 if not self.try_assign_func(parent, index+to_add_index, node_to_consider, func_name, ptr_assign):
-
-                    self.add_after_node(parent, index+to_add_index, func_name, False, ptr_assign, False, False)
+                    self.add_after_node(parent, index+to_add_index, func_name, False, ptr_assign, "->" in struct_name_val, False)
 
                     self.try_malloc(parent, index+to_add_index, func_name, node_to_consider.lvalue.name, node_to_consider, struct_name_val)
 
@@ -1611,20 +1629,22 @@ class CVisualizer:
     #Try to malloc
     def try_malloc(self, parent, index, func_name, var_name, node, struct_name_val):
         try:
-            
             if node.rvalue.name.name == 'malloc':
                 if isinstance(node.lvalue, c_ast.StructRef):
                     #temp_generator = c_generator.CGenerator()
                     var_name = ""
 
-                is_struct = self.set_heap_struct_vars(parent, index, func_name,var_name, node, struct_name_val)
+                is_struct = self.set_heap_struct_vars(parent, index, func_name, var_name, node, struct_name_val)
 
-                if not is_struct:
+                # TODO: nested structs not supported by the check below
+                if not (is_struct or struct_name_val):
                     self.set_heap_vars(parent, index+to_add_index+self.extra_adder, var_name, node.rvalue, struct_name_val, False)
                     print_node = self.create_printf_node(parent[index+to_add_index], func_name, False, True, False, False, False, False, False, True, False, False, False, False)
                     parent.insert(index+2+self.extra_adder+to_add_index, print_node)
                     self.amt_after += 1
-        except:
+                elif struct_name_val:
+                    self.set_malloc_size_var(parent, index+to_add_index+self.extra_adder, node.rvalue)
+        except Exception:
             pass
 
     def print_stdout(self, parent, index, func_name):
