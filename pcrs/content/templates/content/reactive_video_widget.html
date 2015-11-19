@@ -19,7 +19,7 @@
     </div> <!-- iframe-video-container -->
 </div> <!-- iframe-video-wrapper -->
 {% else %}
-    <!--<video id="my_video_{{ item.pk }}"
+    <video id="my_video_{{ item.pk }}"
            class="video-js vjs-default-skin"
            controls
            preload="auto"
@@ -31,17 +31,17 @@
                poster="{% static "content/images/gradient.jpg" %}">
            {% endif %}
            <source src="{{ item.url }}" type='{{ item.format }}'>
-    </video>-->
+    </video>
+{% endif %}
 
-    {% if item.download %}
-        <br />
-        <div> <!-- video-download -->
-            <a id="video-download_{{ item.pk }}" href="{{ item.download }}">
-                Download Video
-            </a>
-        </div> <!-- video-download -->
-        <br />
-    {% endif %}
+{% if item.download and not "youtube.com" in item.url %}
+    <br />
+    <div> <!-- video-download -->
+        <a id="video-download_{{ item.pk }}" href="{{ item.download_link }}">
+            Download Video
+        </a>
+    </div> <!-- video-download -->
+    <br />
 {% endif %}
 
 {% if item.resource_list %}

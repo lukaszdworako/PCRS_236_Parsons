@@ -41,12 +41,16 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return self.link
 
     @property
-    def format(self):
-        if "media" in self.link and ("public" in self.link or "uoft" in self.link):       # Hack for MYMEDIA
-            return 'video/mp4'
-            #return 'rtmp/mp4'
+    def download_link(self):
+        if "media" in self.download and ("public" in self.download or "uoft" in self.download):      # Hack for MYMEDIA
+            code = self.download[self.download.rfind("/") + 1:self.download.rfind(".")]
+            return 'https://play.library.utoronto.ca/download/{0}'.format(code)
         else:
-            return 'video/mp4'
+            return self.download
+            
+    @property
+    def format(self):
+        return 'video/mp4'
 
     @property
     def resource_list(self):
