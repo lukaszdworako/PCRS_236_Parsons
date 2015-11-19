@@ -32,7 +32,8 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     @property
     def url(self):
         if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
-            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{0}'.format(self.link)
+            code = self.link[self.link.rfind("/") + 1:self.link.rfind(".")]
+            return 'https://play.library.utoronto.ca/embed/{0}'.format(code)
         elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
             tag = self.link.find("?v=")
             return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
@@ -42,7 +43,8 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     @property
     def format(self):
         if "media" in self.link and ("public" in self.link or "uoft" in self.link):       # Hack for MYMEDIA
-            return 'rtmp/mp4'
+            return 'video/mp4'
+            #return 'rtmp/mp4'
         else:
             return 'video/mp4'
 

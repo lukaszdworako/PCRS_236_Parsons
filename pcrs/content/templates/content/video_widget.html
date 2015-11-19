@@ -13,10 +13,14 @@
 {% endautoescape  %}
 <br />
 
-{% if "youtube.com" in item.url %}          {# Hack for youtube.com #}
+{% if "youtube.com" in item.url or "library.utoronto.ca" in item.url %}          {# Hack for iframe viewers #}
 <div class="iframe-video-wrapper">
     <div class="iframe-video-container">
+    {% if "youtube.com" in item.url %}
         <iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
+    {% else %}
+        <iframe width="560" height="315" src="{{ item.url }}" frameborder="0" allowfullscreen></iframe>
+    {% endif %}
     </div> <!-- iframe-video-container -->
 </div> <!-- iframe-video-wrapper -->
 {% else %}
