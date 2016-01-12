@@ -13,14 +13,10 @@
 {% endautoescape  %}
 <br />
 
-{% if "youtube.com" in item.url or "library.utoronto.ca" in item.url %}          {# Hack for iframe viewers #}
+{% if "youtube.com" in item.url %}      # Hack for YouTube
 <div class="iframe-video-wrapper">
     <div class="iframe-video-container">
-    {% if "youtube.com" in item.url %}
         <iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
-    {% else %}
-        <iframe width="560" height="315" src="{{ item.url }}" frameborder="0" allowfullscreen></iframe>
-    {% endif %}
     </div> <!-- iframe-video-container -->
 </div> <!-- iframe-video-wrapper -->
 {% else %}
@@ -37,16 +33,16 @@
            {% endif %}
            <source src="{{ item.url }}" type='{{ item.format }}'>
     </video>
-{% endif %}
 
-{% if item.download and not "youtube.com" in item.url %}
-    <br />
-    <div> <!-- video-download -->
-        <a id="video-download_{{ item.pk }}" href="{{ item.download_link }}">
-            Download Video
-        </a>
-    </div> <!-- video-download -->
-    <br />
+    {% if item.download %}
+        <br />
+        <div> <!-- video-download -->
+            <a id="video-download_{{ item.pk }}" href="{{ item.download_link }}">
+                Download Video
+            </a>
+        </div> <!-- video-download -->
+        <br />
+    {% endif %}
 {% endif %}
 
 {% if item.resource_list %}
