@@ -42,7 +42,7 @@
 
     <script type="text/javascript">
         $(document).keydown(function(e) {
-            var elID = $(document.activeElement).hasClass('textarea');
+            var elID = $(document.activeElement).hasClass('textarea') || $(document.activeElement).hasClass('datetimeinput');
             if (e.keyCode == 8 && !elID) {
                 return false;
             };
