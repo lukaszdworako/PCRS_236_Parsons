@@ -32,7 +32,11 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     @property
     def url(self):
         if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
-            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{0}'.format(self.link)
+            code = self.link[self.link.rfind("/") + 1:self.link.rfind(".")]
+            return 'rtmps://stream.library.utoronto.ca:1935/MyMedia/play/&mp4:1/{0}.mp4'.format(code)
+            # The code below would work for an iframe -- if we didn't have shibboleth problems
+            #return 'https://play.library.utoronto.ca/embed/{0}'.format(code)
+            
         elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
             tag = self.link.find("?v=")
             return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
@@ -40,8 +44,17 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return self.link
 
     @property
+    def download_link(self):
+        if "media" in self.download and ("public" in self.download or "uoft" in self.download):      # Hack for MYMEDIA
+            code = self.download[self.download.rfind("/") + 1:self.download.rfind(".")]
+            return 'https://play.library.utoronto.ca/download/{0}'.format(code)
+        else:
+            return self.download
+            
+    @property
     def format(self):
-        if "media" in self.link and ("public" in self.link or "uoft" in self.link):       # Hack for MYMEDIA
+        if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
+            # Unnecessary if we use an iframe
             return 'rtmp/mp4'
         else:
             return 'video/mp4'
