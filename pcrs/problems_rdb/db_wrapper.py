@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2 import extras
-from psycopg2._psycopg import DatabaseError
+from psycopg2._psycopg import DatabaseError, QueryCanceledError
 import re
 
 
@@ -31,7 +31,8 @@ class PostgresWrapper:
         Connect to the database as the user.
         """
         self._conn = psycopg2.connect(database=self.database,
-                                      user=self.user, password=self.user)
+                                      user=self.user, password=self.user,
+                                      options='-c statement_timeout=2000')
         self._cursor = self._conn.cursor(cursor_factory=extras.DictCursor)
 
     def close(self):
@@ -366,6 +367,9 @@ class StudentWrapper(PostgresWrapper):
             result['passed'] = self.process(result['expected'],
                                             result['actual'],
                                             order_matters)
+        except QueryCanceledError:
+            result['error'] = 'Query timed out: remove excess joins'
+
         except DatabaseError as e:
             result['error'] = '{code}: {message}'.format(code=e.pgcode,
                                                          message=e.pgerror)
