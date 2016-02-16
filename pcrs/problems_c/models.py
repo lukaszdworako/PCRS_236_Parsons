@@ -48,7 +48,7 @@ class Submission(AbstractSubmission):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    def run_testcases_locally(self):
+    def run_testcases_locally(self, save=True):
         """
         Run all testcases for the submission locally and create testrun objects.
         Return the list of testrun results.
@@ -66,8 +66,9 @@ class Submission(AbstractSubmission):
             if run.get("runtime_error", ' ') != ' ':
                 run["exception"] = "\n".join([run.get("exception", ''), run["runtime_error"]])
 
-            TestRun.objects.create(submission=self, testcase=testcase,
-                                   test_passed=run['passed_test'])
+            if save:
+                TestRun.objects.create(submission=self, testcase=testcase,
+                                       test_passed=run['passed_test'])
             run['test_input'] = None
             run['expected_output'] = testcase.expected_output.strip().replace('\n', '').replace('\r', '')
             run['test_desc'] = testcase.description
@@ -95,7 +96,7 @@ class Submission(AbstractSubmission):
 
         return results
 
-    def run_testcases_online(self):
+    def run_testcases_online(self, save=True):
         """
         Run all testcases for the submission online and create testrun objects.
         Return the list of testrun results.
@@ -104,7 +105,7 @@ class Submission(AbstractSubmission):
         try:
             jobscheduler_conf = JobScheduler.objects.get(id=1)
         except ObjectDoesNotExist:
-            return Submission.run_testcases_locally(self)
+            return Submission.run_testcases_locally(self, save)
 
         # Generate URL to JobScheduler server
         if jobscheduler_conf.dns == "":
@@ -152,20 +153,21 @@ class Submission(AbstractSubmission):
                     run['passed_test'] = code_return['tests'][i]['passed']
                     run['exception_type'] = code_return['exception_type']
                     run['exception'] = code_return['exception']
-                    TestRun.objects.create(submission=self, testcase=testcase,
-                                           test_passed=run['passed_test'])
+                    if save:
+                        TestRun.objects.create(submission=self, testcase=testcase,
+                                               test_passed=run['passed_test'])
                     i += 1
                     results.append(run)
             else:
                 print("Code request not created! Probably no Client was found by the JobScheduler.")
-                results = Submission.run_testcases_locally(self)
+                results = Submission.run_testcases_locally(self, save)
         except Exception as e:
             print("Connection Error: " + str(e))
-            results = Submission.run_testcases_locally(self)
+            results = Submission.run_testcases_locally(self, save)
 
         return results
 
-    def run_testcases(self, request):
+    def run_testcases(self, request, save=True):
         """
         Determines how the testcases should be executed
         Return the list of testrun results.
@@ -176,9 +178,9 @@ class Submission(AbstractSubmission):
 
         # Check if remote compilation (JobScheduler) is activated
         if JobScheduler.objects.get(id=1).active:
-            return Submission.run_testcases_online(self), None
+            return Submission.run_testcases_online(self, save), None
         else:
-            return Submission.run_testcases_locally(self), None
+            return Submission.run_testcases_locally(self, save), None
 
     def treat_exception_text(self, program_exception):
 
