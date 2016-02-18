@@ -42,9 +42,11 @@
 
     <script type="text/javascript">
         $(document).keydown(function(e) {
-            var elID = $(document.activeElement).hasClass('textarea') || $(document.activeElement).hasClass('datetimeinput');
-            if (e.keyCode == 8 && !elID) {
-                return false;
+            if (e.keyCode == 8) {
+                var elID = $(document.activeElement).hasClass('textarea') || $(document.activeElement).hasClass('datetimeinput') || $(document.activeElement).hasClass('form-control');
+                if (!elID) {
+                    return false;
+                }
             };
         });
     </script>
