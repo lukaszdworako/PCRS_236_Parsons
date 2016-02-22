@@ -78,20 +78,21 @@ class TestCase(RDBTestCase):
 class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    def run_testcases(self, request):
+    def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
         t_sub, t_ans, error = self.get_sql_translations()
 
         if not error:
-            results, error = self.get_results(request, t_sub, t_ans, testcases)
+            results, error = self.get_results(request, t_sub, t_ans, testcases, save)
         else:
-            for testcase in testcases:
-                TestRun(submission=self, testcase=testcase,
-                        test_passed=False).save()
+            if save:
+                for testcase in testcases:
+                    TestRun(submission=self, testcase=testcase,
+                            test_passed=False).save()
         return results, str(error) if error else None
 
-    def get_results(self, request, submission, solution, testcases):
+    def get_results(self, request, submission, solution, testcases, save=True):
         results, error = [], None
         with StudentWrapper(database=settings.RDB_DATABASE,
                             user=request.user.username) as db:
@@ -100,8 +101,9 @@ class Submission(AbstractSubmission):
                 result = db.run_testcase('; '.join(solution),
                                          '; '.join(submission),
                                          dataset.namespace)
-                TestRun(submission=self, testcase=testcase,
-                        test_passed=result['passed']).save()
+                if save:
+                    TestRun(submission=self, testcase=testcase,
+                            test_passed=result['passed']).save()
                 result['testcase'] = testcase.id
                 result['test_desc'] = str(testcase)
                 results.append(result)
