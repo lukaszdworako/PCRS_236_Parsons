@@ -372,7 +372,7 @@ class StudentWrapper(PostgresWrapper):
 
         except DatabaseError as e:
             result['error'] = '{code}: {message}'.format(code=e.pgcode,
-                                                         message=e.pgerror)
+                                                         message=e.pgerror).replace(' ', '&nbsp;').replace('\n', '<br />')
 
         except RuntimeError as e:
             result['error'] = str(e)
