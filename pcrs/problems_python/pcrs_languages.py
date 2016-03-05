@@ -1,8 +1,6 @@
 import os
 import subprocess
 import sys
-# from subprocess import TimeoutExpired
-import subprocess
 
 
 def set_path_to_languages():
@@ -96,7 +94,7 @@ class PythonSpecifics(BaseLanguage):
             if len(stderr_output) > 0:
                 trace = None
 
-        except TimeoutExpired as ex:
+        except subprocess.TimeoutExpired as ex:
             p.kill()
             trace = None
 
