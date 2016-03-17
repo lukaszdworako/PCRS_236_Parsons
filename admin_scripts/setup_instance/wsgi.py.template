@@ -34,7 +34,13 @@ _application = get_wsgi_application()
 def application(environ, start_responce):
     # Passes Shibboleth set environment vars to the WSGI application
     # If another attribute is needed, must add here or the application will not have access
-    os.environ['utorid'] = environ.get('utorid', None)
+    os.environ['utorid'] = environ.get('utorid', '')
+
+    if os.environ['utorid'] == '':
+        import time
+        f = open('/home/pcrsadmin/logs/StG108.log', 'a')
+        f.write("%s: empty utorid received\n" % time.time())
+        f.close()
 
     return _application(environ, start_responce)
 

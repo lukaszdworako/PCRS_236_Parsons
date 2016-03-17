@@ -5,12 +5,14 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
 from django.core.context_processors import csrf
 
-#
+import content.models
+import users.models
+
 import logging
 import datetime
 from django.utils.timezone import localtime, utc
-#
 
+import os
 import subprocess
 
 
@@ -27,10 +29,13 @@ def is_course_staff(user):
 
 
 def check_authorization(username, password):
-    ''' Return True if user is authized on the university level, False othervise. '''
-    if not settings.PRODUCTION:
+    ''' Return True if user can be authorized and False otherwise.
+    '''
+    # AUTH_TYPE 'shibboleth' does not use this function
+    if settings.AUTH_TYPE in ('none', 'pass'):
+        # 'none' does no authentication, 'pass' will authenticate on user object creation
         return True
-
+    # else settings.AUTH_TYPE == 'pwauth'
     pwauth = subprocess.Popen("/usr/sbin/pwauth", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               close_fds=True)
     try:
@@ -41,6 +46,41 @@ def check_authorization(username, password):
     retcode = pwauth.wait()
     return retcode == 0
 
+
+def login_django(request, username):
+    logger = logging.getLogger('activity.logging')
+    logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+                str(username) + " | Log in")
+
+    if settings.AUTH_TYPE == 'pass':
+        # Note that AUTOENROLL is not enabled for 'pass' auth type
+        passwd = request.POST.get('password', '')
+        user = authenticate(username=username, password=passwd)
+    else:  # AUTH_TYPEs 'none', 'pwauth', and 'shibboleth'
+        user = authenticate(username=username)
+        if user is None and settings.AUTOENROLL:
+            user = users.models.PCRSUser.objects.create_user(username, False, section_id='123')
+            user = authenticate(username=username)
+
+    if user is None:
+        # Automatic accounts not set up or creation failed.
+        NOTIFICATION = "djangoaccount"
+    elif not user.is_active:
+        NOTIFICATION = "user inactive"
+    else:
+        request.session['section'] = user.section
+        redirect_link = settings.SITE_PREFIX + '/content/quests'
+
+        login(request, user)
+        return HttpResponseRedirect(redirect_link)
+
+    # Actions if user cannot be logged in.
+    if settings.AUTH_TYPE == 'shibboleth':
+        # redirect user letting them know they do not belong to this server
+        redirect_link = settings.SITE_PREFIX + '/usernotfound.html'
+        return HttpResponseRedirect(redirect_link)
+
+    return None
 
 def login_view(request):
     """
@@ -55,37 +95,29 @@ def login_view(request):
     if request.user and request.user.is_authenticated():
         return HttpResponseRedirect(NEXT or settings.SITE_PREFIX + '/content/quests')
 
-    if request.POST:
+    # AUTH_TYPE 'shibboleth' uses an environment variable instead of check_authorization
+    if settings.AUTH_TYPE == "shibboleth":
+        username = os.environ["utorid"]
+        response = login_django(request, username)
+        if response:
+            return response
+
+    # AUTH_TYPEs 'pwauth', 'pass', and 'none'
+    elif request.POST:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
 
         if username != '':
-            # university-level authentication
             existing_user = check_authorization(username, password)
 
             if not existing_user:
                 NOTIFICATION = "username"
             else:
-                logger = logging.getLogger('activity.logging')
-                logger.info(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
-                str(username) + " | Log in")
-                # password-based authorization was provided at university level, 
-                # just create a user object. 
-                # user = authenticate(username=username, password=password)
-                user = authenticate(username=username)
+                response = login_django(request, username)
+                if response:
+                    return response
 
-                if user is None:
-                    NOTIFICATION = "djangoaccount"
-                if not user.is_active:
-                    NOTIFICATION = "user inactive"
-                else: 
-                    request.session['section'] = user.section
-                    post_link = request.POST['next']
-                    redirect_link = post_link or settings.SITE_PREFIX + '/content/quests'
-
-                    login(request, user)
-                    return HttpResponseRedirect(redirect_link)
-
+    # Failed logins and GET requests
     context = {'NEXT': NEXT, 'NOTIFICATION': NOTIFICATION}
     context.update(csrf(request))
     return render_to_response('users/login.html', context)

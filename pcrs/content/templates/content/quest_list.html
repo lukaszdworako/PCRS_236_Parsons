@@ -47,7 +47,10 @@
             <div id="challenges" class="tab-content">
                 {% for challenge in challenges %}
                     <div id="{{ challenge.pk }}" class="challenge">
-                        {{ challenge.name }}
+                        {{challenge.name}}
+                        <a class="pull-right" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="Edit {{ challenge.name }}">
+                            <i style="color:white" class="pencil-icon"></i>
+                        </a>
                         <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                     </div>
 
@@ -73,7 +76,9 @@
                             </div>
                         </div>
                             <div class="pull-right">
-                                {% include 'pcrs/buttons/edit.html' %}
+                                <a class="pull-right" target="_blank" title="Edit {{ object.name }}"  href="{{ object.get_absolute_url }}">&nbsp;
+                                    <i class="pencil-icon"></i>
+                                </a>
                             </div>
                         {% if not object.is_live %}
                             <div class="red-label pull-right">Under
@@ -82,12 +87,14 @@
                         {% else %}
                                 <div class="green-label pull-right">LIVE</div>
                         {% endif %}
+
                         <div class="quest-detail">
                             <h3 class="name">
                                 {{ object.name }}
                             </h3>
+                            {% autoescape off %}
                             <h5 class="description">{{ object.description }}</h5>
-
+                            {% endautoescape %}
                         </div>
                         <div class="quest-box">
                             {% for challenge in object.challenge_set.all %}
@@ -96,8 +103,11 @@
                                     <i class="close"
                                        title="Remove {{ challenge.name }} from {{ object.name }}">
                                     </i>
-                                    {{ challenge.name }}
-                                <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
+                                    {{challenge.name}}
+                                    <a class="pull-right" target="_blank" title="Edit {{ challenge.name }}"  href="{{ challenge.get_absolute_url }}">&nbsp;
+                                        <i style="color: white" class="pencil-icon"></i>
+                                    </a>
+                                    <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
                                 </div>
                             {% endfor %}
                         </div>

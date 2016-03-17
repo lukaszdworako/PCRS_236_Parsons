@@ -8,44 +8,44 @@
             {% endblock %}
         {% endautoescape %}
 
-
-{#        <span class="align-right">#}
-
-        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+        {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
             {% block instructor_options %}
                 <span class="widget_controls">
-                    <a href="{{ problem.get_browse_submissions_url }}"><i
+                    <a href="{{ problem.get_absolute_url }}" title="Edit"><i
+                            class="pencil-icon"></i><span 
+                            class="at">Edit {{ problem.name }}"</span></a>
+
+                    <a href="{{ problem.get_browse_submissions_url }}" title="Browse submissions"><i
                             class="openfolder-icon"></i><span
                             class="at">Submissions for {{ problem.name }}</span></a>
 
-                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
+                    <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
                             class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
-                    </span>
+                </span>
             {% endblock %}
         {% endif %}
 
-            <span class="problem-score" id="score-{{ item.get_uri_id }}">
-                {% if mark|default_if_none:'-' == problem.max_score %}
-                    <span class="widget_complete widget_mark"
-                          title="Progress so far">
-                    {% include "pcrs/checkmark_complete.html" %}
+        {% if not user.use_simpleui %}
+            <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}">
+                <span class="align-right">
+                {% if mark|default_if_none:'-' >= problem.max_score %}
+                    <span class="green-checkmark-icon" title="Progress so far: complete"></span>
                 {% else %}
                     {% if mark|length > 0 %}
-                        <span class="widget_incomplete widget_mark"
-                              title="Progress so far">
+                        <span class="incomplete_problem" title="Progress so far: " + {{ mark }} + " of " + {{ problem.max_score }}>
                     {% else %}
-                        <span class="widget_not_attempted widget_mark"
-                              title="Progress so far"></span>
+                        <span class="incomplete_problem" title="Progress so far: not attempted">
                     {% endif %}
-                    <sup> {{ mark|default_if_none:'-' }} </sup>
-                    /
-                    <sub> {{ problem.max_score }} </sub>
-                </span>
+                            <span class="nonreactive_score">
+                                <sup>{{ mark|default_if_none:'-' }}</sup>/<sub>{{ problem.max_score }}</sub>
+                            </span>
+                        </span>
                 {% endif %}
+                </span>
             </span>
+        {% endif %}
 
-{#        </span>#}
     </h3>
 {% endblock %}
 
@@ -62,7 +62,7 @@
     <br>
 {% endblock %}
 
-{% if problem.is_visible_to_students %}
+{% if problem.is_visible_to_students or problem.name == 'blank' %}
     {% block submission_form %}
         {% autoescape off %}
             {% load crispy_forms_tags %}
@@ -72,7 +72,7 @@
 
     {% block alert %}
         <br>
-        <div class="" id="alert">
+        <div class="alert-container" id="alert">
             <icon class=""></icon>
             <span></span>
             <a class="at screen-reader-text" href=''></a>

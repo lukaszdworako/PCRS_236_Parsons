@@ -97,9 +97,12 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
 
     def get_queryset(self):
         if self.queryset is None:
-            self.queryset = self.model.objects\
-                .filter(content_page=self.get_page())\
-                .prefetch_related('content_object').all()
+            try:
+                self.queryset = self.model.objects\
+                                    .filter(content_page=self.get_page())\
+                                    .prefetch_related('content_object').all()
+            except ContentPage.DoesNotExist:
+                self.queryset = None
         return self.queryset
 
     def _get_forms(self):
@@ -112,11 +115,11 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 # based on the problem class
                 module, _ = item.content_object.__module__.split('.')
                 if module.endswith('multiple_choice'):
-                    f = MCSubmissionForm(problem=problem)
+                    f = MCSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 elif module.endswith('rating'):
-                    f = RatingSubmissionForm(problem=problem)
+                    f = RatingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 else:
-                    f = ProgrammingSubmissionForm(problem=problem)
+                    f = ProgrammingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 forms[module][problem.pk] = f
         return forms
 
@@ -132,10 +135,11 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                 .get_best_attempts_before_deadlines(user, section)
             context['best'][content_type.app_label] = best
 
-        context['next'] = self.page.next()
-        context['num_pages'] = self.page.challenge.contentpage_set.count()
-        context['forms'] = self._get_forms()
-        context['watched'] = WatchedVideo.get_watched_pk_list(user)
+        if self.page:
+            context['next'] = self.page.next()
+            context['num_pages'] = self.page.challenge.contentpage_set.count()
+            context['forms'] = self._get_forms()
+            context['watched'] = WatchedVideo.get_watched_pk_list(user)
         return context
 
 
@@ -154,9 +158,10 @@ class ReactiveContentPageView(ContentPageView):
         context['content_page'] = self.page
         context['best'] = {}
 
-        context['next'] = self.page.next()
-        context['num_pages'] = self.page.challenge.contentpage_set.count()
-        context['forms'] = self._get_forms()
+        if self.page:
+            context['next'] = self.page.next()
+            context['num_pages'] = self.page.challenge.contentpage_set.count()
+            context['forms'] = self._get_forms()
         return context
 
 
@@ -171,7 +176,7 @@ class ReactiveContentPageData(ContentPageView, View):
         items = [
             item.content_object.serialize()
             for item in ContentSequenceItem.objects.filter(content_page=page)
-                        .prefetch_related('content_object').all()
+                        .prefetch_related('content_object').all() if item
         ]
 
         scores = {}

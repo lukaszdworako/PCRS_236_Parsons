@@ -6,7 +6,7 @@
                 <span class="at">Toggle navigation</span>
                 <span class="pcrs-dropdown-icon"></span>
             </button>
-            <a class="pcrs-navbar-brand" href="#">PCRS</a>
+            <a class="pcrs-navbar-brand" href="{% url 'login' %}">PCRS</a>
         </div>
         <div class="collapse navbar-collapse" id="student-navbar">
             {% if user %}
@@ -17,8 +17,32 @@
                         </a>
                     </li>
                 </ul>
+                {% if 'problems_python' in problem_types or 'problems_c' in problem_types %}
+                <ul class="pcrs-navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
+                            <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        {% if 'problems_python' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/python/submit">Python</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_c' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/c/submit">C</a>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+                {% endif %}
             {% endif %}
             <ul class="pcrs-navbar-nav-right">
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="">Logged in as <i>{{ request.user }}</i></a>
+                    </li>
+                 </ul>
                 {% include "pcrs/shared_navigation.html" %}
             </ul>
         </div>

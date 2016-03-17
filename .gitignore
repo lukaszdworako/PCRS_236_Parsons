@@ -1,3 +1,10 @@
 __pycache__
+.DS_Store
 .idea
 *.pyc
+*.log
+CACHE
+node_modules
+venv
+pcrs*.c
+pcrs/languages/c/execution/temporary

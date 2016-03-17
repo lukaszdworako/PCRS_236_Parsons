@@ -179,7 +179,7 @@ class TestSQLProblemUpdateViewWithNoSubmissions(CourseStaffViewTestMixin,
         self.valid_solution = 'SELECT * FROM WEATHER;'
         self.problem = Problem.objects.create(
             pk=1, name='test_sql_problem', description='test_sql_problem_desc',
-            solution=self.valid_solution, schema_id=1, visibility='draft')
+            solution=self.valid_solution, schema_id=1, visibility='open')
         TestSQLProblemCreateView.setUp(self)
 
     def test_sql_problem_edit_visibility(self):

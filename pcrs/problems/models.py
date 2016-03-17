@@ -8,7 +8,8 @@ from django.conf import settings
 import content.models
 from content.tags import AbstractTaggedObject
 from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
-                         AbstractSelfAwareModel)
+                         AbstractSelfAwareModel, get_problem_content_types,
+                         get_submission_content_types)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
 
@@ -17,16 +18,6 @@ def get_problem_labels():
     Return the list app_labels of apps that contain a Problem class.
     """
     return [c.app_label for c in get_problem_content_types()]
-
-
-def get_problem_content_types():
-    apps = settings.INSTALLED_PROBLEM_APPS
-    return ContentType.objects.filter(Q(model='problem', app_label__in=apps))
-
-
-def get_submission_content_types():
-    apps = settings.INSTALLED_PROBLEM_APPS
-    return ContentType.objects.filter(Q(model='submission', app_label__in=apps))
 
 
 class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
@@ -417,6 +408,25 @@ class AbstractTestRun(models.Model):
         return '{submission}: testcase {pk}'.format(
             submission=self.submission, pk=self.testcase.pk)
 
+
+class AbstractJobScheduler(models.Model):
+    """
+    Base Job Scheduler class.
+
+    Detailed configuration information about the Job Scheduler System that
+    PCRS will communicate to solve code problems.
+    """
+    protocol = models.CharField(max_length=16, blank=True)
+    ip = models.CharField(max_length=16, blank=True)
+    dns = models.CharField(max_length=200, blank=True)
+    port = models.CharField(max_length=10, blank=True)
+    api_url = models.CharField(max_length=100, blank=True)
+    user = models.CharField(max_length=100, blank=True)
+    password = models.CharField(max_length=100, blank=True)
+    active = models.BooleanField(blank=False, default=True)
+
+    class Meta:
+        abstract = True
 
 # Signal handlers
 

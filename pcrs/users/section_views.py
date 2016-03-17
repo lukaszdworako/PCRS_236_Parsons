@@ -1,10 +1,12 @@
 from collections import defaultdict
 import csv
+import time
 
 from django.http import HttpResponse
 from django.views.generic import FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.html import strip_tags
+from django.contrib.contenttypes.models import ContentType
 
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
@@ -72,29 +74,50 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         initial['section'] = self.get_object()
         return initial
 
+
     def form_valid(self, form):
         section = form.cleaned_data['section']
         quest = form.cleaned_data['quest']
         active_only = bool(form.cleaned_data['active'])
+        for_credit = form.cleaned_data['for_credit']
 
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=report.csv'
+        response['Content-Disposition'] = 'attachment; filename={0}-{1}-{2}.csv'.\
+                format(str(section).replace(" @ ", "_"), quest.name.replace(" ", "_"), time.strftime("%m%d%y"))
         writer = csv.writer(response)
 
-        # collect the problem ids, names, and max_scores
-        problems, names, max_scores = [], [], []
+        # query database for this section's problems
         problem_types = get_problem_content_types()
+        section_problems = []
+        problem_ids = []
         for ctype in problem_types:
             for problem in ctype.model_class().objects\
-                    .filter(challenge__quest=quest, visibility='open')\
-                    .order_by('id'):
-                problems.append((ctype.app_label, problem.pk))
-                names.append(strip_tags(str(problem)).replace('\n', ' ').replace('\r', ' '))
-                max_scores.append(problem.max_score)
+                    .select_related('challenge')\
+                    .filter(challenge__quest=quest, visibility='open'):
+                section_problems.append(problem)
+                problem_ids.append(problem.pk)
 
-        writer.writerow(['problems'] + names)
-        writer.writerow(['users/max_scores'] + max_scores)
+        #sort problems according to their display order
+        challenges = quest.challenge_set.all()
+        pages = [page for page_list in [challenge.contentpage_set.all() for challenge in challenges]
+                      for page in page_list]
+        sorted_section_problems = [seq_item.content_object for item_list in [page.contentsequenceitem_set.all() for page in pages] \
+                                                           for seq_item in item_list if "problem" in seq_item.content_object.get_pretty_name() and seq_item.content_object.pk in problem_ids]
+
+        # collect the problem ids, names, and max_scores, and for_credit
+        problems, names, max_scores, for_credit_row = [], ['problem name (url)'], ['max scores'], ['for credit?']
+        for problem in sorted_section_problems:
+                # include for_credit and/or not for_credit problems
+                is_graded = problem.challenge.is_graded
+                if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
+                    problems.append(("problems_" + problem.get_problem_type_name(), problem.pk))
+                    names.append("{0} ({1})".format(problem.name or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
+                    max_scores.append(problem.max_score)
+                    for_credit_row.append(is_graded)
+        writer.writerow(names)
+        writer.writerow(max_scores)
+        writer.writerow(for_credit_row)
 
         # collect grades for each student
         results = defaultdict(dict)
@@ -110,7 +133,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             writer.writerow(([student_id] +
                             [score_dict.get(problem, '') for problem in problems]))
 
-        # collect students in the section who has not submitted anything
+        # collect students in the section who have not submitted anything
 
         for student in PCRSUser.objects.get_students(active_only=active_only)\
                                        .filter(section=section)\

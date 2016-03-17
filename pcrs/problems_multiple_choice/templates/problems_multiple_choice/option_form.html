@@ -13,7 +13,7 @@
 
 {% block content %}
     {% with object_list=problem.option_set.all list_name='Existing Options' %}
-        {% include "pcrs/related_items_list.html" %}
+        {% include "problems_multiple_choice/option_display.html" %}
         <hr>
     {% endwith %}
     {{ block.super }}

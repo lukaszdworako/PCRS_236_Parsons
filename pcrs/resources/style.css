@@ -127,10 +127,6 @@ a:not(.collapsed) > .quest-icon{
     color:red !important;
 }
 
-.visibility-draft{
-    color:#FF8400 !important;
-}
-
 .problem-complete{
     color:green;
 }

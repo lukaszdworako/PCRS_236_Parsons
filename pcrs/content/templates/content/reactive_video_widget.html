@@ -1,35 +1,54 @@
+{% load staticfiles %}
+
 {% autoescape off %}
 <h3> <p class="widget_title"> {{ item.name }} </p>
 <span class="video-status align-right" id="watched-{{ item.get_uri_id }}"></span>
 </h3>
 <div> {{ item.description|linebreaks }} </div>
 {% endautoescape  %}
-<br>
+<br />
 
-<video id="my_video_{{ item.pk }}"
-       class="video-js vjs-default-skin"
-       controls
-       preload="auto"
+{% if "youtube.com" in item.url %}      
+<div class="iframe-video-wrapper">
+    <div class="iframe-video-container">
+        <iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
+    </div> <!-- iframe-video-container -->
+</div> <!-- iframe-video-wrapper -->
+{% else %}
+    <video id="my_video_{{ item.pk }}"
+           class="video-js vjs-default-skin"
+           controls
+           preload="auto"
 
-       data-setup='{"customControlsOnMobile": true }'
-       poster="{{ item.thumbnail }}">
-       {% if mymedia_videos %}
-           <source src="rtmp://media.library.utoronto.ca/vod/&mp4:{{ item.link }}" type='rtmp/mp4'>
-{#         <source src="{{ item.link }}" type="rtmp/mp4">#}
-       {% else %}
-           <source src="{{ item.link }}" type='video/mp4'>
-       {% endif %}
-</video>
+           data-setup='{"customControlsOnMobile": true }'
+           {% if item.thumbnail %}
+               poster="{{ item.thumbnail }}">
+           {% else %}
+               poster="{% static "content/images/gradient.jpg" %}">
+           {% endif %}
+           <source src="{{ item.url }}" type='{{ item.format }}'>
+    </video>
 
-{% if item.download %}
-    <br>
-    <div>
-        <a id="video-download_{{ item.pk }}" href="{{ item.download }}">
-            Download Video
-        </a>
-    </div>
-    <br>
+    {% if item.download %}
+        <br />
+        <div> <!-- video-download -->
+            <a id="video-download_{{ item.pk }}" href="{{ item.download_link }}">
+                Download Video
+            </a>
+        </div> <!-- video-download -->
+        <br />
+    {% endif %}
 {% endif %}
 
-
-
+{% if item.resource_list %}
+<br />
+<div> <!-- video-resources -->
+    <b>Resources</b>
+    <ol>
+    {% for reslink, restext in item.resource_list %}
+       <li><a href="{{ reslink }}">{{ restext }}</a></li>
+    {% endfor %}
+    </ol>
+</div> <!-- video-resources -->
+<br />
+{% endif %}

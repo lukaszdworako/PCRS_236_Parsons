@@ -738,7 +738,7 @@ $.ajax({
         // TODO initialize codemirror
         // Initialize code mirror instances.
 //        $(".code-mirror").each(function (index, element) {
-//            create_history_code_mirror("python", 3, element);
+//            create_to_code_mirror("python", 3, element);
 //        });
         React.renderComponent(
             <NavigationBar items={data.items} />,

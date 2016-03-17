@@ -5,7 +5,7 @@ from django.test import TestCase
 from content.models import Challenge, ContentPage, Video, ContentSequenceItem, \
     TextBlock
 from problems_multiple_choice.models import Problem
-from problems_code.models import Problem as CodeProblem
+from problems_python.models import Problem as CodeProblem
 from ViewTestMixins import UsersMixin
 
 
@@ -460,7 +460,7 @@ class TestPageConstruction(UsersMixin, TestCase):
         CodeProblem.objects.create(pk=1, name='1', description='1')
 
         post_data = {'page_object_list': json.dumps([
-            ['problems_multiple_choice-1', 'problems_code-1'],
+            ['problems_multiple_choice-1', 'problems_c-1'],
         ])}
         response = self.client.post(self.url, post_data)
         self.assertEqual(200, response.status_code)
@@ -482,7 +482,7 @@ class TestPageConstruction(UsersMixin, TestCase):
         self.assertEqual(1, item2.order)
         self.assertEqual(1, item2.content_page.pk)
         self.assertEqual(self.challenge, item2.content_object.challenge)
-        self.assertEqual('problems_code', item2.content_object.get_app_label())
+        self.assertEqual('problems_c', item2.content_object.get_app_label())
 
     def test_remove_problem(self):
         page = ContentPage.objects.create(pk=1, challenge=self.challenge, order=1)

@@ -1,16 +1,15 @@
 import datetime
 
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
 from django.utils.timezone import utc, now, localtime
-from graph_utilities.create_graph import output_graph
+#from graph_utilities.create_graph import output_graph
 
 from content.tags import AbstractTaggedObject
-
-from pcrs.settings import MYMEDIA_VIDEOS
 
 from pcrs.models import (AbstractNamedObject, AbstractSelfAwareModel,
                          AbstractOrderedGenericObjectSequence,
@@ -23,18 +22,58 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     A Video object has a name, a description, and a link to a video.
     """
     link = models.TextField()
-    thumbnail = models.URLField()
-    download = models.URLField()
+    thumbnail = models.URLField(blank=True)
+    download = models.URLField(blank=True)
+    resources = models.TextField(blank=True)
     content_videos = generic.GenericRelation('ContentSequenceItem',
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
     @property
     def url(self):
-        if MYMEDIA_VIDEOS:
-            return 'rtmp://media.library.utoronto.ca/vod/&mp4:{}'.format(self.link)
+        if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
+            code = self.link[self.link.rfind("/") + 1:self.link.rfind(".")]
+            return 'rtmps://stream.library.utoronto.ca:1935/MyMedia/play/&mp4:1/{0}.mp4'.format(code)
+            # The code below would work for an iframe -- if we didn't have shibboleth problems
+            #return 'https://play.library.utoronto.ca/embed/{0}'.format(code)
+            
+        elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
+            tag = self.link.find("?v=")
+            return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
         else:
             return self.link
+
+    @property
+    def download_link(self):
+        if "media" in self.download and ("public" in self.download or "uoft" in self.download):      # Hack for MYMEDIA
+            code = self.download[self.download.rfind("/") + 1:self.download.rfind(".")]
+            return 'https://play.library.utoronto.ca/download/{0}'.format(code)
+        else:
+            return self.download
+            
+    @property
+    def format(self):
+        if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
+            # Unnecessary if we use an iframe
+            return 'rtmp/mp4'
+        else:
+            return 'video/mp4'
+
+    @property
+    def resource_list(self):
+        items = []
+        if self.resources.strip():
+            for line in self.resources.strip().split("\n"):
+                split_loc = line.find(" ")
+                if split_loc > -1:
+                    link = line[:split_loc].strip()
+                    text = line[split_loc+1:].strip()
+                else:
+                    link = line
+                    text = "Resource"
+                link = link.replace("{{DOC_URL}}", settings.DOC_URL)
+                items.append([link, text])
+        return items
 
     class Meta:
         ordering = ['name']
@@ -55,6 +94,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['url'] = self.url,
         serialized['thumbnail'] = self.thumbnail,
         serialized['download'] = self.download,
+        serialized['resource_list'] = self.resource_list,
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
@@ -128,6 +168,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
 
     class Meta:
         # a problem can be in a single content page
+        ordering = ['order']
         unique_together = ['content_type', 'object_id', 'content_page']
 
     @classmethod
@@ -175,7 +216,10 @@ class ContentPage(AbstractSelfAwareModel):
         3. the quest is visible to the section
         4. the quest has been released to the section
         """
-        return cls.objects.select_related('challenge').filter(
+        if section.is_master():
+            return cls.objects.select_related('challenge')
+        else:
+            return cls.objects.select_related('challenge').filter(
             challenge__visibility='open',
             challenge__quest__sectionquest__section=section,
             challenge__quest__mode='live',
@@ -237,10 +281,10 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     @classmethod
     def get_content_type_name(cls):
         return 'challenge'
-    
+
     def __str__(self):
         return '{name} | {quest}'.format(name=self.name, quest=self.quest)
-    
+
     @staticmethod
     def _get_completed_challenges(completed, total):
         return {challenge.pk for challenge in Challenge.objects.all()
@@ -374,7 +418,7 @@ class SectionQuest(AbstractLimitedVisibilityObject):
     """
     section = models.ForeignKey(Section)
     quest = models.ForeignKey('Quest')
-    open_on = models.DateTimeField(blank=True, null=True)
+    open_on = models.DateTimeField(default=datetime.datetime.now, blank=True)
     due_on = models.DateTimeField(blank=True, null=True)
 
     class Meta:

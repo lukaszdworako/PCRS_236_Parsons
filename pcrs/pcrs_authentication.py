@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.conf import settings
 
 
 class ModelBackend(object):
@@ -13,7 +14,10 @@ class ModelBackend(object):
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
         try:
-            return UserModel._default_manager.get_by_natural_key(username)
+            user = UserModel._default_manager.get_by_natural_key(username)
+            if settings.AUTH_TYPE == 'pass' and not user.check_password(kwargs.get('password')):
+                return None
+            return user
         except UserModel.DoesNotExist:
             return None
 

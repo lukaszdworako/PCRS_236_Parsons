@@ -132,37 +132,36 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
 
         # 2 queries
         context['challenges'] = {
-            q.pk: q.challenge_set.all()  # .order_by('order')
+            q.pk: q.challenge_set.all()
             for q in Quest.objects.prefetch_related('challenge_set').all()
         }
 
         # 2 queries
         context['pages'] = {
             c.pk: c.contentpage_set.all()
-            for c in Challenge.objects.all().prefetch_related('contentpage_set')
+            for c in Challenge.objects.prefetch_related('contentpage_set').all()
         }
 
         # 2 queries
         context['items'] = {
             page.pk: page.contentsequenceitem_set.all()
-            for page in ContentPage.objects.prefetch_related(
-            'contentsequenceitem_set').all()
+            for page in ContentPage.objects.prefetch_related('contentsequenceitem_set').all()
         }
 
         # 2 queries
         context['content_objects'] = {
             item.pk: item.content_object
-            for item in
-            ContentSequenceItem.objects.prefetch_related('content_object').all()
+            for item in ContentSequenceItem.objects.prefetch_related('content_object').all()
         }
 
         return context
 
     def get_queryset(self):
-        return SectionQuest.objects \
-            .filter(section=self.get_section()) \
-            .filter(visibility='open', open_on__lt=now()) \
-            .select_related('quest')
+        all_quests = SectionQuest.objects
+        if not self.get_section().is_master():
+            all_quests = all_quests.filter(section=self.get_section()) \
+                                   .filter(visibility='open', open_on__lt=now())
+        return all_quests.select_related('quest')
 
 
 class ReactiveQuestsView(ProtectedViewMixin, TemplateView):

@@ -180,11 +180,8 @@ class ChangeProblemVisibilityView(CourseStaffViewMixin, ChallengeAddContentView,
         if problem.is_open():
             old_visibility = 'open'
             problem.closed()
-        elif problem.is_closed():
+        else:  # problem.is_closed()
             old_visibility = 'closed'
-            problem.draft()
-        elif problem.is_draft():
-            old_visibility = 'draft'
             problem.open()
 
         return HttpResponse(json.dumps({'status': 'ok','old_visibility':old_visibility, 'new_visibility':problem.visibility}),

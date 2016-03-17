@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.utils.timezone import now, timedelta, localtime
 
 from content.models import SectionQuest, Quest, Challenge
-from problems_code.models import Problem, Submission
+from problems_python.models import Problem, Submission
 from problems_multiple_choice.models import Problem as MCProblem
 from users.models import Section, PCRSUser
 

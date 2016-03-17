@@ -1,6 +1,6 @@
 from crispy_forms.bootstrap import StrictButton
 from crispy_forms.layout import Submit, HTML, ButtonHolder, Div, Layout, \
-    Fieldset, Button
+    Fieldset, Button, Row
 from django import forms
 from django.utils.timezone import now
 
@@ -13,6 +13,7 @@ class BaseProblemForm(CrispyFormMixin):
                         'href="{{ object.get_absolute_url }}/clear">'
                         'Clear submissions</a>')
     save_button = Submit('submit', 'Save', css_class='green-button-right')
+    attempt_button = Submit('attempt', 'Save & Attempt', css_class='green-button-right')
 
     save_and_add = Submit('submit', 'Save and add testcases',
                            css_class='green-button-right',
@@ -25,11 +26,14 @@ class BaseProblemForm(CrispyFormMixin):
             clone = Submit('clone', 'Clone', css_class='green-button',
                            formaction='{}/clone'.format(
                                self.instance.get_absolute_url()))
+
             self.buttons = (Div(CrispyFormMixin.delete_button,
                                 self.clear_button,
                                 css_class='button-group'),
-                            Div(clone, self.save_button,
-                                css_class='button-group-right'))
+                            Div(clone, self.save_button, self.attempt_button,
+                                css_class='button-group-right'),
+                            )
+
         elif self.instance:
             # cloning
             self.buttons = self.save_button,
@@ -41,21 +45,39 @@ class BaseProblemForm(CrispyFormMixin):
                                     ButtonHolder(*self.buttons))
 
 
+class EditorForm(CrispyFormMixin, forms.Form):
+    code_box = forms.CharField(widget=forms.Textarea())
+
+    def __init__(self, *args, **kwargs):
+        problem = kwargs.pop('problem', None)
+        simpleui = kwargs.pop('simpleui', False)
+        super().__init__(*args, **kwargs)
+
+        self.trace_button = Submit('Trace', value='Trace', css_class='debugBtn pull-right')
+        self.fields['code_box'].initial = ''
+        layout_fields = (Fieldset('', 'code_box'), Div(self.trace_button, css_class="floatdiv"))
+        self.helper.layout = Layout(*layout_fields)
+
+
 class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.pop('problem', None)
+        simpleui = kwargs.pop('simpleui', False)
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
-                                    css_class='green-button')
+                                    css_class='green-button-right')
+        if not (problem.name == 'blank' or problem.challenge == None or simpleui):
+            history_css = 'reg-button'
+        else:
+            history_css = 'reg-button hidden'
         self.history_button = StrictButton('History', name='history',
                                            data_toggle="modal",
                                            data_target="#history_window_"+
-                                            problem.get_problem_type_name()+
-                                                       "-{}".format(problem.pk),
-                                           css_class='reg-button')
-
+                                           problem.get_problem_type_name()+
+                                                   "-{}".format(problem.pk),
+                                           css_class=history_css)
 
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
@@ -63,14 +85,29 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
+        # Remove hidden code from the student
+        if problem.language == 'c':
+            problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = problem.starter_code
-        self.helper.layout = Layout(
-            Fieldset('', 'submission'),
-            self.history_button,
-            ButtonHolder(self.submit_button, css_class='pull-right')
-        )
+        layout_fields = (Fieldset('', 'submission'), Div(self.history_button, self.submit_button))
+        self.helper.layout = Layout(*layout_fields)
 
+
+def remove_tag(tag_open, tag_close, source_code):
+    source_code = source_code.split('\n')
+    source_code_output = ""
+    tag_count = 0
+    for line in source_code:
+        if line.find(tag_open) > -1:
+            tag_count += 1
+            continue
+        elif line.find(tag_close) > -1:
+            tag_count -= 1
+            continue
+        if tag_count == 0:
+            source_code_output += line
+    return source_code_output
 
 class MonitoringForm(CrispyFormMixin, forms.Form):
     time = forms.DateTimeField(initial=now())

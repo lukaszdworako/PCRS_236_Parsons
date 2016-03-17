@@ -148,12 +148,25 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
-        results = self.record_submission(request)
+        try:
+            results = self.record_submission(request)
+        except AttributeError:       # Anonymous user
+            return HttpResponse(json.dumps({
+                                'error_msg': "Your session has expired. Please reload the page (to re-authenticate) before submitting again.",
+                                'score': 0,
+                                'max_score': 1,
+                                'sub_pk': None,
+                                'best': False,
+                                'past_dead_line': False
+                                }), mimetype='application/json')
 
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except:   # content.models.DoesNotExist
+            deadline = None
 
         logger = logging.getLogger('activity.logging')
         logger.info(str(localtime(self.submission.timestamp)) + " | " +
@@ -163,12 +176,11 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
 
         return HttpResponse(json.dumps({
             'score': self.submission.score,
-            'max_score': self.get_problem().option_set.all().count(),
+            'max_score': problem.max_score,
             'best': self.submission.has_best_score,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
-        }
-        ), mimetype='application/json')
+            }), mimetype='application/json')
 
 
 class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
@@ -176,7 +188,9 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
 
     def post(self, request, *args, **kwargs):
         returnable = []
+
         problem = self.get_problem()
+
         user, section = self.get_user(), self.get_section()
 
         deadline = problem.challenge.quest.sectionquest_set\

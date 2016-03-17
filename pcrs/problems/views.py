@@ -1,4 +1,6 @@
 import json
+import datetime
+import decimal
 import logging
 
 from django.http import HttpResponse
@@ -17,6 +19,15 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
+
+# Helper class to encode datetime and decimal objects
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 class ProblemView:
@@ -85,6 +96,12 @@ class ProblemUpdateView(CourseStaffViewMixin, ProblemView, GenericItemUpdateView
     Update a problem.
     """
     template_name = 'problems/problem_form.html'
+
+    def get_success_url(self):
+        if 'attempt' in self.request.POST:
+            return '{}/submit'.format(self.object.get_absolute_url())
+        else:
+            return self.object.get_absolute_url()
 
 
 class ProblemDeleteView(CourseStaffViewMixin, ProblemView, DeleteView):
@@ -183,14 +200,14 @@ class SubmissionViewMixin:
         if self.request.user.is_ta:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'),
-                                     visibility__in=['open', 'draft'])
+                                     visibility__in=['open'])
         else:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'))
-
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()
+        kwargs['simpleui'] = self.request.user.use_simpleui
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -243,7 +260,18 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
-        results = self.record_submission(request)
+        try:
+            results = self.record_submission(request)
+        except AttributeError:       # Anonymous user
+            return HttpResponse(json.dumps({
+                                'results': ([], "Your session has expired. Please copy your submission (to save it) and refresh the page before submitting again."),
+                                'score': 0,
+                                'sub_pk': 0,
+                                'best': False,
+                                'past_dead_line': False,
+                                'max_score': 1}, cls=DateEncoder),
+                                mimetype='application/json')
+        
         problem = self.get_problem()
         user, section = self.request.user, self.get_section()
 
@@ -264,7 +292,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
             'sub_pk': self.object.pk,
             'best': self.object.has_best_score,
             'past_dead_line': deadline and self.object.timestamp > deadline,
-            'max_score': self.object.problem.max_score}),
+            'max_score': self.object.problem.max_score}, cls=DateEncoder),
         mimetype='application/json')
 
 
@@ -310,11 +338,14 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
     def post(self, request, *args, **kwargs):
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except Exception:
+            deadline = False
         try:
             best_score = self.model.objects\
-                .get(user=user, problem=problem, has_best_score=True).score
+                .filter(user=user, problem=problem, has_best_score=True).latest("id").score
         except self.model.DoesNotExist:
             best_score = -1
 

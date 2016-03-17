@@ -185,7 +185,7 @@ class TestProblemUpdateViewWithNoSubmissions(CourseStaffViewTestMixin,
         self.valid_solution = 'weather;'
         self.problem = Problem.objects.create(
             pk=1, name='test_ra_problem', description='test_ra_problem_desc',
-            solution=self.valid_solution, schema_id=1, visibility='draft',
+            solution=self.valid_solution, schema_id=1, visibility='open',
             grammar=Problem.GRAMMARS[0][0], semantics=Problem.SEMANTICS[0][0])
         TestProblemCreateView.setUp(self)
 
@@ -194,7 +194,7 @@ class TestProblemUpdateViewWithNoSubmissions(CourseStaffViewTestMixin,
             'description': 'test_ra_problem_desc',
             'solution': 'weather;',
             'schema': '1',
-            'visibility': 'draft',
+            'visibility': 'open',
             'grammar': Problem.GRAMMARS[0][0],
             'semantics': Problem.SEMANTICS[0][0]
         }

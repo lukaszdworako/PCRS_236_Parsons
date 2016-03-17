@@ -1,0 +1,44 @@
+PCRS
+https://bitbucket.org/utmandrew/pcrs
+
+Copyright (C) 2012-2015
+PCRS has been developed collaboratively. Each developer holds copyright
+on his/her contributions, as documented by the repository. Contributors
+include:
+
+Andrew Petersen (primary contact: petersen@cs.toronto.edu)
+Yuliya Cherenkova
+Adam El-Masri
+Olessia Karpova
+Alexandr Kornilenko
+Uillian Ludwig
+Peter McCormick
+Julianna Paprakis
+Daniel Marchena Parreira
+Martin Petkov
+Christopher Primerano
+Otavio Silva
+Alexander Sirotkin
+Stewart Smith
+Ian Stewart-Binks
+Nicholas Zemljic
+
+This file is part of PCRS. PCRS includes most, but not all of the
+files in this repository (https://bitbucket.org/utmandrew/pcrs). PCRS
+explicitly does not include Online Python Tutor (languages/python/*),
+safeexec (languages/c/execution/safeexec_master/*), and the many
+resources available in (resources/*).
+
+PCRS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+

@@ -33,7 +33,7 @@ class Problem(RDBProblem):
 class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    def run_testcases(self, request):
+    def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
         with StudentWrapper(database=settings.RDB_DATABASE,
@@ -43,9 +43,11 @@ class Submission(AbstractSubmission):
                 result = db.run_testcase(self.problem.solution, self.submission,
                                          dataset.namespace,
                                          self.problem.order_matters)
-                TestRun(submission=self, testcase=testcase,
-                        test_passed=result['passed']).save()
+                if save:
+                    TestRun(submission=self, testcase=testcase,
+                            test_passed=result['passed']).save()
                 result['testcase'] = testcase.id
+                result['test_desc'] = str(testcase)
                 result['visible'] = testcase.is_visible
                 results.append(result)
         return results, None

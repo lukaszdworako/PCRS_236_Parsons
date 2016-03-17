@@ -3,6 +3,10 @@ CREATE DATABASE crs_data;
 CREATE ROLE instructors;
 GRANT ALL PRIVILEGES ON DATABASE crs_data TO instructors;
 
+-- The following requires that we not use peer authentication
+-- since 'instructor' is not a user. Make sure the following 
+-- line is set within /etc/postgresql/VERSION/main/pg_hba.conf
+-- local   crs_data     all                                     md5
 CREATE USER instructor with password 'instructor';
 GRANT instructors to instructor;
 CREATE ROLE students;

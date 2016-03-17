@@ -17,12 +17,8 @@ from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
 
 
-challenge_page_view = ContentPageView
+challenge_page_view = ReactiveContentPageView
 quests_page_view = QuestsView
-
-if settings.REACT:
-    challenge_page_view = ReactiveContentPageView
-
 if settings.QUESTS_LIVE:
     quests_page_view = ReactiveQuestsView
 
@@ -75,12 +71,12 @@ urlpatterns = patterns('',
         name='challenge_stats_data'),
 
     # prerequisites graph
-    url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
-    url(r'^challenges/prereq_graph/generate_horizontal$', ChallengeGraphGenViewHorizontal.as_view()),
-    url(r'^challenges/prereq_graph/generate_vertical$', ChallengeGraphGenViewVertical.as_view()),
-    url(r'^challenges/prereq_graph/for_user$',
-        ChallengeCompletionForUserView.as_view(),
-        name='challenge_prerequisite_data_for_user'),
+    # url(r'^challenges/prereq_graph$', ChallengeGraphView.as_view()),
+    # url(r'^challenges/prereq_graph/generate_horizontal$', ChallengeGraphGenViewHorizontal.as_view()),
+    # url(r'^challenges/prereq_graph/generate_vertical$', ChallengeGraphGenViewVertical.as_view()),
+    # url(r'^challenges/prereq_graph/for_user$',
+    #     ChallengeCompletionForUserView.as_view(),
+    #     name='challenge_prerequisite_data_for_user'),
 
     # content object manipulation within challenge
     url(r'^challenges/(?P<pk>[0-9]+)/objects$', ChallengeObjectsView.as_view()),
@@ -116,4 +112,6 @@ urlpatterns = patterns('',
 
     url(r'^get_quest_list$', ReactiveQuestsDataView.as_view(),
         name='live_quest_list'),
+
+    url(r'$', quests_page_view.as_view(), name='quests'),
 )

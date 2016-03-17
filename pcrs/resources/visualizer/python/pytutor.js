@@ -3194,26 +3194,37 @@ function getObjectID(obj) {
 
 /* A hack: use old-style render for times when ignoreIDs is true. */
 function renderData_ignoreID(obj, jDomElt) {
-  // dispatch on types:
-  var typ = typeof obj;
-
-  if (obj == null) {
+  if (obj[0] == 'nonetype') {
+    jDomElt.append('<div class="typeLabel">NoneType:</div>');
     jDomElt.append('<span class="nullObj">None</span>');
   }
-  else if (typ == "number") {
-    jDomElt.append('<span class="numberObj">' + obj + '</span>');
+  else if (obj[0] == 'int') {
+    jDomElt.append('<div class="typeLabel">int:</div>');
+    jDomElt.append('<span class="numberObj">' + obj[2].toString() + '</span>');
   }
-  else if (typ == "boolean") {
-    if (obj) {
+  else if (obj[0] == 'float') {
+    jDomElt.append('<div class="typeLabel">float:</div>');
+    if (obj[2].toString().indexOf('.') == -1) {
+        val = obj[2].toString() + '.0';
+    }
+    else {
+        val = obj[2].toString();
+    }
+    jDomElt.append('<span class="numberObj">' + val + '</span>');
+  }
+  else if (obj[0] == 'bool') {
+    jDomElt.append('<div class="typeLabel">bool:</div>');
+    if (obj[2]) {
       jDomElt.append('<span class="boolObj">True</span>');
     }
     else {
       jDomElt.append('<span class="boolObj">False</span>');
     }
   }
-  else if (typ == "string") {
+  else if (obj[0] == 'string') {
+    jDomElt.append('<div class="typeLabel">str:</div>');
     // escape using htmlspecialchars to prevent HTML/script injection
-    var literalStr = htmlspecialchars(obj);
+    var literalStr = htmlspecialchars(obj[2]);
 
     // print as a double-quoted string literal
     literalStr = literalStr.replace(new RegExp('\"', 'g'), '\\"'); // replace ALL
@@ -3221,158 +3232,147 @@ function renderData_ignoreID(obj, jDomElt) {
 
     jDomElt.append('<span class="stringObj">' + literalStr + '</span>');
   }
-  else if (typ == "object") {
+  else if (obj[0] == 'list' || obj[0] == 'tuple' || obj[0] == 'set' || obj[0] == 'dict') {
+    var label = obj[0];
 
-    if (obj[0] == 'list' || obj[0] == 'tuple' || obj[0] == 'set' || obj[0] == 'dict') {
-      var label = obj[0];
-
-      if (obj.length == 2) {
-        jDomElt.append('<div class="typeLabel"> empty ' + label + '</div>');
-      }
-      else {
-        jDomElt.append('<div class="typeLabel">' + label + '</div>');
-        jDomElt.append('<table class="' + label + 'Tbl"></table>');
-        var tbl = jDomElt.children('table');
-
-        if (obj[0] == 'list' || obj[0] == 'tuple') {
-            tbl.append('<tr></tr><tr></tr>');
-            var headerTr = tbl.find('tr:first');
-            var contentTr = tbl.find('tr:last');
-            $.each(obj, function(ind, val) {
-              if (ind < 2) return; // skip type tag and ID entry
-
-              // add a new column and then pass in that newly-added column
-              // as d3DomElement to the recursive call to child:
-              headerTr.append('<td class="' + label + 'Header"></td>');
-              headerTr.find('td:last').append(ind - 2);
-
-              contentTr.append('<td class="'+ label + 'Elt"></td>');
-              renderData_ignoreID(val, contentTr.find('td:last'));
-            });
-        }
-
-        else if (obj[0] == 'set') {
-            // create an R x C matrix:
-            var numElts = obj.length - 1;
-            // gives roughly a 3x5 rectangular ratio, square is too, err,
-            // 'square' and boring
-            var numRows = Math.round(Math.sqrt(numElts));
-            if (numRows > 3) {
-              numRows -= 1;
-            }
-
-            var numCols = Math.round(numElts / numRows);
-            // round up if not a perfect multiple:
-            if (numElts % numRows) {
-              numCols += 1;
-            }
-
-            jQuery.each(obj, function(ind, val) {
-              if (ind < 2) return; // skip 'SET' tag and ID entry
-
-              if (((ind - 2) % numCols) == 0) {
-                tbl.append('<tr></tr>');
-              }
-
-              var curTr = tbl.find('tr:last');
-              curTr.append('<td class="setElt"></td>');
-              renderData_ignoreID(val, curTr.find('td:last'));
-            });
-        }
-        else if (obj[0] == 'dict') {
-            $.each(obj, function(ind, kvPair) {
-              if (ind < 2) return; // skip 'DICT' tag and ID entry
-              tbl.append('<tr class="dictEntry"><td class="dictKey"></td><td class="dictVal"></td></tr>');
-              var newRow = tbl.find('tr:last');
-              var keyTd = newRow.find('td:first');
-              var valTd = newRow.find('td:last');
-
-              renderData_ignoreID(kvPair[0], keyTd);
-              renderData_ignoreID(kvPair[1], valTd);
-            });
-         }
-      }
-    }
-    else if (obj[0] == 'instance') {
-      jDomElt.append('<div class="typeLabel">' + obj[1] + ' instance</div>');
-
-      if (obj.length > 3) {
-        jDomElt.append('<table class="instTbl"></table>');
-        var tbl = jDomElt.children('table');
-        $.each(obj, function(ind, kvPair) {
-          if (ind < 3) return; // skip type tag, class name, and ID entry
-
-          tbl.append('<tr class="instEntry"><td class="instKey"></td><td class="instVal"></td></tr>');
-          var newRow = tbl.find('tr:last');
-          var keyTd = newRow.find('td:first');
-          var valTd = newRow.find('td:last');
-
-          // the keys should always be strings, so render them directly (and without quotes):
-          var attrnameStr = htmlspecialchars(kvPair[0][2]); // added [2] for py3 version
-          keyTd.append('<span class="keyObj">' + attrnameStr + '</span>');
-
-          // values can be arbitrary objects, so recurse:
-          renderData_ignoreID(kvPair[1], valTd);
-        });
-      }
-    }
-    else if (obj[0] == 'class') {
-      var superclassStr = '';
-      if (obj[3].length > 0) {
-        superclassStr += ('[extends ' + obj[3].join(',') + '] ');
-      }
-
-      jDomElt.append('<div class="typeLabel">' + obj[1] + ' class ' + superclassStr + '</div>');
-
-      if (obj.length > 4) {
-        jDomElt.append('<table class="classTbl"></table>');
-        var tbl = jDomElt.children('table');
-        $.each(obj, function(ind, kvPair) {
-          if (ind < 4) return; // skip type tag, class name, ID, and superclasses entries
-
-          tbl.append('<tr class="classEntry"><td class="classKey"></td><td class="classVal"></td></tr>');
-          var newRow = tbl.find('tr:last');
-          var keyTd = newRow.find('td:first');
-          var valTd = newRow.find('td:last');
-
-          // the keys should always be strings, so render them directly (and without quotes):
-          var attrnameStr = htmlspecialchars(kvPair[0][2]);   // added [2] for py3 version
-          keyTd.append('<span class="keyObj">' + attrnameStr + '</span>');
-
-          // values can be arbitrary objects, so recurse:
-          renderData_ignoreID(kvPair[1], valTd);
-        });
-      }
-    }
-
-    else if (obj[0] == 'CIRCULAR_REF') {
-      jDomElt.append('<div class="circRefLabel">circular reference to id=' + obj[1] + '</div>');
+    if (obj.length == 2) {
+      jDomElt.append('<div class="typeLabel"> empty ' + label + '</div>');
     }
     else {
-      // render custom data type
-      typeName = obj[0];
-      id = obj[1];
-      strRepr = obj[2];
+      jDomElt.append('<div class="typeLabel">' + label + '</div>');
+      jDomElt.append('<table class="' + label + 'Tbl"></table>');
+      var tbl = jDomElt.children('table');
 
-      // if obj[2] is like '<generator object <genexpr> at 0x84760>',
-      // then display an abbreviated version rather than the gory details
-      noStrReprRE = /<.* at 0x.*>/;
-      if (noStrReprRE.test(strRepr)) {
-        jDomElt.append('<span class="customObj">' + typeName + '</span>');
+      if (obj[0] == 'list' || obj[0] == 'tuple') {
+        tbl.append('<tr></tr><tr></tr>');
+        var headerTr = tbl.find('tr:first');
+        var contentTr = tbl.find('tr:last');
+        $.each(obj, function(ind, val) {
+          if (ind < 2) return; // skip type tag and ID entry
+          // add a new column and then pass in that newly-added column
+          // as d3DomElement to the recursive call to child:
+          headerTr.append('<td class="' + label + 'Header"></td>');
+          headerTr.find('td:last').append(ind - 2);
+
+          contentTr.append('<td class="'+ label + 'Elt"></td>');
+          renderData_ignoreID(val, contentTr.find('td:last'));
+        });
       }
-      else {
-        strRepr = htmlspecialchars(strRepr); // escape strings!
+      else if (obj[0] == 'set') {
+        // create an R x C matrix:
+        var numElts = obj.length - 1;
+        // gives roughly a 3x5 rectangular ratio, square is too, err,
+        // 'square' and boring
+        var numRows = Math.round(Math.sqrt(numElts));
+        if (numRows > 3) {
+          numRows -= 1;
+        }
 
-        // warning: we're overloading tuple elts for custom data types
-        jDomElt.append('<div class="typeLabel">' + typeName + ':</div>');
-        jDomElt.append('<table class="tupleTbl"><tr><td class="tupleElt">' + strRepr + '</td></tr></table>');
+        var numCols = Math.round(numElts / numRows);
+        // round up if not a perfect multiple:
+        if (numElts % numRows) {
+          numCols += 1;
+        }
+
+        jQuery.each(obj, function(ind, val) {
+          if (ind < 2) return; // skip 'SET' tag and ID entry
+          if (((ind - 2) % numCols) == 0) {
+            tbl.append('<tr></tr>');
+          }
+
+          var curTr = tbl.find('tr:last');
+          curTr.append('<td class="setElt"></td>');
+          renderData_ignoreID(val, curTr.find('td:last'));
+        });
+      }
+      else if (obj[0] == 'dict') {
+        $.each(obj, function(ind, kvPair) {
+          if (ind < 2) return; // skip 'DICT' tag and ID entry
+          tbl.append('<tr class="dictEntry"><td class="dictKey"></td><td class="dictVal"></td></tr>');
+          var newRow = tbl.find('tr:last');
+          var keyTd = newRow.find('td:first');
+          var valTd = newRow.find('td:last');
+
+          renderData_ignoreID(kvPair[0], keyTd);
+          renderData_ignoreID(kvPair[1], valTd);
+        });
       }
     }
   }
+  else if (obj[0] == 'instance') {
+    jDomElt.append('<div class="typeLabel">' + obj[1] + ' instance</div>');
+
+    if (obj.length > 3) {
+      jDomElt.append('<table class="instTbl"></table>');
+      var tbl = jDomElt.children('table');
+      $.each(obj, function(ind, kvPair) {
+        if (ind < 3) return; // skip type tag, class name, and ID entry
+        tbl.append('<tr class="instEntry"><td class="instKey"></td><td class="instVal"></td></tr>');
+        var newRow = tbl.find('tr:last');
+        var keyTd = newRow.find('td:first');
+        var valTd = newRow.find('td:last');
+
+        // the keys should always be strings, so render them directly (and without quotes):
+        var attrnameStr = htmlspecialchars(kvPair[0][2]); // added [2] for py3 version
+        keyTd.append('<span class="keyObj">' + attrnameStr + '</span>');
+
+        // values can be arbitrary objects, so recurse:
+        renderData_ignoreID(kvPair[1], valTd);
+      });
+    }
+  }
+  else if (obj[0] == 'class') {
+    var superclassStr = '';
+    if (obj[3].length > 0) {
+      superclassStr += ('[extends ' + obj[3].join(',') + '] ');
+    }
+    jDomElt.append('<div class="typeLabel">' + obj[1] + ' class ' + superclassStr + '</div>');
+
+    if (obj.length > 4) {
+      jDomElt.append('<table class="classTbl"></table>');
+      var tbl = jDomElt.children('table');
+      $.each(obj, function(ind, kvPair) {
+        if (ind < 4) return; // skip type tag, class name, ID, and superclasses entries
+
+        tbl.append('<tr class="classEntry"><td class="classKey"></td><td class="classVal"></td></tr>');
+        var newRow = tbl.find('tr:last');
+        var keyTd = newRow.find('td:first');
+        var valTd = newRow.find('td:last');
+
+        // the keys should always be strings, so render them directly (and without quotes):
+        var attrnameStr = htmlspecialchars(kvPair[0][2]);   // added [2] for py3 version
+        keyTd.append('<span class="keyObj">' + attrnameStr + '</span>');
+
+        // values can be arbitrary objects, so recurse:
+        renderData_ignoreID(kvPair[1], valTd);
+      });
+    }
+  }
+  else if (obj[0] == 'circular_ref') {
+    jDomElt.append('<div class="typeLabel">circular ref</div>');
+  }
   else {
-    alert("Error: renderData_ignoreID FAIL!");
+    // render custom data type
+    typeName = obj[0];
+    id = obj[1];
+    strRepr = obj[2];
+
+    // if obj[2] is like '<generator object <genexpr> at 0x84760>',
+    // then display an abbreviated version rather than the gory details
+    noStrReprRE = /<.* at 0x.*>/;
+    if (noStrReprRE.test(strRepr)) {
+      jDomElt.append('<span class="customObj">' + typeName + '</span>');
+    }
+    else {
+      strRepr = htmlspecialchars(strRepr); // escape strings!
+
+      // warning: we're overloading tuple elts for custom data types
+      jDomElt.append('<div class="typeLabel">' + typeName + ':</div>');
+      jDomElt.append('<table class="tupleTbl"><tr><td class="tupleElt">' + strRepr + '</td></tr></table>');
+    }
   }
 }
+
 
 //custom resize for bootstrap module
 function resizer(){

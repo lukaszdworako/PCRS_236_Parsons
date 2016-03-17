@@ -5,50 +5,64 @@ var testcases = null;
 var error_msg = null;
 var code_problem_id = -1;
 var myCodeMirrors = {};
+var myNewCodeMirrors = {};
 var cmh_list = {};
+var debugger_id = "";
+var debugger_index = 0;
+var last_stepped_line_debugger = 0;
+var c_debugger_load = false;
+var visPostComplete = true;
+var debugger_data = null;
 //root is a global variable from base.html
 
 
 function bindDebugButton(buttonId) {
     /**
-    * For coding problems bing a given "Debug" button to start code visualizer
+    * For coding problems bing a given New "Debug" button to start code visualizer
     */
 
-    $('#'+ buttonId).bind('click', function() {
+    $('#'+buttonId).bind('click', function() {
         var testcaseCode = $('#tcase_' + buttonId).find(".expression_div").text();
         setTimeout(function(){
-            prepareVisualizer("debug", testcaseCode, buttonId)}, 250
-        );
+            $('#waitingModal').modal('show');
+            prepareVisualizer("debug", testcaseCode, buttonId)
+            $('#waitingModal').modal('hide');
+        }, 250);
     });
 }
 
-
-function prepareVisualizer(option, data, buttonId) {
+function prepareVisualizer(option, testcaseCode, buttonId) {
     /**
      * Prepare Coding problem visualizer
      */
 
     var key = buttonId.split("_")[0];
+    var problemId = key.split("-")[1];
     var newCode = myCodeMirrors[key].getValue() + "\n";
-    var addCode = (option == "viz") ? myCodeMirrors[key].getValue() : data;
-    newCode += addCode;
 
-    getVisualizerComponents(newCode);
+    if (language == 'python') {
+        newCode += testcaseCode;
+    } else if (language == 'c') {
+        newCode = addHashkey(key);
+    }
+    getVisualizerComponents(newCode, testcaseCode, problemId);
 }
 
 
-function getVisualizerComponents(newCode) {
+function getVisualizerComponents(newCode, testcaseCode, problemId) {
     /**
      * Get Components for coding problem visualization
      */
 
-    var postParams = { language : language, user_script : newCode};
-    executeGenericVisualizer("gen_execution_trace_params", postParams);
+    var postParams = { language : language, user_script : newCode, test_case: testcaseCode, problemId: problemId};
+    executeGenericVisualizer("gen_execution_trace_params", postParams, '');
+    visPostComplete = false;
 
-    $.post(root + '/problems/code/visualizer-details',
+    $.post(root + '/problems/' + language + '/visualizer-details',
             postParams,
             function(data) {
-                executeGenericVisualizer("create_visualizer", data);
+                executeGenericVisualizer("create_visualizer", data, newCode);
+                visPostComplete = true;
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
@@ -63,19 +77,25 @@ function getHistory(div_id){
     var postParams = { csrftoken: csrftoken };
     var problem_path = "";
 
-    check_language(div_id);
+    // Empty the accordion, in case any manual insertions were performed.
+
+    var language = check_language(div_id);
     if (language == 'python'){
-        problem_path = root+'/problems/code/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/python/' + div_id.split("-")[1]+'/history';
+    }
+    else if (language == 'c'){
+        problem_path = root + '/problems/c/' + div_id.split("-")[1]+'/history';
     }
     else if (language == 'sql'){
-        problem_path = root+'/problems/sql/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/sql/' + div_id.split("-")[1]+'/history';
     }
     else if (language == 'ra'){
-        problem_path = root+'/problems/ra/'+div_id.split("-")[1]+'/history';
+        problem_path = root + '/problems/ra/' + div_id.split("-")[1]+'/history';
     }
     $.post(problem_path,
         postParams,
         function(data){
+            window[div_id+'_history_init'] = 1;
             show_history(data, div_id);
         },
         'json')
@@ -88,6 +108,11 @@ function add_history_entry(data, div_id, flag){
      * Add "data" to the history inside the given "div_id"
      * "flag" 0 appends anf "flag" 1 prepends
      */
+
+    // Exit if the history window has not been requested by the user
+    if (!window[div_id+'_history_init']) {
+        return;
+    }
 
     var sub_time = new Date(data['sub_time']);
     var panel_class = "pcrs-panel-default";
@@ -136,6 +161,7 @@ function add_history_entry(data, div_id, flag){
                                       + "_"
                                       + data['sub_pk'],
                                   html:data['submission']});
+    cont2.html = cont2.text(data['submission']).html();
 
     var cont3 = $('<ul/>', {class:"pcrs-list-group"});
 
@@ -187,15 +213,15 @@ function add_history_entry(data, div_id, flag){
         $('#'+div_id).find('#history_accordion').prepend(entry);
     }
 
-    check_language(div_id);
+    var language = check_language(div_id);
     if (language == "python"){
-        create_history_code_mirror("python", 3, "history_mirror_"
+        create_to_code_mirror("python", 3, "history_mirror_"
                                                 + data['problem_pk']
                                                 + "_"
                                                 + data['sub_pk']);
     }
     else{
-        create_history_code_mirror(language, false, "history_mirror_"
+        create_to_code_mirror(language, false, "history_mirror_"
                                                 + data['problem_pk']
                                                 + "_"
                                                 + data['sub_pk']);
@@ -213,31 +239,122 @@ function show_history(data, div_id){
     }
 }
 
+function addHashkey(div_id){
+    /**
+     * Generate a Hashkey based on
+     * the problem_id to identify
+     * where the student code starts and ends
+     */
+    var line_count = myCodeMirrors[div_id].lineCount();
+    var hash_code = CryptoJS.SHA1(div_id.split("-")[1]);
+    var code = "";
+    var wrapClass;
+    var i;
+    var inside_student_code = false;
+
+    for (i = 0; i < line_count; i++){
+        wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
+
+        if (wrapClass == 'CodeMirror-activeline-background') {
+            if(inside_student_code) {
+                code += hash_code + '\n';
+                inside_student_code = false;
+            }
+
+        } else {
+            if(!inside_student_code) {
+                code += hash_code + '\n';
+                inside_student_code = true;
+            }
+        }
+
+        code += myCodeMirrors[div_id].getLine(i);
+        code += '\n';
+    }
+    code += hash_code;
+    return code;
+}
+
+function handleCMessages(div_id, testcases){
+    /**
+     * Handle C error and warning
+     * messages - divs with different
+     * colors and font style
+     */
+    // Handle C warnings and exceptions
+    $('#'+div_id).find('#c_warning').remove();
+    $('#'+div_id).find('#c_error').remove();
+
+    // Find testcase with warning/error
+    var bad_testcase = null;
+    for(var i = 0; i < testcases.length; i++) {
+        if ("exception_type" in testcases[i]) {
+            bad_testcase = testcases[i];
+            break;
+        }
+    }
+
+    var dont_visualize = false;
+
+    if(bad_testcase != null){
+        var class_type;
+        if(bad_testcase.exception_type == "warning") {
+            class_type = 'alert alert-warning';
+        }
+        else if(bad_testcase.exception_type == "error"){
+            class_type = 'alert alert-danger';
+            dont_visualize = true;
+        }
+
+        var bad_testcase_message = "";
+        if("exception" in bad_testcase) {
+            bad_testcase_message = bad_testcase.exception;
+        } else if("runtime_error" in bad_testcase) {
+            bad_testcase_message = "Runtime error for input '" + bad_testcase.test_input + "':<br/>" + bad_testcase.runtime_error;
+        }
+
+        $('#'+div_id)
+            .find('#alert')
+            .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase_message + '</div>');
+    }
+
+    return dont_visualize;
+}
 
 function getTestcases(div_id) {
     /**
      * Submit code from div_id and get back the test cases
      */
     var clean_code = myCodeMirrors[div_id].getValue();
+    var language = check_language(div_id);
 
     // replace all the tabs with 4 spaces before submitting the code to the database
     while (clean_code.indexOf('\t') != -1){
-        clean_code = clean_code.replace('\t',"    ");
+        clean_code = clean_code.replace('\t', '    ');
+    }
+
+    var call_path = "";
+
+    var if_editor = div_id.split("-")[2];
+    if (if_editor == null) {
+        call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
+
+        if (language == 'c') {
+            clean_code = addHashkey(div_id);
+        }
+    }
+    else {     // editor
+        call_path = root + '/problems/' + language + '/editor/run';
+    }
+
+    if (language == 'c') {
+        document.getElementById('feedback_code').value = clean_code;
     }
 
     var postParams = { csrftoken: csrftoken, submission: clean_code };
-    var call_path = "";
 
-    check_language(div_id);
-    if (language == 'python'){
-        call_path = root + '/problems/code/'+div_id.split("-")[1]+'/run'
-    }
-    else if (language == 'sql'){
-        call_path = root + '/problems/sql/'+div_id.split("-")[1]+'/run';
-    }
-    else if (language == 'ra'){
-        call_path = root + '/problems/ra/'+div_id.split("-")[1]+'/run';
-    }
+    // Activate loading pop-up
+    $('#waitingModal').modal('show');
 
     $.post(call_path,
             postParams,
@@ -250,50 +367,72 @@ function getTestcases(div_id) {
                         .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
                 }
                 testcases = data['results'][0];
-                if ((language == 'sql' || language == 'ra') && data['results'][1] != null ){
+                if (data['results'][1] != null){
                     error_msg = data['results'][1];
                 }
-                $("#"+div_id).find("#grade-code").show();
+
+                if (use_simpleui == 'False' && !if_editor){
+                    $("#"+div_id).find("#grade-code").show();
+                }
 
                 var score = data['score'];
                 var max_score = data['max_score'];
-                var desider = score == max_score;
+                var decider = score == max_score;
 
-                $('#'+div_id).find('#alert')
-                    .toggleClass("red-alert", !desider);
+                if (!if_editor){
 
-                $('#'+div_id).find('#alert')
-                    .toggleClass("green-alert", desider);
-
-                $('#'+div_id).find('#alert')
-                    .children('icon')
-                    .toggleClass("remove-icon", !desider);
-
-                $('#'+div_id).find('#alert')
-                    .children('icon')
-                    .toggleClass("ok-icon", desider);
-
-                if (desider){
                     $('#'+div_id).find('#alert')
-                        .children('span')
-                        .text("Your solution is correct!");
+                        .toggleClass("red-alert", !decider);
 
-                    $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
-                }
-                else{
                     $('#'+div_id).find('#alert')
-                        .children('span')
-                        .text("Your solution passed " + score + " out of " + max_score + " cases!");
+                        .toggleClass("green-alert", decider);
 
-                    $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
+                    $('#'+div_id).find('#alert')
+                        .children('icon')
+                        .toggleClass("remove-icon", !decider);
+
+                    $('#'+div_id).find('#alert')
+                        .children('icon')
+                        .toggleClass("ok-icon", decider);
+
+                    if (decider){
+                        $('#'+div_id).find('#alert')
+                            .children('span')
+                            .text("Your submission is correct!");
+
+                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
+                    }
+                    else{
+                        $('#'+div_id).find('#alert')
+                            .children('span')
+                            .text("Your solution passed " + score + " out of " + max_score + " cases!");
+
+                        $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
+                    }
                 }
-
                 if (language == 'python'){
                     prepareGradingTable(div_id,
                                         data['best'],
                                         data['past_dead_line'],
                                         data['sub_pk'],
-                                        max_score);
+                                         max_score);
+                }
+                else if (language == 'c'){
+                    // Handle C error and warning messages
+                    dont_visualize = handleCMessages(div_id, testcases);
+                    if (!if_editor){
+                        prepareGradingTable(div_id,
+                                            data['best'],
+                                            data['past_dead_line'],
+                                            data['sub_pk'],
+                                            max_score);
+                    }
+                    //If it's the editor, start calling visualizer functions now so long as no errors exist
+                    else{
+                        if (!dont_visualize){
+                            getVisualizerComponents(clean_code, "", 9999999);
+                        }
+                    }
                 }
                 else if (language=='sql'){
                     prepareSqlGradingTable(div_id,
@@ -309,9 +448,15 @@ function getTestcases(div_id) {
                                            data['sub_pk'],
                                            max_score);
                 }
+                // Deactivate loading pop-up
+                $('#waitingModal').modal('hide');
             },
         "json")
-     .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+     .fail(
+        function(jqXHR, textStatus, errorThrown) {
+            // Deactivate loading pop-up
+            $('#waitingModal').modal('hide');
+        });
 }
 
 function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
@@ -331,6 +476,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
     //error ra
     if (error_msg != null){
         table_location.append("<div class='red-alert'>"+error_msg+"</div>");
+
+        var test = {'visible': false,
+                    'input': null,
+                    'output': null,
+                    'passed': false,
+                    'description': error_msg};
+        tests.push(test);
+
         error_msg = null;
     }
     else{
@@ -437,6 +590,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
 
                 table_location.append(main_table);
             }
+
+	    var test = {'visible':current_testcase['visible'],
+	                'input': null,
+	                'output': null,
+	                'passed': current_testcase['passed'],
+	                'description': current_testcase['test_desc']};
+
+	    tests.push(test);
         }
     }
     var data = {'sub_time':new Date(),
@@ -447,7 +608,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             'problem_pk':div_id.split("-")[1],
             'sub_pk':sub_pk,
             'out_of':max_score,
-            'tests': table_location};
+            'tests': tests};
     if (best && !data['past_dead_line']){
         update_marks(div_id, score, max_score);
     }
@@ -470,96 +631,109 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
     var score = 0;
     var tests = [];
+    //gradingTable.empty();
 
-    for (var i = 0; i < testcases.length; i++) {
-        var current_testcase = testcases[i];
-        var description = current_testcase.test_desc;
-        var passed = current_testcase.passed_test;
-        var testcaseInput = current_testcase.test_input;
-        var testcaseOutput = current_testcase.expected_output;
-        var result = create_output(current_testcase.test_val);
-        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
+    if (error_msg != null){
+        gradingTable.append("<div class='red-alert'>"+error_msg+"</div>");
+        error_msg = null;
+    }
+    else{
+	    for (var i = 0; i < testcases.length; i++) {
+	        var current_testcase = testcases[i];
+	        var description = current_testcase.test_desc;
+	        var passed = current_testcase.passed_test;
+	        var testcaseInput = current_testcase.test_input;
+                var testcaseOutput = null;
+                if (current_testcase.expected_output) {
+	            var testcaseOutput = create_output(current_testcase.expected_output);
+                }
+            var debug = current_testcase.debug;
+	        var result = create_output(current_testcase.test_val);
+	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
 
-        if (description == ""){
-            description = "No Description Provided"
-        }
+	        if (description == ""){
+	            description = "No Description Provided"
+	        }
 
-        if (cleaner){
-            cleaner.remove();
-        }
+	        if (cleaner){
+	            cleaner.remove();
+	        }
 
-        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
-        gradingTable.append(newRow);
+	        var newRow = $('<tr class="pcrs-table-row" id="tcase_'+div_id+'_'+i + '"></tr>');
+	        gradingTable.append(newRow);
 
-        if ("exception" in current_testcase){
-            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
-                          current_testcase.exception + '</th>');
-        }
-        else{
-            if (testcaseInput != null) {
-                newRow.append('<td class="description">' +
-                               description + '</td>');
+	        if ("exception" in current_testcase){
+                    
+	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
+	                          current_testcase.exception + '</th>');
+	        }
+	        else {
+                    newRow.append('<td class="description">' + description + '</td>');
+	            if (testcaseInput != null) {
+	                newRow.append('<td class="expression"><div class="expression_div">' +
+	                               testcaseInput + '</div></td>');
+                    }
+	            else {
+	                newRow.append('<td class="expression">' +
+	                              "Hidden Test" +'</td>');
+	            }
+                    newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
+                               ''+'</div></div></td>');
+	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
+	                           ''+'</div></div></td>');
 
-                newRow.append('<td class="expression"><div class="expression_div">' +
-                               testcaseInput + '</div></td>');
+                    if (language == 'python') {
+	                renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+                    }
+                    else { // language == 'c'
+                        $('#current_testcase'+i).append('<span class="stringObj">' + current_testcase.test_val + '</span>')
+                    }
+                    document.getElementById("current_testcase"+i).removeAttribute('id');
 
-                newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val" class="ExecutionVisualizer"></div></td></div>');
+                    if (language == 'python') {
+                        renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
+                    }
+                    else { // language == 'c'
+                        $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
+                    }
+	            document.getElementById("exp_test_val"+i).removeAttribute('id');
 
-            }
-            else {
-                newRow.append('<td class="description">' + description + '</td>');
+	            newRow.append('<td class="passed"></td>');
 
-                newRow.append('<td class="expression">' +
-                              "Hidden Test" +'</td>');
+	            var pass_status = "";
 
-                newRow.append('<td class="expected">' +
-                              "Hidden Result" +'</td>');
-            }
+	            if (passed){
+	                var smFace = happyFace;
+	                score += 1;
+	                pass_status = "passed";
+	            }
+	            else{
+	                var smFace = sadFace;
+	                pass_status = "failed";
+	            }
 
-            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
-                           ''+'</div></div></td>');
+	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
 
-            renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
-            $('#current_testcase'+i).attr('id', "");
+	            if (debug){
+                        newRow.append('<td class="debug"><button id="'
+                                  + div_id +"_"+i + '" class="debugBtn" type="button"' +
+                                  ' data-toggle="modal" data-target="#visualizerModal">Trace</button></td>');
+	                bindDebugButton(div_id+"_"+i);
+	            }
+	            else{
+	                newRow.append('<td class="debug">-</td>')
+	            }
+	            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
+	                           testcaseOutput+'. Result: '+result+'</a>');
+	        }
+	        var test = {'visible':testcaseInput != null,
+	                    'input': testcaseInput,
+	                    'output': testcaseOutput,
+	                    'passed': passed,
+	                    'description': description};
 
-            renderData_ignoreID(current_testcase.exp_test_val, $('#exp_test_val'));
-            $('#exp_test_val').attr('id',"");
-
-            newRow.append('<td class="passed"></td>');
-
-            var pass_status = "";
-
-            if (passed){
-                var smFace = happyFace;
-                score += 1;
-                pass_status = "passed";
-            }
-            else{
-                var smFace = sadFace;
-                pass_status = "failed";
-            }
-
-            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
-
-            if (testcaseInput != null){
-                newRow.append('<td class="debug"><button id="' +
-                               div_id +"_"+i + '" class="debugBtn" type="button"' +
-                              ' data-toggle="modal" data-target="#myModal">Trace</button></td>');
-                bindDebugButton(div_id+"_"+i);
-            }
-            else{
-                newRow.append('<td class="debug"></td>')
-            }
-            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
-                           testcaseOutput+'. Result: '+result+'</a>');
-        }
-        var test = {'visible':testcaseInput != null,
-                    'input': testcaseInput,
-                    'output': testcaseOutput,
-                    'passed': passed,
-                    'description': description};
-
-        tests.push(test);
+	        tests.push(test);
+	    }
     }
     var data = {'sub_time':new Date(),
             'submission':myCodeMirrors[div_id].getValue(),
@@ -616,7 +790,10 @@ function create_output(input){
     brakets_o = {"list":"[","tuple":"(","dict":"{"};
     brakets_c = {"list":"]","tuple":")","dict":"}"};
 
-    if (input.length == 2){
+    if(language == 'c'){
+       return input;
+    }
+    else if (input.length == 2){
         return create_output(input[0])+":"+create_output(input[1]);
     }
     else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict"){
@@ -651,8 +828,10 @@ function check_language(container){
      * Check the language of a problem
      * "container" is the id of the main_div
      */
-
-    if (container.indexOf("code") > -1){
+    if (container.indexOf("c") > -1){
+        language = 'c';
+    }
+    else if (container.indexOf("python") > -1){
         language = 'python';
     }
     else if (container.indexOf("sql") > -1){
@@ -664,6 +843,192 @@ function check_language(container){
     else{
         language = '';
     }
+    return language;
+}
+
+function escapeRegExp(string) {
+    /**
+     * Escape Regex Expressions
+     */
+    return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(find, replace, string) {
+    /**
+     * Replace an specific
+     * substring within a string
+     */
+  return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+function removeTags(source_code){
+   /**
+     * Remove [block] and [student_code] tags
+     * from source code
+     */
+    var lines = source_code.split("\n");
+    var line;
+    var student_view_line = 1;
+    var blocked_tag_num = 0;
+    var student_code_tag_num = 0;
+
+    var blocked_list = [];
+    var student_code_list = [];
+
+    source_code = "";
+    for(var i = 0; i < lines.length; i++) {
+        line = lines[i];
+
+        if(line.indexOf("[blocked]") > -1) {
+            blocked_list.push({"highlight": true, "start": student_view_line, "end": 0});
+        } else if(line.indexOf("[/blocked]") > -1) {
+            blocked_list[blocked_tag_num].end = student_view_line-1;
+            blocked_tag_num++;
+
+        } else if(line.indexOf("[student_code]") > -1) {
+            student_code_list.push({"highlight": false, "start": student_view_line, "end": 0});
+        } else if(line.indexOf("[/student_code]") > -1) {
+            student_code_list[student_code_tag_num].end = student_view_line-1;
+            student_code_tag_num++;
+
+        } else {
+            source_code += lines[i] + '\n';
+            student_view_line++;
+        }
+    }
+
+    var tag_list;
+    // Remove last \n escape sequence
+    source_code = source_code.substring(0, source_code.length-1);
+    tag_list = blocked_list.concat(student_code_list);
+
+    return {source_code: source_code, tag_list: tag_list};
+}
+
+function blockInput(editor_id){
+    /**
+     * For every line of code inside a pair of [block] [/block] tags,
+     * the user is unable to clicks over it (modify the code)
+     */
+
+    var line_num = myCodeMirrors[editor_id].getCursor().line;
+    var line_count;
+    var wrapClass = myCodeMirrors[editor_id].lineInfo(line_num).wrapClass;
+    if (wrapClass == 'CodeMirror-activeline-background')
+    {
+        line_count = myCodeMirrors[editor_id].lineCount();
+        for (var i = 0; i < line_count; i++){
+            wrapClass = myCodeMirrors[editor_id].lineInfo(i).wrapClass;
+            if (wrapClass != 'CodeMirror-activeline-background'){
+                myCodeMirrors[editor_id].setCursor(i, 0);
+                return true;
+            }
+        }
+        myCodeMirrors[editor_id].replaceRange("\n", CodeMirror.Pos(myCodeMirrors[editor_id].lastLine()));
+        myCodeMirrors[editor_id].setCursor(myCodeMirrors[editor_id].lineCount(), 0);
+    }
+}
+
+function highlightCode(editor_id, tag_list){
+    /**
+     * For every line of code inside a pair of [block] [/block] tags,
+     * highlight this code with a different background color
+     */
+
+    // Block input in the highlighted area
+    myCodeMirrors[editor_id].on("cursorActivity", function(){ blockInput(editor_id);});
+
+    // Check for tags to apply code highlighting
+    var first_line = myCodeMirrors[editor_id].firstLine();
+    var last_line = myCodeMirrors[editor_id].lastLine();
+    for (var i = first_line; i <= last_line; i++) {
+        for(var j = 0; j < tag_list.length; j++){
+            if(tag_list[j].start <= i+1 && tag_list[j].end >= i+1){
+                if(tag_list[j].highlight == true)
+                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-activeline-background');
+                else if (tag_list[j].highlight == false)
+                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-studentline-background');
+                break;
+            }
+        }
+    }
+}
+
+function preventDeleteLastLine(editor_id) {
+    editor = myCodeMirrors[editor_id];
+    editor.getSelectedLines = function () {
+        var selected_lines = [];
+
+        if(editor.somethingSelected()) {
+            var start_line = editor.getCursor(true).line;
+            var end_line = editor.getCursor(false).line;
+            for(var i = start_line; i <= end_line; i++) {
+                selected_lines.push(editor.lineInfo(i));
+            }
+        }
+
+        return selected_lines
+    }
+
+    editor.setOption("extraKeys",
+        {
+            "Backspace": guardBackspace,
+            "Delete": guardDelete,
+        });
+
+    editor.setOption("lineWrapping", true);
+}
+
+function guardBackspace(editor) {
+    var curLine = editor.getCursor().line;
+    var curLineChar = editor.getCursor().ch;
+
+    var prevLine = (curLine > 0) ? curLine - 1 : 0;
+
+    var isSelection = editor.somethingSelected();
+    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
+        return line.wrapClass == 'CodeMirror-activeline-background';
+    }).length > 0;
+
+    var curLineEmpty = editor.lineInfo(curLine).text.length == 0;
+    var curLineFirstChar = curLineChar == 0;
+    var prevLineWrapClass = editor.lineInfo(prevLine).wrapClass;
+
+    // Allow deleting selections, characters on the same line and previous unblocked lines
+    if ((!blockedCodeSelected)
+        && ((!curLineEmpty && !curLineFirstChar)
+            || (prevLineWrapClass != 'CodeMirror-activeline-background'))) {
+
+        // Resume default behaviour
+        return CodeMirror.Pass;
+    }
+}
+
+function guardDelete(editor) {
+    var curLine = editor.getCursor().line;
+    var curLineLen = editor.lineInfo(curLine).text.length;
+    var curLineChar = editor.getCursor().ch;
+
+    var lastLine = editor.lineCount() - 1;
+    var nextLine = (curLine < lastLine) ? curLine + 1 : lastLine;
+
+    var isSelection = editor.somethingSelected();
+    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
+        return line.wrapClass == 'CodeMirror-activeline-background';
+    }).length > 0;
+
+    var curLineEmpty = curLineLen == 0;
+    var curLineLastChar = curLineChar == curLineLen;
+    var nextLineWrapClass = editor.lineInfo(nextLine).wrapClass;
+
+    // Allow deleting selections, characters on the same line and following unblocked lines
+    if ((!blockedCodeSelected)
+        && ((!curLineEmpty && !curLineLastChar)
+            || (nextLineWrapClass != 'CodeMirror-activeline-background'))) {
+
+        // Resume default behaviour
+        return CodeMirror.Pass;
+    }
 }
 
 
@@ -674,26 +1039,39 @@ $(document).ready(function() {
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
 
-        check_language(all_wrappers[x].id);
+        var language = check_language(all_wrappers[x].id);
         if (language == "python"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
+        }
+        else if (language == "c") {
+            var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
+            myCodeMirrors[all_wrappers[x].id] =
+                to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
+                    codeObj.source_code, false);
+            // Debugguer declaration
+            debugger_id = all_wrappers[x].id+1;
+            myCodeMirrors[debugger_id] =
+                    to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
+                        codeObj.source_code, true);
+            highlightCode(all_wrappers[x].id, codeObj.tag_list);
+
+            preventDeleteLastLine(all_wrappers[x].id)
         }
         else if (language == "sql"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
         else if (language == "ra"){
             myCodeMirrors[all_wrappers[x].id] =
-                    history_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
+                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
 
         $(all_wrappers[x]).find('#submit-id-submit').click(function(event){
             event.preventDefault();
-
             var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
 
             if (myCodeMirrors[div_id].getValue() == ''){

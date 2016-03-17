@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
+<head>
     <script type="text/javascript">
         var root = '{{ site_prefix }}';
         var user_theme = '{{ user.code_style }}';
     </script>
-<head>
+
     <meta content='width=device-width, initial-scale=1' name='viewport'/>
     {% load staticfiles %}
+    <link rel="shortcut icon" href="{% static "favicon.ico" %}" type="image/x-icon">
+    <link rel="icon" href="{% static "favicon.ico" %}" type="image/x-icon">
 
 {#    {% block less %}#}
 {#        <link rel="stylesheet/less" type="text/css" href="{% static "less/base.less" %}" />#}
@@ -36,6 +39,17 @@
 
         {% endcompress %}
     {% endblock %}
+
+    <script type="text/javascript">
+        $(document).keydown(function(e) {
+            if (e.keyCode == 8) {
+                var elID = $(document.activeElement).hasClass('textarea') || $(document.activeElement).hasClass('datetimeinput') || $(document.activeElement).hasClass('form-control');
+                if (!elID) {
+                    return false;
+                }
+            };
+        });
+    </script>
 
     <title>{% block title %}PCRS{% endblock %}</title>
 

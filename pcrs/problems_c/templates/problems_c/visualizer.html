@@ -1,0 +1,84 @@
+<div class="pcrs-modal-history" id="newvisualizerModal" tabindex="-1" aria-labelledby="newvisualizerModal" aria-hidden="true">
+  <div class="pcrs-modal-content">
+    <div class="pcrs-modal-header">
+      <h4 class="pcrs-modal-title" id="visualizerModalLabel">C Visualizer</h4>
+      <button type="button" class="x-button-right" data-dismiss="modal" aria-hidden="false" title="Close Debugger"></button>
+    </div>
+    <div class="pcrs-modal-body">
+      <div class="" id="visualizer-section-wrapper">
+
+        <!-- Code Window -->
+        <div class="code-window-section">
+          <div>
+            {% include "problems_c/visualizer_code.html" %}
+          </div>
+          <br/>
+          <div id="std-out-section">
+            <div class="title">
+              Standard Output
+            </div>
+            <hr/>
+            {% include "problems_c/visualizer_stdout.html" %}
+          </div>
+        </div>
+
+        <!-- Name Tables -->
+        <div class="name-type-section">
+          <div class="title">
+            Name Tables
+          </div>
+          <hr/>
+
+          {% include "problems_c/visualizer_names.html" %}
+        </div>
+
+        <!-- Memory Map -->
+        <div class="memory-map-section">
+          <div class="title">
+            Memory Map
+          </div>
+          <hr/>
+
+          {% include "problems_c/visualizer_memory.html" %}
+        </div>
+
+      </div>
+    </div>
+    <div class="pcrs-modal-footer">
+          <form method="post" action="https://mcs.utm.utoronto.ca/~peters43/cgi-bin/pcrs_feedback.cgi" id="feedback" target="_blank">
+                <input type="hidden" name="url" id="feedback_url" value="{{ request.META.HTTP_HOST }}{{ request.get_full_path }}" />
+                <input type="hidden" name="code" id="feedback_code" value="" />
+          </form>
+      {% if report_bugs %}
+          <button type="submit" class="reg-button" form="feedback">
+            Report Bug <span class="at">Report Bug</span>
+          </button>
+      {% endif %}
+      <button type="button" class="debugBtn" id="toggle-hex-button">
+        Toggle Hex <span class="at">Toggle Hex</span>
+      </button>
+      <button type="button" class="reg-button" data-dismiss="modal">
+        Close <span class="at">Close Debugger</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- A modal window for showing the full details of the name tables -->
+<div class="pcrs-modal-history" id="nameTableDetailsModal" tabindex="-1" aria-labelledby="nameTableDetailsModal" aria-hidden="true">
+  <div id="nameTableDetailsDiv" class="pcrs-modal-content">
+    <div class="pcrs-modal-header">
+      <h3 class="pcrs-modal-title">Expanded Name Table Details</h3>
+    </div>
+
+    <!-- The name table will be inserted here -->
+    <div class="pcrs-modal-body">
+    </div>
+
+    <div class="pcrs-modal-footer">
+      <button type="button" class="reg-button">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

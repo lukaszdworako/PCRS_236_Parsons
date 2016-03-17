@@ -1,0 +1,34 @@
+{
+    "grammar": "Extended Grammar",
+    "syntax": {
+        "not_op": "not",
+        "and_op": "and",
+        "or_op": "or",
+
+        "params_start": "_{",
+        "params_stop": "}",
+        "paren_left": "(",
+        "paren_right": ")",
+
+        "equal_op": "=",
+        "not_equal_op": "!=",
+        "not_equal_alt_op": "<>",
+        "less_than_op": "<",
+        "less_than_equal_op": "<=",
+        "greater_than_op": ">",
+        "greater_than_equal_op": ">=",
+
+        "select_op": "\\select",
+        "project_op": "\\project",
+        "rename_op": "\\rename",
+        "assign_op": ":=",
+
+        "join_op": "\\join",
+        "theta_join_op": "\\theta_join",
+        "natural_join_op": "\\natural_join",
+
+        "union_op": "\\union",
+        "difference_op": "\\difference",
+        "intersect_op": "\\intersect"
+    }
+}
