@@ -7,34 +7,25 @@ from problems_short_answer.models import Problem, Submission
 
 
 class ProblemForm(forms.ModelForm, BaseProblemForm):
-    
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'tags', 'visibility')
+        fields = ('name', 'description', 'max_score', 'solution', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
-        self.save_and_add = Submit('submit', 'Save',
-                               css_class='btn-success pull-right',
-                               formaction='create_redirect')
-        
         super(forms.ModelForm, self).__init__(*args, **kwargs)
+        self.save_and_add = Submit('submit', 'Save',
+                               css_class='green-button-right',
+                               formaction='create_redirect')
         BaseProblemForm.__init__(self)
-        
-        if self.instance.pk:
-            self.buttons = (Div(CrispyFormMixin.delete_button,
-                                self.clear_button,
-                                css_class='btn-group'),
-                            Div(self.save_button,
-                                css_class='btn-group pull-right'))
-        self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
-                                    ButtonHolder(*self.buttons))
+
 
 class SubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
-    
+
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(
             Fieldset('', 'submission'),
+            self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right'))

@@ -17,6 +17,7 @@ from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm as MCSubmissionForm
 from problems_rating.forms import SubmissionForm as RatingSubmissionForm
+from problems_short_answer.forms import SubmissionForm as ShortAnswerSubmissionForm
 
 
 class ChallengeView():
@@ -118,6 +119,8 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
                     f = MCSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 elif module.endswith('rating'):
                     f = RatingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
+                elif module.endswith('short_answer'):
+                    f = ShortAnswerSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 else:
                     f = ProgrammingSubmissionForm(problem=problem, simpleui=self.request.user.use_simpleui)
                 forms[module][problem.pk] = f
