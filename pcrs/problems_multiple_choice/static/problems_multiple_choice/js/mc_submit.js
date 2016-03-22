@@ -45,6 +45,7 @@ function getMCHistory(mc_id){
     $.post(root+'/problems/multiple_choice/'+mc_id.split("-")[1]+'/history',
     postParams,
     function(data){
+        $('#'+mc_id).find('#history_accordion').html("");
         show_mc_history(data, mc_id);
     },
     'json')
