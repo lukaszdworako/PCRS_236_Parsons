@@ -90,9 +90,6 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
                     str(problem.get_problem_type_name()) + " " +
                     str(problem.pk))
 
-        print("Request is", request.REQUEST)
-        print("Submission is", self.submission.submission)
-
         return HttpResponse(json.dumps({
             'submission': self.submission.submission,
             'score': self.submission.score,

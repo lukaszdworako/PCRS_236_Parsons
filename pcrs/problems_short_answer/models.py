@@ -1,9 +1,11 @@
 import logging
 import datetime
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import localtime, utc
 
+from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission
 from problems_python.pcrs_languages import PythonSpecifics
 
@@ -11,12 +13,21 @@ from problems_python.pcrs_languages import PythonSpecifics
 class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
-    solution = models.TextField()
+    solution = models.TextField(help_text='The solution should be valid Python code. It may import libraries, such as <i>re</i>. The submission to be graded will be in a variable named <i>submission</i>, and the score to be assigned should be placed in a variable <i>score</i>.')
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude)
+        clear = 'Submissions must be cleared before changing the solution. (Please copy the new solution to your clipboard, as it will be lost when you clear submissions.)'
+        if self.submission_set.all():
+            if self.pk and has_changed(self, 'solution'):
+                raise ValidationError({'solution': [clear]})
 
     def __str__(self):
         return self.name
+
 Problem._meta.get_field('max_score').default = 1
 Problem._meta.get_field('max_score').blank = False
+
 
 class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
