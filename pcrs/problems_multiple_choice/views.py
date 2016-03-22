@@ -193,8 +193,11 @@ class SubmissionMCHistoryAsyncView(SubmissionViewMixin,  SingleObjectMixin,
 
         user, section = self.get_user(), self.get_section()
 
-        deadline = problem.challenge.quest.sectionquest_set\
-            .get(section=section).due_on
+        try:
+            deadline = problem.challenge.quest.sectionquest_set\
+                .get(section=section).due_on
+        except:   # Not a valid section
+            deadline = False
         try:
             best_score = self.model.objects\
                 .filter(user=user, problem=problem, has_best_score=True).latest("id").score
