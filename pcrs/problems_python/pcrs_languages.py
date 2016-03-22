@@ -252,8 +252,8 @@ class PythonSpecifics(BaseLanguage):
         '''
 
         safe_imports = ['math', 'random', 'datetime', 'functools', 'operator',
-                        'string', 'collections', 're', 'json', 'heapq', 'bisect'
-                        ,'numpy', 'scipy']
+                        'string', 'collections', 're', 'json', 'heapq', 'bisect',
+                        'numpy', 'scipy']
 
         BANNED_BUILTINS = ('reload', 'input', 'apply', 'open', 'compile',
                            'file', 'eval', 'exec', 'execfile',
