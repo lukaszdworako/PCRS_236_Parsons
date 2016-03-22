@@ -218,13 +218,13 @@ class PythonSpecifics(BaseLanguage):
             p.stderr.close()
 
         except TimeoutExpired as ex:
-            ret["exception"] = str(ex)
+            ret['exception'] = str(ex)
             ret['passed_test'] = False
             ret['test_val'] = "Infinite loop or memory error"
             p.kill()
 
         except Exception as e:
-            ret["exception"] = str(e)
+            ret['exception'] = str(e)
             ret['passed_test'] = False
             ret['test_val'] = str(e)
 
@@ -232,7 +232,8 @@ class PythonSpecifics(BaseLanguage):
             return ret
 
     def run_subprocess(self, script):
-        """ Run python subprocess executed with provided script. Return process p. """
+        ''' Run python subprocess executed with provided script. Return process p.
+        '''
 
         command = ['python3']
         module_dir = os.path.dirname(__file__)
@@ -240,7 +241,7 @@ class PythonSpecifics(BaseLanguage):
         abs_path = os.path.abspath(file_path)
         cwd_path = abs_path.replace("\\", r"\\")
 
-        p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwd_path)
+        p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd_path)
         for line in script:
             p.stdin.write(bytearray(line + "\n", 'utf-8'))
         p.stdin.close()
