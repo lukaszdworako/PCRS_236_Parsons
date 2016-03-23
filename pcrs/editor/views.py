@@ -14,8 +14,12 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin
 
 from problems.forms import EditorForm
+from problems_rdb.forms import EditorForm as RDBEditorForm
+
 import problems_c.models as c_models
 import problems_python.models as python_models
+import problems_ra.models as ra_models
+
 
 # Helper class to encode datetime objects
 class DateEncoder(json.JSONEncoder):
@@ -23,6 +27,7 @@ class DateEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.date):
             return obj.isoformat()
         return json.JSONEncoder.default(self, obj)
+
 
 class EditorViewMixin:
     def get_section(self):
@@ -33,11 +38,13 @@ class EditorViewMixin:
         Return the Problem object for the submission.
         """
         if self.pType == 'c':
-
-            starter ="#include <stdio.h>"
-            p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code=starter, id=9999999, language="c")
+            starter = '#include <stdio.h>'
+            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', starter_code=starter, id=9999999, language=self.pType)
         elif self.pType == 'python':
-        	p, created = self.model.get_problem_class().objects.get_or_create(name="blank", starter_code="", id=9999999, language="python")
+            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', starter_code='', id=9999999, language=self.pType)
+        elif self.pType == 'ra':
+            # TODO: This relies on the existence of specific schema. Using schema 10 (HR) from 343 and the Extended Grammar.
+            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', description='', starter_code='', grammar='Extended Grammar', semantics='set', id=9999999, schema_id=10)
         return p
 
     def get_form_kwargs(self):
@@ -65,6 +72,9 @@ class EditorViewMixin:
             elif self.pType == 'c':
             	submission = c_models.Submission(user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
+            elif self.pType == 'ra':
+                submission = ra_models.Submission(user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             self.object = submission
         return results, error
@@ -80,6 +90,7 @@ class EditorViewMixin:
             self.get_context_data(form=form, results=results, error=error,
                                   submission=self.object))
 
+
 class EditorView(ProtectedViewMixin, EditorViewMixin, SingleObjectMixin,
                      FormView, UserViewMixin):
     """
@@ -88,6 +99,7 @@ class EditorView(ProtectedViewMixin, EditorViewMixin, SingleObjectMixin,
     pType = None
     form_class = EditorForm
     object = None
+
 
 class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
                           SectionViewMixin, View):

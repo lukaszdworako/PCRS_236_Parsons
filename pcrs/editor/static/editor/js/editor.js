@@ -19,7 +19,7 @@ $(document).ready(function() {
     check_language(code_wrapper_id);
 
     if (language == "python"){
-        myCodeMirrors[code_wrapper_id] = to_code_mirror("python", 3, $(code_wrapper).find("#div_id_code_box"), '', false);
+        myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 3, $(code_wrapper).find("#div_id_code_box"), '', false);
         $(code_wrapper).find('#submit-id-trace').hide()
         $(code_wrapper).append($('<button id="python_trace_btn" class="debugBtn pull-right" type="button" data-target="#visualizerModal">Trace</button>'));
         $('#python_trace_btn').bind('click', function() {
@@ -36,23 +36,39 @@ $(document).ready(function() {
         });
     }
     else if (language == "c") {
-        myCodeMirrors[code_wrapper_id] = to_code_mirror("c", 'text/x-csrc', $(code_wrapper).find("#div_id_code_box"), '', false);
+        myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 'text/x-csrc', $(code_wrapper).find("#div_id_code_box"), '', false);
         myCodeMirrors[code_wrapper_id].getDoc().setValue("#include <stdio.h>\n\nint main() {\n\n    return 0;\n}");
 
         preventDeleteLastLine(code_wrapper_id);
+
+        $(code_wrapper).find('#submit-id-trace').click(function(event) {
+            event.preventDefault();
+            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
+
+            var user_code = myCodeMirrors[div_id].getValue();
+            if (user_code == '') {
+                alert('There is no code to submit.');
+            } else {
+                getTestcases(div_id);
+            }
+        });
     }
+    else if (language == "ra") {
+        myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 'text/x-sql', $(code_wrapper).find("#div_id_code_box"), '', false);
+        myCodeMirrors[code_wrapper_id].getDoc().setValue("\\project_{eid} sales;");
 
-    $(code_wrapper).find('#submit-id-trace').click(function(event) {
-        event.preventDefault();
-        var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
+        $(code_wrapper).find('#submit-id-trace').click(function(event) {
+            event.preventDefault();
+            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
 
-        var user_code = myCodeMirrors[div_id].getValue();
-        if (user_code == '') {
-            alert('There is no code to submit.');
-        } else {
-            getTestcases(div_id);
-        }
-    });
+            var user_code = myCodeMirrors[div_id].getValue();
+            if (user_code == '') {
+                alert('There is no code to submit.');
+            } else {
+                getTestcases(div_id);
+            }
+        });
+    }
 });
 
 function start_editor_visualizer(user_code, code_wrapper_id) {

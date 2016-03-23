@@ -109,6 +109,7 @@ def remove_tag(tag_open, tag_close, source_code):
             source_code_output += line
     return source_code_output
 
+
 class MonitoringForm(CrispyFormMixin, forms.Form):
     time = forms.DateTimeField(initial=now())
     section = forms.ModelChoiceField(queryset=Section.objects.all())

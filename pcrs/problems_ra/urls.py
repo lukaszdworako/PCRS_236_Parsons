@@ -4,9 +4,10 @@ from problems.views import *
 from problems_ra.forms import ProblemForm, TestCaseForm
 from problems_ra.models import Problem, TestCase, Submission
 from problems_ra.views import RASyntaxReferenceView
-
 from problems_rdb.views import (RDBTestCaseCreateManyView,
                                 RDBTestCaseCreateView)
+
+from editor.views import EditorAsyncView
 
 
 urlpatterns = patterns('',
@@ -43,16 +44,21 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)/delete$',
         TestCaseDeleteView.as_view(model=TestCase),
         name='ra_problem_delete_testcase'),
+
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(model=Submission,
                                template_name='problems_ra/submission.html'),
         name='ra_problem_submit'),
-    url(r'^(?P<problem>[0-9]+)/history$',
-        SubmissionHistoryAsyncView.as_view(model=Submission),
-        name='ra_problem_async_history'),
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='ra_problem_async_submit'),
+    url(r'^editor/run$',
+        EditorAsyncView.as_view(model=Submission, pType='ra'),
+        name='editor_problem_async_submit'),
+
+    url(r'^(?P<problem>[0-9]+)/history$',
+        SubmissionHistoryAsyncView.as_view(model=Submission),
+        name='ra_problem_async_history'),
 
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',
@@ -62,8 +68,7 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/monitor_data$',
         MonitoringAsyncView.as_view(model=Problem),
         name='ra_problem_get_monitor_data'),
-
     url(r'^(?P<pk>[0-9]+)/browse_submissions$',
-            BrowseSubmissionsView.as_view(model=Problem),
-            name='ra_problem_browse_submissions'),
+        BrowseSubmissionsView.as_view(model=Problem),
+        name='ra_problem_browse_submissions'),
 )

@@ -19,15 +19,17 @@
 {% endblock %}
 
 {% block content %}
-    {% include "problems_c/visualizer.html" %}
+    {% if problem.language == 'c' %}
+        {% include "problems_c/visualizer.html" %}
+    {% endif %}
 
     {% with problem.language|add:"-1"|add:"-editor" as tag %}
-  		<div id={{ tag }} class="code-mirror-wrapper">
+        <div id={{ tag }} class="code-mirror-wrapper">
     {% endwith %}
 
-		{% with "editor/"|add:problem.language|add:"_widget.html" as URL %}
-	    	{% include URL %}
-	    {% endwith %}
+    {% with "editor/"|add:problem.language|add:"_widget.html" as URL %}
+        {% include URL %}
+    {% endwith %}
     </div>
 
 {% endblock %}

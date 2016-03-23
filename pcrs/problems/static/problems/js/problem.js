@@ -109,7 +109,7 @@ function add_history_entry(data, div_id, flag){
      * "flag" 0 appends anf "flag" 1 prepends
      */
 
-    // Exit if the history window has not been requested by the user
+    // Exit if the history window has fbeen requested by the user
     if (!window[div_id+'_history_init']) {
         return;
     }
@@ -335,8 +335,8 @@ function getTestcases(div_id) {
 
     var call_path = "";
 
-    var if_editor = div_id.split("-")[2];
-    if (if_editor == null) {
+    var is_editor = div_id.split("-")[2];
+    if (is_editor == null) {
         call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
 
         if (language == 'c') {
@@ -346,6 +346,7 @@ function getTestcases(div_id) {
     else {     // editor
         call_path = root + '/problems/' + language + '/editor/run';
     }
+    var use_gradetable = !(is_editor && language != 'ra');
 
     if (language == 'c') {
         document.getElementById('feedback_code').value = clean_code;
@@ -371,7 +372,7 @@ function getTestcases(div_id) {
                     error_msg = data['results'][1];
                 }
 
-                if (use_simpleui == 'False' && !if_editor){
+                if (use_simpleui == 'False' && use_gradetable){
                     $("#"+div_id).find("#grade-code").show();
                 }
 
@@ -379,7 +380,7 @@ function getTestcases(div_id) {
                 var max_score = data['max_score'];
                 var decider = score == max_score;
 
-                if (!if_editor){
+                if (!is_editor){
 
                     $('#'+div_id).find('#alert')
                         .toggleClass("red-alert", !decider);
@@ -420,7 +421,7 @@ function getTestcases(div_id) {
                 else if (language == 'c'){
                     // Handle C error and warning messages
                     dont_visualize = handleCMessages(div_id, testcases);
-                    if (!if_editor){
+                    if (!is_editor){
                         prepareGradingTable(div_id,
                                             data['best'],
                                             data['past_dead_line'],
@@ -439,14 +440,16 @@ function getTestcases(div_id) {
                                            data['best'],
                                            data['past_dead_line'],
                                            data['sub_pk'],
-                                           max_score);
+                                           max_score,
+                                           is_editor);
                 }
                 else if (language=='ra'){
                     prepareSqlGradingTable(div_id,
                                            data['best'],
                                            data['past_dead_line'],
                                            data['sub_pk'],
-                                           max_score);
+                                           max_score,
+                                           is_editor);
                 }
                 // Deactivate loading pop-up
                 $('#waitingModal').modal('hide');
@@ -459,7 +462,7 @@ function getTestcases(div_id) {
         });
 }
 
-function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
+function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score, is_editor) {
     /**
      * Display the results of the SQL and RA test cases.
      * "div_id" the main div of the problem
@@ -467,12 +470,14 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
      * "past_dead_line" bool which indicates of the submission is on time
      * "sub_pk" submission id
      * "max_score" maximum score for this problem
+     * "is_editor" is True if we are preparing results for the editor view
      */
 
     var score = 0;
     var tests = [];
     var table_location = $('#'+div_id).find('#table_location');
     table_location.empty();
+
     //error ra
     if (error_msg != null){
         table_location.append("<div class='red-alert'>"+error_msg+"</div>");
@@ -483,7 +488,6 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                     'passed': false,
                     'description': error_msg};
         tests.push(test);
-
         error_msg = null;
     }
     else{
@@ -493,13 +497,18 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                                             class:"pcrs-table"});
 
             var expected_td = $('<td/>', {class:"table-left"}).append("Expected");
-            var actual_td = $('<td/>', {class:"table-right"}).append("Actual");
+            if (!is_editor) {
+                var actual_td = $('<td/>', {class:"table-right"}).append("Actual");
+            }
+            else {
+                var actual_td = $('<td/>', {class:"table-right"});
+            }
 
             var left_wrapper = $('<div/>', {class:"sql_table_control"});
             var right_wrapper;
             if (current_testcase['visible'])
                 right_wrapper = $('<div/>',{class:"sql_table_control"});
-            else{
+            else {
                 right_wrapper = $('<div/>',{class:"sql_table_control_full"});
             }
 
@@ -509,26 +518,28 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
             var expected_entry = $('<tr/>', {class:"pcrs-table-head-row"});
             var actual_entry = $('<tr/>', {class:"pcrs-table-head-row"});
 
-            if (current_testcase['passed']){
-                table_location.append("<div class='green-alert'><icon class='ok-icon'>" +
-                                      "</icon><span> Test Case Passed</span></div>");
-                score++;
-            }
-            else{
-                table_location.append("<div class='red-alert'><icon class='remove-icon'>" +
-                                      "</icon><span> Test Case Failed</span></div>");
+            if (!is_editor) {
+                if (current_testcase['passed']){
+                    table_location.append("<div class='green-alert'><icon class='ok-icon'>" +
+                                          "</icon><span> Test Case Passed</span></div>");
+                    score++;
+                }
+                else {
+                    table_location.append("<div class='red-alert'><icon class='remove-icon'>" +
+                                          "</icon><span> Test Case Failed</span></div>");
+                }
             }
 
             if (current_testcase['error'] != null){
                 table_location.append("<div class='red-alert'>"+current_testcase['error']+"</div>");
             }
-            else{
-                if (current_testcase['visible']){
+            else {
+                if (current_testcase['visible'] && !is_editor){
                     for (var header = 0; header < current_testcase['expected_attrs'].length; header++){
                         expected_entry.append("<td><b>"+ current_testcase['expected_attrs'][header] +"</b></td>");
                     }
                 }
-                else{
+                else if (!is_editor) {
                     table_location.append("<div class='blue-alert'>" +
                                       "</icon><span> Expected Result is Hidden </span></div>");
                 }
@@ -542,7 +553,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                 expected_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
                 actual_table.removeClass("pcrs-table-head-row").addClass("pcrs-table-row");
 
-                if (current_testcase['visible']){
+                if (current_testcase['visible'] && !is_editor){
                     for (var entry = 0; entry < current_testcase['expected'].length; entry++){
                         var entry_class = 'pcrs-table-row';
                         var test_entry = current_testcase['expected'][entry];
@@ -578,7 +589,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score)
                     actual_table.append(actual_entry);
                 }
 
-                if (current_testcase['visible']){
+                if (current_testcase['visible'] && !is_editor){
                     left_wrapper.append(expected_table);
                     expected_td.append(left_wrapper);
                     main_table.append(expected_td);
@@ -663,7 +674,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	        gradingTable.append(newRow);
 
 	        if ("exception" in current_testcase){
-                    
+
 	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
 	                          current_testcase.exception + '</th>');
 	        }

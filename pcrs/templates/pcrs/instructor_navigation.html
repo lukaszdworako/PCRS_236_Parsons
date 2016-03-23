@@ -86,7 +86,7 @@
                     </ul>
                 </li>
             </ul>
-            {% if 'problems_c' in problem_types or 'problems_python' in problem_types %}
+            {% if 'problems_c' in problem_types or 'problems_python' in problem_types or 'problems_ra' in problem_types %}
                 <ul class="pcrs-navbar-nav">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
@@ -100,6 +100,10 @@
                         {% if 'problems_c' in problem_types %}
                             <li>
                                 <a href="{{ site_prefix }}/editor/c/submit">C</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_ra' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/ra/submit">Relational Algebra</a>
                             </li>
                         {% endif %}
                         </ul>

@@ -1,4 +1,4 @@
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div
 from django import forms
 from pcrs.form_mixins import CrispyFormMixin, BaseRelatedObjectForm
 
@@ -58,3 +58,18 @@ class RDBTestCaseForm(BaseRelatedObjectForm):
         # limit the options to the datasets within the schema for the problem
         # for which the testcase is created
         self.fields['dataset'].queryset = Dataset.objects.filter(schema=schema)
+
+
+
+class EditorForm(CrispyFormMixin, forms.Form):
+    submission = forms.CharField(widget=forms.Textarea())
+
+    def __init__(self, *args, **kwargs):
+        problem = kwargs.pop('problem', None)
+        simpleui = kwargs.pop('simpleui', False)
+        super().__init__(*args, **kwargs)
+
+        self.trace_button = Submit('Execute', value='Execute', css_class='debugBtn pull-right')
+        self.fields['submission'].initial = ''
+        layout_fields = (Fieldset('', 'submission'), Div(self.trace_button, css_class="floatdiv"))
+        self.helper.layout = Layout(*layout_fields)

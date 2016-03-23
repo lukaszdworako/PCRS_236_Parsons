@@ -81,6 +81,13 @@ class Submission(AbstractSubmission):
     def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
+
+        if self.problem.pk == 9999999:                # Editor
+            save = False
+            self.problem.solution = self.submission   # Allows get_results to run with the same results on both sides
+            # TODO: Setting a specific dataset that matches the schema
+            testcases = [TestCase.objects.get(pk=9)]
+
         t_sub, t_ans, error = self.get_sql_translations()
 
         if not error:
