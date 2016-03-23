@@ -14,7 +14,7 @@
 
 {% block problem_description %}
     <div>
-        <h5>Enter your Python code here to compile and visualize it</h5>
+        <h5>Enter your Python code here to visualize it</h5>
     </div>
     <br>
 {% endblock %}
@@ -22,5 +22,5 @@
 {% block problem_specific %}
     {% include "editor/grade_table.html" %}
     {% include "problems_python/code_trace.html" %}
-    {% include "problems_python/wait_async_job.html" %}
+    {% include "problems/wait_async_job.html" %}
 {% endblock %}
