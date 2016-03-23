@@ -36,6 +36,13 @@ class Submission(AbstractSubmission):
     def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
+
+        if self.problem.pk == 9999999:                # Editor
+            save = False
+            self.problem.solution = self.submission   # Allows get_results to run with the same results on both sides
+            # TODO: Setting a specific dataset that matches the schema
+            testcases = [TestCase.objects.get(pk=11)]
+
         with StudentWrapper(database=settings.RDB_DATABASE,
                             user=request.user.username) as db:
             for testcase in testcases:

@@ -53,9 +53,15 @@ $(document).ready(function() {
             }
         });
     }
-    else if (language == "ra") {
+    else if (language == "ra" || language == "sql") {
         myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 'text/x-sql', $(code_wrapper).find("#div_id_code_box"), '', false);
-        myCodeMirrors[code_wrapper_id].getDoc().setValue("\\project_{eid} sales;");
+
+        if (language == "ra") {
+            myCodeMirrors[code_wrapper_id].getDoc().setValue("\\project_{eid} sales;");
+        }
+        else {
+            myCodeMirrors[code_wrapper_id].getDoc().setValue("select eid from sales;");
+        }
 
         $(code_wrapper).find('#submit-id-trace').click(function(event) {
             event.preventDefault();

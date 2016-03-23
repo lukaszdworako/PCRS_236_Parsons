@@ -19,6 +19,7 @@ from problems_rdb.forms import EditorForm as RDBEditorForm
 import problems_c.models as c_models
 import problems_python.models as python_models
 import problems_ra.models as ra_models
+import problems_sql.models as sql_models
 
 
 # Helper class to encode datetime objects
@@ -45,6 +46,9 @@ class EditorViewMixin:
         elif self.pType == 'ra':
             # TODO: This relies on the existence of specific schema. Using schema 10 (HR) from 343 and the Extended Grammar.
             p, created = self.model.get_problem_class().objects.get_or_create(name='blank', description='', starter_code='', grammar='Extended Grammar', semantics='set', id=9999999, schema_id=10)
+        elif self.pType == 'sql':
+            # TODO: This relies on the existence of specific schema. Using schema 10 (HR) from 343.
+            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', description='', starter_code='', id=9999999, schema_id=10)
         return p
 
     def get_form_kwargs(self):
@@ -74,6 +78,9 @@ class EditorViewMixin:
                     section=self.get_section(), submission=submission_code)
             elif self.pType == 'ra':
                 submission = ra_models.Submission(user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
+            elif self.pType == 'sql':
+                submission = sql_models.Submission(user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             self.object = submission

@@ -346,7 +346,7 @@ function getTestcases(div_id) {
     else {     // editor
         call_path = root + '/problems/' + language + '/editor/run';
     }
-    var use_gradetable = !(is_editor && language != 'ra');
+    var use_gradetable = !(is_editor && !(language == 'ra' || language == 'sql'));
 
     if (language == 'c') {
         document.getElementById('feedback_code').value = clean_code;

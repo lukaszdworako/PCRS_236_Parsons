@@ -5,6 +5,9 @@ from problems_rdb.views import RDBTestCaseCreateView, RDBTestCaseCreateManyView
 from problems_sql.models import Problem, TestCase, Submission
 from problems_sql.forms import ProblemForm, TestCaseForm
 
+from editor.views import EditorAsyncView
+
+
 urlpatterns = patterns('',
     url(r'^list$', ProblemListView.as_view(model=Problem),
         name='sql_problem_list'),
@@ -37,6 +40,7 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)/delete$',
         TestCaseDeleteView.as_view(model=TestCase),
         name='sql_problem_delete_testcase'),
+
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(model=Submission,
                                template_name='problems_rdb/submission.html'),
@@ -44,6 +48,10 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='sql_problem_async_submit'),
+    url(r'^editor/run$',
+        EditorAsyncView.as_view(model=Submission, pType='sql'),
+        name='editor_problem_async_submit'),
+
     url(r'^(?P<problem>[0-9]+)/history$',
         SubmissionHistoryAsyncView.as_view(model=Submission),
         name='sql_problem_async_history'),
