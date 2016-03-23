@@ -84,7 +84,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename={0}-{1}-{2}.csv'.\
-                format(str(section).replace(" @ ", "_"), quest.name.replace(" ", "_"), time.strftime("%m%d%y"))
+                format(str(section).split("@")[0].strip().replace(" ", "_"), quest.name.replace(" ", "_"), time.strftime("%m%d%y"))
         writer = csv.writer(response)
 
         # query database for this section's problems
