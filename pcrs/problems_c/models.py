@@ -42,6 +42,7 @@ class JobScheduler(AbstractJobScheduler):
     """
     pass
 
+
 class Submission(AbstractSubmission):
     """
     A coding problem submission.
@@ -367,9 +368,6 @@ class TestRun(AbstractTestRun):
         }
 
 
-# Signal handlers
-
 # update submission scores when a testcase is deleted
 post_delete.connect(testcase_delete, sender=TestCase)
-
 post_delete.connect(problem_delete, sender=Problem)

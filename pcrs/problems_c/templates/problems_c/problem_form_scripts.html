@@ -304,11 +304,14 @@
             language_version = 'text/x-csrc';
 
             // Add function to submit button to update hidden field data
+            $("#submit-id-clone").attr("onclick", "return submitHidden();");
             $("#submit-id-submit").attr("onclick", "return submitHidden();");
             $("#submit-id-attempt").attr("onclick", "return submitHidden();");
 
             // Add hidden values to submit code
             var element = document.getElementsByTagName('form')[0];
+            console.log(element);
+            console.log(document.getElementsByTagName('form'));
             element.innerHTML = element.innerHTML + '<input type="hidden" id="id_starter_code_tmp" name="starter_code" value=""></input>';
             element.innerHTML = element.innerHTML + '<input type="hidden" id="id_solution_tmp" name="solution" value=""></input>';
 
