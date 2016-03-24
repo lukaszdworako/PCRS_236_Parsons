@@ -18,6 +18,7 @@ from pprint import pprint
 class CompilationError(Exception):
     pass
 
+
 class CSpecifics():
     """ Representation of C language:
         * running tests
@@ -77,7 +78,10 @@ class CSpecifics():
             ret["exception_type"] = self.compilation_ret["exception_type"]
             ret["exception"] = self.compilation_ret["exception"]
             if self.compilation_ret["exception_type"] == "error":
-                raise CompilationError
+                raise CompilationError(ret["exception"])
+
+            if "exec" in user_script:
+                raise CompilationError("You may be using an exec function, which is not permitted")
 
             if USE_SAFEEXEC:
                 # Safeexec path
@@ -90,8 +94,9 @@ class CSpecifics():
                 max_file_size = "5120"  # 5 megabytes
 
                 # Running C program in a secure environment
+                # fork() appears to always fail in safeexec environment, but -u is 1 anyway
                 cmd_str = safe_exec + " -o " + temp_output_file + " -d " + max_process_mem \
-                                + " -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID \
+                                + " -u 1 -U " + SAFEEXEC_USERID + " -G " + SAFEEXEC_GROUPID \
                                 + " -T " + max_time_sec + " -F " + max_number_files \
                                 + " -f " + max_file_size + " -q " + self.compilation_ret["temp_gcc_file"] \
                                 + " " + test_input + " > /dev/null 2> /dev/null"
@@ -122,7 +127,7 @@ class CSpecifics():
         except CompilationError as e:
             ret["passed_test"] = False
             ret['exception_type'] = 'error'
-            ret['exception'] = "Compilation error"
+            ret['exception'] = "Compilation error: {0}".format(str(e))
             ret['test_val'] = ret["exception"]
 
         except SyntaxError as e:
@@ -208,10 +213,10 @@ class CSpecifics():
                 # Check for compilation, or warning errors
                 if compilation_alert.find("error") != -1:
                     ret["exception_type"] = "error"
-                    ret["exception"] = str("Compilation Error:\n" + compilation_alert).replace('\n', '<br />')
+                    ret["exception"] = compilation_alert.replace('\n', '<br />')
                 elif not deny_warning and (compilation_alert.find("warning") != -1):
                     ret["exception_type"] = "warning"
-                    ret["exception"] = str("Compilation Warning:\n" + compilation_alert).replace('\n', '<br />')
+                    ret["exception"] = compilation_alert.replace('\n', '<br />')
                 else:
                     ret["exception_type"] = " "
                     ret["exception"] = " "
@@ -521,7 +526,7 @@ class CSpecifics():
 
         # Split the output into blocks of print statements
         print_blocks = code_output.split(block_delim)
-        
+
         #This will keep track of the line that a function call most recently originated from -
         #update as function calls happen
         most_recent_funccall_line = 0
