@@ -22,6 +22,7 @@ VISIBILITY_LEVELS = (
 
 MASTER_SECTION_ID = 'master'
 
+
 @python_2_unicode_compatible
 class CustomAbstractBaseUser(models.Model):
     """
@@ -68,14 +69,6 @@ class CustomAbstractBaseUser(models.Model):
 
         def check_password(self, raw_password):
             """
-            Returns a boolean of whether the raw_password was correct. Handles
-            hashing formats behind the scenes.
-            """
-            return raw_password == self.password
-
-        # Using a raw password for development -- database is set up with raw passwords.
-        '''def check_password(self, raw_password):
-            """
             Return a boolean of whether the raw_password was correct. Handles
             hashing formats behind the scenes.
             """
@@ -83,7 +76,6 @@ class CustomAbstractBaseUser(models.Model):
                 self.set_password(raw_password)
                 self.save(update_fields=["password"])
             return check_password(raw_password, self.password, setter)
-        '''
 
         def set_unusable_password(self):
             # Set a value that will never be a valid hash
@@ -91,7 +83,6 @@ class CustomAbstractBaseUser(models.Model):
 
         def has_usable_password(self):
             return is_password_usable(self.password)
-
 
     def get_full_name(self):
         raise NotImplementedError()
@@ -101,12 +92,15 @@ class CustomAbstractBaseUser(models.Model):
 
 
 class PCRSUserManager(BaseUserManager):
-    def create_user(self, username, is_instructor, section_id=None, is_admin=False, is_staff=False):
+    def create_user(self, username, is_instructor, section_id=None, is_admin=False, is_staff=False, password=None):
         """
         Creates and saves a superuser with the given username, instructor status,
         section id and password.
         """
         user = self.model(username=username, is_instructor=is_instructor, section_id=section_id, is_admin=is_admin)
+        if settings.AUTH_TYPE == 'pass':
+            user.set_password(password)
+
         user.save(using=self._db)
         return user
 
@@ -118,6 +112,8 @@ class PCRSUserManager(BaseUserManager):
         section_id = section_id or MASTER_SECTION_ID
         user = self.create_user(username=username, is_instructor=is_instructor, section_id=section_id, is_admin=True,
                                 is_staff=True)
+        if settings.AUTH_TYPE == 'pass':
+            user.set_password(password)
         user.is_admin = True
         user.is_staff = True
         user.save(using=self._db)
@@ -140,7 +136,6 @@ class PCRSUserManager(BaseUserManager):
             return PCRSUser.objects.filter(is_active=True).all()
         else:
             return PCRSUser.objects.all()
-
 
 
 class PCRSUser(CustomAbstractBaseUser):
@@ -190,29 +185,6 @@ class PCRSUser(CustomAbstractBaseUser):
 
     def __unicode__(self):
         return self.username
-
-    def save(self, *args, **kwargs):
-        "Save hashed password or a hash of a dummy password. "
-        # Django 1.4 and 1.5 treat both empty string and None as unusable password,
-        # need to provide dummy password
-
-        # pwd_not_required = not (self.is_admin or self.is_staff)
-        # if pwd_not_required:
-        #     try:
-        #         self.password = PCRSUser.objects.get(pk=self.pk).password
-        #         print("user does not require password")
-        #
-        #     except Exception as e:
-        #         print("making password 1")
-        #         self.password = make_password("1")
-        #
-        # elif self.password == "!":
-        #     print("obtained !, keeping old password")
-        #     print(PCRSUser.objects.get(pk=self.pk).password)
-        #     self.password = PCRSUser.objects.get(pk=self.pk).password
-
-
-        super(PCRSUser, self).save(*args, **kwargs)
 
 
 class Section(AbstractSelfAwareModel):

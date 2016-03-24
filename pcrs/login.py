@@ -53,14 +53,10 @@ def login_django(request, username):
                 str(username) + " | Log in")
 
     if settings.AUTH_TYPE == 'pass':
-        # Note that AUTOENROLL is not enabled for 'pass' auth type
         passwd = request.POST.get('password', '')
         user = authenticate(username=username, password=passwd)
     else:  # AUTH_TYPEs 'none', 'pwauth', and 'shibboleth'
         user = authenticate(username=username)
-        if user is None and settings.AUTOENROLL:
-            user = users.models.PCRSUser.objects.create_user(username, False, section_id='123')
-            user = authenticate(username=username)
 
     if user is None:
         # Automatic accounts not set up or creation failed.
