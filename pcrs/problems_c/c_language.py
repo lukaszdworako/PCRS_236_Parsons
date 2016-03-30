@@ -172,7 +172,7 @@ class CSpecifics():
         # Filtering user script
         for line in user_script.split("\n"):
             if "#include" in line:
-                if "<sys/" in line or "<net" in line:
+                if "<sys/" in line or "<net" in line or "unistd" in line:
                     ret["exception_type"] = "error"
                     lib_loc = line.find("#include <")
                     lib_end = line[lib_loc:].find(">")
