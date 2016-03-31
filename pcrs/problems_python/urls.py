@@ -1,10 +1,10 @@
 from django.conf.urls import patterns, url
 
 from problems.views import *
-from problems.views import SubmissionView, SubmissionAsyncView
-from problems_python.forms import ProblemForm, TestCaseForm
-from problems_python.models import Problem, TestCase, Submission
-from problems_python import st_async_requests
+from problems.st_async_requests import visualizer_details
+
+from .forms import ProblemForm, TestCaseForm
+from .models import Problem, TestCase, Submission
 from editor.views import EditorAsyncView
 
 
@@ -57,7 +57,7 @@ urlpatterns = patterns('',
         SubmissionHistoryAsyncView.as_view(model=Submission),
         name='coding_problem_async_history'),
 
-    url(r'^visualizer-details$', st_async_requests.visualizer_details, name='visualizer details'),
+    url(r'^visualizer-details$', visualizer_details, name='visualizer details'),
 
     # monitoring
     url(r'^(?P<pk>[0-9]+)/monitor$',

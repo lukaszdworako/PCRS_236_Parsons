@@ -1,8 +1,7 @@
+import json
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
-import json
 
 from problems_python.pcrs_languages import *
 
@@ -18,7 +17,7 @@ def visualizer_details(request):
     try:
         language = request.POST.get("language")
         user_script = request.POST.get("user_script")
-        # add_params is always JSON encoded. 
+        # add_params is always JSON encoded.
         add_params = json.loads(request.POST.get("add_params"))
         add_params = dict(add_params)
 

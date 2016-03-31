@@ -1,13 +1,11 @@
+import json
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
-import json
 
 from problems_c.c_language import *
 from problems_c.c_utilities import *
 from problems_c.models import Problem
-import logging
-import traceback
 
 
 def visualizer_details(request):
@@ -15,7 +13,6 @@ def visualizer_details(request):
         Return json encoded dictionary ret containing trace required
         for the new C visualizer.
     """
-    logger = logging.getLogger('activity.logging')
 
     ret = {}
     try:
@@ -52,22 +49,8 @@ def visualizer_details(request):
             ret = { 'exception': exception_msg }
 
     except Exception as e:
-        #tb = e.__traceback__
-        #traceback.print_tb(tb)
         ret['exception'] = "visualizer_details: " + str(e)
 
     json_output = json.dumps(ret, indent=None)
     return HttpResponse(json_output)
 
-
-    #REPLACE WITH THIS IF WE WANT TO HOOK IT UP TO A PREMADE JSON:
-    # sample_json_file_dir = './languages/c/visualizer/pycparser-experimentation/sample_json_traces/'
-
-    # # Load the sample JSON file
-    # ret = {}
-    # with open(sample_json_file_dir + 'asher-mockup.json') as data_file:
-    #     ret = json.load(data_file)
-
-
-    # json_output = json.dumps(ret, indent=None)
-    # return HttpResponse(json_output)
