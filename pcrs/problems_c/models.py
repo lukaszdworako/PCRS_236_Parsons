@@ -1,24 +1,24 @@
 import logging
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.db import models
-from django.db.models.signals import post_delete
-from django.core.exceptions import ObjectDoesNotExist
-
-from .c_language import CSpecifics
-from pcrs.model_helpers import has_changed
-from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractJobScheduler,
-                             AbstractTestCase, AbstractTestRun,
-                             testcase_delete, problem_delete)
-
 from rest_framework import status
 from json import loads, dumps
 from requests import post
 from hashlib import sha1
 import re
 import bisect
-from problems_c.c_utilities import *
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models.signals import post_delete
+from django.core.exceptions import ObjectDoesNotExist
+
+from pcrs.model_helpers import has_changed
+from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
+                             AbstractJobScheduler,
+                             AbstractTestCase, AbstractTestRun,
+                             testcase_delete, problem_delete)
+from .c_language import CSpecifics
+from .c_utilities import *
 
 class Problem(AbstractProgrammingProblem):
     """

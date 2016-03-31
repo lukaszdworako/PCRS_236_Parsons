@@ -184,18 +184,8 @@ class CSpecifics():
 
 
         try:
-            # Creating the C file, and create the temp directory if it doesn't exist
-            try:
-                f = open(temp_c_file, 'w')
-            except OSError:
-                # Create temp directory if it doesn't exist
-                os.makedirs(os.path.dirname(temp_c_file))
-                f = open(temp_c_file, 'w')
-
-            f.write(user_script)
-            f.close()
-
             # Compiling the C file
+            open(temp_c_file, 'w').write(user_script)
             subprocess.call("gcc " + temp_c_file + " -o " + temp_gcc_file + flags + " 2> " + temp_error_file,
                             shell=True)
 
@@ -227,7 +217,7 @@ class CSpecifics():
 
         except Exception as e:
             ret["exception_type"] = "error"
-            ret["exception"] = "Compilation Error\n"
+            ret["exception"] = "Error during compilation: {0}\n".format(str(e))
 
         finally:
             # Check compilation flag
