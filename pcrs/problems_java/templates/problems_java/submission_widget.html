@@ -1,0 +1,7 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_specific %}
+    {% include "problems_java/grade_table.html" %}
+    {# TODO: include "problems_java/code_trace.html" #}
+    {% include "problems/wait_async_job.html" %}
+{% endblock %}

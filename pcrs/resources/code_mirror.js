@@ -22,6 +22,9 @@ function to_code_mirror (language, version, location, value, lock){
     else if (language == 'c'){
         mode = 'text/x-csrc';
     }
+    else if (language == 'java'){
+        mode = 'text/x-java';
+    }
     historyCodeMirror = CodeMirror(function(elt) {
         $(location).replaceWith(elt);
         }, {mode: mode,
