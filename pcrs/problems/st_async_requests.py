@@ -3,7 +3,7 @@ import json
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from problems_python.pcrs_languages import *
+from .pcrs_languages import *
 
 
 @csrf_exempt

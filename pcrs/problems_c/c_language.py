@@ -1,9 +1,6 @@
 import os, sys
 import subprocess
 import datetime
-from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_GROUPID
-from languages.c.visualizer.cg_stacktrace import CVisualizer
-from languages.c.visualizer.cg_stacktrace_refactor import CVisualizerRefactor
 import logging
 import string
 import re
@@ -12,8 +9,12 @@ from operator import mul
 from functools import reduce
 import ast
 import struct
-
 from pprint import pprint
+
+from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_GROUPID
+from languages.c.visualizer.cg_stacktrace import CVisualizer
+from languages.c.visualizer.cg_stacktrace_refactor import CVisualizerRefactor
+
 
 class CompilationError(Exception):
     pass

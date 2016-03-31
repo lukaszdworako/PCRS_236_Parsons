@@ -32,6 +32,10 @@
                             <li><a href="{{ site_prefix }}/editor/c/submit">C</a>
                             </li>
                         {% endif %}
+                        {% if 'problems_java' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/java/submit">Java</a>
+                            </li>
+                        {% endif %}
                         {% if 'problems_sql' in problem_types %}
                             <li><a href="{{ site_prefix }}/editor/sql/submit">SQL</a>
                             </li>

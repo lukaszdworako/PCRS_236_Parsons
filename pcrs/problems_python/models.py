@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
 
-from .pcrs_languages import GenericLanguage
+from problems.pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
