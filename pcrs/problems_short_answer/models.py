@@ -7,7 +7,7 @@ from django.utils.timezone import localtime, utc
 
 from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission
-from problems_python.pcrs_languages import PythonSpecifics
+from problems_python.python_language import PythonSpecifics
 
 
 class Problem(AbstractProblem):
