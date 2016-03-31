@@ -3,6 +3,7 @@ __pycache__
 .idea
 *.pyc
 *.log
+*.swp
 CACHE
 node_modules
 venv
