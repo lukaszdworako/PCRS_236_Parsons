@@ -85,9 +85,10 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
+
         # Remove hidden code from the student
-        if problem.language == 'c':
-            problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
+        problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
+
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = problem.starter_code
         layout_fields = (Fieldset('', 'submission'), Div(self.history_button, self.submit_button))
@@ -96,7 +97,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
 
 def remove_tag(tag_open, tag_close, source_code):
     source_code = source_code.split('\n')
-    source_code_output = ""
+    source_code_output = []
     tag_count = 0
     for line in source_code:
         if line.find(tag_open) > -1:
@@ -106,8 +107,8 @@ def remove_tag(tag_open, tag_close, source_code):
             tag_count -= 1
             continue
         if tag_count == 0:
-            source_code_output += line
-    return source_code_output
+            source_code_output.append(line)
+    return "\n".join(source_code_output)
 
 
 class MonitoringForm(CrispyFormMixin, forms.Form):
