@@ -62,6 +62,7 @@ class Submission(AbstractSubmission):
                                            test_passed=passed)
 
                 run['test_desc'] = testcase.description
+                run['expected_output'] = testcase.expected_output.strip().replace('\n', '<br />')
                 run['debug'] = False
                 if testcase.is_visible:
                     run['test_input'] = testcase.test_input

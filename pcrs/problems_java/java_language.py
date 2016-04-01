@@ -81,7 +81,7 @@ class JavaSpecifics(BaseLanguage):
                 ret['runtime_error'] = "Runtime Error: " + error_str
                 ret['test_val'] = 'Runtime Error'
             else:
-                ret["test_val"] = output.strip()
+                ret["test_val"] = output.strip().replace('\n', '<br />')
                 ret["passed_test"] = exp_output.strip() == output.strip()
         return ret
 
