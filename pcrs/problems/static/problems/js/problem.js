@@ -42,7 +42,7 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
 
     if (language == 'python') {
         newCode += testcaseCode;
-    } else if (language == 'c') {
+    } else if (language == 'c' || language == 'java') {
         newCode = addHashkey(key);
     }
     getVisualizerComponents(newCode, testcaseCode, problemId);
@@ -80,18 +80,7 @@ function getHistory(div_id){
     // Empty the accordion, in case any manual insertions were performed.
 
     var language = check_language(div_id);
-    if (language == 'python'){
-        problem_path = root + '/problems/python/' + div_id.split("-")[1]+'/history';
-    }
-    else if (language == 'c'){
-        problem_path = root + '/problems/c/' + div_id.split("-")[1]+'/history';
-    }
-    else if (language == 'sql'){
-        problem_path = root + '/problems/sql/' + div_id.split("-")[1]+'/history';
-    }
-    else if (language == 'ra'){
-        problem_path = root + '/problems/ra/' + div_id.split("-")[1]+'/history';
-    }
+    problem_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+'/history';
     $.post(problem_path,
         postParams,
         function(data){
@@ -275,7 +264,7 @@ function addHashkey(div_id){
     return code;
 }
 
-function handleCMessages(div_id, testcases){
+function handleCompileMessages(div_id, testcases){
     /**
      * Handle C error and warning
      * messages - divs with different
@@ -339,7 +328,7 @@ function getTestcases(div_id) {
     if (is_editor == null) {
         call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
 
-        if (language == 'c') {
+        if (language == 'c' || language == 'java') {
             clean_code = addHashkey(div_id);
         }
     }
@@ -348,7 +337,7 @@ function getTestcases(div_id) {
     }
     var use_gradetable = !(is_editor && !(language == 'ra' || language == 'sql'));
 
-    if (language == 'c') {
+    if (language == 'c') {      // Not including java yet, since debugger is not implemented
         document.getElementById('feedback_code').value = clean_code;
     }
 
@@ -418,9 +407,9 @@ function getTestcases(div_id) {
                                         data['sub_pk'],
                                          max_score);
                 }
-                else if (language == 'c'){
-                    // Handle C error and warning messages
-                    dont_visualize = handleCMessages(div_id, testcases);
+                else if (language == 'c' || language == 'java'){
+                    // Handle compilation error and warning messages
+                    dont_visualize = handleCompileMessages(div_id, testcases);
                     if (!is_editor){
                         prepareGradingTable(div_id,
                                             data['best'],
@@ -631,7 +620,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score,
 
 function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
     /**
-     * Display the results of the python test cases.
+     * Display the results of the python-like (C, Java) test cases.
      * "div_id" the main div of the problem
      * "best" bool which indicates if this is the best submission so far
      * "past_dead_line" bool which indicates of the submission is on time
@@ -694,9 +683,9 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                           ''+'</div></div></td>');
 
                     if (language == 'python') {
-	                renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+	                    renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
                     }
-                    else { // language == 'c'
+                    else { // language == 'c' or 'java'
                         $('#current_testcase'+i).append('<span class="stringObj">' + current_testcase.test_val + '</span>')
                     }
                     document.getElementById("current_testcase"+i).removeAttribute('id');
@@ -704,7 +693,7 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
                     if (language == 'python') {
                         renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
                     }
-                    else { // language == 'c'
+                    else { // language == 'c' or 'java'
                         $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
                     }
 	            document.getElementById("exp_test_val"+i).removeAttribute('id');
@@ -801,7 +790,7 @@ function create_output(input){
     brakets_o = {"list":"[","tuple":"(","dict":"{"};
     brakets_c = {"list":"]","tuple":")","dict":"}"};
 
-    if(language == 'c'){
+    if(language == 'c' || language == 'java'){
        return input;
     }
     else if (input.length == 2){
@@ -844,6 +833,9 @@ function check_language(container){
     }
     else if (container.indexOf("python") > -1){
         language = 'python';
+    }
+    else if (container.indexOf("java") > -1){
+        language = 'java';
     }
     else if (container.indexOf("sql") > -1){
         language = 'sql';
@@ -1061,14 +1053,23 @@ $(document).ready(function() {
             myCodeMirrors[all_wrappers[x].id] =
                 to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
                     codeObj.source_code, false);
-            // Debugguer declaration
+
+            // Debugger declaration
             debugger_id = all_wrappers[x].id+1;
             myCodeMirrors[debugger_id] =
                     to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
                         codeObj.source_code, true);
-            highlightCode(all_wrappers[x].id, codeObj.tag_list);
 
-            preventDeleteLastLine(all_wrappers[x].id)
+            highlightCode(all_wrappers[x].id, codeObj.tag_list);
+            preventDeleteLastLine(all_wrappers[x].id);
+        }
+        else if (language == "java"){
+            var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
+            myCodeMirrors[all_wrappers[x].id] =
+                to_code_mirror(language, 'text/x-java', $(all_wrappers[x]).find("#div_id_submission"),
+                    codeObj.source_code, false);
+            highlightCode(all_wrappers[x].id, codeObj.tag_list);
+            preventDeleteLastLine(all_wrappers[x].id);
         }
         else if (language == "sql"){
             myCodeMirrors[all_wrappers[x].id] =

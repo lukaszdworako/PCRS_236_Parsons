@@ -26,3 +26,4 @@ class TestCaseForm(BaseRelatedObjectForm):
     def __init__(self, *args, **kwargs):
         BaseRelatedObjectForm.__init__(self, *args, formaction='testcases',
                                        **kwargs)
+

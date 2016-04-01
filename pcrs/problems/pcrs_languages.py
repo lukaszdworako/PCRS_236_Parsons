@@ -18,7 +18,6 @@ def set_path_to_languages():
             sys.path.append(lang_path)
 
 
-
 class GenericLanguage(object):
     ''' Generic language representation. To add programming language, specify it
         in self.lang and define corresponding language class.
@@ -43,7 +42,6 @@ class GenericLanguage(object):
 
         else:    # No known language
             raise ValueError("Language unknown")
-
 
     def encode_str(self, target_value):
         return self.lang.encode_str(target_value)

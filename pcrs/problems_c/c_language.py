@@ -123,7 +123,7 @@ class CSpecifics():
                 execution_output_tmp = execution_output
 
             ret["test_val"] = execution_output.strip().replace('\n', '').replace('\r', '')
-            ret["passed_test"] = False if expected_output_tmp != execution_output_tmp else True
+            ret["passed_test"] = expected_output_tmp == execution_output_tmp
 
         except CompilationError as e:
             ret["passed_test"] = False
