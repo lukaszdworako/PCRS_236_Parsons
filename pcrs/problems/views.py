@@ -3,7 +3,7 @@ import datetime
 import decimal
 import logging
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
@@ -193,6 +193,9 @@ class SubmissionViewMixin:
         """
         Return the Problem object for the submission.
         """
+        if not self.request.user.is_authenticated():
+            # AnonymousUser
+            raise Http404("Sorry! Your authentication has probably expired: the system cannot identify you.")
         if self.request.user.is_student:
             return get_object_or_404(self.model.get_problem_class(),
                                      pk=self.kwargs.get('problem'),
