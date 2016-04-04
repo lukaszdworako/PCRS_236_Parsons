@@ -147,7 +147,10 @@ class PythonSpecifics(languages.BaseLanguage):
 
             stderr_output = p.stderr.readlines()
             if len(stderr_output) > 0:
-                ret["exception"] = stderr_output[-1].decode()
+                if 'SyntaxError' in stderr_output[-1].decode():
+                    ret['exception'] = '<br />'.join([line.decode().replace('\n', '').replace(' ', '&nbsp;') for line in stderr_output[-3:]])
+                else:
+                    ret['exception'] = stderr_output[-1].decode()
                 ret['passed_test'] = False
                 ret['test_val'] = ret["exception"]
 
