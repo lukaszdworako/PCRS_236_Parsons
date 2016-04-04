@@ -29,7 +29,7 @@ class Submission(AbstractSubmission):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
-    def run_testcases(self, request):
+    def run_testcases(self, request, save=True):
         """
         Run all testcases for the submission and create testrun objects.
         Return the list of testrun results.
@@ -44,8 +44,9 @@ class Submission(AbstractSubmission):
             except KeyError:    # Timeout, usually because of infinite loop
                 passed = False
                 error = "Timeout occurred: do you have an infinite loop?"
-            TestRun.objects.create(submission=self, testcase=testcase,
-                                   test_passed=passed)
+            if save:
+                TestRun.objects.create(submission=self, testcase=testcase,
+                                       test_passed=passed)
 
             run['test_desc'] = testcase.description
             run['debug'] = False
