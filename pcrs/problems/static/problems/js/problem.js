@@ -629,12 +629,17 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
      */
 
     var gradingTable = $("#"+div_id).find("#gradeMatrix");
+    gradingTable.find(".red-alert").remove();
     var score = 0;
     var tests = [];
-    //gradingTable.empty();
 
     if (error_msg != null){
-        gradingTable.append("<div class='red-alert'>"+error_msg+"</div>");
+        var tableRow = $(gradingTable).find('.pcrs-table-row');
+        while (tableRow.length) {
+            tableRow.remove();
+            tableRow = $(gradingTable).find('.pcrs-table-row');
+        }
+        gradingTable.append("<th class='red-alert' colspan='12' style='width:100%;'>"+error_msg+"</th>");
         error_msg = null;
     }
     else{

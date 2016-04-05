@@ -41,9 +41,12 @@ class Submission(AbstractSubmission):
 
             try:
                 passed = run['passed_test']
-            except KeyError:    # Timeout, usually because of infinite loop
+            except KeyError:
                 passed = False
-                error = "Timeout occurred: do you have an infinite loop?"
+                if 'exception' in run:
+                    error = run['exception']
+                else:
+                    error = "The testcase could not be run"
             if save:
                 TestRun.objects.create(submission=self, testcase=testcase,
                                        test_passed=passed)

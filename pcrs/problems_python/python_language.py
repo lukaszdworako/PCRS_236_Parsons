@@ -5,6 +5,10 @@ import sys
 import problems.pcrs_languages as languages
 
 
+class IllegalInputCode(ValueError):
+    pass
+
+
 class PythonSpecifics(languages.BaseLanguage):
     ''' Representation of Python language (visualizer supported):
         * string encoding in visualizer format,
@@ -91,7 +95,7 @@ class PythonSpecifics(languages.BaseLanguage):
             else:
                 data = eval(data)
 
-        except TimeoutExpired as ex:
+        except subprocess.TimeoutExpired as ex:
             p.kill()
             data = {'trace' : None, 'exception' : 'Infinite loop or memory error' }
 
@@ -168,19 +172,23 @@ class PythonSpecifics(languages.BaseLanguage):
             p.stdout.close()
             p.stderr.close()
 
-        except TimeoutExpired as ex:
+        except subprocess.TimeoutExpired as ex:
             ret['exception'] = str(ex)
             ret['passed_test'] = False
             ret['test_val'] = "Infinite loop or memory error"
             p.kill()
+
+        except IllegalInputCode as ex:
+            ret['exception'] = str(ex)
+            ret['passed_test'] = False
+            ret['test_val'] = "Submission contained invalid string"
 
         except Exception as e:
             ret['exception'] = str(e)
             ret['passed_test'] = False
             ret['test_val'] = str(e)
 
-        finally:
-            return ret
+        return ret
 
     def run_subprocess(self, script):
         ''' Run python subprocess executed with provided script. Return process p.
@@ -232,29 +240,20 @@ class PythonSpecifics(languages.BaseLanguage):
                     code_lines[i] = import_statement.format(import_name)
                     import_as_modules.append(import_as_variable.format(short_name, import_name))
                 else:
-                    code_lines[i] = ""
+                    raise IllegalInputCode("The import '{0}' was found in your program; please remove it.".format(import_name))
 
             elif "import " in line:
                 ind = line.find("import")
                 pre_import = line[: ind + 7]
                 import_list = line[ind + 7:].split()
-                j = 0
-                while(j < len(import_list)):
-                    if import_list[j] not in safe_imports:
-                        import_list.pop(j)
-                    else:
-                        j += 1
-                new_code_line = pre_import + ", ".join(import_list)
-                if new_code_line == pre_import:
-                    # if import consisted only of banned input, remove it
-                    code_lines[i] = ""
-                else:
-                    code_lines[i] = new_code_line
+                for item in import_list:
+                    if item not in safe_imports:
+                        raise IllegalInputCode("The import '{0}' was found in your program; please remove it.".format(item))
 
             # remove lines with banned builtins
             for banned_builtin in BANNED_BUILTINS:
                 if banned_builtin in line:
-                    code_lines[i] = ""
+                    raise IllegalInputCode("The string '{0}' was found in your program; please remove it.".format(banned_builtin))
 
             i += 1
         code_lines += import_as_modules
