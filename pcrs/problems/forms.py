@@ -112,9 +112,9 @@ def remove_tag(tag_open, tag_close, source_code):
 
 
 class MonitoringForm(CrispyFormMixin, forms.Form):
-    time = forms.DateTimeField(initial=now())
+    time = forms.DateTimeField(initial=now(), label='Start time', help_text='Submissions before this time will not be shown.')
     section = forms.ModelChoiceField(queryset=Section.objects.all())
-    final = forms.BooleanField(required=False)
+    final = forms.BooleanField(required=False, label='Static result', help_text='Leave unchecked if you want results updated live.')
 
     def __init__(self, *args, **kwargs):
         go = Button('Go', value='Go', css_class='green-button')
