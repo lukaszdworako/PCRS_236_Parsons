@@ -1,4 +1,5 @@
 import json
+import time
 import datetime
 import decimal
 import logging
@@ -327,9 +328,16 @@ class MonitoringAsyncView(MonitoringView):
     def post(self, request, *args, **kwargs):
         form = self.get_form(self.get_form_class())
         form.full_clean()
-        section, time = form.cleaned_data['section'], form.cleaned_data['time']
+        try:
+            section = form.cleaned_data['section']
+        except KeyError:
+            section = 'master @ master'
+        try:
+            start_time = form.cleaned_data['time']
+        except KeyError:
+            start_time = time.strftime('%Y-%m-%d %H:%M:%S%z') 
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
-        results = problem.get_monitoring_data(section, time)
+        results = problem.get_monitoring_data(section, start_time)
         return HttpResponse(json.dumps(results), mimetype='application/json')
 
 
