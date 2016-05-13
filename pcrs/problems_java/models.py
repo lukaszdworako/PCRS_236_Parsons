@@ -42,7 +42,8 @@ class Submission(AbstractSubmission):
         runner = GenericLanguage(self.problem.language)
         self.preprocess_tags()
         try:
-            runner.lang.compile(self.user.username, self.mod_submission)    # necessary since language requires compilation
+            # necessary since language requires compilation
+            runner.lang.compile(self.user.username, self.mod_submission)
         except CompilationError as e:
             error = str(e).replace('\n', '<br />')
             return [{'passed_test': False, 'exception_type': 'error', 'exception': error, 'test_val': error}], None
@@ -50,10 +51,13 @@ class Submission(AbstractSubmission):
         try:
             results = []
             for testcase in self.problem.testcase_set.all():
-                run = testcase.run(runner)
-
                 try:
+                    run = testcase.run(runner)
                     passed = run['passed_test']
+                except CompilationError as e:
+                    # FIXME don't duplicate code!
+                    error = str(e).replace('\n', '<br />')
+                    results.append({'passed_test': False, 'exception_type': 'error', 'exception': error, 'test_val': error})
                 except KeyError:    # Timeout, usually because of infinite loop
                     passed = False
                     #error = "Timeout occurred: do you have an infinite loop?"
