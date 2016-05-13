@@ -48,6 +48,7 @@ class Submission(AbstractSubmission):
             error = str(e).replace('\n', '<br />')
             return [{'passed_test': False, 'exception_type': 'error', 'exception': error, 'test_val': error}], None
 
+        # TODO don't dump compile errors when a student symbol is not found
         try:
             results = []
             for testcase in self.problem.testcase_set.all():

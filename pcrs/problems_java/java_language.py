@@ -82,10 +82,23 @@ class JavaSpecifics(BaseLanguage):
             raise
         else:
             if err:
-                error_str = err.replace(self.tempdir + os.sep, '').replace('\n', '<br />')
-                ret['exception_type'] = 'error'
-                ret['runtime_error'] = "Runtime Error: " + error_str
-                ret['test_val'] = 'Runtime Error'
+                match = re.search('AssertionError(.*)', err)
+                if match:
+                    assertMessage = match.group(1)
+                    if len(assertMessage) > 1:
+                        # Prune off the ": "
+                        assertMessage = assertMessage[2:]
+                    else:
+                        assertMessage = '<Hidden Assert Message>'
+
+                    #ret['exception_type'] = 'warning'
+                    #ret['runtime_error'] = "Test failed: " + assertMessage
+                    ret['test_val'] = assertMessage
+                else:
+                    error_str = err.replace(self.tempdir + os.sep, '').replace('\n', '<br />')
+                    ret['exception_type'] = 'error'
+                    ret['runtime_error'] = "Runtime Error: " + error_str
+                    ret['test_val'] = 'Runtime Error'
             else:
                 ret["test_val"] = output.strip().replace('\n', '<br />')
                 ret["passed_test"] = exp_output.strip() == output.strip()
