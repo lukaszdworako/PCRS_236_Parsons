@@ -45,8 +45,7 @@ class Submission(AbstractSubmission):
             # necessary since language requires compilation
             runner.lang.compile(self.user.username, self.mod_submission)
         except CompilationError as e:
-            error = str(e).replace('\n', '<br />')
-            return [{'passed_test': False, 'exception_type': 'error', 'exception': error, 'test_val': error}], None
+            return self._create_compile_error_response(e)
 
         # TODO don't dump compile errors when a student symbol is not found
         try:
@@ -56,9 +55,7 @@ class Submission(AbstractSubmission):
                     run = testcase.run(runner)
                     passed = run['passed_test']
                 except CompilationError as e:
-                    # FIXME don't duplicate code!
-                    error = str(e).replace('\n', '<br />')
-                    results.append({'passed_test': False, 'exception_type': 'error', 'exception': error, 'test_val': error})
+                    return self._create_compile_error_response(e)
                 except KeyError:    # Timeout, usually because of infinite loop
                     passed = False
                     #error = "Timeout occurred: do you have an infinite loop?"
@@ -81,6 +78,13 @@ class Submission(AbstractSubmission):
 
         runner.lang.clear()    # Removing compiled files
         return results, None
+
+    def _create_compile_error_response(self, e: CompilationError):
+        error = 'Compile error:<br />' + str(e).replace('\n', '<br />')
+        return [{ 'passed_test': False,
+                  'exception_type': 'error',
+                  'exception': error,
+                  'test_val': error}], None
 
     # Adapted from models.py in the C framework
     def preprocess_tags(self):

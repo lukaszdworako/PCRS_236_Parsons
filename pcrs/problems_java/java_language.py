@@ -57,8 +57,7 @@ class JavaSpecifics(BaseLanguage):
             return ret
 
         try:
-            testClassName = self.compileSource(test_input)
-            # TODO enable the policy manager to block network and filesystem access
+            testClassName = self.compileSource(test_input, isTestCode=True)
             command = ["java -enableassertions -Djava.security.manager=default {0}".format(testClassName)]
 
             proc = subprocess.Popen(
@@ -77,6 +76,8 @@ class JavaSpecifics(BaseLanguage):
             ret['exception_type'] = 'error'
             ret['runtime_error'] = "Timeout expired: do you have an infinite loop?"
             ret['test_val'] = "Timeout"
+        except CompilationError:
+            raise
         except Exception as e:
             print(e)
             raise
@@ -89,7 +90,7 @@ class JavaSpecifics(BaseLanguage):
                         # Prune off the ": "
                         assertMessage = assertMessage[2:]
                     else:
-                        assertMessage = '<Hidden Assert Message>'
+                        assertMessage = '(Hidden Assert Message)'
 
                     #ret['exception_type'] = 'warning'
                     #ret['runtime_error'] = "Test failed: " + assertMessage
@@ -121,11 +122,13 @@ class JavaSpecifics(BaseLanguage):
             self.clear()
             raise # reraise
 
-    def compileSource(self, source_code):
+    def compileSource(self, source_code, isTestCode=False):
         ''''Compiles given source code into the temporary run directory.
 
         Args:
             source_code: The raw source code to compile
+            isTestCode:  If this is test code, it will be more
+                         cautious with error message information.
         Returns:
             The name of the main public class of the source code
         Raises:
@@ -150,17 +153,42 @@ class JavaSpecifics(BaseLanguage):
         try:
             proc = subprocess.Popen(
                     'javac {0}'.format(source_fname),
-                    stdout=None,
-                    stderr=None,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                     cwd=self.tempdir,
                     shell=True,
                     universal_newlines=True)
             output, err = proc.communicate(timeout=8) # 8 second timeout on run
         except subprocess.CalledProcessError as e:
-            error_str = str(e.output).replace(self.tempdir + os.sep, '').replace('\n', '<br />')
-            raise CompilationError("javac failed with:\n" + error_str)
+            raise CompilationError("javac failed with:\n" + str(e.output))
+        except TimeoutExpired:
+            try:
+                proc.kill()
+            except:
+                pass # If it is already dead
+            raise CompilationError('Compilation timeout expired. Please try again')
+
+        if err:
+            if isTestCode:
+                err = self.stripTestCodeCompileError(err)
+            raise CompilationError(err)
 
         return classname
+
+    def stripTestCodeCompileError(self, error):
+        ''''Strips important compile errors from test code compile issues
+
+        Args:
+            error: The error message (from javac)
+        Returns:
+            A nicely stripped error message, not exposing the test case code.
+        '''
+        # TODO check if the 'user' object has some type of "admin" property
+        # TODO check for:
+        # s/\w\.java:\d+: error: cannot find symbol
+        # Then strip out:
+        # symbol: (.*)
+        return error
 
     def clear(self):
         ''' Delete the executable and other files associated with this code.
