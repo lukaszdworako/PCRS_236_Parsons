@@ -32,6 +32,7 @@ class JavaSpecifics(BaseLanguage):
     def __init__(self, *args, **kwargs):
         BaseLanguage.__init__(self, *args, **kwargs)
         self.compiled = False
+        self.testSuiteClassName = None
         self.tempdir = None
 
     def encode_str(self, target_value):
@@ -47,15 +48,17 @@ class JavaSpecifics(BaseLanguage):
     # TODO: change this to parse a JUnit dump
     # TODO: return an array of results
     # Start ignoring the expected output completely
-    def run_test(self, test_name):
+    def run_test_suite(self):
         ''' Return dictionary ret containing results of a testrun.
             ret has the following mapping:
             'test_val' -> encoded for visualizer format test output.
             'passed_test' -> boolean
             'exception' (only if exception occurs) -> exception message.
         '''
-        ret = {'passed_test': False,
-               'test_val': ''}
+        ret = {
+            'failures': {},
+            #'exception': None
+        }
         if not self.compiled:
             ret['exception'] = "Code could not be compiled before test execution"
             return ret
@@ -68,7 +71,7 @@ class JavaSpecifics(BaseLanguage):
                 "org.junit.runner.JUnitCore", # run our test through JUnit
             ])
             proc = subprocess.Popen(
-                    "java {0} Tests".format(flags),
+                    "java {0} {1}".format(flags, self.testSuiteClassName),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
@@ -81,34 +84,16 @@ class JavaSpecifics(BaseLanguage):
             except:    # May already have terminated or been killed
                 pass
             ret['exception_type'] = 'error'
-            ret['runtime_error'] = "Timeout expired: do you have an infinite loop?"
-            ret['test_val'] = "Timeout"
+            ret['exception'] = "Timeout expired: do you have an infinite loop?"
         except Exception as e:
             print(e)
             raise
         else:
-            if err:
-                match = re.search('AssertionError(.*)', err)
-                if match:
-                    assertMessage = match.group(1)
-                    if len(assertMessage) > 1:
-                        # Prune off the ": "
-                        assertMessage = assertMessage[2:]
-                    else:
-                        assertMessage = '(Hidden Assert Message)'
-
-                    #ret['exception_type'] = 'warning'
-                    #ret['runtime_error'] = "Test failed: " + assertMessage
-                    ret['test_val'] = assertMessage
-                else:
-                    error_str = err.replace(self.tempdir + os.sep, '').replace('\n', '<br />')
-                    ret['exception_type'] = 'error'
-                    ret['runtime_error'] = "Runtime Error: " + error_str
-                    ret['test_val'] = 'Runtime Error'
-            else:
-                ret["test_val"] = output.strip().replace('\n', '<br />')
-                #ret["passed_test"] = exp_output.strip() == output.strip()
-                ret["passed_test"] = True
+            for m in re.findall('\d+\) ([\w_]+).*?\n(.+?)(?:\s*at org\.junit\.runners)', output, re.DOTALL):
+                methodName = m[0]
+                stackTrace = m[1]
+                ret['failures'][methodName] = stackTrace
+                # TODO: start matching assertions
         return ret
 
     def compile(self, user, user_code, test_code, deny_warning=False):
@@ -123,7 +108,7 @@ class JavaSpecifics(BaseLanguage):
                     prefix="{0}-{1}-".format(user, datetime.now().strftime('%m%d-%H:%M:%S'), dir=self.temp_path),
                     dir=self.temp_path)
             self._compileSource(user_code)
-            self._compileSource(test_code, isTestCode=True)
+            self.testSuiteClassName = self._compileSource(test_code, isTestCode=True)
             self.compiled = True
         except Exception as e:
             self.clear()
@@ -178,7 +163,7 @@ class JavaSpecifics(BaseLanguage):
 
         if err:
             if isTestCode:
-                err = self.stripTestCodeCompileError(err)
+                err = self._stripTestCodeCompileError(err)
             raise CompilationError(err)
 
         return classname
@@ -189,19 +174,20 @@ class JavaSpecifics(BaseLanguage):
         # We need '.' in the classpath to load student class files
         return "-cp .:" + classpath
 
-    def stripTestCodeCompileError(self, error):
-        ''''Strips important compile errors from test code compile issues
+    def _stripTestCodeCompileError(self, error):
+        '''Strips important compile errors from test code compile issues
 
         Args:
             error: The error message (from javac)
         Returns:
             A nicely stripped error message, not exposing the test case code.
         '''
-        # TODO check if the 'user' object has some type of "admin" property
-        # TODO check for:
-        # s/\w\.java:\d+: error: cannot find symbol
-        # Then strip out:
-        # symbol: (.*)
+        # TODO: strip out asserts
+        if re.search('cannot find symbol', error):
+            message = ''
+            for m in re.findall('\s*symbol:\s*\w+\s*([\w_]+)', error):
+                message += "You must define '{0}' as described.\n".format(m)
+            return message
         return error
 
     def clear(self):

@@ -1,4 +1,5 @@
 import re
+import cgi
 from hashlib import sha1
 
 from django.conf import settings
@@ -86,39 +87,38 @@ class Submission(AbstractSubmission):
         try:
             # necessary since language requires compilation
             runner.lang.compile(self.user.username, self.mod_submission, self.problem.test_suite)
+            test_results = runner.lang.run_test_suite()
         except CompilationError as e:
             return self._createCompileErrorResponse(e)
 
-        # TODO change it to run in one big JUnit run.
-        # Return a list of _errors_ from the run_test method.
+        if 'exception' in test_results:
+            return [{ 'passed_test': False,
+                      'exception_type': 'error',
+                      'exception': test_results['exception'],
+                      'test_val': test_results['exception']}], None
 
-        # TODO don't dump compile errors when a student symbol is not found
-        try:
-            results = []
-            for testcase in self.problem.testcase_set.all():
-                try:
-                    run = testcase.run(runner)
-                    passed = run['passed_test']
-                except KeyError:    # Timeout, usually because of infinite loop
-                    passed = False
-                    #error = "Timeout occurred: do you have an infinite loop?"
-                if save:
-                    TestRun.objects.create(submission=self, testcase=testcase,
-                                           test_passed=passed)
+        # TODO: don't dump compile errors when a student symbol is not found
 
-                run['test_desc'] = testcase.description
-                #run['expected_output'] = testcase.expected_output.strip().replace('\n', '<br />')
-                run['debug'] = False
-                if testcase.is_visible:
-                    run['test_input'] = 'FIXME'
-                    #run['test_input'] = testcase.test_input
-                    # run['debug'] = True     # Always False, until debugger is implemented
-                else:
-                    run['test_input'] = None
-                results.append(run)
-        except:
-            runner.lang.clear()
-            raise         # reraise
+        results = []
+        for testcase in self.problem.testcase_set.all():
+            res = {
+                'passed_test': True,
+                #'test_desc': testcase.description,
+                'test_desc': str(testcase),
+                #'debug': testcase.is_visible
+                'debug': False # Always false until debugger is implemented
+                #'exception_type': 'error', (none initially)
+                #'runtime_error': 'error message',
+                #'test_val': 'Runtime Error',
+            }
+            if testcase.test_name in test_results['failures']:
+                res['passed_test'] = False
+                message = test_results['failures'][testcase.test_name]
+                res['test_val'] = str(cgi.escape(message)).replace('\n', '<br />')
+            if save:
+                TestRun.objects.create(submission=self, testcase=testcase,
+                                       test_passed=res['passed_test'])
+            results.append(res)
 
         runner.lang.clear()    # Removing compiled files
         return results, None
@@ -220,9 +220,6 @@ class TestCase(AbstractTestCase):
             return '{0}: {1}'.format(self.test_name, self.description)
         else:
             return self.test_name
-
-    def run(self, runner):
-        return runner.lang.run_test(self.test_name)
 
     def save(self, force_insert=False, force_update=False, using=None,
             update_fields=None):
