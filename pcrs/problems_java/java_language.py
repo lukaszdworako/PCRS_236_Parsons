@@ -27,6 +27,7 @@ class JavaSpecifics(BaseLanguage):
     '''
 
     temp_path = PROJECT_ROOT + "/languages/java/execution/temporary/"
+    jvm_res_path = PROJECT_ROOT + "/languages/java/execution/resources/"
 
     def __init__(self, *args, **kwargs):
         BaseLanguage.__init__(self, *args, **kwargs)
@@ -43,7 +44,10 @@ class JavaSpecifics(BaseLanguage):
         '''
         raise NotImplementedError("Visualization not yet supported")
 
-    def run_test(self, test_input, exp_output):
+    # TODO: change this to parse a JUnit dump
+    # TODO: return an array of results
+    # Start ignoring the expected output completely
+    def run_test(self, test_name):
         ''' Return dictionary ret containing results of a testrun.
             ret has the following mapping:
             'test_val' -> encoded for visualizer format test output.
@@ -57,11 +61,14 @@ class JavaSpecifics(BaseLanguage):
             return ret
 
         try:
-            testClassName = self.compileSource(test_input, isTestCode=True)
-            command = ["java -enableassertions -Djava.security.manager=default {0}".format(testClassName)]
-
+            flags = " ".join([
+                "-Djava.security.manager=default",
+                "-Djava.security.policy={0}pcrs.policy".format(self.jvm_res_path),
+                self.createDependencyFlagString(),
+                "org.junit.runner.JUnitCore", # run our test through JUnit
+            ])
             proc = subprocess.Popen(
-                    command,
+                    "java {0} Tests".format(flags),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
@@ -76,8 +83,6 @@ class JavaSpecifics(BaseLanguage):
             ret['exception_type'] = 'error'
             ret['runtime_error'] = "Timeout expired: do you have an infinite loop?"
             ret['test_val'] = "Timeout"
-        except CompilationError:
-            raise
         except Exception as e:
             print(e)
             raise
@@ -102,10 +107,11 @@ class JavaSpecifics(BaseLanguage):
                     ret['test_val'] = 'Runtime Error'
             else:
                 ret["test_val"] = output.strip().replace('\n', '<br />')
-                ret["passed_test"] = exp_output.strip() == output.strip()
+                #ret["passed_test"] = exp_output.strip() == output.strip()
+                ret["passed_test"] = True
         return ret
 
-    def compile(self, user, user_code, deny_warning=False):
+    def compile(self, user, user_code, test_code, deny_warning=False):
         ''' Compile the given user code, raising a compile error if unable.
         '''
         if self.compiled:
@@ -116,13 +122,14 @@ class JavaSpecifics(BaseLanguage):
             self.tempdir = tempfile.mkdtemp(
                     prefix="{0}-{1}-".format(user, datetime.now().strftime('%m%d-%H:%M:%S'), dir=self.temp_path),
                     dir=self.temp_path)
-            self.compileSource(user_code)
+            self._compileSource(user_code)
+            self._compileSource(test_code, isTestCode=True)
             self.compiled = True
         except Exception as e:
             self.clear()
             raise # reraise
 
-    def compileSource(self, source_code, isTestCode=False):
+    def _compileSource(self, source_code, isTestCode=False):
         ''''Compiles given source code into the temporary run directory.
 
         Args:
@@ -151,8 +158,9 @@ class JavaSpecifics(BaseLanguage):
 
         # Actual compilation
         try:
+            flags = self.createDependencyFlagString()
             proc = subprocess.Popen(
-                    'javac {0}'.format(source_fname),
+                    'javac {0} {1}'.format(flags, source_fname),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
@@ -174,6 +182,12 @@ class JavaSpecifics(BaseLanguage):
             raise CompilationError(err)
 
         return classname
+
+    def createDependencyFlagString(self):
+        dependencies = [ 'junit-4.12.jar', 'hamcrest-core-1.3.jar' ]
+        classpath = ":".join([self.jvm_res_path + d for d in dependencies])
+        # We need '.' in the classpath to load student class files
+        return "-cp .:" + classpath
 
     def stripTestCodeCompileError(self, error):
         ''''Strips important compile errors from test code compile issues

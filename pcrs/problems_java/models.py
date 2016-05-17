@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
+from django.db.models.signals import m2m_changed
 
 from problems.pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
@@ -12,6 +13,7 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
                              AbstractTestCase, AbstractTestRun,
                              testcase_delete, problem_delete)
 from .java_language import CompilationError
+from pcrs.models import AbstractSelfAwareModel
 
 
 class Problem(AbstractProgrammingProblem):
@@ -21,10 +23,50 @@ class Problem(AbstractProgrammingProblem):
     A coding problem has all the properties of a problem, and
     a language and starter code
     """
-
+    test_suite = models.TextField(blank=True)
     language = models.CharField(max_length=50,
                                 choices=(('java', 'Java'),),
                                 default='java')
+
+    # TODO: add a hook to complain when there are submissions but the suite changed
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
+
+        # Generate test case objects automatically from the test suite
+        self._deleteOldTestCases()
+        testCaseInfo = self._generateTestCaseInfo(self.test_suite)
+        for test in testCaseInfo:
+            self.testcase_set.create(
+                test_name=test['name'],
+                description=test['description'])
+
+        self.max_score = len(testCaseInfo)
+        # Save twice because we need to update the max_score
+        super().save(force_insert, force_update, using, update_fields)
+
+    def _generateTestCaseInfo(self, test_code):
+        reg = (
+            '(\/\/[^\n]*|\/\*+.*?\*+\/)?[\t ]*\n?' # Capture comments
+            '[\t ]*@Test(?:\(.*\))?\s*' # Only methods annotated with @Test
+            'public\s*void\s*([\w_]+)' # Capture method name
+        )
+        return [{
+            'name': m[1],
+            'description': self._stripComment(m[0])
+        } for m in re.findall(reg, test_code, re.DOTALL)]
+
+    def _deleteOldTestCases(self):
+        for testcase in self.testcase_set.all():
+            testcase.delete()
+
+    def _stripComment(self, comment):
+        comment = re.sub('[\t ]*\/\/[\t ]*', '', comment)
+        comment = re.sub('\/\*+', '', comment)
+        comment = re.sub('\*+\/', '', comment)
+        comment = re.sub('[\t ]*\*[\t ]*', '', comment)
+        return comment.strip()
 
 
 class Submission(AbstractSubmission):
@@ -43,9 +85,12 @@ class Submission(AbstractSubmission):
         self.preprocess_tags()
         try:
             # necessary since language requires compilation
-            runner.lang.compile(self.user.username, self.mod_submission)
+            runner.lang.compile(self.user.username, self.mod_submission, self.problem.test_suite)
         except CompilationError as e:
-            return self._create_compile_error_response(e)
+            return self._createCompileErrorResponse(e)
+
+        # TODO change it to run in one big JUnit run.
+        # Return a list of _errors_ from the run_test method.
 
         # TODO don't dump compile errors when a student symbol is not found
         try:
@@ -54,8 +99,6 @@ class Submission(AbstractSubmission):
                 try:
                     run = testcase.run(runner)
                     passed = run['passed_test']
-                except CompilationError as e:
-                    return self._create_compile_error_response(e)
                 except KeyError:    # Timeout, usually because of infinite loop
                     passed = False
                     #error = "Timeout occurred: do you have an infinite loop?"
@@ -64,10 +107,11 @@ class Submission(AbstractSubmission):
                                            test_passed=passed)
 
                 run['test_desc'] = testcase.description
-                run['expected_output'] = testcase.expected_output.strip().replace('\n', '<br />')
+                #run['expected_output'] = testcase.expected_output.strip().replace('\n', '<br />')
                 run['debug'] = False
                 if testcase.is_visible:
-                    run['test_input'] = testcase.test_input
+                    run['test_input'] = 'FIXME'
+                    #run['test_input'] = testcase.test_input
                     # run['debug'] = True     # Always False, until debugger is implemented
                 else:
                     run['test_input'] = None
@@ -79,7 +123,7 @@ class Submission(AbstractSubmission):
         runner.lang.clear()    # Removing compiled files
         return results, None
 
-    def _create_compile_error_response(self, e: CompilationError):
+    def _createCompileErrorResponse(self, e: CompilationError):
         error = 'Compile error:<br />' + str(e).replace('\n', '<br />')
         return [{ 'passed_test': False,
                   'exception_type': 'error',
@@ -164,39 +208,27 @@ class TestCase(AbstractTestCase):
     """
     A coding problem testcase.
 
-    A testcase has an input and expected output and an optional description.
-    The test input and expected output may or may not be visible to students.
-    This is controlled by is_visible flag.
+    Visibility of test case information is controlled by is_visible.
+    These test cases are generated when setting the problem test_suite.
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
                                 null=False, blank=False)
-    test_input = models.TextField()
-    expected_output = models.TextField()
+    test_name = models.TextField()
 
     def __str__(self):
-        testcase = '{input} -> {output}'.format(input=self.test_input,
-                                                output=self.expected_output)
         if self.description:
-            return self.description + ' : ' + testcase
+            return '{0}: {1}'.format(self.test_name, self.description)
         else:
-            return testcase
-
-    def clean_fields(self, exclude=None):
-        super().clean_fields(exclude)
-        if self.pk:
-            if has_changed(self, 'problem_id'):
-                raise ValidationError({
-                    'problem': ['Reassigning a problem is not allowed.']
-                })
-            if self.problem.submission_set.all():
-                clear = 'Submissions must be cleared before editing a testcase.'
-                if has_changed(self, 'test_input'):
-                    raise ValidationError({'test_input': [clear]})
-                if has_changed(self, 'expected_output'):
-                    raise ValidationError({'expected_output': [clear]})
+            return self.test_name
 
     def run(self, runner):
-        return runner.lang.run_test(self.test_input, self.expected_output)
+        return runner.lang.run_test(self.test_name)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+            update_fields=None):
+        # Skip the parent because it calls save on Problem, which we don't want
+        AbstractSelfAwareModel.save(self, force_insert, force_update, using,
+                update_fields)
 
 
 class TestRun(AbstractTestRun):
@@ -209,13 +241,9 @@ class TestRun(AbstractTestRun):
     def get_history(self):
         return {
             'visible': self.testcase.is_visible,
-            'input': self.testcase.test_input,
-            'output': self.testcase.expected_output,
             'passed': self.test_passed,
             'description': self.testcase.description
         }
 
-
-# update submission scores when a testcase is deleted
-post_delete.connect(testcase_delete, sender=TestCase)
 post_delete.connect(problem_delete, sender=Problem)
+
