@@ -16,6 +16,20 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
 from .java_language import CompilationError
 from pcrs.models import AbstractSelfAwareModel
 
+test_suite_template = """import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class Tests {
+    // <public test case description goes here>
+    @Test
+    public void exampleTestCase() {
+        // Hides the assertion if there is no description.
+        assertEquals(4, 2 + 2);
+        // If you provide a description, the assert won't be hidden.
+        assertEquals("Arithmetic is broken! ", 5, 3 + 2);
+    }
+}
+"""
 
 class Problem(AbstractProgrammingProblem):
     """
@@ -24,17 +38,30 @@ class Problem(AbstractProgrammingProblem):
     A coding problem has all the properties of a problem, and
     a language and starter code
     """
-    test_suite = models.TextField(blank=True)
+    test_suite = models.TextField(blank=True, default=test_suite_template)
     language = models.CharField(max_length=50,
                                 choices=(('java', 'Java'),),
                                 default='java')
 
-    # TODO: add a hook to complain when there are submissions but the suite changed
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude)
+
+        if self.pk:
+            if len(self.submission_set.all()) > 0 and has_changed(self, 'test_suite'):
+                raise ValidationError({'test_suite': [
+                    'Submissions must be cleared before editing a testcase.',
+                ]})
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        # We need to check this here because it resets after saving.
+        testsHaveChanged = has_changed(self, 'test_suite')
         super().save(force_insert, force_update, using, update_fields)
+        if testsHaveChanged:
+            self._repopulateTestCaseTable()
+            super().save(force_insert, force_update, using, update_fields)
 
+    def _repopulateTestCaseTable(self):
         # Generate test case objects automatically from the test suite
         self._deleteOldTestCases()
         testCaseInfo = self._generateTestCaseInfo(self.test_suite)
@@ -44,12 +71,12 @@ class Problem(AbstractProgrammingProblem):
                 description=test['description'])
 
         self.max_score = len(testCaseInfo)
-        # Save twice because we need to update the max_score
-        super().save(force_insert, force_update, using, update_fields)
 
     def _generateTestCaseInfo(self, test_code):
+        # CodeMirror uses CRLFs for some reason :|
+        test_code = re.sub('\r', '', test_code)
         reg = (
-            '(\/\/[^\n]*|\/\*+.*?\*+\/)?[\t ]*\n?' # Capture comments
+            '(\/\/[^\n]*|\/\*+.*?\*+\/)?[\t ]*\n' # Capture comments
             '[\t ]*@Test(?:\(.*\))?\s*' # Only methods annotated with @Test
             'public\s*void\s*([\w_]+)' # Capture method name
         )
@@ -99,9 +126,10 @@ class Submission(AbstractSubmission):
 
         results = []
         for testcase in self.problem.testcase_set.all():
+            description = html.escape(testcase.description) if len(testcase.description) > 0 else '(hidden)'
             res = {
                 'passed_test': True,
-                'test_desc': testcase.description if len(testcase.description) > 0 else '(hidden)',
+                'test_desc': description,
                 #'debug': testcase.is_visible
                 'debug': False, # Always false until debugger is implemented
                 #'exception_type': 'error', (none initially)
