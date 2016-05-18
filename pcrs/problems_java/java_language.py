@@ -23,7 +23,6 @@ class JavaSpecifics(BaseLanguage):
         TODO: no visualizer support currently provided
               see http://www.pythontutor.com/java.html#mode=edit
               for a tool that could be used to provide support
-        TODO: execution not yet supported
     '''
 
     temp_path = PROJECT_ROOT + "/languages/java/execution/temporary/"
@@ -45,9 +44,6 @@ class JavaSpecifics(BaseLanguage):
         '''
         raise NotImplementedError("Visualization not yet supported")
 
-    # TODO: change this to parse a JUnit dump
-    # TODO: return an array of results
-    # Start ignoring the expected output completely
     def run_test_suite(self):
         ''' Return dictionary ret containing results of a testrun.
             ret has the following mapping:
@@ -67,7 +63,7 @@ class JavaSpecifics(BaseLanguage):
             flags = " ".join([
                 "-Djava.security.manager=default",
                 "-Djava.security.policy={0}pcrs.policy".format(self.jvm_res_path),
-                self.createDependencyFlagString(),
+                self._createDependencyFlagString(),
                 "org.junit.runner.JUnitCore", # run our test through JUnit
             ])
             proc = subprocess.Popen(
@@ -89,11 +85,14 @@ class JavaSpecifics(BaseLanguage):
             print(e)
             raise
         else:
-            for m in re.findall('\d+\) ([\w_]+).*?\n(.+?)(?:\s*at org\.junit\.runners)', output, re.DOTALL):
+            reg = (
+                '\d+\) ([\w_]+).*?\n' # Capture failed method name
+                '(.+?)(?:\s*at {0})'  # Capture stack trace only in student code
+            ).format(self.testSuiteClassName)
+            for m in re.findall(reg, output, re.DOTALL):
                 methodName = m[0]
-                stackTrace = m[1]
+                stackTrace = self._steralizeStackTrace(m[1])
                 ret['failures'][methodName] = stackTrace
-                # TODO: start matching assertions
         return ret
 
     def compile(self, user, user_code, test_code, deny_warning=False):
@@ -143,7 +142,7 @@ class JavaSpecifics(BaseLanguage):
 
         # Actual compilation
         try:
-            flags = self.createDependencyFlagString()
+            flags = self._createDependencyFlagString()
             proc = subprocess.Popen(
                     'javac {0} {1}'.format(flags, source_fname),
                     stdout=subprocess.PIPE,
@@ -168,11 +167,20 @@ class JavaSpecifics(BaseLanguage):
 
         return classname
 
-    def createDependencyFlagString(self):
+    def _createDependencyFlagString(self):
         dependencies = [ 'junit-4.12.jar', 'hamcrest-core-1.3.jar' ]
         classpath = ":".join([self.jvm_res_path + d for d in dependencies])
         # We need '.' in the classpath to load student class files
         return "-cp .:" + classpath
+
+    def _steralizeStackTrace(self, trace):
+        '''Ensures no JUnit errors are exposed to the student. Instead, this
+           will strip out the assertion message or return a blank string.
+        '''
+        m = re.search("(?:org\.junit\.\w+|java\.lang\.AssertionError):? ?(.*)", trace)
+        if m:
+            return m.group(1).strip()
+        return trace
 
     def _stripTestCodeCompileError(self, error):
         '''Strips important compile errors from test code compile issues
@@ -182,12 +190,20 @@ class JavaSpecifics(BaseLanguage):
         Returns:
             A nicely stripped error message, not exposing the test case code.
         '''
-        # TODO: strip out asserts
         if re.search('cannot find symbol', error):
             message = ''
             for m in re.findall('\s*symbol:\s*\w+\s*([\w_]+)', error):
                 message += "You must define '{0}' as described.\n".format(m)
             return message
+
+        m = re.search('error: non\-static (?:method|variable) ([\w_]+\(?\)?)', error)
+        if m:
+            return "You must define '{0}' as static.\n".format(m.group(1))
+
+        m = re.search('error: ([\w_]+\(?\)?) has private access', error)
+        if m:
+            return "You must define '{0}' as public.\n".format(m.group(1))
+
         return error
 
     def clear(self):

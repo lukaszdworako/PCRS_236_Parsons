@@ -1,5 +1,5 @@
 import re
-import cgi
+import html
 from hashlib import sha1
 
 from django.conf import settings
@@ -97,31 +97,33 @@ class Submission(AbstractSubmission):
                       'exception': test_results['exception'],
                       'test_val': test_results['exception']}], None
 
-        # TODO: don't dump compile errors when a student symbol is not found
-
         results = []
         for testcase in self.problem.testcase_set.all():
             res = {
                 'passed_test': True,
-                #'test_desc': testcase.description,
-                'test_desc': str(testcase),
+                'test_desc': testcase.description if len(testcase.description) > 0 else '(hidden)',
                 #'debug': testcase.is_visible
-                'debug': False # Always false until debugger is implemented
+                'debug': False, # Always false until debugger is implemented
                 #'exception_type': 'error', (none initially)
                 #'runtime_error': 'error message',
-                #'test_val': 'Runtime Error',
+                'test_val': '',
             }
-            if testcase.test_name in test_results['failures']:
+            test_name = testcase.test_name
+            failures = test_results['failures']
+            if test_name in failures:
+                message = self._formatTextForHTML(failures[test_name])
+                res['test_val'] = message if len(message) > 0 else '(hidden)'
                 res['passed_test'] = False
-                message = test_results['failures'][testcase.test_name]
-                res['test_val'] = str(cgi.escape(message)).replace('\n', '<br />')
             if save:
                 TestRun.objects.create(submission=self, testcase=testcase,
                                        test_passed=res['passed_test'])
             results.append(res)
 
-        runner.lang.clear()    # Removing compiled files
+        runner.lang.clear() # Removing compiled files
         return results, None
+
+    def _formatTextForHTML(self, text):
+        return str(html.escape(text)).replace('\n', '<br />')
 
     def _createCompileErrorResponse(self, e: CompilationError):
         error = 'Compile error:<br />' + str(e).replace('\n', '<br />')
