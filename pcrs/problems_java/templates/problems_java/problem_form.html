@@ -37,26 +37,5 @@
 {% block related_items %}
     {% include "problems_c/tag_alert.html" %}
     {% include "problems_c/student_preview.html" %}
-
-    {% if object %}
-        <h3>Testcases</h3>
-        {% for testcase in object.testcase_set.all %}
-            <div class="item row">
-                {% block item_title %}
-                    {% autoescape off %}
-                        <div class="col-sm-11">
-                            {% autoescape on %}
-                                {{ testcase }}
-                            {% endautoescape %}
-                        </div>
-                    {% endautoescape %}
-                {% endblock %}
-                <span class="col-sm-1">
-                    {% block item_controls %}
-                    {% endblock %}
-                </span>
-            </div>
-        {% endfor %}
-    {% endif %}
 {% endblock %}
 

@@ -672,65 +672,80 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
 	                          current_testcase.exception + '</th>');
 	        }
-	        else {
-                    newRow.append('<td class="description">' + description + '</td>');
-	            if (testcaseInput != null) {
-	                newRow.append('<td class="expression"><div class="expression_div">' +
-	                               testcaseInput + '</div></td>');
-                    }
-	            else {
-	                newRow.append('<td class="expression">' +
-	                              "Hidden Test" +'</td>');
-	            }
-                    newRow.append('<td class="expected"><div class="ptd"><div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
-                               ''+'</div></div></td>');
-	            newRow.append('<td class="result"><div class="ptd"><div id="current_testcase'+i+'" class="ExecutionVisualizer">' +
-	                           ''+'</div></div></td>');
+            else {
+                newRow.append('<td class="description">' + description + '</td>');
 
-                    if (language == 'python') {
-	                    renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+                if (language == 'java') {
+                   newRow.append('<td class="result">' +
+                       '<div class="table-horizontal-scroll">' +
+                       '<span class="stringObj">' +
+                       current_testcase.test_val +
+                       '</span>' +
+                       '</div></td>');
+                } else {
+                    if (testcaseInput != null) {
+                        newRow.append('<td class="expression"><div class="expression_div">' +
+                                testcaseInput + '</div></td>');
+                    } else {
+                        newRow.append('<td class="expression">' +
+                                "Hidden Test" +'</td>');
                     }
-                    else { // language == 'c' or 'java'
-                        $('#current_testcase'+i).append('<span class="stringObj">' + current_testcase.test_val + '</span>')
-                    }
+                    newRow.append('<td class="expected"><div class="ptd">' +
+                        '<div id="exp_test_val'+i+'" class="ExecutionVisualizer">' +
+                        '</div></div></td>');
+                    newRow.append('<td class="result"><div class="ptd">' +
+                        '<div id="current_testcase' + i + '" class="ExecutionVisualizer">' +
+                        '</div></div></td>');
+                }
+
+                if (language == 'python') {
+                    renderData_ignoreID(current_testcase.test_val, $('#current_testcase'+i));
+                } else if (language == 'c') {
+                    $('#current_testcase'+i).append('<span class="stringObj">' + current_testcase.test_val + '</span>')
+                }
+
+                if (language != 'java') {
                     document.getElementById("current_testcase"+i).removeAttribute('id');
+                }
 
-                    if (language == 'python') {
-                        renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
-                    }
-                    else { // language == 'c' or 'java'
-                        $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
-                    }
-	            document.getElementById("exp_test_val"+i).removeAttribute('id');
+                if (language == 'python') {
+                    renderData_ignoreID(current_testcase.expected_output, $('#exp_test_val'+i));
+                } else if (language == 'c') {
+                    $('#exp_test_val'+i).append('<span class="stringObj">' + current_testcase.expected_output + '</span>')
+                }
 
-	            newRow.append('<td class="passed"></td>');
+                if (language != 'java') {
+                    document.getElementById("exp_test_val"+i).removeAttribute('id');
+                }
 
-	            var pass_status = "";
+                newRow.append('<td class="passed"></td>');
 
-	            if (passed){
-	                var smFace = happyFace;
-	                score += 1;
-	                pass_status = "passed";
-	            }
-	            else{
-	                var smFace = sadFace;
-	                pass_status = "failed";
-	            }
+                var pass_status = "";
 
-	            $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
+                if (passed){
+                    var smFace = happyFace;
+                    score += 1;
+                    pass_status = "passed";
+                }
+                else{
+                    var smFace = sadFace;
+                    pass_status = "failed";
+                }
 
-	            if (debug){
-                        newRow.append('<td class="debug"><button id="'
-                                  + div_id +"_"+i + '" class="debugBtn" type="button"' +
-                                  ' data-toggle="modal" data-target="#visualizerModal">Trace</button></td>');
-	                bindDebugButton(div_id+"_"+i);
-	            }
-	            else{
-	                newRow.append('<td class="debug">-</td>')
-	            }
-	            newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
-	                           testcaseOutput+'. Result: '+result+'</a>');
-	        }
+                $("#"+div_id).find('#tcase_'+div_id+'_'+ i + ' td.passed').html(smFace.clone());
+
+                if (debug){
+                    newRow.append('<td class="debug"><button id="'
+                            + div_id +"_"+i + '" class="debugBtn" type="button"' +
+                            ' data-toggle="modal" data-target="#visualizerModal">Trace</button></td>');
+                    bindDebugButton(div_id+"_"+i);
+                }
+                else{
+                    newRow.append('<td class="debug">-</td>')
+                }
+                newRow.append('<a class="at" href="">This testcase has '+ pass_status +'. Expected: '+
+                        testcaseOutput+'. Result: '+result+'</a>');
+            }
 	        var test = {'visible':testcaseInput != null,
 	                    'input': testcaseInput,
 	                    'output': testcaseOutput,
