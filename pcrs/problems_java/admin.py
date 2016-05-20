@@ -8,5 +8,4 @@ from .models import *
 if 'problems_java' in settings.INSTALLED_PROBLEM_APPS:
     admin.site.register(Problem, ProblemAdmin)
     admin.site.register(Submission, SubmissionAdmin)
-    admin.site.register(TestCase)
     admin.site.register(TestRun)

@@ -2,19 +2,14 @@ import re
 import html
 from hashlib import sha1
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
-from django.db.models.signals import m2m_changed
 
 from problems.pcrs_languages import GenericLanguage
-from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractTestCase, AbstractTestRun,
-                             testcase_delete, problem_delete)
+                             AbstractTestRun, problem_delete)
 from .java_language import CompilationError
-from pcrs.models import AbstractSelfAwareModel
 
 test_suite_template = """import org.junit.Test;
 import static org.junit.Assert.*;
@@ -46,9 +41,16 @@ class Problem(AbstractProgrammingProblem):
     def __init__(self, *args, **kwargs):
         super(AbstractProgrammingProblem, self).__init__(*args, **kwargs)
         self._initial_test_suite = self.test_suite
+        self._testCases = self._generateTestInfo(self.test_suite)
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
+
+        # CodeMirror inserts carriage returns, but we don't like them!
+        carriageReturnRegex = re.compile('\r')
+        self.test_suite = re.sub(carriageReturnRegex, '', self.test_suite)
+        self.solution = re.sub(carriageReturnRegex, '', self.solution)
+        self.starter_code = re.sub(carriageReturnRegex, '', self.starter_code)
 
         if self.pk:
             if self.submission_set.all() and self._testSuiteHasChanged():
@@ -58,12 +60,19 @@ class Problem(AbstractProgrammingProblem):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # We need to check this here because it resets after saving.
-        testsHaveChanged = has_changed(self, 'test_suite')
+        self._testCases = self._generateTestInfo(self.test_suite)
+        self.max_score = len(self._testCases)
         super().save(force_insert, force_update, using, update_fields)
-        if testsHaveChanged:
-            self._repopulateTestCaseTable()
-            super().save(force_insert, force_update, using, update_fields)
+
+    def getTestDescription(self, test_name):
+        return self._testCases[test_name]
+
+    def getAllTestNames(self):
+        return self._testCases.keys()
+
+    def isTestVisible(self, test_name):
+        # We say the test case is visible if it has a description.
+        return True if self.getTestDescription(test_name).strip() else False
 
     def _testSuiteHasChanged(self):
         ''''Determines if the problem submission resulted in changed test code.
@@ -79,8 +88,6 @@ class Problem(AbstractProgrammingProblem):
         return newSuiteCode != oldSuiteCode
 
     def _compressSuperfluousCode(self, code):
-        # Get rid of CRs, since most browsers use CRLFs but we want to ignore them
-        code = re.sub(re.compile('\r'), '', code)
         # Remove (most) line comments
         code = re.sub(re.compile('\n[ \t]*\/\/[^\n]*'), '', code)
         # Remove (most) block comments
@@ -90,35 +97,26 @@ class Problem(AbstractProgrammingProblem):
 
         return code
 
-    def _repopulateTestCaseTable(self):
-        # Generate test case objects automatically from the test suite
-        self._deleteOldTestCases()
-        testCaseInfo = self._generateTestCaseInfo(self.test_suite)
-        for test in testCaseInfo:
-            self.testcase_set.create(
-                test_name=test['name'],
-                description=test['description'])
-
-        self.max_score = len(testCaseInfo)
-
-    def _generateTestCaseInfo(self, test_code):
-        # CodeMirror uses CRLFs for some reason :|
-        test_code = re.sub('\r', '', test_code)
+    def _generateTestInfo(self, test_code):
         reg = (
             '(\/\/[^\n]*|\/\*+.*?\*+\/)?[\t ]*\n' # Capture comments
             '[\t ]*@Test(?:\(.*\))?\s*' # Only methods annotated with @Test
             'public\s*void\s*([\w_]+)' # Capture method name
         )
-        return [{
-            'name': m[1],
-            'description': self._stripComment(m[0])
-        } for m in re.findall(reg, test_code, re.DOTALL)]
-
-    def _deleteOldTestCases(self):
-        for testcase in self.testcase_set.all():
-            testcase.delete()
+        return {
+            m[1]: self._stripComment(m[0])
+            for m in re.findall(reg, test_code, re.DOTALL)
+        }
 
     def _stripComment(self, comment):
+        ''''Determines if the problem submission resulted in changed test code.
+        This will ignore comments/descriptions and superfluous whitespace.
+        NOTE: The current limitation is assertion messages. At some point
+              it would be nice to ignore assert messages.
+
+        Returns:
+            True if the test code has changed, otherwise False.
+        '''
         comment = re.sub('[\t ]*\/\/[\t ]*', '', comment)
         comment = re.sub('\/\*+', '', comment)
         comment = re.sub('\*+\/', '', comment)
@@ -154,26 +152,26 @@ class Submission(AbstractSubmission):
                       'test_val': test_results['exception']}], None
 
         results = []
-        for testcase in self.problem.testcase_set.all():
-            description = html.escape(testcase.description) if len(testcase.description) > 0 else '(hidden)'
+        for test_name in self.problem.getAllTestNames():
+            description = self.problem.getTestDescription(test_name)
+            description = html.escape(description) if description else '(hidden)'
             res = {
                 'passed_test': True,
                 'test_desc': description,
-                #'debug': testcase.is_visible
+                #'debug': self.problem.isTestVisible(test_name)
                 'debug': False, # Always false until debugger is implemented
                 #'exception_type': 'error', (none initially)
                 #'runtime_error': 'error message',
                 'test_val': '',
             }
-            test_name = testcase.test_name
             failures = test_results['failures']
             if test_name in failures:
                 message = self._formatTextForHTML(failures[test_name])
                 res['test_val'] = message if len(message) > 0 else '(hidden)'
                 res['passed_test'] = False
             if save:
-                TestRun.objects.create(submission=self, testcase=testcase,
-                                       test_passed=res['passed_test'])
+                TestRun.objects.create(problem=self.problem, submission=self,
+                                       test_name=test_name, test_passed=res['passed_test'])
             results.append(res)
 
         runner.lang.clear() # Removing compiled files
@@ -263,44 +261,20 @@ class Submission(AbstractSubmission):
         self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
 
 
-# TODO: Destroy this table! It is pretty useless since we just parse from the test suite
-class TestCase(AbstractTestCase):
+class TestRun(AbstractTestRun):
     """
-    A coding problem testcase.
-
-    Visibility of test case information is controlled by is_visible.
-    These test cases are generated when setting the problem test_suite.
+    A coding problem testrun, created for each test suite method on each submission.
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
                                 null=False, blank=False)
-    test_name = models.TextField()
-
-    def __str__(self):
-        if self.description:
-            return '{0}: {1}'.format(self.test_name, self.description)
-        else:
-            return self.test_name
-
-    def save(self, force_insert=False, force_update=False, using=None,
-            update_fields=None):
-        # Skip the parent because it calls save on Problem, which we don't want
-        AbstractSelfAwareModel.save(self, force_insert, force_update, using,
-                update_fields)
-
-
-class TestRun(AbstractTestRun):
-    """
-    A coding problem testrun, created for each testcase on each submission.
-    """
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
-    # TODO: Change this to "test method name?"
-    testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
+    test_name = models.TextField(blank=False)
 
     def get_history(self):
         return {
-            'visible': self.testcase.is_visible,
+            'visible': self.problem.isTestVisible(self.test_name),
             'passed': self.test_passed,
-            'description': self.testcase.description
+            'description': self.problem.getTestDescription(self.test_name)
         }
 
 post_delete.connect(problem_delete, sender=Problem)
