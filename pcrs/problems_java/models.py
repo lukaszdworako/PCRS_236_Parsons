@@ -23,9 +23,9 @@ public class Tests {
     // <public test case description goes here>
     @Test
     public void exampleTestCase() {
-        // Hides the assertion if there is no description.
+        // Hides the assertion error if there is no description.
         assertEquals(4, 2 + 2);
-        // If you provide a description, the assert won't be hidden.
+        // If you provide an assert description string, it will be shown along with expected values.
         assertEquals("Arithmetic is broken! ", 5, 3 + 2);
     }
 }
@@ -43,11 +43,15 @@ class Problem(AbstractProgrammingProblem):
                                 choices=(('java', 'Java'),),
                                 default='java')
 
+    def __init__(self, *args, **kwargs):
+        super(AbstractProgrammingProblem, self).__init__(*args, **kwargs)
+        self._initial_test_suite = self.test_suite
+
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
 
         if self.pk:
-            if len(self.submission_set.all()) > 0 and has_changed(self, 'test_suite'):
+            if self.submission_set.all() and self._testSuiteHasChanged():
                 raise ValidationError({'test_suite': [
                     'Submissions must be cleared before editing a testcase.',
                 ]})
@@ -60,6 +64,31 @@ class Problem(AbstractProgrammingProblem):
         if testsHaveChanged:
             self._repopulateTestCaseTable()
             super().save(force_insert, force_update, using, update_fields)
+
+    def _testSuiteHasChanged(self):
+        ''''Determines if the problem submission resulted in changed test code.
+        This will ignore comments/descriptions and superfluous whitespace.
+        NOTE: The current limitation is assertion messages. At some point
+              it would be nice to ignore assert messages.
+
+        Returns:
+            True if the test code has changed, otherwise False.
+        '''
+        newSuiteCode = self._compressSuperfluousCode(self.test_suite)
+        oldSuiteCode = self._compressSuperfluousCode(self._initial_test_suite)
+        return newSuiteCode != oldSuiteCode
+
+    def _compressSuperfluousCode(self, code):
+        # Get rid of CRs, since most browsers use CRLFs but we want to ignore them
+        code = re.sub(re.compile('\r'), '', code)
+        # Remove (most) line comments
+        code = re.sub(re.compile('\n[ \t]*\/\/[^\n]*'), '', code)
+        # Remove (most) block comments
+        code = re.sub(re.compile('\n[ \t]*\/\*.*?\*\/', re.DOTALL), '', code)
+        # Compress irrelevant whitespace
+        code = re.sub(re.compile('(?<=\n)[ \t\n]+', re.DOTALL), '', code)
+
+        return code
 
     def _repopulateTestCaseTable(self):
         # Generate test case objects automatically from the test suite
@@ -234,6 +263,7 @@ class Submission(AbstractSubmission):
         self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
 
 
+# TODO: Destroy this table! It is pretty useless since we just parse from the test suite
 class TestCase(AbstractTestCase):
     """
     A coding problem testcase.
@@ -263,6 +293,7 @@ class TestRun(AbstractTestRun):
     A coding problem testrun, created for each testcase on each submission.
     """
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
+    # TODO: Change this to "test method name?"
     testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
 
     def get_history(self):
