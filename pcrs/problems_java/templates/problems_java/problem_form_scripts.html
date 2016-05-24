@@ -19,7 +19,7 @@ function submitHiddenJava() {
  * Show a help dialog including some sample code for the instructor.
  */
 function showJunitHelp() {
-    showPreviewModalWithTitle('Sample Test Suite Code', sample_junit_suite_code);
+    showPreviewModal('Sample Test Suite Code', sample_junit_suite_code);
 }
 
 $(function() {
@@ -59,6 +59,7 @@ sample_junit_suite_code =
 'public class Tests {\n' +
 '    private java.util.List list;\n' +
 '    private ByteArrayOutputStream out;\n' +
+'    private PrintStream oldSystemOut;\n' +
 '\n' +
 '    // Called before every test case.\n' +
 '    @Before\n' +
@@ -66,13 +67,14 @@ sample_junit_suite_code =
 '        list = new java.util.ArrayList();\n' +
 '        // Used to capture stdout - handy for testing\n' +
 '        out = new ByteArrayOutputStream();\n' +
+'        oldSystemOut = System.out;\n' +
 '        System.setOut(new PrintStream(out));\n' +
 '    }\n' +
 '\n' +
 '    // Called after every test case. Used to clean up resources.\n' +
 '    @After\n' +
 '    public void tearDown() {\n' +
-'        System.setOut(null);\n' +
+'        System.setOut(oldSystemOut);\n' +
 '        // Dump stdout - we still want it to print eventually\n' +
 '        System.out.println(out.toString());\n' +
 '        list = null;\n' +
@@ -100,7 +102,7 @@ sample_junit_suite_code =
 '    @Test\n' +
 '    public void testCaptureStdout() {\n' +
 '        System.out.println("o hai");\n' +
-'        assertEquals("o hai", out.toString());\n' +
+'        assertEquals("o hai\n", out.toString());\n' +
 '    }\n' +
 '}\n';
 </script>
