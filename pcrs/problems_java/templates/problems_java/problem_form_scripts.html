@@ -1,0 +1,115 @@
+<script>
+var id_test_suite_field = 'id_test_suite';
+language = 'java';
+language_version = '7';
+// Defined later to reduce clutter (since it is a big blob of text)
+var sample_junit_suite_code;
+
+/*
+ * This overrides the C version to add the test suite tmp field.
+ * For now, we will keep this dreadful hack, since
+ * refactoring problems_c would be a big job to do for a proof-of-concept.
+ */
+function submitHiddenJava() {
+    submitHidden();
+    document.getElementById("id_test_suite_tmp").value += cmh_list[id_test_suite_field].getValue();
+}
+
+/**
+ * Show a help dialog including some sample code for the instructor.
+ */
+function showJunitHelp() {
+    // id_preview_code_field is found in the cooresponding problems_c scripts
+    if (cmh_list[id_preview_code_field] != null) {
+        cmh_list[id_preview_code_field].setValue(sample_junit_suite_code);
+    } else {
+        cmh_list[id_preview_code_field] = to_code_mirror(
+            language, language_version, $('#'+id_preview_code_field), sample_junit_suite_code, true);
+    }
+
+    showPreviewModalWithTitle('Sample Test Suite Code');
+}
+
+$(function() {
+    // These change again from the problems_c file.. gur.
+    language = 'java';
+    language_version = '7';
+
+    /*
+     * Change the mode from C to Java.
+     * We currently extend from problems_c. This should change in the future.
+     */
+    cmh_list[id_starter_code_field].setOption('mode', 'text/x-java');
+    cmh_list[id_solution_field].setOption('mode', 'text/x-java');
+
+    $("#submit-id-clone").attr("onclick", "return submitHiddenJava();");
+    $("#submit-id-submit").attr("onclick", "return submitHiddenJava();");
+    $("#submit-id-attempt").attr("onclick", "return submitHiddenJava();");
+
+    $('form').append('<input type="hidden" id="id_test_suite_tmp" name="test_suite" value=""></input>');
+
+    var obj = $('#' + id_test_suite_field);
+    cmh_list[id_test_suite_field] =
+        to_code_mirror(language, language_version, obj, obj.text(), false);
+
+    var test_suite_field = $('#div_' + id_test_suite_field + ' div.controls');
+    test_suite_field.after('<a class="btn btn btn-primary" role="button" onclick="showJunitHelp()">' +
+        '<span class="glyphicon glyphicon-question-sign"></span>   Help</a>');
+    test_suite_field.after('<br />');
+});
+
+sample_junit_suite_code =
+'import org.junit.*;\n' +
+'import static org.junit.Assert.*;\n' +
+'import java.io.PrintStream;\n' +
+'import java.io.ByteArrayOutputStream;\n' +
+'\n' +
+'public class Tests {\n' +
+'    private java.util.List list;\n' +
+'    private ByteArrayOutputStream out;\n' +
+'\n' +
+'    // Called before every test case.\n' +
+'    @Before\n' +
+'    public void setUp() {\n' +
+'        list = new java.util.ArrayList();\n' +
+'        // Used to capture stdout - handy for testing\n' +
+'        out = new ByteArrayOutputStream();\n' +
+'        System.setOut(new PrintStream(out));\n' +
+'    }\n' +
+'\n' +
+'    // Called after every test case. Used to clean up resources.\n' +
+'    @After\n' +
+'    public void tearDown() {\n' +
+'        System.setOut(null);\n' +
+'        // Dump stdout - we still want it to print eventually\n' +
+'        System.out.println(out.toString());\n' +
+'        list = null;\n' +
+'        out = null;\n' +
+'    }\n' +
+'\n' +
+'    /**\n' +
+'     * Test case comments will be shown to the student when they submit code.\n' +
+'     * You can either have them as a block comment or a line comment above\n' +
+'     * each test case.\n' +
+'     */\n' +
+'    @Test\n' +
+'    public void testFoo() {\n' +
+'        // Not providing an assert description will hide the assertion details.\n' +
+'        assertEquals(4, 2 + 2);\n' +
+'        // If you provide a description, the assert will _not_ be hidden.\n' +
+'        assertEquals("Arithmetic is broken!", 6, 3 + 3);\n' +
+'    }\n' +
+'\n' +
+'    @Test(expected=IndexOutOfBoundsException.class)\n' +
+'    public void testIndexException() {\n' +
+'        Object o = list.get(42);\n' +
+'    }\n' +
+'\n' +
+'    @Test\n' +
+'    public void testCaptureStdout() {\n' +
+'        System.out.println("o hai");\n' +
+'        assertEquals("o hai", out.toString());\n' +
+'    }\n' +
+'}\n';
+</script>
+

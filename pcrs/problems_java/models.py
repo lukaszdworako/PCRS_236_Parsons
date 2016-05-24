@@ -11,17 +11,21 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
                              AbstractTestRun, problem_delete)
 from .java_language import CompilationError
 
-test_suite_template = """import org.junit.Test;
+test_suite_template = """import org.junit.*;
 import static org.junit.Assert.*;
 
 public class Tests {
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
     // <public test case description goes here>
     @Test
-    public void exampleTestCase() {
-        // Hides the assertion error if there is no description.
-        assertEquals(4, 2 + 2);
-        // If you provide an assert description string, it will be shown along with expected values.
-        assertEquals("Arithmetic is broken! ", 5, 3 + 2);
+    public void test() {
     }
 }
 """

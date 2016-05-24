@@ -2,37 +2,7 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script>
-    var id_test_suite_field = 'id_test_suite';
-
-    /*
-     * This overrides the C version to add the test suite tmp field.
-     * For now, we will keep this dreadful hack, since
-     * refactoring problems_c would be a big job to do for a proof-of-concept.
-     */
-    function submitHiddenJava() {
-        submitHidden();
-        document.getElementById("id_test_suite_tmp").value += cmh_list[id_test_suite_field].getValue();
-    }
-
-    $(function() {
-        /*
-         * Change the mode from C to Java.
-         * We currently extend from problems_c. This should change in the future.
-         */
-        cmh_list[id_starter_code_field].setOption('mode', 'text/x-java');
-        cmh_list[id_solution_field].setOption('mode', 'text/x-java');
-
-        $("#submit-id-clone").attr("onclick", "return submitHiddenJava();");
-        $("#submit-id-submit").attr("onclick", "return submitHiddenJava();");
-        $("#submit-id-attempt").attr("onclick", "return submitHiddenJava();");
-
-        $('form').append('<input type="hidden" id="id_test_suite_tmp" name="test_suite" value=""></input>');
-
-        var obj = $('#' + id_test_suite_field);
-        cmh_list[id_test_suite_field] = to_code_mirror('java', 7, obj, obj.text(), false);
-    });
-    </script>
+    {% include "problems_java/problem_form_scripts.html" %}
 {% endblock %}
 {% block related_items %}
     {% include "problems_c/tag_alert.html" %}
