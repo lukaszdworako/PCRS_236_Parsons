@@ -210,7 +210,14 @@
             }
         }
 
-        function showPreviewModalWithTitle(title) {
+        function showPreviewModal(title, source_code) {
+            if (cmh_list[id_preview_code_field] != null) {
+                cmh_list[id_preview_code_field].setValue(source_code);
+            } else {
+                cmh_list[id_preview_code_field] = to_code_mirror(
+                    language, language_version, $('#'+id_preview_code_field), source_code, true);
+            }
+
             $('#previewModalLabel').text(title);
             $('#previewModal').on('shown.bs.modal', function() {
                 cmh_list[id_preview_code_field].refresh();
@@ -276,13 +283,7 @@
             if (source_code[source_code.length-1] == '\n')
                 source_code = source_code.substring(0,source_code.length - 1);
 
-            if(cmh_list[id_preview_code_field] != null){
-                cmh_list[id_preview_code_field].setValue(source_code);
-            }else{
-                cmh_list[id_preview_code_field] = to_code_mirror(language, language_version, $('#'+id_preview_code_field), source_code, true);
-            }
-
-            showPreviewModalWithTitle('Exercise - Student Preview');
+            showPreviewModal('Exercise - Student Preview', source_code);
         }
         function blockInput(editor_id, change) {
          /**

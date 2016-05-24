@@ -19,15 +19,7 @@ function submitHiddenJava() {
  * Show a help dialog including some sample code for the instructor.
  */
 function showJunitHelp() {
-    // id_preview_code_field is found in the cooresponding problems_c scripts
-    if (cmh_list[id_preview_code_field] != null) {
-        cmh_list[id_preview_code_field].setValue(sample_junit_suite_code);
-    } else {
-        cmh_list[id_preview_code_field] = to_code_mirror(
-            language, language_version, $('#'+id_preview_code_field), sample_junit_suite_code, true);
-    }
-
-    showPreviewModalWithTitle('Sample Test Suite Code');
+    showPreviewModalWithTitle('Sample Test Suite Code', sample_junit_suite_code);
 }
 
 $(function() {
