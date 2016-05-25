@@ -1,0 +1,6 @@
+.table-horizontal-scroll {
+    overflow-x: scroll;
+    max-width: 256px;
+    padding: 10px;
+}
+
