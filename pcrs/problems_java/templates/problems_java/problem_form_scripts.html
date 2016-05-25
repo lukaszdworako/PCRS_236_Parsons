@@ -22,8 +22,19 @@ function showJunitHelp() {
     showPreviewModal('Sample Test Suite Code', sample_junit_suite_code);
 }
 
+function showClearSubmissionsDialog() {
+    $('#clearSubmissionsModal').modal('show');
+}
+
+function clearSubmissions() {
+    $.ajax({
+        url:    "{{ object.get_absolute_url }}/clear",
+        method: "POST",
+    });
+}
+
 $(function() {
-    // These change again from the problems_c file.. gur.
+    // The page load handler in problems_c changes these variables.. gurr
     language = 'java';
     language_version = '7';
 
