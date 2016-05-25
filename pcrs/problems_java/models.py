@@ -224,13 +224,7 @@ class Submission(AbstractSubmission):
             del student_code_key_list[0], student_code_key_list[0]
 
         # Create variable mod_submission to handle the fusion of student code with starter_code from the database
-        self.mod_submission = self.problem.starter_code
-        last_tag_size = len('[/student_code]') + 2
-        while len(student_code_list) > 0 and self.mod_submission.find('[student_code]') != -1:
-            student_code = student_code_list.pop(0)
-            self.mod_submission = self.mod_submission[: self.mod_submission.find('[student_code]')] + \
-                                    student_code +\
-                                    self.mod_submission[self.mod_submission.find('[/student_code]')+last_tag_size:]
+        self.mod_submission = self._emplaceStudentCodeSnippets(student_code_list, self.problem.starter_code)
 
         # Replace hashed key with text (Implementation start/end)
         x = 0
@@ -240,8 +234,7 @@ class Submission(AbstractSubmission):
             x += 1
 
         # Remove blocked tags from the source code
-        self.mod_submission = self.mod_submission.replace("[blocked]\r\n", '').replace("[/blocked]\r\n", '')
-        self.mod_submission = self.mod_submission.replace("[blocked]", '').replace("[/blocked]", '')
+        self.mod_submission = re.sub(r'\[\/?blocked\]\r?\n?', '', self.mod_submission)
 
         # Store hidden code lines for previous use when showing compilation and warning errors
         inside_hidden_tag = False
@@ -261,8 +254,23 @@ class Submission(AbstractSubmission):
         self.non_hidden_lines_list.pop()
 
         # Remove hidden tags from the source code
-        self.mod_submission = self.mod_submission.replace("[hidden]\r\n", '').replace("[/hidden]\r\n", '')
-        self.mod_submission = self.mod_submission.replace("[hidden]", '').replace("[/hidden]", '')
+        self.mod_submission = re.sub(r'\[\/?hidden\]\r?\n?', '', self.mod_submission)
+
+    def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
+        '''Emplaces the given code snippets into the given starter code.
+        The [student_code] tags will be replaced appropriately.
+
+        Args:
+            student_code_list: A list of student code snippets.
+            starter_code:      The starter code - probably from the Problem class.
+        Returns:
+            The given snippets emplaced into the corresponding code tag positions.
+        '''
+        emplacementRegex = re.compile('\[student_code\].*?\[\/student_code\]\r?\n?', re.DOTALL)
+        while len(student_code_list) > 0 and starter_code.find('[student_code]') != -1:
+            student_code = student_code_list.pop(0)
+            starter_code = re.sub(emplacementRegex, student_code, starter_code, 1)
+        return starter_code
 
 
 class TestRun(AbstractTestRun):
