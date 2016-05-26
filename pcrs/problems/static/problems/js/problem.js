@@ -264,19 +264,19 @@ function addHashkey(div_id){
     return code;
 }
 
-function handleCompileMessages(div_id, testcases){
+function handleCompileMessages(div_id, testcases) {
     /**
      * Handle C error and warning
      * messages - divs with different
      * colors and font style
      */
     // Handle C warnings and exceptions
-    $('#'+div_id).find('#c_warning').remove();
-    $('#'+div_id).find('#c_error').remove();
+    $('#' + div_id).find('#c_warning').remove();
+    $('#' + div_id).find('#c_error').remove();
 
     // Find testcase with warning/error
     var bad_testcase = null;
-    for(var i = 0; i < testcases.length; i++) {
+    for (var i = 0; i < testcases.length; i++) {
         if ("exception_type" in testcases[i]) {
             bad_testcase = testcases[i];
             break;
@@ -285,26 +285,36 @@ function handleCompileMessages(div_id, testcases){
 
     var dont_visualize = false;
 
-    if(bad_testcase != null){
+    if (bad_testcase != null) {
         var class_type;
-        if(bad_testcase.exception_type == "warning") {
+        if (bad_testcase.exception_type == "warning") {
             class_type = 'alert alert-warning';
-        }
-        else if(bad_testcase.exception_type == "error"){
+        } else if (bad_testcase.exception_type == "error") {
             class_type = 'alert alert-danger';
             dont_visualize = true;
         }
 
         var bad_testcase_message = "";
-        if("exception" in bad_testcase) {
+        if ("exception" in bad_testcase) {
             bad_testcase_message = bad_testcase.exception;
-        } else if("runtime_error" in bad_testcase) {
-            bad_testcase_message = "Runtime error for input '" + bad_testcase.test_input + "':<br/>" + bad_testcase.runtime_error;
+        } else if ("runtime_error" in bad_testcase) {
+            bad_testcase_message = "Runtime error for input '" +
+                bad_testcase.test_input +
+                "':<br/>" + bad_testcase.runtime_error;
         }
 
         $('#'+div_id)
             .find('#alert')
-            .before('<div id="c_warning" class="' + class_type + '" style="font-weight: bold">' + bad_testcase_message + '</div>');
+            .after('<div id="c_warning" class="' +
+                class_type + '" style="font-weight: bold">' +
+                bad_testcase_message + '</div>');
+    }
+
+    // The grade table clutters up the interface when we have compile errors
+    if (dont_visualize) {
+        $('#gradeMatrix').hide();
+    } else {
+        $('#gradeMatrix').show();
     }
 
     return dont_visualize;
