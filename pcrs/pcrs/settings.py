@@ -191,6 +191,7 @@ TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').repl
 PROBLEM_APPS = (
     'problems_python',
     'problems_c',
+    'problems_java',
     'problems_sql',
     'problems_rdb',
     'problems_ra',
