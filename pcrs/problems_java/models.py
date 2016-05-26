@@ -72,7 +72,14 @@ class Problem(AbstractProgrammingProblem):
         return self._testCases[test_name]
 
     def getAllTestNames(self):
-        return self._testCases.keys()
+        '''Retrieves the test method names.
+
+        These can be used to identify the different tests.
+
+        Returns:
+            A lexicographically sorted list of test method names.
+        '''
+        return sorted(self._testCases.keys())
 
     def isTestVisible(self, test_name):
         # We say the test case is visible if it has a description.
@@ -92,6 +99,15 @@ class Problem(AbstractProgrammingProblem):
         return newSuiteCode != oldSuiteCode
 
     def _compressSuperfluousCode(self, code):
+        '''Can be used to compare two pieces of code.
+
+        This will strip whitespace and most comments
+
+        Args:
+            code: String to strip from.
+        Returns:
+            A string, stripped of comments and whitespace (except newlines)
+        '''
         # Remove (most) line comments
         code = re.sub(re.compile('\n[ \t]*\/\/[^\n]*'), '', code)
         # Remove (most) block comments
@@ -102,14 +118,19 @@ class Problem(AbstractProgrammingProblem):
         return code
 
     def _generateTestInfo(self, test_code):
-        reg = (
-            '(\/\/[^\n]*|\/\*+.*?\*+\/)?[\t ]*\n' # Capture comments
-            '[\t ]*@Test(?:\(.*\))?\s*' # Only methods annotated with @Test
-            'public\s*void\s*([\w_]+)' # Capture method name
+        reg = re.compile(
+            # Comment / Description capturing
+            '(\/\/[^\n]*|\/\*+'        # Line comments & block comment starts
+            '(?:.|\n[\t ]*\*[\t ]+)*?' # Block comment content
+            '\n[\t ]*\*+\/)?[\t ]*\n'  # Block comment endings
+            # Only capture methods annotated with @Test
+            '[\t ]*@Test(?:\(.*?\))?\s*'
+            # Capture method name
+            'public\s*void\s*([\w_]+)'
         )
         return {
             m[1]: self._stripComment(m[0])
-            for m in re.findall(reg, test_code, re.DOTALL)
+            for m in re.findall(reg, test_code)
         }
 
     def _stripComment(self, comment):
@@ -124,7 +145,7 @@ class Problem(AbstractProgrammingProblem):
         comment = re.sub('[\t ]*\/\/[\t ]*', '', comment)
         comment = re.sub('\/\*+', '', comment)
         comment = re.sub('\*+\/', '', comment)
-        comment = re.sub('[\t ]*\*[\t ]*', '', comment)
+        comment = re.sub('\n[\t ]*\*[\t ]*', '\n', comment)
         return comment.strip()
 
 
