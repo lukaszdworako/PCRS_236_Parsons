@@ -29,6 +29,7 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
             '    public void testSecurity() {\n'
             '        Hello.writeToFile();\n'
             '    }\n'
+            '    // Ello, govna!\n'
             '    @Test\n'
             '    public void testSayHello() {\n'
             '        assertEquals("hello", Hello.sayHello());\n'
@@ -71,8 +72,8 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
         self.assertEqual(len(response), 3)
 
         testArithmeticResult = response[0]
-        testSecurityResult   = response[1]
-        testSayHello         = response[2]
+        testSayHello         = response[1]
+        testSecurityResult   = response[2]
 
         self.assertTrue(
             testArithmeticResult['passed_test'],
@@ -84,15 +85,96 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
             testArithmeticResult['test_val'], '',
             'The test value should be empty')
 
+        self.assertTrue(testSayHello['passed_test'])
+
         self.assertFalse(
             testSecurityResult['passed_test'],
             'This should be sandboxed and fail')
         self.assertEqual(
             testSecurityResult['test_desc'], 'Test security.',
-            'The description was not returned.')
+            'The description was not returned properly.')
         self.assertRegex(
             testSecurityResult['test_val'], re.compile('java.security.*Hello\.writeToFile\(.*?\)\n?', re.DOTALL),
             'Your test value should be a stack trace that reveals no test case internals')
 
-        self.assertTrue(testSayHello['passed_test'])
+
+class TestProblemHelpers(test.TestCase):
+    def setUp(self):
+        self.problem = Problem.objects.create(
+            pk=1, name='test_problem', visibility='open', max_score=3,
+            test_suite='', starter_code='')
+
+    def testStripComment(self):
+        commentString = (
+            '/** ***\n'
+            '  \t * * Hello, *world!\n\n'
+            '\t */'
+        )
+        result = self.problem._stripComment(commentString)
+        self.assertEqual(result, "***\n* Hello, *world!")
+
+        result = self.problem._stripComment("\t   \n \t  \t//    hai   \t")
+        self.assertEqual(result, "hai")
+
+    def testCompressSuperfluousCode(self):
+        code = (
+            'import java.io.File;\n'
+            '\n'
+            '\t \t// It should remove this comment\n'
+            '//\n'
+            'class Foob {\n\n\n\n\n'
+            '  \t  private String hai = "// This should not be stripped";\n'
+            '}\n'
+            '\n'
+            '        /*\n'
+            '  \t  What about block comments?\n'
+            '                */\n'
+        )
+        result = self.problem._compressSuperfluousCode(code)
+        compressedCode = (
+            'import java.io.File;\n'
+            'class Foob {\n'
+            'private String hai = "// This should not be stripped";\n'
+            '}\n'
+        )
+        self.assertEqual(result, compressedCode, 'Code compression is broken')
+
+    def testGenerateTestInfo(self):
+        code = (
+            '/* Blah */\n'
+            'public class Foob {\n'
+            '/*\ntest\n*/\n'
+            '    // This comment shouldn\'t be taken as the description.\n'
+            '\n'
+            '    @Test(expected=blah)\n'
+            '\n'
+            '\n'
+            '    public   void   testHai_there(void bar);\n'
+            '\n'
+            '    /**\n'
+            '     * This is an\n'
+            '     * important test.\n'
+            '     *****************/\n'
+            '    @Test\n'
+            '    public void testImportantStuff();\n'
+            '\n'
+            '    // This will be ignored, since it doesn\'t have the annotation.\n'
+            '    public void notATest();\n'
+            '\n'
+            '    //       Line comment.\n'
+            '    @Test\n'
+            '    public void testLineComment();\n'
+            '}\n'
+        )
+
+        from pprint import pprint
+        resultDict = self.problem._generateTestInfo(code)
+        pprint(resultDict)
+        print(code)
+        self.assertEqual(len(resultDict), 3,
+            'One of the test annotations wasn\'t recocnized')
+
+        self.assertEqual(resultDict['testHai_there'], '')
+        self.assertEqual(resultDict['testImportantStuff'], 'This is an\nimportant test.')
+        self.assertEqual(resultDict['testLineComment'], 'Line comment.')
 
