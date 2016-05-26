@@ -4,7 +4,8 @@ import os
 # app_name : language name
 INSTALLED_PROBLEM_APPS = {
     #'problems_python': 'Python',
-    'problems_c': 'C',
+    #'problems_c': 'C',
+    'problems_java': 'Java',
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
     # 'problems_ra': 'Relational Algebra',
@@ -14,7 +15,7 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_short_answer': '',
 }
 
-USE_SAFEEXEC = True               # For C only, for now
+USE_SAFEEXEC = False              # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
 SAFEEXEC_GROUPID = "1005"
 
@@ -26,6 +27,9 @@ PRODUCTION = False
 DEBUG = not PRODUCTION
 SQL_DEBUG = False                   # Suppresses logging of SQL queries
 TEMPLATE_DEBUG = DEBUG
+
+# True if links to bug reporting emails should be generated
+REPORT_BUGS = False
 
 # controls if live-updated quests page should be used
 # live page receives updates from socket.io to update when items are completed
@@ -187,6 +191,7 @@ TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').repl
 PROBLEM_APPS = (
     'problems_python',
     'problems_c',
+    'problems_java',
     'problems_sql',
     'problems_rdb',
     'problems_ra',
