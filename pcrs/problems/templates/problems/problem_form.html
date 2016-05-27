@@ -1,5 +1,13 @@
 {% extends "pcrs/item_form.html" %}
 
+{% block page_title %}
+    {% if object %}
+        Edit Problem
+    {% else %}
+        Create Problem
+    {% endif %}
+{% endblock %}
+
 {% load static %}
 {% load compress %}
 {% block scripts %}

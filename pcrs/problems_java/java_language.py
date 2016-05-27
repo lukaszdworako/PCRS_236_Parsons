@@ -126,10 +126,12 @@ class JavaSpecifics(BaseLanguage):
             CompilationError: On failure
         '''
         try:
-            # Since javac should compile from PUBLICCLASS.java
+            # If a class is public, we should name the file correspondingly.
             classname = re.search('public\s+class\s+(\w+)', source_code).group(1)
         except AttributeError:
-            raise CompilationError("'public class NAME' not found during compilation")
+            # Create a unique-enough file name so we don't have collisions
+            import uuid
+            classname = 'source_' + str(uuid.uuid4())[:8]
 
         # Sanitize classname
         if '..' in classname:
