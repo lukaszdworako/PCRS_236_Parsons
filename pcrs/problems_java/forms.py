@@ -7,11 +7,6 @@ from .models import Problem
 
 
 class ProblemForm(forms.ModelForm, BaseProblemForm):
-    # Overridden from BaseProblemForm
-    clear_button = HTML('<a class="red-button" role="button" '
-        'onclick="showClearSubmissionsDialog()"/clear">'
-        'Clear submissions</a>')
-
     class Meta:
         model = Problem
         fields = ('name', 'description', 'starter_code', 'solution',

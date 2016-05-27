@@ -1,4 +1,4 @@
-{% extends "pcrs/item_form.html" %}
+{% extends "problems/problem_form.html" %}
 
 {% load staticfiles %}
 {% block scripts %}
@@ -14,14 +14,8 @@
 {% endblock %}
 
 {% block related_items %}
+    {{ block.super }}
     {% include "problems_c/tag_alert.html" %}
     {% include "problems_c/student_preview.html" %}
-
-    {% if object %}
-        {% with list_name='Testcases' object_list=object.testcase_set.all related_item_name='testcase' %}
-            {% include "pcrs/related_items.html" %}
-        {% endwith %}
-    {% endif %}
 {% endblock %}
-
 

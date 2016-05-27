@@ -7,8 +7,27 @@
           All submissions to this problem will be removed.
       </div>
       <div class="pcrs-modal-footer">
-        <button type="button" class="red-button pull-left" onclick="clearSubmissions()" data-dismiss="modal">Clear</button>
+        <button type="button" class="red-button pull-left" onclick="clearSubmissionsForCurrentProblem()" data-dismiss="modal">Clear</button>
         <button type="button" class="reg-button" data-dismiss="modal">Cancel</button>
       </div>
     </div>
 </div>
+
+{% load staticfiles %}
+{% load compress %}
+{% compress js %}
+<script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}" type="text/javascript"></script>
+<script type="text/javascript">
+function showClearSubmissionsDialog() {
+    $('#clearSubmissionsModal').modal('show');
+}
+
+function clearSubmissionsForCurrentProblem() {
+    $.ajax({
+        url:    "{{ object.get_absolute_url }}/clear",
+        method: "POST",
+    });
+}
+</script>
+{% endcompress %}
+

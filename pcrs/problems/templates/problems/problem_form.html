@@ -1,5 +1,19 @@
 {% extends "pcrs/item_form.html" %}
 
+{% load static %}
+{% load compress %}
+{% block scripts %}
+    {{ block.super }}
+    {% compress js %}
+        <script type="text/javascript" src="{% static 'csrf_protection.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+{% block stylesheets %}
+    {% compress css %}
+        {# Necessary for modal windows #}
+        <link rel="stylesheet" href="{% static "less/problem_form.css" %}">
+    {% endcompress %}
+{% endblock %}
 {% block related_items %}
     {% if object %}
         {% with list_name='Testcases' object_list=object.testcase_set.all related_item_name='testcase' %}
@@ -7,3 +21,9 @@
         {% endwith %}
     {% endif %}
 {% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    {% include "problems/problem_form_clear_dialog.html" %}
+{% endblock %}
+

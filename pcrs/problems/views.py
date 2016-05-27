@@ -116,11 +116,10 @@ class ProblemDeleteView(CourseStaffViewMixin, ProblemView, DeleteView):
 
 
 class ProblemClearView(CourseStaffViewMixin, ProblemView, DetailView):
-    """
-    Clear all submissions to a problem.
-    """
-    template_name = 'problems/submission_check_delete.html'
+    """Clear all submissions to a problem.
 
+    POST to this URL from a given problem using AJAX to clear the results.
+    """
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.clear_submissions()
@@ -275,7 +274,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                                 'past_dead_line': False,
                                 'max_score': 1}, cls=DateEncoder),
                                 mimetype='application/json')
-        
+
         problem = self.get_problem()
         user, section = self.request.user, self.get_section()
 
@@ -335,7 +334,7 @@ class MonitoringAsyncView(MonitoringView):
         try:
             start_time = form.cleaned_data['time']
         except KeyError:
-            start_time = time.strftime('%Y-%m-%d %H:%M:%S%z') 
+            start_time = time.strftime('%Y-%m-%d %H:%M:%S%z')
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
         results = problem.get_monitoring_data(section, start_time)
         return HttpResponse(json.dumps(results), mimetype='application/json')

@@ -10,8 +10,8 @@ from users.models import Section
 
 class BaseProblemForm(CrispyFormMixin):
     clear_button = HTML('<a class="red-button" role="button" '
-                        'href="{{ object.get_absolute_url }}/clear">'
-                        'Clear submissions</a>')
+        'onclick="showClearSubmissionsDialog()"/clear">'
+        'Clear submissions</a>')
     save_button = Submit('submit', 'Save', css_class='green-button-right')
     attempt_button = Submit('attempt', 'Save & Attempt', css_class='green-button-right')
 

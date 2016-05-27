@@ -3,12 +3,10 @@
 {% block scripts %}
     {{ block.super }}
     {% load static %}
-    <script type="text/javascript" src="{% static 'csrf_protection.js' %}"></script>
     {% include "problems_java/problem_form_scripts.html" %}
 {% endblock %}
 {% block related_items %}
     {% include "problems_c/tag_alert.html" %}
     {% include "problems_c/student_preview.html" %}
-    {% include "problems_java/clear_submissions_dialog.html" %}
 {% endblock %}
 
