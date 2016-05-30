@@ -8,7 +8,7 @@ from django.db.models.signals import post_delete
 
 from problems.pcrs_languages import GenericLanguage
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractTestRun, problem_delete)
+    AbstractSelfAwareModel, AbstractTestCase, AbstractTestRun, problem_delete)
 from .java_language import CompilationError
 
 test_suite_template = """import org.junit.*;
@@ -44,8 +44,15 @@ class Problem(AbstractProgrammingProblem):
 
     def __init__(self, *args, **kwargs):
         super(AbstractProgrammingProblem, self).__init__(*args, **kwargs)
-        self._initial_test_suite = self.test_suite
-        self._testCases = self._generateTestInfo(self.test_suite)
+
+        '''
+        If the test suite is sent from a kwarg, we still want the
+        test cases to regenerate when this problem is saved.
+        '''
+        if kwargs.get('test_suite'):
+            self._initial_test_suite = test_suite_template
+        else:
+            self._initial_test_suite = self.test_suite
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
@@ -64,26 +71,30 @@ class Problem(AbstractProgrammingProblem):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        self._testCases = self._generateTestInfo(self.test_suite)
-        self.max_score = len(self._testCases)
+        # Check before initial save
+        testsHaveChanged = self._testSuiteHasChanged()
         super().save(force_insert, force_update, using, update_fields)
 
-    def getTestDescription(self, test_name):
-        return self._testCases[test_name]
-
-    def getAllTestNames(self):
-        '''Retrieves the test method names.
-
-        These can be used to identify the different tests.
-
-        Returns:
-            A lexicographically sorted list of test method names.
         '''
-        return sorted(self._testCases.keys())
+        We have to generate the test case table whenever we save a problem.
+        It seems a bit hacky to do this, but most of PCRS depends on
+        problems having a dedicated test case table.
+        '''
+        if testsHaveChanged:
+            self._repopulateTestCaseTable()
+            self.max_score = len(self.testcase_set.all())
+            super().save(force_insert, force_update, using, update_fields)
 
-    def isTestVisible(self, test_name):
-        # We say the test case is visible if it has a description.
-        return True if self.getTestDescription(test_name).strip() else False
+    def _repopulateTestCaseTable(self):
+        # Regenerate the test case table entries for this problem's test_suite
+        testCaseInfo = self._generateTestInfo(self.test_suite)
+
+        for testcase in self.testcase_set.all():
+            testcase.delete()
+        for test in testCaseInfo:
+            self.testcase_set.create(
+                test_name=test['name'],
+                description=test['description'])
 
     def _testSuiteHasChanged(self):
         ''''Determines if the problem submission resulted in changed test code.
@@ -128,10 +139,13 @@ class Problem(AbstractProgrammingProblem):
             # Capture method name
             'public\s*void\s*([\w_]+)'
         )
-        return {
-            m[1]: self._stripComment(m[0])
+        return [
+            {
+                'name': m[1],
+                'description': self._stripComment(m[0]),
+            }
             for m in re.findall(reg, test_code)
-        }
+        ]
 
     def _stripComment(self, comment):
         ''''Determines if the problem submission resulted in changed test code.
@@ -177,8 +191,9 @@ class Submission(AbstractSubmission):
                       'test_val': test_results['exception']}], None
 
         results = []
-        for test_name in self.problem.getAllTestNames():
-            description = self.problem.getTestDescription(test_name)
+        for testcase in self.problem.testcase_set.all():
+            test_name = testcase.test_name
+            description = testcase.description
             description = html.escape(description) if description else '(hidden)'
             res = {
                 'passed_test': True,
@@ -195,8 +210,8 @@ class Submission(AbstractSubmission):
                 res['test_val'] = message if len(message) > 0 else '(hidden)'
                 res['passed_test'] = False
             if save:
-                TestRun.objects.create(problem=self.problem, submission=self,
-                                       test_name=test_name, test_passed=res['passed_test'])
+                TestRun.objects.create(submission=self, testcase=testcase,
+                    test_passed=res['passed_test'])
             results.append(res)
 
         runner.lang.clear() # Removing compiled files
@@ -294,20 +309,42 @@ class Submission(AbstractSubmission):
         return starter_code
 
 
+class TestCase(AbstractTestCase):
+    """
+    A coding problem testcase.
+
+    Visibility of test case information is controlled by is_visible.
+    These test cases are generated when setting the problem test_suite.
+    """
+    problem = models.ForeignKey(Problem,
+        on_delete=models.CASCADE, null=False, blank=False)
+    test_name = models.TextField()
+
+    def __str__(self):
+        if self.description:
+            return '{0}: {1}'.format(self.test_name, self.description)
+        else:
+            return self.test_name
+
+    def save(self, force_insert=False, force_update=False, using=None,
+        update_fields=None):
+        # Skip the parent because it calls save on Problem, which we don't want
+        AbstractSelfAwareModel.save(self,
+            force_insert, force_update, using, update_fields)
+
+
 class TestRun(AbstractTestRun):
     """
-    A coding problem testrun, created for each test suite method on each submission.
+    A coding problem testrun, created for each testcase on each submission.
     """
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
-                                null=False, blank=False)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
-    test_name = models.TextField(blank=False)
+    testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
 
     def get_history(self):
         return {
-            'visible': self.problem.isTestVisible(self.test_name),
+            'visible': self.testcase.is_visible,
             'passed': self.test_passed,
-            'description': self.problem.getTestDescription(self.test_name)
+            'description': self.testcase.description,
         }
 
 post_delete.connect(problem_delete, sender=Problem)

@@ -40,12 +40,12 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
                 '\n'
                 '[/student_code]\n'
         )
-        Problem.objects.create(
-            pk=1, name='test_problem', visibility='open', max_score=3,
+        self.problem = Problem(pk=1,
+            name='test_problem', visibility='open', max_score=3,
             test_suite=test_suite, starter_code=starter_code)
+        self.problem.save()
 
     def testCompileAndVerifyOutput(self):
-        prob = Problem.objects.get(pk=1)
         code = (
                 # A bit of a hack to get the tag preprocessor to work.
                 # This is the sha1 encoding of the primary key "1"
@@ -64,7 +64,7 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
                 '    }\n'
                 '}\n'
                 '356a192b7913b04c54574d18c28d46e6395428ab\n')
-        sub = Submission.objects.create(problem=prob,
+        sub = Submission.objects.create(problem=self.problem,
             user=self.student, section=self.section, score=2, submission=code)
         sub.save()
 
@@ -72,8 +72,8 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
         self.assertEqual(len(response), 3)
 
         testArithmeticResult = response[0]
-        testSayHello         = response[1]
-        testSecurityResult   = response[2]
+        testSecurityResult   = response[1]
+        testSayHello         = response[2]
 
         self.assertTrue(
             testArithmeticResult['passed_test'],
@@ -100,8 +100,8 @@ class TestSubmissionByCompiling(UsersMixin, test.TestCase):
 
 class TestProblemHelpers(test.TestCase):
     def setUp(self):
-        self.problem = Problem.objects.create(
-            pk=1, name='test_problem', visibility='open', max_score=3,
+        self.problem = Problem.objects.create(pk=2,
+            name='test_problem', visibility='open', max_score=3,
             test_suite='', starter_code='')
 
     def testStripComment(self):
@@ -167,14 +167,14 @@ class TestProblemHelpers(test.TestCase):
             '}\n'
         )
 
-        from pprint import pprint
         resultDict = self.problem._generateTestInfo(code)
-        pprint(resultDict)
-        print(code)
         self.assertEqual(len(resultDict), 3,
             'One of the test annotations wasn\'t recocnized')
 
-        self.assertEqual(resultDict['testHai_there'], '')
-        self.assertEqual(resultDict['testImportantStuff'], 'This is an\nimportant test.')
-        self.assertEqual(resultDict['testLineComment'], 'Line comment.')
+        self.assertEqual(resultDict[0]['name'], 'testHai_there')
+        self.assertEqual(resultDict[0]['description'], '')
+        self.assertEqual(resultDict[1]['name'], 'testImportantStuff')
+        self.assertEqual(resultDict[1]['description'], 'This is an\nimportant test.')
+        self.assertEqual(resultDict[2]['name'], 'testLineComment')
+        self.assertEqual(resultDict[2]['description'], 'Line comment.')
 
