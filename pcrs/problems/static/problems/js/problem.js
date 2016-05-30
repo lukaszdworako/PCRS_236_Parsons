@@ -683,16 +683,17 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	                          current_testcase.exception + '</th>');
 	        }
             else {
-                newRow.append('<td class="description">' + description + '</td>');
-
                 if (language == 'java') {
-                   newRow.append('<td class="result">' +
-                       '<div class="table-horizontal-scroll">' +
+                    newRow.append('<td>' + description + '</td>');
+                    newRow.append('<td>' +
+                       '<div>' +
                        '<span class="stringObj">' +
                        current_testcase.test_val +
                        '</span>' +
                        '</div></td>');
                 } else {
+                    newRow.append('<td class="description">' + description + '</td>');
+
                     if (testcaseInput != null) {
                         newRow.append('<td class="expression"><div class="expression_div">' +
                                 testcaseInput + '</div></td>');

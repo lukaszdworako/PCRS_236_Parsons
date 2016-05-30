@@ -7,7 +7,7 @@
           All submissions to this problem will be removed.
       </div>
       <div class="pcrs-modal-footer">
-        <button type="button" class="red-button pull-left" onclick="clearSubmissionsForCurrentProblem()" data-dismiss="modal">Clear</button>
+        <button type="button" class="red-button pull-left" onclick="clearSubmissionsForCurrentProblem()">Clear</button>
         <button type="button" class="reg-button" data-dismiss="modal">Cancel</button>
       </div>
     </div>
@@ -26,6 +26,9 @@ function clearSubmissionsForCurrentProblem() {
     $.ajax({
         url:    "{{ object.get_absolute_url }}/clear",
         method: "POST",
+    }).success(function(data) {
+        // This will resend form data (e.g. if "save" was clicked previously)
+        location.reload();
     });
 }
 </script>
