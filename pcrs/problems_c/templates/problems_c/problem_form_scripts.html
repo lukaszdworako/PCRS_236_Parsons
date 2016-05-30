@@ -225,88 +225,39 @@
             $('#previewModal').modal('show');
         }
 
-        function previewCode(){
         /**
          * Preview how code will look to the student
          */
+        function previewCode() {
             // Add student_code tags
             cmh_list[id_starter_code_field].setValue(add_student_code_tag());
 
-            // Detect tags in the source code
-            detectTags();
+            var code = cmh_list[id_starter_code_field].getValue();
 
-            // Remove Tags from source code
-            var remove_line = false;
-            var student_code_start = false;
-            var student_code_end = false;
-            var source_code = "";
-            var line_begin = cmh_list[id_starter_code_field].firstLine();
-            var line_end = cmh_list[id_starter_code_field].lastLine();
-            var line;
-            var j;
+            // The [\s\S] is another way to express "." with DOTALL enabled
+            code = code.replace(/\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
+            code = code.replace(/(\n)?\[\/?(student_code|blocked)\]/g, '');
+            // The tag at the top of the file will leave a stray newline
+            code = code.replace(/^[ \t]*\n/, '');
 
-            for (var i = line_begin; i <= line_end; i++) {
-                line = cmh_list[id_starter_code_field].getLine(i);
-                for(j = 0; j < blocked_list.length; j++) {
-                    if (blocked_list[j].start == i+1 || blocked_list[j].end == i+1) {
-                        remove_line = true;
-                    }
-                }
-                for(j = 0; j < hidden_list.length; j++) {
-                    if (hidden_list[j].start <= i+1 && hidden_list[j].end >= i+1) {
-                        remove_line = true;
-                    }
-                }
-                for(j = 0; j < student_code_list.length; j++) {
-                    if (student_code_list[j].start == i+1){
-                        student_code_start = true;
-                    }else if(student_code_list[j].end == i+1){
-                        student_code_end = true;
-                    }
-                }
-                if(remove_line == false && line != " ") {
-                    if(student_code_start == true) {
-                        student_code_start = false;
-                    }
-                    else if(student_code_end == true){
-                        student_code_end = false;
-                    }else {
-                        source_code += cmh_list[id_starter_code_field].getLine(i);
-                    }
-                    if (i > line_begin && i < line_end) {
-                        source_code += '\n';
-                    }
-                }
-                remove_line = false;
-            }
-            // Remove last breakline when exists
-            if (source_code[source_code.length-1] == '\n')
-                source_code = source_code.substring(0,source_code.length - 1);
-
-            showPreviewModal('Exercise - Student Preview', source_code);
+            showPreviewModal('Preview Code', code);
         }
-        function blockInput(editor_id, change) {
-         /**
+
+        /**
          * Block input text in a line that
          * holds any kind of tag
          */
-
+        function blockInput(editor_id, change) {
             var line = cmh_list[editor_id].getLine(cmh_list[editor_id].getCursor().line);
-            var line_size = line.length;
 
-            if ((line.lastIndexOf("[hidden]") > -1        && line_size >= "[hidden]".length)       ||
-                (line.lastIndexOf("[blocked]") > -1       && line_size >= "[blocked]".length)      ||
-                (line.lastIndexOf("[student_code]") > -1  && line_size >= "[student_code]".length) ||
-                (line.lastIndexOf("[/hidden]") > -1       && line_size >= "[/hidden]".length)      ||
-                (line.lastIndexOf("[/blocked]") > -1      && line_size >= "[/blocked]".length)     ||
-                (line.lastIndexOf("[/student_code]") > -1 && line_size >= "[/student_code]".length)){
-                    if(!(change.text == "" || change.text.length > 1)){
-                        change.cancel();
-                    }
+            if (line.search(/\[\/?(hidden|blocked|student_code)\]/) != -1) {
+                if ( ! (change.text == "" || change.text.length > 1)) {
+                    change.cancel();
+                }
             }
             last_starter_code_cursor_position = cmh_list[editor_id].getCursor();
         }
-       $(function() {
+        $(function() {
 
             language = 'c';
             language_version = 'text/x-csrc';
