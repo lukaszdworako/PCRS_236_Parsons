@@ -28,6 +28,8 @@
                 type="text/javascript"></script>
         <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/tab.js" %}"
                 type="text/javascript"></script>
+
+        <script type="text/javascript" src="{% static 'csrf_protection.js' %}"></script>
     {% endcompress %}
     {% include "pcrs/node_socket_io_includes.html" %}
 {% endblock %}
@@ -116,16 +118,7 @@
                     {% for item in page.contentsequenceitem_set.all %}
                         {% with item=item.content_object %}
                             {% if item|classname == 'TextBlock' %}
-                                <div class="textblock item"
-                                     id="textblock-{{ item.pk }}">
-                                    <button class="xs-x-button-right remove_item">
-                                                <span class="at">Delete text block. {{ item.text }}</span>
-                                    </button>
-                                    &nbsp;
-                                    {% autoescape off %}
-                                        {{ item.text|linebreaks }}
-                                    {% endautoescape %}
-                                </div>
+                                {% include "content/text_list_item.html" %}
                             {% endif %}
                             {% if item|classname == 'Video' %}
                                 {% include "content/video_list_item.html" %}
@@ -163,7 +156,7 @@
                 </div>
                 <div class="pcrs-modal-footer">
                     <button type="button" class="reg-button"
-                            data-dismiss="modal">Close
+                            data-dismiss="modal">Cancel
                     </button>
                     <button type="button" data-dismiss="modal"
                             class="green-button" id="save-text">Save
@@ -201,3 +194,4 @@
     </div>
 
 {% endblock %}
+

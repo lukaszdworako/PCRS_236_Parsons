@@ -221,9 +221,23 @@ function addText() {
         alert('Please select the page you would like to add the text to.')
     }
     else {
+        $('#text-entry-modal').attr('textblock-pk', '');
+        $('#text-entry').val('');
         $('#text-entry-modal').modal();
 //        resize_problems();
     }
+}
+
+function updateText(pk) {
+    var text = $('#textblock-' + pk + ' p').html();
+    /*
+     * ui-selectee is needed for dragging to look nice.
+     * We don't want it to show up in the edit box, though!
+     */
+    text = text.replace(/\s+class="ui-selectee"/g, '');
+    $('#text-entry-modal').attr('textblock-pk', pk);
+    $('#text-entry').val(text);
+    $('#text-entry-modal').modal();
 }
 
 function saveText(event) {
@@ -233,11 +247,30 @@ function saveText(event) {
 
     var $page = $('.ui-selected');
 
-    $.post(document.URL + '/' + $page.attr('id') + '/text/create', {
-        text: $('#text-entry').val(),
-        csrftoken: csrftoken
-    })
-        .success(function (data) {
+    var pk = $('#text-entry-modal').attr('textblock-pk');
+    var text = $('#text-entry').val();
+
+    if ( ! text) {
+        // Blank fields break stuff!
+        return;
+    }
+
+    if (pk) {
+        // Update an existing entry
+        $.post(document.URL + '/textblock-' + pk + '/update', {
+            'text': text,
+        }).success(function (data) {
+            $('#textblock-' + pk + ' p').html(text);
+
+            $('#save_top').prop('disabled', false);
+            $('#save_bot').prop('disabled', false);
+        });
+    } else {
+        // Create a new entry
+        $.post(document.URL + '/' + $page.attr('id') + '/text/create', {
+            text: text,
+            csrftoken: csrftoken
+        }).success(function (data) {
             var $new_item = $("<div/>", {
                 html: "<div><p class='ui-selectee'>" + $('#text-entry').val() + "</p></div>",
                 class: "textblock item ui-selectee",
@@ -247,11 +280,24 @@ function saveText(event) {
                 class: "remove_item ui-selectee xs-x-button-right",
                 title: "Delete Item",
                 html:"<span class='at'>Delete Text Block "+$('#text-entry').val()+"</span>"
-            }))
+            }));
+            var edit_button = $("<a/>", {
+                class: 'pull-right',
+                href: 'javascript:void(0)',
+                onclick: 'updateText(' + data['pk'] + ');',
+                title: 'Edit',
+            });
+            edit_button.prepend($('<i/>', {
+                'style': 'color:navy',
+                'class': 'pencil-icon',
+            }));
+            $new_item.prepend(edit_button);
+
             $page.append($new_item);
             $('#save_top').prop('disabled', false);
             $('#save_bot').prop('disabled', false);
         });
+    }
 }
 
 function deleteItemHelper(){

@@ -4,7 +4,7 @@ from django.db.models import Max
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import CreateView, DetailView, DeleteView
+from django.views.generic import CreateView, DetailView, DeleteView, UpdateView
 
 from content.models import (Challenge, ContentPage, ContentSequenceItem,
                             TextBlock)
@@ -119,6 +119,23 @@ class TextCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
         text = request.POST.get('text', None)
         if text:
             textblock = self.model.objects.create(text=text)
+            return HttpResponse(json.dumps({'status': 'ok',
+                                            'pk': textblock.pk}),
+                                mimetype='application/json')
+
+
+class TextUpdateView(CourseStaffViewMixin, UpdateView):
+    """
+    Update a TextBlock from text sent in with an Ajax post request.
+    """
+    model = TextBlock
+
+    def post(self, request, *args, **kwargs):
+        textblock = get_object_or_404(self.model, pk=self.kwargs.get('pk', None))
+        text = request.POST.get('text', None)
+        if text:
+            textblock.text = text
+            textblock.save()
             return HttpResponse(json.dumps({'status': 'ok',
                                             'pk': textblock.pk}),
                                 mimetype='application/json')

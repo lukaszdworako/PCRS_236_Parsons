@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.conf.urls import patterns, url
 
-from content.challenge_content_views import (TextCreateView, PageCreateView,
+from content.challenge_content_views import (TextCreateView,
+                                             TextUpdateView,
+                                             PageCreateView,
                                              ChallengeObjectsView,
                                              ItemDeleteView,
                                              ChallengePagesObjectsView,
@@ -32,7 +34,7 @@ urlpatterns = patterns('',
     url(r'^tags/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=Tag),
         name='tag_delete'),
-    
+
     url(r'^videos/create$', VideoCreateView.as_view(),
         name='video_create'),
     url(r'^videos/(?P<pk>[0-9]+)$', VideoUpdateView.as_view(),
@@ -88,6 +90,8 @@ urlpatterns = patterns('',
         PageDeleteView.as_view(model=ContentPage), name='page_delete'),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/page-(?P<page>[0-9]+)/text/create$',
         TextCreateView.as_view()),
+    url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/update$',
+        TextUpdateView.as_view()),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/textblock-(?P<pk>[0-9]+)/delete',
         ItemDeleteView.as_view(model=TextBlock)),
     url(r'^challenges/(?P<challenge>[0-9]+)/objects/change_status',
