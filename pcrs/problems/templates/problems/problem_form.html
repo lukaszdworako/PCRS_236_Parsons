@@ -14,12 +14,16 @@
     {{ block.super }}
     {% compress js %}
         <script type="text/javascript" src="{% static 'csrf_protection.js' %}"></script>
+        <script type="text/javascript" src="{% static 'problems/js/problem_form.js' %}"></script>
+        <script type="text/javascript" src="{% static 'multi-select/js/jquery.multi-select.js' %}"></script>
+        <script type="text/javascript" src="{% static 'multi-select/js/jquery.quicksearch.js' %}"></script>
     {% endcompress %}
 {% endblock %}
 {% block stylesheets %}
     {% compress css %}
         {# Necessary for modal windows #}
         <link rel="stylesheet" href="{% static "less/problem_form.css" %}">
+        <link rel="stylesheet" href="{% static 'multi-select/css/multi-select.css' %}">
     {% endcompress %}
 {% endblock %}
 {% block related_items %}

@@ -7,6 +7,8 @@ from django.utils.timezone import now
 from pcrs.form_mixins import CrispyFormMixin
 from users.models import Section
 
+from problems.widgets.select_multiple_field import SelectMultipleField
+
 
 class BaseProblemForm(CrispyFormMixin):
     clear_button = HTML('<a class="red-button" role="button" '
@@ -40,9 +42,16 @@ class BaseProblemForm(CrispyFormMixin):
         else:
             # creating a new one
             self.buttons = self.save_and_add,
+
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
                                     ButtonHolder(*self.buttons))
+
+        self.fields['tags'].help_text = None
+        self.fields['tags'].widget = SelectMultipleField(
+            choices=self.fields['tags'].choices
+        )
+
 
 
 class EditorForm(CrispyFormMixin, forms.Form):
