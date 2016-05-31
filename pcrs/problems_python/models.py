@@ -54,7 +54,7 @@ class Submission(AbstractSubmission):
             run['test_desc'] = testcase.description
             run['debug'] = False
             if testcase.is_visible:
-                run['test_input'] = testcase.test_input
+                run['test_input'] = testcase.test_input.replace('\n','<br />')
                 run['debug'] = True
             else:
                 run['test_input'] = None
