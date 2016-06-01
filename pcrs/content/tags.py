@@ -1,3 +1,6 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from pcrs.models import AbstractSelfAwareModel
 
@@ -13,6 +16,17 @@ class Tag(AbstractSelfAwareModel):
 
     def __str__(self):
         return self.name
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude)
+
+        ''' Note: This is normally implemented in crispy forms, but we
+                  need to validate it manually for normal tag object creation
+        '''
+        if not re.compile("^[0-9a-z\-_]+$", re.IGNORECASE).match(self.name):
+            raise ValidationError({'name':
+              "Enter a valid 'slug' consisting of letters, numbers, underscores or hyphens.",
+            })
 
 
 class AbstractTaggedObject(models.Model):
