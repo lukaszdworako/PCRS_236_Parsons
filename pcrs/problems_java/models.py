@@ -1,6 +1,5 @@
 import re
 import html
-from hashlib import sha1
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -8,7 +7,8 @@ from django.db.models.signals import post_delete
 
 from problems.pcrs_languages import GenericLanguage
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-    AbstractSelfAwareModel, AbstractTestCase, AbstractTestRun, problem_delete)
+    SubmissionPreprocessorMixin, AbstractSelfAwareModel, AbstractTestCase,
+    AbstractTestRun, problem_delete)
 from .java_language import CompilationError
 
 test_suite_template = """import org.junit.*;
@@ -163,7 +163,7 @@ class Problem(AbstractProgrammingProblem):
         return comment.strip()
 
 
-class Submission(AbstractSubmission):
+class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     """
     A coding problem submission.
     """
@@ -176,10 +176,11 @@ class Submission(AbstractSubmission):
         """
 
         runner = GenericLanguage(self.problem.language)
-        self.preprocess_tags()
+        mod_submission = self.preprocessTags()[0]
+
         try:
             # necessary since language requires compilation
-            runner.lang.compile(self.user.username, self.mod_submission, self.problem.test_suite)
+            runner.lang.compile(self.user.username, mod_submission, self.problem.test_suite)
             test_results = runner.lang.run_test_suite()
         except CompilationError as e:
             return self._createCompileErrorResponse(e)
@@ -226,87 +227,6 @@ class Submission(AbstractSubmission):
                   'exception_type': 'error',
                   'exception': error,
                   'test_val': error}], None
-
-    # Adapted from models.py in the C framework
-    def preprocess_tags(self):
-        self.hidden_lines_list = []
-        self.non_hidden_lines_list = []
-
-        #if code from editor, just return code -- there were no tags
-        if self.problem_id == 9999999:
-            if len(self.submission) == 0:
-                raise Exception("No code found!")
-            self.mod_submission = self.submission
-            return
-
-        #Code not from editor, process tags
-        student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-        student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
-        student_code_key_len = len(student_code_key)
-        student_code_key_list_len = len(student_code_key_list)
-
-        # Could not find student code
-        if student_code_key_list_len == 0:
-            raise Exception("No student code found!")
-
-        # Get student code from submission and add it to the official exercise (from the database)
-        if student_code_key_list_len % 2 != 0:
-            student_code_key_list = student_code_key_list[:-1]
-
-        student_code_list = []
-        while len(student_code_key_list) >= 2:
-            student_code_list.append(
-                self.submission[student_code_key_list[0] + student_code_key_len + 1: student_code_key_list[1]])
-            del student_code_key_list[0], student_code_key_list[0]
-
-        # Create variable mod_submission to handle the fusion of student code with starter_code from the database
-        self.mod_submission = self._emplaceStudentCodeSnippets(student_code_list, self.problem.starter_code)
-
-        # Replace hashed key with text (Implementation start/end)
-        x = 0
-        while x < student_code_key_list_len:
-            m = re.search(student_code_key, self.submission)
-            self.submission = self.submission[: m.start()] + self.submission[m.end():]
-            x += 1
-
-        # Remove blocked tags from the source code
-        self.mod_submission = re.sub(r'\[\/?blocked\]\r?\n?', '', self.mod_submission)
-
-        # Store hidden code lines for previous use when showing compilation and warning errors
-        inside_hidden_tag = False
-        line_num = 1
-        for line in self.mod_submission.split('\n'):
-            if line.find("[hidden]") > -1:
-                inside_hidden_tag = True
-                continue
-            elif line.find("[/hidden]") > -1:
-                inside_hidden_tag = False
-                continue
-            if inside_hidden_tag:
-                self.hidden_lines_list.append(line_num)
-            else:
-                self.non_hidden_lines_list.append(line_num)
-            line_num += 1
-        self.non_hidden_lines_list.pop()
-
-        # Remove hidden tags from the source code
-        self.mod_submission = re.sub(r'\[\/?hidden\]\r?\n?', '', self.mod_submission)
-
-    def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
-        '''Emplaces the given code snippets into the given starter code.
-        The [student_code] tags will be replaced appropriately.
-
-        Args:
-            student_code_list: A list of student code snippets.
-            starter_code:      The starter code - probably from the Problem class.
-        Returns:
-            The given snippets emplaced into the corresponding code tag positions.
-        '''
-        emplacementRegex = re.compile('\[student_code\].*?\[\/student_code\]\r?\n?', re.DOTALL)
-        while len(student_code_list) > 0 and starter_code.find('[student_code]') != -1:
-            student_code = student_code_list.pop(0)
-            starter_code = re.sub(emplacementRegex, student_code, starter_code, 1)
-        return starter_code
 
 
 class TestCase(AbstractTestCase):

@@ -1,3 +1,6 @@
+import re
+from hashlib import sha1
+
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, IntegrityError
@@ -427,6 +430,95 @@ class AbstractJobScheduler(models.Model):
 
     class Meta:
         abstract = True
+
+
+class SubmissionPreprocessorMixin:
+    '''
+    Helpers for tag preprocessing in Submission classes.
+    '''
+    def preprocessTags(self):
+        '''Processes the tags in this submission.
+
+        Returns:
+            A list of processed files - ready to compile / run.
+        '''
+        hidden_lines_list = []
+        non_hidden_lines_list = []
+
+        #if code from editor, just return code -- there were no tags
+        if self.problem_id == 9999999:
+            if len(self.submission) == 0:
+                raise Exception("No code found!")
+            return self.submission, hidden_lines_list
+
+        #Code not from editor, process tags
+        student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
+        student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
+        student_code_key_len = len(student_code_key)
+        student_code_key_list_len = len(student_code_key_list)
+
+        # Could not find student code
+        if student_code_key_list_len == 0:
+            raise Exception("No student code found!")
+
+        # Get student code from submission and add it to the official exercise (from the database)
+        if student_code_key_list_len % 2 != 0:
+            student_code_key_list = student_code_key_list[:-1]
+
+        student_code_list = []
+        while len(student_code_key_list) >= 2:
+            student_code_list.append(
+                self.submission[student_code_key_list[0] + student_code_key_len + 1: student_code_key_list[1]])
+            del student_code_key_list[0], student_code_key_list[0]
+
+        # Create variable mod_submission to handle the fusion of student code with starter_code from the database
+        mod_submission = self._emplaceStudentCodeSnippets(student_code_list, self.problem.starter_code)
+
+        # Replace hashed key with text (Implementation start/end)
+        x = 0
+        while x < student_code_key_list_len:
+            m = re.search(student_code_key, self.submission)
+            self.submission = self.submission[: m.start()] + self.submission[m.end():]
+            x += 1
+
+        # Store hidden code lines for previous use when showing compilation and warning errors
+        inside_hidden_tag = False
+        line_num = 1
+        for line in mod_submission.split('\n'):
+            if line.find("[hidden]") > -1:
+                inside_hidden_tag = True
+                continue
+            elif line.find("[/hidden]") > -1:
+                inside_hidden_tag = False
+                continue
+            if inside_hidden_tag:
+                hidden_lines_list.append(line_num)
+            else:
+                non_hidden_lines_list.append(line_num)
+            line_num += 1
+        non_hidden_lines_list.pop()
+
+        # Remove hidden and blocked tags from the source code
+        mod_submission = re.sub(r'\[\/?hidden\]\r?\n?', '', mod_submission)
+        mod_submission = re.sub(r'\[\/?blocked\]\r?\n?', '', mod_submission)
+
+        return [mod_submission]
+
+    def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
+        '''Emplaces the given code snippets into the given starter code.
+        The [student_code] tags will be replaced appropriately.
+
+        Args:
+            student_code_list: A list of student code snippets.
+            starter_code:      The starter code - probably from the Problem class.
+        Returns:
+            The given snippets emplaced into the corresponding code tag positions.
+        '''
+        emplacementRegex = re.compile('\[student_code\].*?\[\/student_code\]\r?\n?', re.DOTALL)
+        while len(student_code_list) > 0 and starter_code.find('[student_code]') != -1:
+            student_code = student_code_list.pop(0)
+            starter_code = re.sub(emplacementRegex, student_code, starter_code, 1)
+        return starter_code
 
 # Signal handlers
 
