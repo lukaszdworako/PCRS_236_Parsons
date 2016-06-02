@@ -5,6 +5,7 @@
     <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
     <script src="{% static "codemirror-4.1/mode/clike/clike.js" %}"></script>
     <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems/js/TagManager.js" %}" type="text/javascript"></script>
 {% endcompress %}
 
 {% load compress %}
@@ -13,145 +14,62 @@
     <script src="{% static 'code_mirror.js' %}"></script>
 
     <script type="text/javascript">
-
         var cmh_list = {};
         var language;
         var language_version;
         var id_starter_code_field = 'id_starter_code';
         var id_solution_field = 'id_solution';
         var id_preview_code_field = 'id_preview_code';
-        var blocked_list = [], hidden_list = [], student_code_list = [];
         var last_starter_code_cursor_position = null;
 
-        function add_student_code_tag(){
+        // TODO create a class for all this JS tag parsing.
+
         /**
          * Add [student_code] tag respecting [blocked] and
          * [hidden] tags to garantie the exercise integrity.
          */
-            var line_count = cmh_list[id_starter_code_field].lineCount();
-            var i;
-            var line;
-            var source_code = "";
-            var student_code_tag_open = false;
-            var some_tag_open = 0;
-            var just_closed = false;
-            var student_code_tag_count = 0;
+        function addTagsToStarterCode() {
+            var allCode = cmh_list[id_starter_code_field].getValue();
+            var files = TagManager.parseCodeIntoFiles(allCode);
 
-            for (i = 0; i < line_count; i++) {
-                line = cmh_list[id_starter_code_field].getLine(i);
-                // Check other tags
-                if (line.indexOf("[blocked]") > -1 || line.indexOf("[hidden]") > -1 ||
-                    line.indexOf("[student_code]") > -1) {
-                    if(line.indexOf("[student_code]") > -1){
-                        student_code_tag_count += 1;
-                    }
-                    some_tag_open += 1;
-                }
-                if (line.indexOf("[/blocked]") > -1 || line.indexOf("[/hidden]") > -1 ||
-                    line.indexOf("[/student_code]") > -1){
-                    some_tag_open -= 1;
-                    just_closed = true;
-                }
-                // Add student_code tag
-                if(some_tag_open == 0 && just_closed == false && student_code_tag_open == false) {
-                    source_code +=  "[student_code]\r\n" + line + '\n';
-                    student_code_tag_count += 1;
-                    student_code_tag_open = true;
-                }else if(some_tag_open > 0 && student_code_tag_open == true){
-                    source_code += "[/student_code]\r\n" + line + '\n';
-                    student_code_tag_open = false;
-                }else{
-                    source_code += line + '\n';
-                }
-                just_closed = false;
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+                f.code = TagManager.addStudentCodeTags(f.code);
             }
-            // If no student_code included in the middle of the souce code
-            if(student_code_tag_count == 0){
-                source_code += "[student_code]\r\n\n";
-                student_code_tag_open = true;
-            }else{
-                // Remove last \n
-                source_code = source_code.substring(0, source_code.length-1);
-            }
-            // Close last tag if needed
-            if(student_code_tag_open == true){
-                source_code += "\n[/student_code]";
-            }
-            return source_code;
+
+            // FIXME this seems to be duplicating code.
+            return TagManager.concatFilesIntoCode(files);
         }
 
-        function submitHidden(){
-        /**
-         * Add [student_code] tags in starter code if it does not exist
-         * Move values to temporary variables
-         */
-            var source_code = add_student_code_tag();
+        function submitHidden() {
+            var source_code = addTagsToStarterCode();
+            console.log(source_code);
+            window.stop();
 
+            // Move values to temporary variables
             document.getElementById("id_starter_code_tmp").value += source_code;
             document.getElementById("id_solution_tmp").value += cmh_list[id_solution_field].getValue();
+
+            return false;
         }
 
-        function detectTags(){
-        /**
-         * Track all tags (both open and close state)
-         */
-
-            var line_count = cmh_list[id_starter_code_field].lineCount();
-            var i;
-            var line;
-            var blocked_open = 0;
-            var hidden_open = 0;
-            var student_code_open = 0;
-
-            blocked_list = []; hidden_list = []; student_code_list = [];
-
-            // Store all tags open and close lines
-            for (i = 0; i < line_count; i++) {
-                line = cmh_list[id_starter_code_field].getLine(i);
-
-                if((line.split("[blocked]").length - 1) > 0){
-                    blocked_list.push({"start": i+1, "end": 0});
-                    blocked_open += 1;
-                    continue;
-                }
-                if((line.split("[/blocked]").length - 1) > 0) {
-                    blocked_list[blocked_open - 1].end = i + 1;
-                    continue;
-                }
-
-                if((line.split("[hidden]").length - 1) > 0) {
-                    hidden_list.push({"start": i + 1, "end": 0});
-                    hidden_open += 1;
-                    continue;
-                }
-                if((line.split("[/hidden]").length - 1) > 0) {
-                    hidden_list[hidden_open - 1].end = i + 1;
-                    continue;
-                }
-
-                if((line.split("[student_code]").length - 1) > 0) {
-                    student_code_list.push({"start": i + 1, "end": 0});
-                    student_code_open += 1;
-                    continue;
-                }
-                if((line.split("[/student_code]").length - 1) > 0) {
-                    student_code_list[student_code_open - 1].end = i + 1;
-                }
-            }
-        }
-
-        function createTag(tag_start, tag_end){
         /**
          * Create a new tag following some constraints (tags inside tags)
          */
+        function createTag(tag_start, tag_end) {
             // Detect tags in the source code
-            detectTags();
+            var code = cmh_list[id_starter_code_field].getValue();
+            var tagPositions = findTagPositions(code);
+            var blocked_list      = tagPositions['blocked'];
+            var hidden_list       = tagPositions['hidden'];
+            var student_code_list = tagPositions['student_code'];
 
             // Verify if the new tag is suitable to the present source code and tag scheme
-            var i;
             var selection_begin = cmh_list[id_starter_code_field].getCursor(true).line + 1;
 
-            for(i = 0; i < blocked_list.length; i++){
+            // FIXME This bugs out when you select AROUND other code tags!
+
+            for(var i = 0; i < blocked_list.length; i++){
                 if(selection_begin >= blocked_list[i].start && selection_begin <= blocked_list[i].end)
                     if(tag_start == '[blocked]' || tag_start == '[student_code]') {
                         document.getElementById("tag-error-message").innerHTML="<p>Check your code selection!</p><p>Cannot include blocked or student_code tags inside a blocked section, or along the same line.</p>";
@@ -160,7 +78,7 @@
                     }
             }
 
-            for(i = 0; i < hidden_list.length; i++){
+            for(var i = 0; i < hidden_list.length; i++){
                 if(selection_begin >= hidden_list[i].start && selection_begin <= hidden_list[i].end)
                     if(tag_start == '[blocked]' || tag_start == '[student_code]' || tag_start == '[hidden]') {
                         document.getElementById("tag-error-message").innerHTML="<p>Check your code selection!</p><p>Cannot include any other tag inside a hidden section, or along the same line.</p>";
@@ -169,7 +87,7 @@
                     }
             }
 
-            for(i = 0; i < student_code_list.length; i++){
+            for(var i = 0; i < student_code_list.length; i++){
                 if(selection_begin >= student_code_list[i].start && selection_begin <= student_code_list[i].end)
                     if(tag_start == '[blocked]' || tag_start == '[student_code]' || tag_start == '[hidden]') {
                         document.getElementById("tag-error-message").innerHTML="<p>Check your code selection!</p><p>Cannot include any other tag inside a student_code section, or along the same line.</p>";
@@ -229,8 +147,7 @@
          * Preview how code will look to the student
          */
         function previewCode() {
-            // Add student_code tags
-            cmh_list[id_starter_code_field].setValue(add_student_code_tag());
+            cmh_list[id_starter_code_field].setValue(addTagsToStarterCode());
 
             var code = cmh_list[id_starter_code_field].getValue();
 

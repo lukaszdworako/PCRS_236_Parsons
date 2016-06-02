@@ -43,7 +43,7 @@ function prepareVisualizer(option, testcaseCode, buttonId) {
     if (language == 'python') {
         newCode += testcaseCode;
     } else if (language == 'c' || language == 'java') {
-        newCode = addHashkey(key);
+        newCode = addHashkey(myCodeMirrors[key], problemId);
     }
     getVisualizerComponents(newCode, testcaseCode, problemId);
 }
@@ -228,21 +228,20 @@ function show_history(data, div_id){
     }
 }
 
-function addHashkey(div_id){
-    /**
-     * Generate a Hashkey based on
-     * the problem_id to identify
-     * where the student code starts and ends
-     */
-    var line_count = myCodeMirrors[div_id].lineCount();
-    var hash_code = CryptoJS.SHA1(div_id.split("-")[1]);
+/**
+ * Generate a Hashkey based on the problem_id to identify
+ * where the student code starts and ends.
+ */
+function addHashkey(codeMirror, problemId) {
+    var line_count = codeMirror.lineCount();
+    var hash_code = CryptoJS.SHA1(problemId);
     var code = "";
     var wrapClass;
     var i;
     var inside_student_code = false;
 
     for (i = 0; i < line_count; i++){
-        wrapClass = myCodeMirrors[div_id].lineInfo(i).wrapClass;
+        wrapClass = codeMirror.lineInfo(i).wrapClass;
 
         if (wrapClass == 'CodeMirror-activeline-background') {
             if(inside_student_code) {
@@ -257,7 +256,7 @@ function addHashkey(div_id){
             }
         }
 
-        code += myCodeMirrors[div_id].getLine(i);
+        code += codeMirror.getLine(i);
         code += '\n';
     }
     code += hash_code;
@@ -320,29 +319,21 @@ function handleCompileMessages(div_id, testcases) {
     return dont_visualize;
 }
 
-function getTestcases(div_id) {
-    /**
-     * Submit code from div_id and get back the test cases
-     */
-    var clean_code = myCodeMirrors[div_id].getValue();
+/** TODO fix up this method
+ * Submit code from div_id and get back the test cases
+ */
+function getTestcases(div_id, clean_code) {
     var language = check_language(div_id);
 
     // replace all the tabs with 4 spaces before submitting the code to the database
-    while (clean_code.indexOf('\t') != -1){
-        clean_code = clean_code.replace('\t', '    ');
-    }
+    clean_code = clean_code.replace(/\t/g, '    ');
 
     var call_path = "";
 
     var is_editor = div_id.split("-")[2];
     if (is_editor == null) {
         call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
-
-        if (language == 'c' || language == 'java') {
-            clean_code = addHashkey(div_id);
-        }
-    }
-    else {     // editor
+    } else {     // editor
         call_path = root + '/problems/' + language + '/editor/run';
     }
     var use_gradetable = !(is_editor && !(language == 'ra' || language == 'sql'));
@@ -895,7 +886,7 @@ function replaceAll(find, replace, string) {
   return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
-function removeTags(source_code){
+function removeTags(source_code) {
    /**
      * Remove [block] and [student_code] tags
      * from source code
@@ -1065,22 +1056,91 @@ function guardDelete(editor) {
     }
 }
 
+/*
+ * TODO
+ * - Glue everything back together when you send it to the server.
+ * - Force [file] tags to go around everything else.
+ *   - There should be NO other tags that wrap around [file] tags.
+ */
+
+function replaceCodeDivWithJavaCodeMirrors(codeDiv, languageAndProblemId) {
+    var codeText = codeDiv.text();
+    var defaultName = 'code.java';
+    var files = parseCodeIntoFiles(codeText);
+
+    // Create a code mirror for each file.
+    for (var i = 0; i < files.length; i++) {
+        var name = files[i]['name'];
+        var codeObj = removeTags(files[i]['code']);
+        var codeMirrorId = languageAndProblemId + '-' + name;
+
+        codeDiv.before('<div id="code_mirror_replacement"></div>');
+        var codeMirrorReplacement = $('#code_mirror_replacement');
+        codeMirrorReplacement.before('<h4>' + name + '</h4>');
+
+        myCodeMirrors[codeMirrorId] =
+            to_code_mirror(language, 'text/x-java', codeMirrorReplacement,
+                codeObj.source_code, false);
+        highlightCode(codeMirrorId, codeObj.tag_list);
+        preventDeleteLastLine(codeMirrorId);
+    }
+
+    codeDiv.remove();
+}
+
+function submitAllCode(problemDivId, language) {
+    var allIds = Object.keys(myCodeMirrors);
+    var codeIds = [];
+
+    if (problemDivId in allIds) {
+        // Legacy - if there is only one file.
+        codeIds = [
+            problemDivId,
+        ];
+    } else {
+        for (var i = 0; i < allIds.length; i++) {
+            if (allIds[i].indexOf(problemDivId) == 0) {
+                codeIds.push(allIds[i]);
+            }
+        }
+    }
+
+    var problemId = problemDivId.split("-")[1];
+    var code = "";
+    for (var i = 0; i < codeIds.length; i++) {
+        if (language == 'c' || language == 'java') {
+            code += addHashkey(myCodeMirrors[codeIds[i]], problemId);
+        } else {
+            code += myCodeMirrors[codeIds[i]].getValue();
+        }
+
+        if (i < codeIds.length - 1) {
+            code += '\n';
+        }
+    }
+
+    if (code == '') {
+        alert('There is no code to submit.');
+    } else {
+        console.log(code);
+        getTestcases(problemDivId, code);
+    }
+}
 
 $(document).ready(function() {
-
     var all_wrappers = $('.code-mirror-wrapper');
 
     for (var x = 0; x < all_wrappers.length; x++){
         $(all_wrappers[x]).children('#grade-code').hide();
 
         var language = check_language(all_wrappers[x].id);
-        if (language == "python"){
+        if (language == "python") {
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
-        }
-        else if (language == "c") {
+        } else if (language == "c") {
             var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
+
             myCodeMirrors[all_wrappers[x].id] =
                 to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
                     codeObj.source_code, false);
@@ -1093,39 +1153,27 @@ $(document).ready(function() {
 
             highlightCode(all_wrappers[x].id, codeObj.tag_list);
             preventDeleteLastLine(all_wrappers[x].id);
-        }
-        else if (language == "java"){
-            var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
-            myCodeMirrors[all_wrappers[x].id] =
-                to_code_mirror(language, 'text/x-java', $(all_wrappers[x]).find("#div_id_submission"),
-                    codeObj.source_code, false);
-            highlightCode(all_wrappers[x].id, codeObj.tag_list);
-            preventDeleteLastLine(all_wrappers[x].id);
-        }
-        else if (language == "sql"){
+        } else if (language == "java") {
+            var codeDiv = $(all_wrappers[x]).find("#div_id_submission");
+            replaceCodeDivWithJavaCodeMirrors(codeDiv, all_wrappers[x].id);
+        } else if (language == "sql") {
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
-        }
-        else if (language == "ra"){
+        } else if (language == "ra") {
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         }
 
-        $(all_wrappers[x]).find('#submit-id-submit').click(function(event){
+        $(all_wrappers[x]).find('#submit-id-submit').click(function(event) {
             event.preventDefault();
-            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
-
-            if (myCodeMirrors[div_id].getValue() == ''){
-                alert('There is no code to submit.');
-            }
-            else{
-                getTestcases(div_id);
-            }
+            var problemDivId = $(this).parents('.code-mirror-wrapper')[0].id;
+            submitAllCode(problemDivId, language);
         });
         $(all_wrappers[x]).find("[name='history']").one("click", (function(){
             var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
+            // FIXME: Sow multiple files / tabs.
             getHistory(div_id);
         }));
     }
@@ -1135,5 +1183,4 @@ $(document).ready(function() {
         });
     });
 });
-
 
