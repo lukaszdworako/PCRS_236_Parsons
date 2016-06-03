@@ -1066,7 +1066,7 @@ function guardDelete(editor) {
 function replaceCodeDivWithJavaCodeMirrors(codeDiv, languageAndProblemId) {
     var codeText = codeDiv.text();
     var defaultName = 'code.java';
-    var files = parseCodeIntoFiles(codeText);
+    var files = TagManager.parseCodeIntoFiles(codeText);
 
     // Create a code mirror for each file.
     for (var i = 0; i < files.length; i++) {

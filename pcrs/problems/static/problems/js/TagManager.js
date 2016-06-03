@@ -69,107 +69,100 @@ TagManager.concatFilesIntoCode = function(files) {
  * @return {string} The code with student tags inserted
 */
 TagManager.addStudentCodeTags = function(code) {
-    var lines = code.split('\n');
-    var new_code = "";
-    var student_code_tag_open = false;
-    var some_tag_open = 0;
-    var just_closed = false;
-    var student_code_tag_count = 0;
+    var ranges = TagManager.findTagRanges(code)['no_tag'];
 
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        // Check other tags
-        if (line.indexOf("[blocked]") > -1 || line.indexOf("[hidden]") > -1 ||
-            line.indexOf("[student_code]") > -1) {
-            if(line.indexOf("[student_code]") > -1) {
-                student_code_tag_count += 1;
-            }
-            some_tag_open += 1;
-        }
-        if (line.indexOf("[/blocked]") > -1 || line.indexOf("[/hidden]") > -1 ||
-            line.indexOf("[/student_code]") > -1) {
-            some_tag_open -= 1;
-            just_closed = true;
-        }
-        // Add student_code tag
-        if (some_tag_open == 0 && just_closed == false && student_code_tag_open == false) {
-            new_code +=  "[student_code]\n" + line + '\n';
-            student_code_tag_count += 1;
-            student_code_tag_open = true;
-        } else if (some_tag_open > 0 && student_code_tag_open == true) {
-            new_code += "[/student_code]\n" + line + '\n';
-            student_code_tag_open = false;
-        } else {
-            new_code += line + '\n';
-        }
-        just_closed = false;
+    var lines = code.split('\n');
+
+    // Go backwards to avoid shifting tag offsets
+    for (var i = ranges.length - 1; i >= 0; i--) {
+        var start = ranges[i].start;
+        var end = ranges[i].end;
+
+        lines.splice(end, 0, '[/student_code]');
+        lines.splice(start, 0, '[student_code]');
     }
-    // If no student_code included in the middle of the souce code
-    if (student_code_tag_count == 0) {
-        new_code += "[student_code]\n\n";
-        student_code_tag_open = true;
-    } else {
-        // Remove last \n
-        new_code = new_code.substring(0, new_code.length-1);
-    }
-    // Close last tag if needed
-    if (student_code_tag_open == true) {
-        new_code += "\n[/student_code]";
-    }
-    return new_code;
+    return lines.join('\n');
 }
 
 /**
- * Track all tags (both open and close state)
+ * Finds the ranges of each type of tag.
+ *
+ * @param {string} code Raw code without [file] tags.
+ * @return {Object} Several arrays of ranges corresponding to tag types.
  */
-TagManager.findTagPositions = function(code) {
+TagManager.findTagRanges = function(code) {
+    var tag_lists = {
+        'blocked': [],
+        'hidden': [],
+        'student_code': [],
+        'no_tag': [],
+    };
+
+    // How many tags deep we are (assuming tags can be embedded)
+    var tag_depth = 0;
+
     var lines = code.split('\n');
-    var blocked_open = 0;
-    var hidden_open = 0;
-    var student_code_open = 0;
-
-    var blocked_list = [];
-    var hidden_list = [];
-    var student_code_list = [];
-
     // Store all tags open and close lines
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
+        var match;
 
-        if((line.split("[blocked]").length - 1) > 0){
-            blocked_list.push({"start": i+1, "end": 0});
-            blocked_open += 1;
-            continue;
-        }
-        if((line.split("[/blocked]").length - 1) > 0) {
-            blocked_list[blocked_open - 1].end = i + 1;
-            continue;
+        var outsideTags = tag_depth == 0;
+
+        if (match = line.match(/[ \t]*\[(\w+)\][ \t]*/)) {
+            tag_depth += 1;
+            var tagList = tag_lists[match[1]];
+
+            tagList.push({
+                start: i + 1,
+                end: null,
+            });
+        } else if (match = line.match(/[ \t]*\[\/(\w+)\][ \t]*/)) {
+            tag_depth -= 1;
+            var tagList = tag_lists[match[1]];
+            tagList[tagList.length - 1].end = i + 1;
+        // If no tags are on this line and we aren't inside any tags
+        } else if (tag_depth == 0) {
+            var tagList = tag_lists['no_tag'];
+
+            // If !outsideTags, it means we just _left_ some tags.
+            if (tagList.length == 0 || ! outsideTags) {
+                tagList.push({
+                    start: i,
+                    end: i + 1,
+                });
+            } else {
+                tagList[tagList.length - 1].end += 1;
+            }
         }
 
-        if((line.split("[hidden]").length - 1) > 0) {
-            hidden_list.push({"start": i + 1, "end": 0});
-            hidden_open += 1;
-            continue;
-        }
-        if((line.split("[/hidden]").length - 1) > 0) {
-            hidden_list[hidden_open - 1].end = i + 1;
-            continue;
-        }
+        if (tag_depth < 0) throw "Mismatching tag!";
+    }
+    if (tag_depth != 0) throw "Mismatching tag!";
 
-        if((line.split("[student_code]").length - 1) > 0) {
-            student_code_list.push({"start": i + 1, "end": 0});
-            student_code_open += 1;
-            continue;
-        }
-        if((line.split("[/student_code]").length - 1) > 0) {
-            student_code_list[student_code_open - 1].end = i + 1;
+    return tag_lists;
+}
+
+/**
+ * Determines the ranges of code that have any tags.
+ * Can be used to determine if tag insertion in given spots is legal.
+ *
+ * @param {string} code Raw code without [file] tags.
+ * @return {Array} Objects with 'start' line and 'end' line params.
+ */
+TagManager.findRangesWithTags = function(code) {
+    var namedTagRanges = TagManager.findTagRanges(code);
+    delete namedTagRanges.no_tag;
+    var tagNames = Object.keys(namedTagRanges);
+    var allTagRanges = [];
+
+    for (var i = 0; i < tagNames.length; i++) {
+        var tagList = namedTagRanges[tagNames[i]];
+        for (var j = 0; j < tagList.length; j++) {
+            allTagRanges.push(tagList[j]);
         }
     }
 
-    return {
-        'blocked':      blocked_list,
-        'hidden':       hidden_list,
-        'student_code': student_code_list,
-    };
+    return allTagRanges;
 }
 
