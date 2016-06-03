@@ -319,9 +319,6 @@ function handleCompileMessages(div_id, testcases) {
     return dont_visualize;
 }
 
-/** TODO fix up this method
- * Submit code from div_id and get back the test cases
- */
 function getTestcases(div_id, clean_code) {
     var language = check_language(div_id);
 
@@ -1058,37 +1055,54 @@ function guardDelete(editor) {
     }
 }
 
-/*
- * TODO
- * - Glue everything back together when you send it to the server.
- * - Force [file] tags to go around everything else.
- *   - There should be NO other tags that wrap around [file] tags.
- */
-
 function replaceCodeDivWithJavaCodeMirrors(codeDiv, languageAndProblemId) {
     var codeText = codeDiv.text();
     var defaultName = 'code.java';
     var files = TagManager.parseCodeIntoFiles(codeText);
 
+    codeDiv.replaceWith('<ul id="code-tabs" class="nav nav-tabs"></ul>' +
+        '<div id="code-tab-content" class="tab-content"></div>');
+
+    var codeTabs = $('#code-tabs');
+    var codeTabContent = $('#code-tab-content');
+
     // Create a code mirror for each file.
     for (var i = 0; i < files.length; i++) {
         var name = files[i]['name'];
         var codeObj = removeTags(files[i]['code']);
-        var codeMirrorId = languageAndProblemId + '-' + name;
+        var codeMirrorId = languageAndProblemId + '-' + i;
 
-        codeDiv.before('<div id="code_mirror_replacement"></div>');
+        codeTabs.append('<li><a data-toggle="tab" ' +
+            'href="#' + codeMirrorId + '">' + name + '</a></li>');
+
+        codeTabContent.append('<div id="code_mirror_replacement"></div>');
         var codeMirrorReplacement = $('#code_mirror_replacement');
-        codeMirrorReplacement.before('<h4>' + name + '</h4>');
 
-        myCodeMirrors[codeMirrorId] =
-            to_code_mirror(language, 'text/x-java', codeMirrorReplacement,
-                codeObj.source_code, false);
+        var codeMirror = to_code_mirror(
+            language, 'text/x-java', codeMirrorReplacement,
+            codeObj.source_code, false);
+
+        codeMirror.getWrapperElement().id = codeMirrorId;
+        codeMirror.getWrapperElement().className += ' tab-pane';
+        myCodeMirrors[codeMirrorId] = codeMirror;
+
         highlightCode(codeMirrorId, codeObj.tag_list);
         preventDeleteLastLine(codeMirrorId);
     }
 
-    codeDiv.remove();
+    $('#code-tabs li').first().addClass('active');
+    $('#code-tab-content div').first().addClass('active');
+
+    // Refresh code mirrors when switching tabs to prevent UI glitches
+    $('#code-tabs a').click(function(e) {
+        e.preventDefault();
+        $(this).tab('show');
+        var codeMirrorId = this.getAttribute('href').substring(1);
+        myCodeMirrors[codeMirrorId].refresh();
+    });
 }
+
+// FIXME You should manually sort the ids - just in case.
 
 function submitAllCode(problemDivId, language) {
     var allIds = Object.keys(myCodeMirrors);
@@ -1132,7 +1146,7 @@ function submitAllCode(problemDivId, language) {
 $(document).ready(function() {
     var all_wrappers = $('.code-mirror-wrapper');
 
-    for (var x = 0; x < all_wrappers.length; x++){
+    for (var x = 0; x < all_wrappers.length; x++) {
         $(all_wrappers[x]).children('#grade-code').hide();
 
         var language = check_language(all_wrappers[x].id);
