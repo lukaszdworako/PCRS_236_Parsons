@@ -758,7 +758,9 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	    }
     }
     var data = {'sub_time':new Date(),
-            'submission':myCodeMirrors[div_id].getValue(),
+            // Now that we have multiple code mirrors, this should change a bit.
+            //'submission':myCodeMirrors[div_id].getValue(), // FIXME
+            'submission': '',
             'score':score,
             'best':best,
             'past_dead_line':past_dead_line,

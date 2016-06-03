@@ -176,11 +176,11 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         """
 
         runner = GenericLanguage(self.problem.language)
-        mod_submission = self.preprocessTags()[0]
+        files = self.preprocessTags()
 
         try:
             # necessary since language requires compilation
-            runner.lang.compile(self.user.username, mod_submission, self.problem.test_suite)
+            runner.lang.compile(self.user.username, files, self.problem.test_suite)
             test_results = runner.lang.run_test_suite()
         except CompilationError as e:
             return self._createCompileErrorResponse(e)

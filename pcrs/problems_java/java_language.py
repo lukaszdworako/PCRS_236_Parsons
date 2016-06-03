@@ -95,7 +95,7 @@ class JavaSpecifics(BaseLanguage):
                 ret['failures'][methodName] = stackTrace
         return ret
 
-    def compile(self, user, user_code, test_code, deny_warning=False):
+    def compile(self, user, user_files, test_code, deny_warning=False):
         ''' Compile the given user code, raising a compile error if unable.
         '''
         if self.compiled:
@@ -106,39 +106,35 @@ class JavaSpecifics(BaseLanguage):
             self.tempdir = tempfile.mkdtemp(
                     prefix="{0}-{1}-".format(user, datetime.now().strftime('%m%d-%H:%M:%S'), dir=self.temp_path),
                     dir=self.temp_path)
-            self._compileSource(user_code)
-            self.testSuiteClassName = self._compileSource(test_code, isTestCode=True)
+
+            for f in user_files:
+                self._compileSource(f['code'], fileName=f['name'])
+
+            self._compileSource(test_code, isTestCode=True)
             self.compiled = True
         except Exception as e:
             self.clear()
             raise # reraise
 
-    def _compileSource(self, source_code, isTestCode=False):
+    def _compileSource(self, source_code, fileName=None, isTestCode=False):
         ''''Compiles given source code into the temporary run directory.
 
         Args:
             source_code: The raw source code to compile
+            fileName:    The file to compile to - defaults to the public class
             isTestCode:  If this is test code, it will be more
                          cautious with error message information.
-        Returns:
-            The name of the main public class of the source code
         Raises:
             CompilationError: On failure
         '''
-        try:
-            # If a class is public, we should name the file correspondingly.
-            classname = re.search('public\s+class\s+(\w+)', source_code).group(1)
-        except AttributeError:
-            # Create a unique-enough file name so we don't have collisions
-            import uuid
-            classname = 'source_' + str(uuid.uuid4())[:8]
+        if not fileName:
+            className = re.search('public\s+class\s+(\w+)', source_code).group(1)
+            fileName = '{0}.java'.format(className)
 
-        # Sanitize classname
-        if '..' in classname:
-            raise CompilationError("'{0}' is not a valid class name".format(classname))
+            if isTestCode: # Used to determine which file to run
+                self.testSuiteClassName = className
 
-        source_fname = classname + '.java'
-        source_path = "{0}{1}{2}".format(self.tempdir, os.sep, source_fname)
+        source_path = "{0}{1}{2}".format(self.tempdir, os.sep, fileName)
         with open(source_path, "w") as f:
             f.write(source_code)
 
@@ -146,7 +142,7 @@ class JavaSpecifics(BaseLanguage):
         try:
             flags = self._createDependencyFlagString()
             proc = subprocess.Popen(
-                    'javac {0} {1}'.format(flags, source_fname),
+                    'javac {0} {1}'.format(flags, fileName),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
@@ -166,8 +162,6 @@ class JavaSpecifics(BaseLanguage):
             if isTestCode:
                 err = self._stripTestCodeCompileError(err)
             raise CompilationError(err)
-
-        return classname
 
     def _createDependencyFlagString(self):
         dependencies = [ 'junit-4.12.jar', 'hamcrest-core-1.3.jar' ]

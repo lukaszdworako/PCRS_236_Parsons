@@ -265,7 +265,9 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
     def post(self, request, *args, **kwargs):
         try:
             results = self.record_submission(request)
-        except AttributeError:       # Anonymous user
+        except AttributeError: # Probably an anonymous user
+            if pcrs.settings.DEBUG:
+                raise
             return HttpResponse(json.dumps({
                                 'results': ([], "Your session has expired. Please copy your submission (to save it) and refresh the page before submitting again."),
                                 'score': 0,

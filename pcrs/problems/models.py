@@ -433,24 +433,57 @@ class AbstractJobScheduler(models.Model):
 
 
 class SubmissionPreprocessorMixin:
+    def __init__(self, *args, **kwargs):
+        self.hidden_lines_list = []
+        super(SubmissionPreprocessorMixin, self).__init__(*args, **kwargs)
+
     '''
     Helpers for tag preprocessing in Submission classes.
     '''
     def preprocessTags(self):
+        self.hidden_lines_list = []
+
+        # if code from editor, just return code -- there were no tags
+        if self.problem_id == 9999999:
+            if len(self.submission) == 0:
+                raise Exception("No code found!")
+            return [{
+                'name': None,
+                'code': self.submission,
+            }]
+
+        code = self._fuseStudentCodeIntoStarterCode()
+        return self.parseCodeIntoFiles(code)
+
+    def parseCodeIntoFiles(self, code):
+        '''Parses this submission into corresponding files
+
+        The file tag format is [file <fileName>][/file]
+        Returns:
+            A list of name-code file dictionaries.
+        '''
+        files = []
+
+        startTagRegex = re.compile('[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n')
+        endTagRegex = re.compile('\n[\t ]*\[\/file\][\t ]*');
+
+        startMatch = startTagRegex.search(code)
+        while startMatch:
+            endMatch = endTagRegex.search(code)
+            files.append({
+                'name': startMatch.group(1),
+                'code': code[startMatch.end():endMatch.start()],
+            })
+            code = code[endMatch.end():]
+            startMatch = startTagRegex.search(code)
+        return files
+
+    def _fuseStudentCodeIntoStarterCode(self):
         '''Processes the tags in this submission.
 
         Returns:
             A list of processed files - ready to compile / run.
         '''
-        hidden_lines_list = []
-        non_hidden_lines_list = []
-
-        #if code from editor, just return code -- there were no tags
-        if self.problem_id == 9999999:
-            if len(self.submission) == 0:
-                raise Exception("No code found!")
-            return self.submission, hidden_lines_list
-
         #Code not from editor, process tags
         student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
         student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
@@ -492,17 +525,14 @@ class SubmissionPreprocessorMixin:
                 inside_hidden_tag = False
                 continue
             if inside_hidden_tag:
-                hidden_lines_list.append(line_num)
-            else:
-                non_hidden_lines_list.append(line_num)
+                self.hidden_lines_list.append(line_num)
             line_num += 1
-        non_hidden_lines_list.pop()
 
         # Remove hidden and blocked tags from the source code
         mod_submission = re.sub(r'\[\/?hidden\]\r?\n?', '', mod_submission)
         mod_submission = re.sub(r'\[\/?blocked\]\r?\n?', '', mod_submission)
 
-        return [mod_submission]
+        return mod_submission
 
     def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
         '''Emplaces the given code snippets into the given starter code.
