@@ -885,226 +885,6 @@ function replaceAll(find, replace, string) {
   return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
-function removeTags(source_code) {
-   /**
-     * Remove [block] and [student_code] tags
-     * from source code
-     */
-    var lines = source_code.split("\n");
-    var line;
-    var student_view_line = 1;
-    var blocked_tag_num = 0;
-    var student_code_tag_num = 0;
-
-    var blocked_list = [];
-    var student_code_list = [];
-
-    source_code = "";
-    for(var i = 0; i < lines.length; i++) {
-        line = lines[i];
-
-        if(line.indexOf("[blocked]") > -1) {
-            blocked_list.push({"highlight": true, "start": student_view_line, "end": 0});
-        } else if(line.indexOf("[/blocked]") > -1) {
-            blocked_list[blocked_tag_num].end = student_view_line-1;
-            blocked_tag_num++;
-
-        } else if(line.indexOf("[student_code]") > -1) {
-            student_code_list.push({"highlight": false, "start": student_view_line, "end": 0});
-        } else if(line.indexOf("[/student_code]") > -1) {
-            student_code_list[student_code_tag_num].end = student_view_line-1;
-            student_code_tag_num++;
-
-        } else {
-            source_code += lines[i] + '\n';
-            student_view_line++;
-        }
-    }
-
-    var tag_list;
-    // Remove last \n escape sequence
-    source_code = source_code.substring(0, source_code.length-1);
-    tag_list = blocked_list.concat(student_code_list);
-
-    return {source_code: source_code, tag_list: tag_list};
-}
-
-function blockInput(editor_id){
-    /**
-     * For every line of code inside a pair of [block] [/block] tags,
-     * the user is unable to clicks over it (modify the code)
-     */
-
-    var line_num = myCodeMirrors[editor_id].getCursor().line;
-    var line_count;
-    var wrapClass = myCodeMirrors[editor_id].lineInfo(line_num).wrapClass;
-    if (wrapClass == 'CodeMirror-activeline-background')
-    {
-        line_count = myCodeMirrors[editor_id].lineCount();
-        for (var i = 0; i < line_count; i++){
-            wrapClass = myCodeMirrors[editor_id].lineInfo(i).wrapClass;
-            if (wrapClass != 'CodeMirror-activeline-background'){
-                myCodeMirrors[editor_id].setCursor(i, 0);
-                return true;
-            }
-        }
-        myCodeMirrors[editor_id].replaceRange("\n", CodeMirror.Pos(myCodeMirrors[editor_id].lastLine()));
-        myCodeMirrors[editor_id].setCursor(myCodeMirrors[editor_id].lineCount(), 0);
-    }
-}
-
-function highlightCode(editor_id, tag_list){
-    /**
-     * For every line of code inside a pair of [block] [/block] tags,
-     * highlight this code with a different background color
-     */
-
-    // Block input in the highlighted area
-    myCodeMirrors[editor_id].on("cursorActivity", function(){ blockInput(editor_id);});
-
-    // Check for tags to apply code highlighting
-    var first_line = myCodeMirrors[editor_id].firstLine();
-    var last_line = myCodeMirrors[editor_id].lastLine();
-    for (var i = first_line; i <= last_line; i++) {
-        for(var j = 0; j < tag_list.length; j++){
-            if(tag_list[j].start <= i+1 && tag_list[j].end >= i+1){
-                if(tag_list[j].highlight == true)
-                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-activeline-background');
-                else if (tag_list[j].highlight == false)
-                    myCodeMirrors[editor_id].addLineClass(i, '', 'CodeMirror-studentline-background');
-                break;
-            }
-        }
-    }
-}
-
-function preventDeleteLastLine(editor_id) {
-    editor = myCodeMirrors[editor_id];
-    editor.getSelectedLines = function () {
-        var selected_lines = [];
-
-        if(editor.somethingSelected()) {
-            var start_line = editor.getCursor(true).line;
-            var end_line = editor.getCursor(false).line;
-            for(var i = start_line; i <= end_line; i++) {
-                selected_lines.push(editor.lineInfo(i));
-            }
-        }
-
-        return selected_lines
-    }
-
-    editor.setOption("extraKeys",
-        {
-            "Backspace": guardBackspace,
-            "Delete": guardDelete,
-        });
-
-    editor.setOption("lineWrapping", true);
-}
-
-function guardBackspace(editor) {
-    var curLine = editor.getCursor().line;
-    var curLineChar = editor.getCursor().ch;
-
-    var prevLine = (curLine > 0) ? curLine - 1 : 0;
-
-    var isSelection = editor.somethingSelected();
-    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
-        return line.wrapClass == 'CodeMirror-activeline-background';
-    }).length > 0;
-
-    var curLineEmpty = editor.lineInfo(curLine).text.length == 0;
-    var curLineFirstChar = curLineChar == 0;
-    var prevLineWrapClass = editor.lineInfo(prevLine).wrapClass;
-
-    // Allow deleting selections, characters on the same line and previous unblocked lines
-    if ((!blockedCodeSelected)
-        && ((!curLineEmpty && !curLineFirstChar)
-            || (prevLineWrapClass != 'CodeMirror-activeline-background'))) {
-
-        // Resume default behaviour
-        return CodeMirror.Pass;
-    }
-}
-
-function guardDelete(editor) {
-    var curLine = editor.getCursor().line;
-    var curLineLen = editor.lineInfo(curLine).text.length;
-    var curLineChar = editor.getCursor().ch;
-
-    var lastLine = editor.lineCount() - 1;
-    var nextLine = (curLine < lastLine) ? curLine + 1 : lastLine;
-
-    var isSelection = editor.somethingSelected();
-    var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
-        return line.wrapClass == 'CodeMirror-activeline-background';
-    }).length > 0;
-
-    var curLineEmpty = curLineLen == 0;
-    var curLineLastChar = curLineChar == curLineLen;
-    var nextLineWrapClass = editor.lineInfo(nextLine).wrapClass;
-
-    // Allow deleting selections, characters on the same line and following unblocked lines
-    if ((!blockedCodeSelected)
-        && ((!curLineEmpty && !curLineLastChar)
-            || (nextLineWrapClass != 'CodeMirror-activeline-background'))) {
-
-        // Resume default behaviour
-        return CodeMirror.Pass;
-    }
-}
-
-// TODO Move this into a generic helper function so we can re-use it.
-// It will have to be used on the submission page, history page, and instructor page.
-
-function replaceCodeDivWithJavaCodeMirrors(codeDiv, languageAndProblemId) {
-    var codeText = codeDiv.text();
-    var defaultName = 'code.java';
-    var files = TagManager.parseCodeIntoFiles(codeText);
-
-    codeDiv.replaceWith('<ul id="code-tabs" class="nav nav-tabs"></ul>' +
-        '<div id="code-tab-content" class="tab-content"></div>');
-
-    var codeTabs = $('#code-tabs');
-    var codeTabContent = $('#code-tab-content');
-
-    // Create a code mirror for each file.
-    for (var i = 0; i < files.length; i++) {
-        var name = files[i]['name'];
-        var codeObj = removeTags(files[i]['code']);
-        var codeMirrorId = languageAndProblemId + '-' + i;
-
-        codeTabs.append('<li><a data-toggle="tab" ' +
-            'href="#' + codeMirrorId + '">' + name + '</a></li>');
-
-        codeTabContent.append('<div id="code_mirror_replacement"></div>');
-        var codeMirrorReplacement = $('#code_mirror_replacement');
-
-        var codeMirror = to_code_mirror(
-            language, 'text/x-java', codeMirrorReplacement,
-            codeObj.source_code, false);
-
-        codeMirror.getWrapperElement().id = codeMirrorId;
-        codeMirror.getWrapperElement().className += ' tab-pane';
-        myCodeMirrors[codeMirrorId] = codeMirror;
-
-        highlightCode(codeMirrorId, codeObj.tag_list);
-        preventDeleteLastLine(codeMirrorId);
-    }
-
-    $('#code-tabs li').first().addClass('active');
-    $('#code-tab-content div').first().addClass('active');
-
-    // Refresh code mirrors when switching tabs to prevent UI glitches
-    $('#code-tabs a').click(function(e) {
-        e.preventDefault();
-        $(this).tab('show');
-        var codeMirrorId = this.getAttribute('href').substring(1);
-        myCodeMirrors[codeMirrorId].refresh();
-    });
-}
-
 // FIXME You should manually sort the ids - just in case.
 
 function submitAllCode(problemDivId, language) {
@@ -1158,7 +938,8 @@ $(document).ready(function() {
                     to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         } else if (language == "c") {
-            var codeObj = removeTags($(all_wrappers[x]).find('#div_id_submission').text());
+            var codeDiv = $(all_wrappers[x]).find('#div_id_submission');
+            var codeObj = removeTags(codeDiv.text());
 
             myCodeMirrors[all_wrappers[x].id] =
                 to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
@@ -1170,11 +951,15 @@ $(document).ready(function() {
                     to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
                         codeObj.source_code, true);
 
-            highlightCode(all_wrappers[x].id, codeObj.tag_list);
-            preventDeleteLastLine(all_wrappers[x].id);
+            var mirror = myCodeMirrors[all_wrappers[x].id];
+            highlightCodeMirrorWithTags(mirror, codeObj.tag_list);
+            preventDeleteLastLine(mirror);
         } else if (language == "java") {
             var codeDiv = $(all_wrappers[x]).find("#div_id_submission");
-            replaceCodeDivWithJavaCodeMirrors(codeDiv, all_wrappers[x].id);
+            var newMirrors = createTabbedCodeMirrorsFromCodeDiv(
+                codeDiv, all_wrappers[x].id);
+            // "extend"
+            jQuery.extend(myCodeMirrors, newMirrors);
         } else if (language == "sql") {
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),

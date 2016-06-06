@@ -455,7 +455,7 @@ class SubmissionPreprocessorMixin:
         code = self._fuseStudentCodeIntoStarterCode()
         return self.parseCodeIntoFiles(code) or [{
             # If there were no file tags
-            'name': 'Code.java',
+            'name': 'StudentCode.java',
             'code': code,
         }]
 
