@@ -3,16 +3,10 @@
 */
 var testcases = null;
 var error_msg = null;
-var code_problem_id = -1;
 var myCodeMirrors = {};
-var myNewCodeMirrors = {};
 var cmh_list = {};
 var debugger_id = "";
-var debugger_index = 0;
-var last_stepped_line_debugger = 0;
-var c_debugger_load = false;
 var visPostComplete = true;
-var debugger_data = null;
 //root is a global variable from base.html
 
 
@@ -885,43 +879,23 @@ function replaceAll(find, replace, string) {
   return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
-// FIXME You should manually sort the ids - just in case.
-
 function submitAllCode(problemDivId, language) {
-    var allIds = Object.keys(myCodeMirrors);
-    var codeIds = [];
-
-    if (problemDivId in allIds) {
-        // Legacy - if there is only one file.
-        codeIds = [
-            problemDivId,
-        ];
-    } else {
-        for (var i = 0; i < allIds.length; i++) {
-            if (allIds[i].indexOf(problemDivId) == 0) {
-                codeIds.push(allIds[i]);
-            }
-        }
-    }
-
     var problemId = problemDivId.split("-")[1];
     var code = "";
-    for (var i = 0; i < codeIds.length; i++) {
-        if (language == 'c' || language == 'java') {
-            code += addHashkey(myCodeMirrors[codeIds[i]], problemId);
-        } else {
-            code += myCodeMirrors[codeIds[i]].getValue();
-        }
 
-        if (i < codeIds.length - 1) {
-            code += '\n';
-        }
+    var hash = CryptoJS.SHA1(problemId);
+    if (language == 'c') {
+        code = TabbedCodeMirror._getHashedCodeFromMirror(
+            myCodeMirrors[problemDivId], hash);
+    } else if (language == 'java') {
+        code = myCodeMirrors[problemDivId].getHashedCode(hash);
+    } else {
+        code = myCodeMirrors[problemDivId].getValue();
     }
 
     if (code == '') {
         alert('There is no code to submit.');
     } else {
-        console.log(code);
         getTestcases(problemDivId, code);
     }
 }
@@ -939,27 +913,49 @@ $(document).ready(function() {
                             $(all_wrappers[x]).find('#div_id_submission').text(), false);
         } else if (language == "c") {
             var codeDiv = $(all_wrappers[x]).find('#div_id_submission');
-            var codeObj = removeTags(codeDiv.text());
+            var codeObj = TagManager.stripTagsForStudent(codeDiv.text());
 
             myCodeMirrors[all_wrappers[x].id] =
                 to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
-                    codeObj.source_code, false);
+                    codeObj.code, false);
 
             // Debugger declaration
             debugger_id = all_wrappers[x].id+1;
             myCodeMirrors[debugger_id] =
                     to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
-                        codeObj.source_code, true);
+                        codeObj.code, true);
 
             var mirror = myCodeMirrors[all_wrappers[x].id];
-            highlightCodeMirrorWithTags(mirror, codeObj.tag_list);
+            highlightCodeMirrorWithTags(mirror, codeObj.blocked_ranges);
             preventDeleteLastLine(mirror);
         } else if (language == "java") {
+            var problemId = all_wrappers[x].id;
+
+            var tcm = new TabbedCodeMirror();
+            myCodeMirrors[problemId] = tcm;
             var codeDiv = $(all_wrappers[x]).find("#div_id_submission");
-            var newMirrors = createTabbedCodeMirrorsFromCodeDiv(
-                codeDiv, all_wrappers[x].id);
-            // "extend"
-            jQuery.extend(myCodeMirrors, newMirrors);
+            var codeText = codeDiv.text();
+
+            // Replace the code div with the tabbed code mirror
+            codeDiv.before(tcm.$tabs);
+            codeDiv.before(tcm.$content);
+            codeDiv.remove();
+
+            var files = TagManager.parseCodeIntoFiles(codeText);
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var codeObj = TagManager.stripTagsForStudent(file.code);
+                tcm.addFile({
+                    'name': file.name,
+                    'code': codeObj.code,
+                    'mode': 'text/x-java',
+                    'theme': user_theme,
+                    'blocked_lines': codeObj.blocked_ranges,
+                });
+            }
+
+            tcm.setActiveTabIndex(0);
         } else if (language == "sql") {
             myCodeMirrors[all_wrappers[x].id] =
                     to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),

@@ -9,10 +9,18 @@ function TabbedCodeMirror() {
 
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
 
-// Used to generate unique dom IDs for the code mirrors - needed for tabbing
-TabbedCodeMirror._mirrorDomCounter = 0;
-TabbedCodeMirror._generateDomId = function() {
-    return '#tabbed-code-mirror-' + (TabbedCodeMirror._mirrorDomCounter++);
+/**
+ * Gets the file names and raw contents.
+ */
+TabbedCodeMirror.prototype.getFiles = function() {
+    var files = [];
+    for (var i = 0; i < this.mirrors.length; i++) {
+        files.push({
+            'name': this.$tabs.find('a').eq(i).text(),
+            'code': this.mirrors[i].getValue(),
+        });
+    }
+    return files;
 }
 
 /**
@@ -22,32 +30,36 @@ TabbedCodeMirror._generateDomId = function() {
  * @param {string} options.name The name of the file.
  * @param {string} options.code The content of the file.
  * @param {string} options.mode The CodeMirror mode.
+ * @param {string} [options.theme=undefined] CodeMirror theme name.
  * @param {string} [options.blocked_lines=[]] Lines to block the user from editing.
  * @param {string} [options.readOnly=false]] If this file is read only.
  */
 TabbedCodeMirror.prototype.addFile = function(options) {
     var that = this;
-    var tabIndex = this.$tabs.length;
-    var contentId = TabbedCodeMirror._generateDomId();
-    var $tabButton = $('<a data-toggle="tab"></a>')
-        .attr('href', contentId)
+    var $tabButton = $('<a data-toggle="tab" href="#"></a>')
         .append(options.name);
     this.$tabs.append($('<li></li>').append($tabButton));
 
-    var mirror = CodeMirror(function(elt) {
-        that.$content.append(elt);
-    }, {
+    var codeMirrorOptions = {
         mode: options.mode,
         value: options.code,
         lineNumbers: 'True',
         indentUnit: 4,
-        readOnly: 'readOnly' in options ? options.readOnly : false,
         lineWrapping: 'True',
         flattenSpans: 'False',
-    });
-    mirror.getWrapperElement().id = contentId;
+    };
+    if ('readOnly' in options) {
+        codeMirrorOptions.readOnly = options.readOnly;
+    }
+    if ('theme' in options) {
+        codeMirrorOptions.theme = options.theme;
+    }
+
+    var mirror = CodeMirror(function(elt) {
+        that.$content.append(elt);
+    }, codeMirrorOptions);
     mirror.getWrapperElement().className += ' tab-pane';
-    this.mirrors.append(mirror);
+    this.mirrors.push(mirror);
 
     if ('blocked_lines' in options) {
         TabbedCodeMirror._blockLinesInMirror(mirror, options.blocked_lines);
@@ -56,8 +68,7 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     // Refresh code mirrors when switching tabs to prevent UI glitches
     $tabButton.click(function(e) {
         e.preventDefault();
-        $(this).tab('show');
-        mirror.refresh();
+        that.setActiveTabIndex($(this).parent().index());
     });
     this._showOrHideTabs();
 }
@@ -66,14 +77,13 @@ TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {
     // Highlight the given ranges
     for (var i = 0; i < ranges.length; i++) {
         for (var j = ranges[i].start; j <= ranges[i].end; j++) {
-            var line = j + 1;
-            mirror.addLineClass(line, '', 'CodeMirror-activeline-background');
+            mirror.addLineClass(j - 1, '', 'CodeMirror-activeline-background');
         }
     }
     // Block the given ranges
     mirror.on('beforeChange', function(cm, change) {
-        var start = Math.min(change.to, change.from);
-        var end = Math.max(change.to, change.from);
+        var start = Math.min(change.to.line, change.from.line);
+        var end = Math.max(change.to.line, change.from.line);
 
         if (TabbedCodeMirror._rangeLiesInBlockedArea(mirror, start, end)) {
             change.cancel();
@@ -85,7 +95,7 @@ TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {
  * Determines if a range intersects the target ranges.
  */
 TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
-    for (var i = mirror.firstLine(); i < mirror.lastLine(); i++) {
+    for (var i = start; i <= end; i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
         if (wrapClass == 'CodeMirror-activeline-background') {
             return true;
@@ -98,7 +108,7 @@ TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
  * Removes the file at the given index.
  */
 TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
-    this.$tabs.get(index).remove();
+    this.$tabs.children().get(index).remove();
     this.$content.get(index).remove();
     this.mirrors.splice(index, 1);
     this._showOrHideTabs();
@@ -117,7 +127,7 @@ TabbedCodeMirror.prototype._showOrHideTabs = function() {
  */
 TabbedCodeMirror.prototype.getActiveTabIndex = function() {
     for (var i = 0; i < this.$tabs.length; i++) {
-        if (this.$tabs.get(i).hasClass('active')) {
+        if (this.$tabs.children().get(i).className.indexOf('active') != -1) {
             return i;
         }
     }
@@ -128,25 +138,34 @@ TabbedCodeMirror.prototype.getActiveTabIndex = function() {
  * Switch to the tab at the given index.
  */
 TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
-    this.$tabs.get(index).addClass('active');
-    this.$content.get(index).addClass('active');
+    this.$tabs.find('.active').removeClass('active');
+    this.$content.find('.active').removeClass('active');
+
+    this.$tabs.find('li').eq(index).addClass('active');
+    this.$content.find('.CodeMirror').eq(index).addClass('active');
+
+    this.mirrors[index].refresh();
 }
 
 /**
  * Hashes all of the code mirrors in order.
- * Hashes surround student code for the server to parse.
+ * Hashes surround modifiable code for the server to parse.
  */
 TabbedCodeMirror.prototype.getHashedCode = function(hash) {
     var code = '';
     for (var i = 0; i < this.mirrors.length; i++) {
         var mirror = this.mirrors[i];
-        code += TabbedCodeMirror.getHashedCodeFromMirror(mirror, hash);
+        code += TabbedCodeMirror._getHashedCodeFromMirror(mirror, hash);
+
+        if (i < this.mirrors.length - 1) {
+            code += '\n';
+        }
     }
     return code;
 }
 
 /**
- * Insert hash keys where the student code starts and ends.
+ * Insert hash keys where the modifiable code starts and ends.
  */
 TabbedCodeMirror._getHashedCodeFromMirror = function(mirror, hash) {
     var code = '';

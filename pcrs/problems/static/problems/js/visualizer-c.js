@@ -1,3 +1,8 @@
+var last_stepped_line_debugger = 0;
+var c_debugger_load = false;
+var debugger_data = null;
+var debugger_index = 0;
+
 // These global variables should not be modified
 //---
 var memory_map_cell_height = 37; // In pixels

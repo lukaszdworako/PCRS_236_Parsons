@@ -121,11 +121,7 @@ function highlightCodeMirrorWithTags(mirror, tag_list) {
     for (var i = first_line; i <= last_line; i++) {
         for (var j = 0; j < tag_list.length; j++) {
             if (tag_list[j].start <= i+1 && tag_list[j].end >= i+1) {
-                if (tag_list[j].highlight == true) {
-                    mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
-                } else if (tag_list[j].highlight == false) {
-                    mirror.addLineClass(i, '', 'CodeMirror-studentline-background');
-                }
+                mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
                 break;
             }
         }
@@ -228,50 +224,5 @@ function blockInput(mirror) {
         mirror.replaceRange("\n", CodeMirror.Pos(mirror.lastLine()));
         mirror.setCursor(mirror.lineCount(), 0);
     }
-}
-
-// TODO move this to the TagManager
-
-/**
- * Remove [block] and [student_code] tags
- * from source code
- */
-function removeTags(source_code) {
-    var lines = source_code.split("\n");
-    var line;
-    var student_view_line = 1;
-    var blocked_tag_num = 0;
-    var student_code_tag_num = 0;
-
-    var blocked_list = [];
-    var student_code_list = [];
-
-    source_code = "";
-    for(var i = 0; i < lines.length; i++) {
-        line = lines[i];
-
-        if(line.indexOf("[blocked]") > -1) {
-            blocked_list.push({"highlight": true, "start": student_view_line, "end": 0});
-        } else if(line.indexOf("[/blocked]") > -1) {
-            blocked_list[blocked_tag_num].end = student_view_line-1;
-            blocked_tag_num++;
-
-        } else if(line.indexOf("[student_code]") > -1) {
-            student_code_list.push({"highlight": false, "start": student_view_line, "end": 0});
-        } else if(line.indexOf("[/student_code]") > -1) {
-            student_code_list[student_code_tag_num].end = student_view_line-1;
-            student_code_tag_num++;
-
-        } else {
-            source_code += lines[i] + '\n';
-            student_view_line++;
-        }
-    }
-
-    // Remove last \n escape sequence
-    source_code = source_code.substring(0, source_code.length-1);
-    var tag_list = blocked_list.concat(student_code_list);
-
-    return {source_code: source_code, tag_list: tag_list};
 }
 

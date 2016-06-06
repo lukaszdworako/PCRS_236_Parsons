@@ -166,3 +166,40 @@ TagManager.findRangesWithTags = function(code) {
     return allTagRanges;
 }
 
+/**
+ * Remove [block] and [student_code] tags
+ * from source code.
+ */
+TagManager.stripTagsForStudent = function(code) {
+    var lines = code.split("\n");
+    var student_view_line = 1;
+    var blocked_tag_num = 0;
+
+    var blocked_ranges = [];
+
+    code = "";
+    for( var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+
+        if (line.indexOf("[blocked]") > -1) {
+            blocked_ranges.push({
+                'start': student_view_line,
+                'end': 0,
+            });
+        } else if( line.indexOf("[/blocked]") > -1) {
+            blocked_ranges[blocked_tag_num].end = student_view_line - 1;
+            blocked_tag_num++;
+        } else if (line.indexOf("[student_code]") > -1) {
+        } else if (line.indexOf("[/student_code]") > -1) {
+        } else {
+            code += lines[i] + '\n';
+            student_view_line++;
+        }
+    }
+
+    // Remove last \n escape sequence
+    code = code.substring(0, code.length - 1);
+
+    return {code: code, blocked_ranges: blocked_ranges};
+}
+
