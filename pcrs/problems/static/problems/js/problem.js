@@ -1055,6 +1055,9 @@ function guardDelete(editor) {
     }
 }
 
+// TODO Move this into a generic helper function so we can re-use it.
+// It will have to be used on the submission page, history page, and instructor page.
+
 function replaceCodeDivWithJavaCodeMirrors(codeDiv, languageAndProblemId) {
     var codeText = codeDiv.text();
     var defaultName = 'code.java';

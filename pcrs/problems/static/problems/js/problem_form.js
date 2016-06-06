@@ -39,7 +39,10 @@ function setUpMultipleSelectFields() {
 }
 
 function showAddTagDialog() {
-    createProblemTag(prompt('Tag name: '));
+    var name = prompt('Tag name: ');
+    if (name) {
+      createProblemTag(name);
+    }
 }
 
 function createProblemTag(name) {
