@@ -23,17 +23,6 @@ TabbedCodeMirror.prototype.getFiles = function() {
     return files;
 }
 
-function enterFoob(e) {
-    $(source).parent().insertAfter($(e.target).parent());
-    return false;
-}
-
-function startFoob(e) {
-    source = e.target;
-    e.dataTransfer.effectAlllowed = 'move';
-    return false;
-}
-
 /**
  * Adds a file to the end of the file list.
  *
@@ -80,7 +69,6 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     $tabButton.click(function(e) {
         e.preventDefault();
         that.setActiveTabIndex($(this).parent().index());
-        console.log($(this).parent().index());
     });
     this._showOrHideTabs();
 }
@@ -165,6 +153,13 @@ TabbedCodeMirror.prototype.moveTab = function(from, to) {
     this.mirrors.splice(to, 0, mirror);
 }
 
+/**
+ * Retrieves the CodeMirror object at the given tab index.
+ */
+TabbedCodeMirror.prototype.getCodeMirror = function(index) {
+    return this.mirrors[index];
+}
+
 TabbedCodeMirror.prototype._showOrHideTabs = function() {
     if (this.mirrors.length <= 1) {
         this.$tabs.hide();
@@ -177,12 +172,7 @@ TabbedCodeMirror.prototype._showOrHideTabs = function() {
  * Retrieve the active tab index, or -1 if none are active.
  */
 TabbedCodeMirror.prototype.getActiveTabIndex = function() {
-    for (var i = 0; i < this.$tabs.length; i++) {
-        if (this.$tabs.children().get(i).className.indexOf('active') != -1) {
-            return i;
-        }
-    }
-    return -1;
+    return this.$tabs.find('.active').index();
 }
 
 /**

@@ -5,39 +5,39 @@ function create_to_code_mirror (language, version, location){
     }
 }
 
-function to_code_mirror (language, version, location, value, lock){
+function cmModeForLanguageAndVersion(language, version) {
+    if (language == 'python') {
+        return {
+            name: language,
+            version: version,
+            singleLineStringErrors: false
+        }
+    } else if (language == 'sql'){
+        return 'text/x-plsql';
+    } else if (language == 'ra'){
+        return 'text/ra';
+    } else if (language == 'c'){
+        return 'text/x-csrc';
+    } else if (language == 'java'){
+        return 'text/x-java';
+    }
+}
 
-    var mode;
-    if (language == 'python'){
-        mode = {name: language,
-                version: version,
-                singleLineStringErrors: false}
-    }
-    else if (language == 'sql'){
-        mode = 'text/x-plsql';
-    }
-    else if (language == 'ra'){
-        mode = 'text/ra';
-    }
-    else if (language == 'c'){
-        mode = 'text/x-csrc';
-    }
-    else if (language == 'java'){
-        mode = 'text/x-java';
-    }
-    historyCodeMirror = CodeMirror(function(elt) {
-        $(location).replaceWith(elt);
-        }, {mode: mode,
-          //themes can be found in codemirror4.1/theme; must be loaded in submission.html
+function to_code_mirror (language, version, location, value, lock) {
+    historyCodeMirror = CodeMirror(
+        function(elt) {
+            $(location).replaceWith(elt);
+        }, {
+            mode: cmModeForLanguageAndVersion(language, version),
+            //themes can be found in codemirror4.1/theme; must be loaded in submission.html
             theme: user_theme,
             value: value,
             lineNumbers: 'True',
             indentUnit: 4,
             readOnly: lock,
             lineWrapping: 'True',
-            flattenSpans: 'False'});
-
-
+            flattenSpans: 'False'
+        });
     return historyCodeMirror;
 }
 

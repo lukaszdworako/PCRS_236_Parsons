@@ -51,22 +51,21 @@
         /**
          * Create a new tag following some constraints (tags inside tags)
          */
-        /*
-         * FIXME: Note that this will be completely broken until further notice.
-         * Once we have files in seperate editors, this will be trivial to fix.
-         */
         function createTag(tag_start, tag_end) {
+            var tcm = cmh_list[id_starter_code_field];
+            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+
             // Detect tags in the source code
-            var code = cmh_list[id_starter_code_field].getValue();
+            var code = mirror.getValue();
             var tagRanges = TagManager.findRangesWithTags(code);
 
             // The tail starts from index 0
-            var tail = cmh_list[id_starter_code_field].getCursor('tail').line + 1;
+            var start = mirror.getCursor(true).line + 1;
             // The head starts from index 0
-            var head = cmh_list[id_starter_code_field].getCursor('head').line;
+            var end = mirror.getCursor(false).line + 1;
 
             for (var i = 0; i < tagRanges.length; i++) {
-                if (tail > tagRanges[i].end || head < tagRanges[i].start) {
+                if (start > tagRanges[i].end || end < tagRanges[i].start) {
                     // The selection is outside of this tag.
                     continue;
                 }
@@ -75,53 +74,61 @@
                     '<p>Check your code selection!</p>' +
                     '<p>Cannot include any other tag inside a hidden section, or along the same line.</p>';
                 $('#tagModal').modal('show');
-                return
+                return;
             }
 
             // Add tag after verifications
-            var selected_area = cmh_list[id_starter_code_field].getSelection();
-            cmh_list[id_starter_code_field].replaceSelection(tag_start + '\n' + selected_area + '\n' + tag_end);
+            var selected_area = mirror.getSelection();
+            mirror.replaceSelection(tag_start + '\n' + selected_area + '\n' + tag_end);
         }
 
-        function updateCodeHighLight() {
         /**
-         * Apply code highlight when a tag is open anc closed
+         * Apply code highlight when a tag is open and closed
          */
+        function updateCodeHighLight() {
+            var tcm = cmh_list[id_starter_code_field];
+            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+
             // Check for tags to apply code highlighting
             var code_highlight = 0;
-            var line_begin = cmh_list[id_starter_code_field].firstLine();
-            var line_end = cmh_list[id_starter_code_field].lastLine();
+            var line_begin = mirror.firstLine();
+            var line_end = mirror.lastLine();
 
             for (var i = line_begin; i <= line_end; i++) {
-                var line = cmh_list[id_starter_code_field].getLine(i);
-                if(line.indexOf("[hidden]") > -1 ||
-                   line.indexOf("[blocked]") > -1 ||
-                   line.indexOf("[student_code]") > -1)
+                var line = mirror.getLine(i);
+                if (line.indexOf("[hidden]") > -1 ||
+                        line.indexOf("[blocked]") > -1 ||
+                        line.indexOf("[student_code]") > -1) {
                     code_highlight += 1;
+                }
 
-                if(code_highlight > 0)
-                    cmh_list[id_starter_code_field].addLineClass(i, '', 'CodeMirror-activeline-background');
-                else
-                    cmh_list[id_starter_code_field].removeLineClass(i);
+                if (code_highlight > 0) {
+                    mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
+                } else {
+                    mirror.removeLineClass(i);
+                }
 
                 if (line.indexOf("[/hidden]") > -1 ||
-                    line.indexOf("[/blocked]") > -1 ||
-                    line.indexOf("[/student_code]") > -1)
+                        line.indexOf("[/blocked]") > -1 ||
+                        line.indexOf("[/student_code]") > -1) {
                     code_highlight -= 1;
+                }
             }
         }
 
         function showPreviewModal(title, source_code) {
-            if (cmh_list[id_preview_code_field] != null) {
-                cmh_list[id_preview_code_field].setValue(source_code);
+            var mirror = cmh_list[id_preview_code_field];
+            if (mirror != null) {
+                mirror.setValue(source_code);
             } else {
-                cmh_list[id_preview_code_field] = to_code_mirror(
-                    language, language_version, $('#'+id_preview_code_field), source_code, true);
+                mirror = to_code_mirror(language, language_version,
+                    $('#' + id_preview_code_field), source_code, true);
+                cmh_list[id_preview_code_field] = mirror;
             }
 
             $('#previewModalLabel').text(title);
             $('#previewModal').on('shown.bs.modal', function() {
-                cmh_list[id_preview_code_field].refresh();
+                mirror.refresh();
             });
             $('#previewModal').modal('show');
         }
@@ -130,15 +137,14 @@
          * Preview how code will look to the student
          */
         function previewCode() {
-            /* FIXME
-            cmh_list[id_starter_code_field].setValue(addTagsToStarterCode());
+            var tcm = cmh_list[id_starter_code_field];
+            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
 
-            var code = cmh_list[id_starter_code_field].getValue();
-            */
+            var code = TagManager.addStudentCodeTags(mirror.getValue());
 
             // The [\s\S] is another way to express "." with DOTALL enabled
-            code = code.replace(/\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
-            code = code.replace(/(\n)?\[\/?(student_code|blocked)\]/g, '');
+            code = code.replace(/\r?\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
+            code = code.replace(/\r?\n?\[\/?(student_code|blocked)\]/g, '');
             // The tag at the top of the file will leave a stray newline
             code = code.replace(/^[ \t]*\n/, '');
 
@@ -183,7 +189,7 @@
                 tcm.addFile({
                     'name': file.name,
                     'code': file.code,
-                    'mode': 'text/x-java',
+                    'mode': cmModeForLanguageAndVersion(language, language_version),
                     'theme': user_theme,
                 });
             }
@@ -226,7 +232,9 @@
             addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
             addCodeMirrorToFieldWithId(id_solution_field);
 
-            /* FIXME
+            /* FIXME properly block tags. When typing, you shouldn't be
+                     allowed to place a tag improperly.
+
             cmh_list[id_starter_code_field].on("change", updateCodeHighLight);
             cmh_list[id_starter_code_field].on("beforeChange", function(instance, change) {
                 blockInput(id_starter_code_field, change);
