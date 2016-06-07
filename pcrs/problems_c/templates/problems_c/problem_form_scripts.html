@@ -6,6 +6,7 @@
     <script src="{% static "codemirror-4.1/mode/clike/clike.js" %}"></script>
     <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}" type="text/javascript"></script>
     <script src="{% static "problems/js/TagManager.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems/js/TabbedCodeMirror.js" %}" type="text/javascript"></script>
 {% endcompress %}
 
 {% load compress %}
@@ -15,8 +16,8 @@
 
     <script type="text/javascript">
         var cmh_list = {};
-        var language;
-        var language_version;
+        var language = 'c';
+        var language_version = 'text/x-csrc';
         var id_starter_code_field = 'id_starter_code';
         var id_solution_field = 'id_solution';
         var id_preview_code_field = 'id_preview_code';
@@ -26,8 +27,7 @@
          * [hidden] tags to garantie the exercise integrity.
          */
         function addTagsToStarterCode() {
-            var code = cmh_list[id_starter_code_field].getValue();
-            var files = TagManager.parseCodeIntoFiles(code);
+            var files = cmh_list[id_starter_code_field].getFiles();
 
             for (var i = 0; i < files.length; i++) {
                 var f = files[i];
@@ -130,9 +130,11 @@
          * Preview how code will look to the student
          */
         function previewCode() {
+            /* FIXME
             cmh_list[id_starter_code_field].setValue(addTagsToStarterCode());
 
             var code = cmh_list[id_starter_code_field].getValue();
+            */
 
             // The [\s\S] is another way to express "." with DOTALL enabled
             code = code.replace(/\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
@@ -163,10 +165,33 @@
                 language, language_version, element, element.text(), false);
         }
 
-        $(function() {
-            language = 'c';
-            language_version = 'text/x-csrc';
+        function addTabbedCodeMirrorToFieldWithId(id) {
+            var tcm = new TabbedCodeMirror();
+            cmh_list[id] = tcm;
+            var codeDiv = $('#' + id);
+            var codeText = codeDiv.text();
 
+            // Replace the code div with the tabbed code mirror
+            codeDiv.before(tcm.$tabs);
+            codeDiv.before(tcm.$content);
+            codeDiv.remove();
+
+            var files = TagManager.parseCodeIntoFiles(codeText);
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                tcm.addFile({
+                    'name': file.name,
+                    'code': file.code,
+                    'mode': 'text/x-java',
+                    'theme': user_theme,
+                });
+            }
+
+            tcm.setActiveTabIndex(0);
+        }
+
+        $(function() {
             // Add function to submit button to update hidden field data
             $("#submit-id-clone").attr("onclick", "return submitHidden();");
             $("#submit-id-submit").attr("onclick", "return submitHidden();");
@@ -198,9 +223,10 @@
                     '<span class="glyphicon glyphicon-eye-close"></span>   Hidden' +
                 '</a>');
 
-            addCodeMirrorToFieldWithId(id_starter_code_field);
+            addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
             addCodeMirrorToFieldWithId(id_solution_field);
 
+            /* FIXME
             cmh_list[id_starter_code_field].on("change", updateCodeHighLight);
             cmh_list[id_starter_code_field].on("beforeChange", function(instance, change) {
                 blockInput(id_starter_code_field, change);
@@ -208,6 +234,7 @@
 
             // Update code highlight for the first time
             updateCodeHighLight();
+            */
 
             $(window).bind("load", function() {
                 $('.CodeMirror').each(function(i, el) {

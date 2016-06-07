@@ -23,6 +23,17 @@ TabbedCodeMirror.prototype.getFiles = function() {
     return files;
 }
 
+function enterFoob(e) {
+    $(source).parent().insertAfter($(e.target).parent());
+    return false;
+}
+
+function startFoob(e) {
+    source = e.target;
+    e.dataTransfer.effectAlllowed = 'move';
+    return false;
+}
+
 /**
  * Adds a file to the end of the file list.
  *
@@ -69,6 +80,7 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     $tabButton.click(function(e) {
         e.preventDefault();
         that.setActiveTabIndex($(this).parent().index());
+        console.log($(this).parent().index());
     });
     this._showOrHideTabs();
 }
@@ -112,6 +124,45 @@ TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
     this.$content.get(index).remove();
     this.mirrors.splice(index, 1);
     this._showOrHideTabs();
+}
+
+/**
+ * Changes the name of the file at the given index.
+ */
+TabbedCodeMirror.prototype.renameFileAtIndex = function(index, name) {
+    this.$tabs.find('a').eq(index).text(name);
+}
+
+/**
+ * Move a tab.
+ *
+ * @param {int} to The index to move from.
+ * @param {int} to The index to move to.
+ */
+TabbedCodeMirror.prototype.moveTab = function(from, to) {
+    // Bad stuff happens if incorrect indeces are given.
+    if (Math.max(from, to) >= this.mirrors.length || Math.min(from, to) < 0) {
+        throw new Error('Cannot move tab ' + from + ' to index ' + to);
+    }
+
+    var liTabs = this.$tabs.find('li');
+    var fromTab = liTabs.eq(from);
+    var toTab = liTabs.eq(to);
+
+    var contentDivs = this.$content.find('.CodeMirror');
+    var fromDiv = contentDivs.eq(from);
+    var toDiv = contentDivs.eq(to);
+
+    if (from <= to) {
+        fromTab.insertAfter(toTab);
+        fromDiv.insertAfter(toDiv);
+    } else {
+        fromTab.insertBefore(toTab);
+        fromDiv.insertBefore(toDiv);
+    }
+
+    var mirror = this.mirrors.splice(from, 1)[0];
+    this.mirrors.splice(to, 0, mirror);
 }
 
 TabbedCodeMirror.prototype._showOrHideTabs = function() {

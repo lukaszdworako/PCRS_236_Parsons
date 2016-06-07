@@ -23,17 +23,6 @@ function showJunitHelp() {
 }
 
 $(function() {
-    // The page load handler in problems_c changes these variables.. gurr
-    language = 'java';
-    language_version = '7';
-
-    /*
-     * Change the mode from C to Java.
-     * We currently extend from problems_c. This should change in the future.
-     */
-    cmh_list[id_starter_code_field].setOption('mode', 'text/x-java');
-    cmh_list[id_solution_field].setOption('mode', 'text/x-java');
-
     $("#submit-id-clone").attr("onclick", "return submitHiddenJava();");
     $("#submit-id-submit").attr("onclick", "return submitHiddenJava();");
     $("#submit-id-attempt").attr("onclick", "return submitHiddenJava();");
@@ -41,13 +30,14 @@ $(function() {
     $('form').append('<input type="hidden" id="id_test_suite_tmp" name="test_suite" value=""></input>');
 
     var obj = $('#' + id_test_suite_field);
-    cmh_list[id_test_suite_field] =
-        to_code_mirror(language, language_version, obj, obj.text(), false);
+    addCodeMirrorToFieldWithId(id_test_suite_field);
 
     var test_suite_field = $('#div_' + id_test_suite_field + ' div.controls');
     test_suite_field.after('<a class="btn btn btn-primary" role="button" onclick="showJunitHelp()">' +
         '<span class="glyphicon glyphicon-question-sign"></span>   Help</a>');
     test_suite_field.after('<br />');
+
+    // TODO add new, rename, move, and delete tab buttons
 });
 
 sample_junit_suite_code =
