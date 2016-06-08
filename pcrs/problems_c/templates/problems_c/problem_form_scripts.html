@@ -39,7 +39,6 @@
 
         function submitHidden() {
             var source_code = addTagsToStarterCode();
-            console.log(source_code);
 
             // Move values to temporary variables
             document.getElementById("id_starter_code_tmp").value += source_code;
@@ -87,32 +86,52 @@
          */
         function updateCodeHighLight() {
             var tcm = cmh_list[id_starter_code_field];
-            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+            for (var i = 0; i < tcm.getFileCount(); i++) {
+                var mirror = tcm.getCodeMirror(i);
+                updateCodeHighLightOnMirror(mirror);
+            }
+        }
 
+        function updateCodeHighLightOnMirror(mirror) {
             // Check for tags to apply code highlighting
-            var code_highlight = 0;
             var line_begin = mirror.firstLine();
             var line_end = mirror.lastLine();
 
+            var code_highlights = [];
+
             for (var i = line_begin; i <= line_end; i++) {
                 var line = mirror.getLine(i);
-                if (line.indexOf("[hidden]") > -1 ||
-                        line.indexOf("[blocked]") > -1 ||
-                        line.indexOf("[student_code]") > -1) {
-                    code_highlight += 1;
+                var match;
+
+                if (match = /\[(hidden|blocked|student_code)\]/.exec(line)) {
+                    var tagName = match[1];
+                    code_highlights.push(tagName);
                 }
 
-                if (code_highlight > 0) {
+                if (code_highlights.length == 1) {
                     mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
+                } else if (code_highlights.length > 1) {
+                    // We shouldn't be more that 1 level deep.
+                    mirror.removeLineClass(i, '', 'CodeMirror-activeline-background');
+                    mirror.addLineClass(i, '', 'CodeMirror-error-background');
                 } else {
                     mirror.removeLineClass(i);
                 }
 
-                if (line.indexOf("[/hidden]") > -1 ||
-                        line.indexOf("[/blocked]") > -1 ||
-                        line.indexOf("[/student_code]") > -1) {
-                    code_highlight -= 1;
+                if (match = /\[\/(hidden|blocked|student_code)\]/.exec(line)) {
+                    var tagName = match[1];
+                    var matchedTag = code_highlights.pop();
+
+                    if (matchedTag != tagName) {
+                        mirror.removeLineClass(i, '', 'CodeMirror-activeline-background');
+                        mirror.addLineClass(i, '', 'CodeMirror-error-background');
+                    }
                 }
+            }
+
+            if (code_highlights.length != 0) {
+                mirror.removeLineClass(line_end, '', 'CodeMirror-activeline-background');
+                mirror.addLineClass(line_end, '', 'CodeMirror-error-background');
             }
         }
 
@@ -151,20 +170,6 @@
             showPreviewModal('Preview Code', code);
         }
 
-        /**
-         * Block input text in a line that
-         * holds any kind of tag
-         */
-        function blockInput(editor_id, change) {
-            var line = cmh_list[editor_id].getLine(cmh_list[editor_id].getCursor().line);
-
-            if (line.search(/\[\/?(hidden|blocked|student_code)\]/) != -1) {
-                if ( ! (change.text == "" || change.text.length > 1)) {
-                    change.cancel();
-                }
-            }
-        }
-
         function addCodeMirrorToFieldWithId(id) {
             var element = $('#' + id);
             cmh_list[id] = to_code_mirror(
@@ -195,6 +200,8 @@
             }
 
             tcm.setActiveTabIndex(0);
+
+            return tcm;
         }
 
         $(function() {
@@ -230,19 +237,17 @@
                 '</a>');
 
             addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
-            addCodeMirrorToFieldWithId(id_solution_field);
-
-            /* FIXME properly block tags. When typing, you shouldn't be
-                     allowed to place a tag improperly.
-
-            cmh_list[id_starter_code_field].on("change", updateCodeHighLight);
-            cmh_list[id_starter_code_field].on("beforeChange", function(instance, change) {
-                blockInput(id_starter_code_field, change);
-            });
-
-            // Update code highlight for the first time
+            var tcm = cmh_list[id_starter_code_field];
             updateCodeHighLight();
-            */
+            for (var i = 0; i < tcm.getFileCount(); i++) {
+                var mirror = tcm.getCodeMirror(i);
+                /**
+                 * For some reason, it doesn't work if we pass in the mirror var.
+                 * So we just update ALL the highlights... bleh.
+                 */
+                mirror.on('change', updateCodeHighLight);
+            }
+            addCodeMirrorToFieldWithId(id_solution_field);
 
             $(window).bind("load", function() {
                 $('.CodeMirror').each(function(i, el) {

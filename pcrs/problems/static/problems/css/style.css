@@ -12,3 +12,8 @@ table.numbered tr.numbered td:first-child::before {
     min-width: 1em;
     margin-right: 0.5em;
 }
+
+.CodeMirror-error-background {
+    background: #b22222 !important;
+}
+

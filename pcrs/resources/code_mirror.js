@@ -42,70 +42,6 @@ function to_code_mirror (language, version, location, value, lock) {
 }
 
 /**
- * Turns a div with code into a set of code mirrors with tabs.
- *
- * @param codeDiv The div with code tags included to replace.
- * @param languageAndProblemId
- * @return {Object} A hash of code mirrors
- */
-function createTabbedCodeMirrorsFromCodeDiv(codeDiv, languageAndProblemId) {
-    var newCodeMirrors = {};
-
-    var codeText = codeDiv.text();
-    var defaultName = 'StudentCode.java';
-    var files = TagManager.parseCodeIntoFiles(codeText);
-
-    codeDiv.replaceWith('<ul id="code-tabs" class="nav nav-tabs"></ul>' +
-        '<div id="code-tab-content" class="tab-content"></div>');
-
-    var codeTabs = $('#code-tabs');
-    var codeTabContent = $('#code-tab-content');
-
-    // Create a code mirror for each file.
-    for (var i = 0; i < files.length; i++) {
-        var name = files[i]['name'];
-        var codeObj = removeTags(files[i]['code']);
-        var codeMirrorId = languageAndProblemId + '-' + i;
-
-        codeTabs.append('<li><a data-toggle="tab" ' +
-            'href="#' + codeMirrorId + '">' + name + '</a></li>');
-
-        codeTabContent.append('<div id="code_mirror_replacement"></div>');
-        var codeMirrorReplacement = $('#code_mirror_replacement');
-
-        var codeMirror = to_code_mirror(
-            language, 'text/x-java', codeMirrorReplacement,
-            codeObj.source_code, false);
-
-        codeMirror.getWrapperElement().id = codeMirrorId;
-        codeMirror.getWrapperElement().className += ' tab-pane';
-        newCodeMirrors[codeMirrorId] = codeMirror;
-
-        highlightCodeMirrorWithTags(codeMirror, codeObj.tag_list);
-        preventDeleteLastLine(codeMirror);
-    }
-
-    $('#code-tabs li').first().addClass('active');
-    $('#code-tab-content div').first().addClass('active');
-
-    // Refresh code mirrors when switching tabs to prevent UI glitches
-    $('#code-tabs a').click(function(e) {
-        e.preventDefault();
-        $(this).tab('show');
-        var codeMirrorId = this.getAttribute('href').substring(1);
-        newCodeMirrors[codeMirrorId].refresh();
-    });
-
-    if (files.length == 1) {
-        $('#code-tabs').hide();
-    }
-
-    return newCodeMirrors;
-}
-
-// TODO create a TabbedCodeMirror class
-
-/**
  * For every line of code inside a pair of [block] [/block] tags,
  * highlight this code with a different background color
  */
@@ -169,7 +105,7 @@ function guardBackspace(editor) {
     // Allow deleting selections, characters on the same line and previous unblocked lines
     if ((!blockedCodeSelected)
         && ((!curLineEmpty && !curLineFirstChar)
-            || (prevLineWrapClass != 'CodeMirror-Activeline-background'))) {
+            || (prevLineWrapClass != 'CodeMirror-activeline-background'))) {
 
         // Resume default behaviour
         return CodeMirror.Pass;

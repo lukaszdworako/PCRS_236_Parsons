@@ -160,6 +160,10 @@ TabbedCodeMirror.prototype.getCodeMirror = function(index) {
     return this.mirrors[index];
 }
 
+TabbedCodeMirror.prototype.getFileCount = function(index) {
+    return this.mirrors.length;
+}
+
 TabbedCodeMirror.prototype._showOrHideTabs = function() {
     if (this.mirrors.length <= 1) {
         this.$tabs.hide();
