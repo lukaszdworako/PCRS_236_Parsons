@@ -16,3 +16,5 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
         BaseProblemForm.__init__(self)
 
+        self.fields['starter_code'].initial = '[file StudentCode.java]\n\n[/file]'
+

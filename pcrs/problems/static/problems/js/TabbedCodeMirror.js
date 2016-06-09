@@ -31,6 +31,7 @@ TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
     }
 
     this.$tabs.append(this._createAddFileTab());
+    this._showOrHideTabs();
 }
 
 /**

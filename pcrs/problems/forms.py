@@ -47,11 +47,12 @@ class BaseProblemForm(CrispyFormMixin):
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
                                     ButtonHolder(*self.buttons))
 
-        self.fields['tags'].help_text = None
-        self.fields['tags'].widget = SelectMultipleField(
-            choices=self.fields['tags'].choices
-        )
-
+        # Not all problems have the tags field.
+        if 'tags' in self.fields:
+            self.fields['tags'].help_text = None
+            self.fields['tags'].widget = SelectMultipleField(
+                choices=self.fields['tags'].choices
+            )
 
 
 class EditorForm(CrispyFormMixin, forms.Form):
