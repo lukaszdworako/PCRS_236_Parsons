@@ -2,12 +2,147 @@
  * A fancy tabbed code mirror widget.
  */
 function TabbedCodeMirror() {
+    this.isEditable = false;
     this.mirrors = [];
-    this.$tabs = $('<ul id="code-tabs" class="nav nav-tabs"></ul>');
-    this.$content = $('<div id="code-tab-content" class="tab-content"></div>');
+    this.$tabs = $('<ul class="nav nav-tabs tabbed-code-mirror"></ul>');
+    this.$content = $('<div class="tab-content"></div>');
+    // Used for the add-file-button widget
+    this.newFileOptions = {};
 }
 
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
+
+/**
+ * Adds a set of edit widgets.
+ *
+ * After calling this, widgets for deleting, inserting, moving,
+ * and renaming tabs will appear.
+ *
+ * @see setAddButtonCallback
+ */
+TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
+    if (this.isEditable) {
+        return;
+    }
+    this.isEditable = true;
+
+    for (var i = 0; i < this.mirrors.length; i++) {
+        this._addEditWidgetsToTab(i);
+    }
+
+    this.$tabs.append(this._createAddFileTab());
+}
+
+/**
+ * Sets the default options for creating new files.
+ *
+ * This is needed when this isEditable is set.
+ *
+ * @param {Object} options The options to pass to addFile by default.
+ * @see enableTabEditingWidgets
+ */
+TabbedCodeMirror.prototype.setNewFileOptions = function(options) {
+    this.newFileOptions = options;
+}
+
+// Adds edit widgets (the drop down menu)
+TabbedCodeMirror.prototype._addEditWidgetsToTab = function(index) {
+    var $tab = this.$tabs.find('li').eq(index);
+    var $tabButton = $tab.find('a').first();
+    $tabButton.addClass("tab-dropdown-title");
+
+    var $dropSection = $('<div href="#" class="dropdown"></div>')
+        .append($('<a href="#"></a>')
+            .attr('data-toggle', 'dropdown')
+            .append('<b class="caret"></b>'));
+    var $dropDownMenu = this._createDropDownMenu();
+
+    $dropSection.append($dropDownMenu);
+    $tab.append($dropSection);
+}
+
+TabbedCodeMirror.prototype._createDropDownMenu = function() {
+    var $dropDownMenu = $('<div class="dropdown-menu"></div>');
+
+    var that = this;
+    $dropDownMenu.append($('<a class="dropdown-item" type="a"></a>')
+        .text('Rename')
+        .click(function() {
+            var index = $(this).closest('li').index();
+            that._attemptRenamingTab(index);
+        }));
+    $dropDownMenu.append($('<a class="dropdown-item" type="a"></a>')
+        .text('Delete')
+        .click(function() {
+            var index = $(this).closest('li').index();
+            that._attemptDeletingTab(index);
+        }));
+    $dropDownMenu.append($('<a class="dropdown-item" type="a"></a>')
+        .text('Move Left')
+        .click(function() {
+            var index = $(this).closest('li').index();
+            if (index > 0) {
+                that.moveTab(index, index - 1);
+            }
+        }));
+    $dropDownMenu.append($('<a class="dropdown-item" type="a"></a>')
+        .text('Move Right')
+        .click(function() {
+            var index = $(this).closest('li').index();
+            if (index < that.getFileCount() - 1) {
+                that.moveTab(index, index + 1);
+            }
+        }));
+
+    return $dropDownMenu;
+}
+
+TabbedCodeMirror.prototype._createAddFileTab = function() {
+    var that = this;
+    var $addButton = $('<a href="#" class="add-file-button"></a>')
+        .append($('<span class="glyphicon glyphicon-plus"></span>'))
+        .click(function() {
+            that.addFile(that.newFileOptions);
+            that.setActiveTabIndex(that.getFileCount() - 1);
+            return false;
+        });
+    return $('<li></li>').append($addButton);
+}
+
+// Event callback to rename a tab
+TabbedCodeMirror.prototype._attemptRenamingTab = function(index) {
+    var name = prompt('Tab name:');
+    if ( ! name) {
+        return;
+    }
+
+    if (name.match(/^[\._a-zA-Z0-9]+$/)) {
+        this.renameFileAtIndex(index, name);
+    } else {
+        alert('Please enter a name with only numbers' +
+            ', letters, underscores, and periods.');
+    }
+}
+
+// Event callback to delete a tab
+TabbedCodeMirror.prototype._attemptDeletingTab = function(index) {
+    if (this.getFileCount() == 1) {
+        alert('You cannot delete the last tab');
+        return;
+    }
+
+    var confirmation = confirm('Are you sure you want to delete ' +
+        this._tabTitleButtonAtIndex(index).text() + '?');
+    if ( ! confirmation) {
+        return;
+    }
+
+    // If we are deleting the current tab, switch away.
+    if (index == this.getActiveTabIndex()) {
+        this.setActiveTabIndex(index == 0 ? 1 : index - 1);
+    }
+    this.removeFileAtIndex(index);
+}
 
 /**
  * Gets the file names and raw contents.
@@ -16,11 +151,16 @@ TabbedCodeMirror.prototype.getFiles = function() {
     var files = [];
     for (var i = 0; i < this.mirrors.length; i++) {
         files.push({
-            'name': this.$tabs.find('a').eq(i).text(),
+            'name': this._tabTitleButtonAtIndex(i).text(),
             'code': this.mirrors[i].getValue(),
         });
     }
     return files;
+}
+
+TabbedCodeMirror.prototype._tabTitleButtonAtIndex = function(index) {
+    var $tab = this.$tabs.find('li').eq(index);
+    return $tab.find('a').first();
 }
 
 /**
@@ -38,7 +178,6 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     var that = this;
     var $tabButton = $('<a data-toggle="tab" href="#"></a>')
         .append(options.name);
-    this.$tabs.append($('<li></li>').append($tabButton));
 
     var codeMirrorOptions = {
         mode: options.mode,
@@ -70,6 +209,15 @@ TabbedCodeMirror.prototype.addFile = function(options) {
         e.preventDefault();
         that.setActiveTabIndex($(this).parent().index());
     });
+
+    var $listButton = $('<li></li>').append($tabButton);
+    if (this.isEditable) {
+        var addButton = this.$tabs.find('li').last();
+        addButton.before($listButton);
+        this._addEditWidgetsToTab($tabButton.parent().index());
+    } else {
+        this.$tabs.append($listButton);
+    }
     this._showOrHideTabs();
 }
 
@@ -108,8 +256,8 @@ TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
  * Removes the file at the given index.
  */
 TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
-    this.$tabs.children().get(index).remove();
-    this.$content.get(index).remove();
+    this.$tabs.find('li').eq(index).remove();
+    this.$content.find('.CodeMirror').eq(index).remove();
     this.mirrors.splice(index, 1);
     this._showOrHideTabs();
 }
@@ -118,7 +266,7 @@ TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
  * Changes the name of the file at the given index.
  */
 TabbedCodeMirror.prototype.renameFileAtIndex = function(index, name) {
-    this.$tabs.find('a').eq(index).text(name);
+    this._tabTitleButtonAtIndex(index).text(name);
 }
 
 /**
@@ -165,7 +313,7 @@ TabbedCodeMirror.prototype.getFileCount = function(index) {
 }
 
 TabbedCodeMirror.prototype._showOrHideTabs = function() {
-    if (this.mirrors.length <= 1) {
+    if ( ! this.isEditable && this.mirrors.length <= 1) {
         this.$tabs.hide();
     } else {
         this.$tabs.show();

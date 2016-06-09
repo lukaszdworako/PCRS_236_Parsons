@@ -37,7 +37,14 @@ $(function() {
         '<span class="glyphicon glyphicon-question-sign"></span>   Help</a>');
     test_suite_field.after('<br />');
 
-    // TODO add new, rename, move, and delete tab buttons
+    var tcm = cmh_list[id_starter_code_field];
+    tcm.enableTabEditingWidgets();
+    tcm.setNewFileOptions({
+        'name': 'NewFile.java',
+        'code': '',
+        'mode': cmModeForLanguageAndVersion(language, language_version),
+        'theme': user_theme,
+    });
 });
 
 sample_junit_suite_code =
