@@ -313,137 +313,7 @@ function handleCompileMessages(div_id, testcases) {
     return dont_visualize;
 }
 
-function getTestcases(div_id, clean_code) {
-    var language = check_language(div_id);
-
-    // replace all the tabs with 4 spaces before submitting the code to the database
-    clean_code = clean_code.replace(/\t/g, '    ');
-
-    var call_path = "";
-
-    var is_editor = div_id.split("-")[2];
-    if (is_editor == null) {
-        call_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+ '/run';
-    } else {     // editor
-        call_path = root + '/problems/' + language + '/editor/run';
-    }
-    var use_gradetable = !(is_editor && !(language == 'ra' || language == 'sql'));
-
-    if (language == 'c') {      // Not including java yet, since debugger is not implemented
-        document.getElementById('feedback_code').value = clean_code;
-    }
-
-    var postParams = { csrftoken: csrftoken, submission: clean_code };
-
-    // Activate loading pop-up
-    $('#waitingModal').modal('show');
-
-    $.post(call_path,
-            postParams,
-            function(data) {
-                if (data['past_dead_line']){
-                    alert("This submission is past the deadline!")
-                    $('#'+div_id).find('#deadline_msg').remove();
-                    $('#'+div_id)
-                        .find('#alert')
-                        .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
-                }
-                testcases = data['results'][0];
-                if (data['results'][1] != null){
-                    error_msg = data['results'][1];
-                }
-
-                if (use_simpleui == 'False' && use_gradetable){
-                    $("#"+div_id).find("#grade-code").show();
-                }
-
-                var score = data['score'];
-                var max_score = data['max_score'];
-                var decider = score == max_score;
-
-                if (!is_editor){
-
-                    $('#'+div_id).find('#alert')
-                        .toggleClass("red-alert", !decider);
-
-                    $('#'+div_id).find('#alert')
-                        .toggleClass("green-alert", decider);
-
-                    $('#'+div_id).find('#alert')
-                        .children('icon')
-                        .toggleClass("remove-icon", !decider);
-
-                    $('#'+div_id).find('#alert')
-                        .children('icon')
-                        .toggleClass("ok-icon", decider);
-
-                    if (decider){
-                        $('#'+div_id).find('#alert')
-                            .children('span')
-                            .text("Your submission is correct!");
-
-                        $('#'+div_id).find('.screen-reader-text').prop('title',"Your solution is correct!");
-                    }
-                    else{
-                        $('#'+div_id).find('#alert')
-                            .children('span')
-                            .text("Your solution passed " + score + " out of " + max_score + " cases!");
-
-                        $('#'+div_id).find('.screen-reader-text').text("Your solution passed " + score + " out of " + max_score + " cases!");
-                    }
-                }
-                if (language == 'python'){
-                    prepareGradingTable(div_id,
-                                        data['best'],
-                                        data['past_dead_line'],
-                                        data['sub_pk'],
-                                         max_score);
-                }
-                else if (language == 'c' || language == 'java'){
-                    // Handle compilation error and warning messages
-                    dont_visualize = handleCompileMessages(div_id, testcases);
-                    if (!is_editor){
-                        prepareGradingTable(div_id,
-                                            data['best'],
-                                            data['past_dead_line'],
-                                            data['sub_pk'],
-                                            max_score);
-                    }
-                    //If it's the editor, start calling visualizer functions now so long as no errors exist
-                    else{
-                        if (!dont_visualize){
-                            getVisualizerComponents(clean_code, "", 9999999);
-                        }
-                    }
-                }
-                else if (language=='sql'){
-                    prepareSqlGradingTable(div_id,
-                                           data['best'],
-                                           data['past_dead_line'],
-                                           data['sub_pk'],
-                                           max_score,
-                                           is_editor);
-                }
-                else if (language=='ra'){
-                    prepareSqlGradingTable(div_id,
-                                           data['best'],
-                                           data['past_dead_line'],
-                                           data['sub_pk'],
-                                           max_score,
-                                           is_editor);
-                }
-                // Deactivate loading pop-up
-                $('#waitingModal').modal('hide');
-            },
-        "json")
-     .fail(
-        function(jqXHR, textStatus, errorThrown) {
-            // Deactivate loading pop-up
-            $('#waitingModal').modal('hide');
-        });
-}
-
-function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score, is_editor) {
+function prepareSqlGradingTableLegacy(div_id, best, past_dead_line, sub_pk, max_score, is_editor) {
     /**
      * Display the results of the SQL and RA test cases.
      * "div_id" the main div of the problem
@@ -610,7 +480,7 @@ function prepareSqlGradingTable(div_id, best, past_dead_line, sub_pk, max_score,
 }
 
 
-function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
+function prepareGradingTableLegacy(div_id, best, past_dead_line, sub_pk, max_score) {
     /**
      * Display the results of the python-like (C, Java) test cases.
      * "div_id" the main div of the problem
@@ -645,7 +515,14 @@ function prepareGradingTable(div_id, best, past_dead_line, sub_pk, max_score) {
 	            var testcaseOutput = create_output(current_testcase.expected_output);
                 }
             var debug = current_testcase.debug;
-	        var result = create_output(current_testcase.test_val);
+
+            var result;
+            if (language == 'python') {
+	            result = create_output(current_testcase.test_val);
+            } else {
+                result = current_testcase.test_val;
+            }
+
 	        var cleaner = $(gradingTable).find('#tcase_'+div_id+'_'+ i);
 
 	        if (description == ""){
@@ -797,21 +674,16 @@ function create_timestamp(datetime){
     return formated_datetime;
 }
 
-function create_output(input){
-    /**
-     * Convert the given "input" in to a string representing the students python solution
-     */
+/**
+ * Convert the given "input" in to a string representing the students python solution
+ */
+function create_output(input) {
+    var brakets_o = {"list":"[","tuple":"(","dict":"{"};
+    var brakets_c = {"list":"]","tuple":")","dict":"}"};
 
-    brakets_o = {"list":"[","tuple":"(","dict":"{"};
-    brakets_c = {"list":"]","tuple":")","dict":"}"};
-
-    if(language == 'c' || language == 'java'){
-       return input;
-    }
-    else if (input.length == 2){
+    if (input.length == 2) {
         return create_output(input[0])+":"+create_output(input[1]);
-    }
-    else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict"){
+    } else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict") {
         var output = brakets_o[input[0]];
         for (var o_index = 2; o_index < input.length; o_index++){
             output += create_output(input[o_index]);
@@ -821,24 +693,21 @@ function create_output(input){
         }
         output += brakets_c[input[0]];
         return output
-    }
-    else if(input[0] == "string"){
+    } else if (input[0] == "string") {
         return "'"+input[2]+"'";
-    }
-    else if(input[0] == "float"){
-        if (String(input[2]).indexOf(".")>-1){
+    } else if(input[0] == "float") {
+        if (String(input[2]).indexOf(".") > -1) {
             return input[2]
-        }
-        else{
+        } else {
             return input[2]+".0"
         }
-    }
-    else{
+    } else{
         return input[2]
     }
 }
 
-function check_language(container){
+// FIXME rip this guy out! It is super smelly.
+function check_language(container) {
     /**
      * Check the language of a problem
      * "container" is the id of the main_div
@@ -879,104 +748,15 @@ function replaceAll(find, replace, string) {
   return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
-function submitAllCode(problemDivId, language) {
-    var problemId = problemDivId.split("-")[1];
-    var code = "";
-
-    var hash = CryptoJS.SHA1(problemId);
-    if (language == 'c') {
-        code = TabbedCodeMirror._getHashedCodeFromMirror(
-            myCodeMirrors[problemDivId], hash);
-    } else if (language == 'java') {
-        code = myCodeMirrors[problemDivId].getHashedCode(hash);
-    } else {
-        code = myCodeMirrors[problemDivId].getValue();
-    }
-
-    if (code == '') {
-        alert('There is no code to submit.');
-    } else {
-        getTestcases(problemDivId, code);
-    }
-}
-
 $(document).ready(function() {
     var all_wrappers = $('.code-mirror-wrapper');
 
     for (var x = 0; x < all_wrappers.length; x++) {
-        $(all_wrappers[x]).children('#grade-code').hide();
-
-        var language = check_language(all_wrappers[x].id);
-        if (language == "python") {
-            myCodeMirrors[all_wrappers[x].id] =
-                    to_code_mirror("python", 3, $(all_wrappers[x]).find("#div_id_submission"),
-                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
-        } else if (language == "c") {
-            var codeDiv = $(all_wrappers[x]).find('#div_id_submission');
-            var codeObj = TagManager.stripTagsForStudent(codeDiv.text());
-
-            myCodeMirrors[all_wrappers[x].id] =
-                to_code_mirror(language, 'text/x-csrc', $(all_wrappers[x]).find("#div_id_submission"),
-                    codeObj.code, false);
-
-            // Debugger declaration
-            debugger_id = all_wrappers[x].id+1;
-            myCodeMirrors[debugger_id] =
-                    to_code_mirror(language, 'text/x-csrc', $("#id_preview_code_debugger"),
-                        codeObj.code, true);
-
-            var mirror = myCodeMirrors[all_wrappers[x].id];
-            highlightCodeMirrorWithTags(mirror, codeObj.blocked_ranges);
-            preventDeleteLastLine(mirror);
-        } else if (language == "java") {
-            var problemId = all_wrappers[x].id;
-
-            var tcm = new TabbedCodeMirror();
-            myCodeMirrors[problemId] = tcm;
-            var codeDiv = $(all_wrappers[x]).find("#div_id_submission");
-            var codeText = codeDiv.text();
-
-            // Replace the code div with the tabbed code mirror
-            codeDiv.before(tcm.$tabs);
-            codeDiv.before(tcm.$content);
-            codeDiv.remove();
-
-            var files = TagManager.parseCodeIntoFiles(codeText);
-
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
-                var codeObj = TagManager.stripTagsForStudent(file.code);
-                tcm.addFile({
-                    'name': file.name,
-                    'code': codeObj.code,
-                    'mode': 'text/x-java',
-                    'theme': user_theme,
-                    'blocked_lines': codeObj.blocked_ranges,
-                });
-            }
-
-            tcm.setActiveTabIndex(0);
-        } else if (language == "sql") {
-            myCodeMirrors[all_wrappers[x].id] =
-                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
-                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
-        } else if (language == "ra") {
-            myCodeMirrors[all_wrappers[x].id] =
-                    to_code_mirror(language, 'text/x-sql', $(all_wrappers[x]).find("#div_id_submission"),
-                            $(all_wrappers[x]).find('#div_id_submission').text(), false);
-        }
-
-        $(all_wrappers[x]).find('#submit-id-submit').click(function(event) {
-            event.preventDefault();
-            var problemDivId = $(this).parents('.code-mirror-wrapper')[0].id;
-            submitAllCode(problemDivId, language);
-        });
-        $(all_wrappers[x]).find("[name='history']").one("click", (function(){
-            var div_id = $(this).parents('.code-mirror-wrapper')[0].id;
-            // FIXME: Sow multiple files / tabs.
-            getHistory(div_id);
-        }));
+        var wrapperDivId = all_wrappers[x].id;
+        var wrapper = SubmissionWrapper.createWrapperFromDivId(wrapperDivId);
+        wrapper.pageLoad();
     }
+
     $(window).bind("load", function() {
         $('.CodeMirror').each(function(i, el){
             el.CodeMirror.refresh();
