@@ -34,6 +34,10 @@
                 f.code = TagManager.addStudentCodeTags(f.code);
             }
 
+            if (files.length == 1) {
+                // For PCRS-C
+                return files[0].code;
+            }
             return TagManager.concatFilesIntoCode(files);
         }
 
@@ -43,8 +47,6 @@
             // Move values to temporary variables
             document.getElementById("id_starter_code_tmp").value += source_code;
             document.getElementById("id_solution_tmp").value += cmh_list[id_solution_field].getValue();
-
-            return false;
         }
 
         /**
