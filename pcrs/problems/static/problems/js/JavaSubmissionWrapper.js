@@ -52,3 +52,29 @@ JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     CSubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
 }
 
+/**
+ * @override
+ */
+JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
+    var newRow = SubmissionWrapper.prototype.prepareGradingTable.apply(
+        this, arguments);
+
+    if ('exception' in testcase) {
+        return newRow;
+    }
+
+    newRow.append('<td>' + testcase.test_desc + '</td>');
+    newRow.append('<td>' +
+       '<div>' +
+       '<span class="stringObj">' +
+       testcase.test_val +
+       '</span>' +
+       '</div></td>');
+
+    this._addFaceColumnToTestRow(newRow, testcase.passed_test);
+    this._addA11yToTestRow(newRow, testcase.test_val,
+        testcase.passed_test, testcase.expected_output);
+    // NOTE: We might remove this in place of a single debug button.
+    newRow.append('<td class="debug">-</td>');
+}
+

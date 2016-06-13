@@ -2,7 +2,8 @@ function SubmissionWrapper(wrapperDivId) {
     this.wrapperDivId = wrapperDivId;
     this.wrapperDiv = $('#' + wrapperDivId);
     this.problemId = wrapperDivId.split("-")[1];
-    // I don't like this... it should be a sub class.
+    // FIXME I don't like the isEditor property...
+    // If this is in a visualizer code editor
     this.isEditor = this.wrapperDivId.split("-")[2];
     // Null is evil, but these MUST be changed in the subclass constructors.
     this.language = null;
@@ -59,6 +60,11 @@ SubmissionWrapper.prototype.submitAllCode = function() {
     }
 }
 
+// FIXME this is called in editor.js.
+
+/**
+ * Submit the current code and populate the grad table.
+ */
 SubmissionWrapper.prototype.getTestcases = function(code) {
     var call_path = "";
 
@@ -68,6 +74,7 @@ SubmissionWrapper.prototype.getTestcases = function(code) {
         call_path = root + '/problems/' + this.language + '/' + this.wrapperDivId.split("-")[1]+ '/run';
     }
 
+    // FIXME nuuuu not language checks!
     // Not including java yet, since debugger is not implemented
     if (this.language == 'c') {
         document.getElementById('feedback_code').value = code;
@@ -103,6 +110,7 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
             'Submitted after the deadline!<div>');
     }
 
+    // FIXME rats nest
     var use_gradetable = ( ! this.isEditor) || this.language == 'ra' || this.language == 'sql';
     // use_simpleui is global... gur.
     if (use_simpleui == 'False' && use_gradetable) {
@@ -136,7 +144,7 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
         }
     }
 
-    // FIXME ugly global variables right now.
+    // FIXME ugly global variables
     error_msg = data['results'][1];
     testcases = data['results'][0];
 
@@ -150,7 +158,87 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
     });
 }
 
-SubmissionWrapper.prototype.prepareGradingTable = function() {}
+/**
+ * Display the results of the SQL and RA test cases
+ *
+ * @param testData.best_score {number} The users best score
+ * @param testData.max_score {number} The maximum possibly score
+ * @param testData.past_dead_line {boolean} If it is past the problem deadline
+ * @param testData.sub_pk {number} The Primary Key of the submission
+ */
+SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
+    var div_id = this.wrapperDivId;
+    var best = testData['best_score'];
+    var past_dead_line = testData['past_dead_line'];
+    var sub_pk = testData['sub_pk'];
+    var max_score = testData['max_score'];
+
+    var gradingTable = this.wrapperDiv.find("#gradeMatrix");
+    gradingTable.find(".red-alert").remove();
+    var score = 0;
+    var tests = [];
+
+    if (error_msg != null) {
+        var tableRow = $(gradingTable).find('.pcrs-table-row');
+        while (tableRow.length) {
+            tableRow.remove();
+            tableRow = $(gradingTable).find('.pcrs-table-row');
+        }
+        gradingTable.append("<th class='red-alert' colspan='12' style='width:100%;'>" + error_msg + "</th>");
+        error_msg = null;
+    } else {
+	    for (var i = 0; i < testcases.length; i++) {
+            var testcase = testcases[i];
+            if (testcase.test_desc == "") {
+                testcase.test_desc = "No Description Provided"
+            }
+            testcase.expected_output = testcase.expected_output
+                ? create_output(testcase.expected_output)
+                : null;
+
+            tests.push({
+                'visible': testcase.test_input != null,
+                'input': testcase.test_input,
+                'output': testcase.expected_output,
+                'passed': testcase.passed_test,
+                'description': testcase.test_desc
+            });
+
+            if (testcase.passed_test) {
+                score++;
+            }
+
+            var newRow = this._createTestCaseRow(testcase);
+
+            // FIXME figure out what the hell this is doing here.
+            var cleaner = $(gradingTable).find('#tcase_' + div_id + '_' + i);
+            if (cleaner) {
+                cleaner.remove();
+            }
+	    }
+    }
+
+    var data = {
+        'sub_time':new Date(),
+        // Now that we have multiple code mirrors, this should change a bit.
+        //'submission':myCodeMirrors[div_id].getValue(), // FIXME
+        'submission': '',
+        'score':score,
+        'best':best,
+        'past_dead_line':past_dead_line,
+        'problem_pk':this.problemId,
+        'sub_pk':sub_pk,
+        'out_of':max_score,
+        'tests': tests
+    };
+
+    if (best && !data['past_dead_line']) {
+        update_marks(this.wrapperDivId, score, max_score);
+    }
+
+    var flag = (this.wrapperDiv.find('#history_accordion').children().length != 0);
+    add_history_entry(data, this.wrapperDivId, flag);
+}
 
 /**
  * Retrieves the lumped code for submitting.
@@ -159,5 +247,80 @@ SubmissionWrapper.prototype.prepareGradingTable = function() {}
  */
 SubmissionWrapper.prototype.getAllCode = function() {
     return myCodeMirrors[this.wrapperDivId].getValue();
+}
+
+JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
+    SubmissionWrapper.prototype._createTestCaseRow.apply(this, arguments);
+}
+
+/**
+ * Create a test case row for the grading table.
+ *
+ * Note that this will create simple row initially - child classes add content.
+ */
+SubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
+    var div_id = this.wrapperDivId;
+    var newRow = $('<tr class="pcrs-table-row" id="tcase_' + div_id + '_' + i + '"></tr>');
+
+    if ("exception" in testcase) {
+        newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
+            testcase.exception + '</th>');
+    }
+
+    return newRow;
+}
+
+/**
+ * Adds a status smiley/frowney face to a test row.
+ */
+SubmissionWrapper.prototype._addFaceColumnToTestRow = function(row, passed) {
+    var smFace = passed ? happyFace : sadFace;
+    newRow.append($('<td class="passed"></td>').html(smFace.clone()));
+}
+
+/**
+ * Adds accessibility test results to a test row.
+ */
+SubmissionWrapper.prototype._addA11yToTestRow = function(row, result, passed,
+        expected) {
+    var pass_status = passed ? 'passed' : 'failed'
+    row.append('<a class="at" href="">This testcase has ' + pass_status +
+        '. Expected: ' + expected +
+        '. Result: ' + result + '</a>');
+}
+
+/**
+ * Adds a debug button column to the test row.
+ *
+ * @see _prepareVisualizer
+ */
+SubmissionWrapper.prototype._addDebugColumnToTestRow = function(row, debug) {
+    if (debug) {
+        var button = $('<button class="debugBtn" type="button"></button>')
+            .attr('data-toggle', 'modal')
+            .attr('data-target', '#visualizerModal')
+            .text('Trace');
+        row.append($('<td class="debug"></td>').append(button));
+
+        var that = this;
+        button.bind('click', function() {
+            setTimeout(function() {
+                $('#waitingModal').modal('show');
+                that._prepareVisualizer(row);
+                $('#waitingModal').modal('hide');
+            }, 250);
+        });
+    } else {
+        // Test cases that don't allow debugging.
+        row.append('<td class="debug">-</td>')
+    }
+}
+
+/**
+ * Prepare coding problem visualizer.
+ *
+ * This does nothing by default - interesting things happen in subclasses.
+ */
+SubmissionWrapper.prototype._prepareVisualizer = function(row) {
 }
 
