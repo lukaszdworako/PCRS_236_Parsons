@@ -136,9 +136,9 @@ TagManager.findTagRanges = function(code) {
             }
         }
 
-        if (tag_depth < 0) throw "Mismatching tag!";
+        if (tag_depth < 0) throw new Error("Mismatching tags");
     }
-    if (tag_depth != 0) throw "Mismatching tag!";
+    if (tag_depth != 0) throw new Error("Mismatching tags");
 
     return tag_lists;
 }

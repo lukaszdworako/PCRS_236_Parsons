@@ -249,10 +249,6 @@ SubmissionWrapper.prototype.getAllCode = function() {
     return myCodeMirrors[this.wrapperDivId].getValue();
 }
 
-JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
-    SubmissionWrapper.prototype._createTestCaseRow.apply(this, arguments);
-}
-
 /**
  * Create a test case row for the grading table.
  *

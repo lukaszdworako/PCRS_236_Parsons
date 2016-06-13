@@ -5,14 +5,21 @@ language_version = '7';
 // Defined later to reduce clutter (since it is a big blob of text)
 var sample_junit_suite_code;
 
-/*
- * This overrides the C version to add the test suite tmp field.
- * For now, we will keep this dreadful hack, since
- * refactoring problems_c would be a big job to do for a proof-of-concept.
- */
 function submitHiddenJava() {
-    submitHidden();
-    document.getElementById("id_test_suite_tmp").value += cmh_list[id_test_suite_field].getValue();
+    try {
+        var starterCode = addTagsToStarterCode();
+        var solutionCode = cmh_list[id_solution_field].getValue();
+        var testSuiteCode = cmh_list[id_test_suite_field].getValue();
+
+        // Move values to temporary variables
+        document.getElementById("id_starter_code_tmp").value += starterCode;
+        document.getElementById("id_solution_tmp").value += solutionCode;
+        document.getElementById("id_test_suite_tmp").value += testSuiteCode;
+        return true;
+    } catch (err) {
+        alert('Error submitting code: ' + err.message);
+        return false;
+    }
 }
 
 /**
@@ -23,9 +30,9 @@ function showJunitHelp() {
 }
 
 $(function() {
-    $("#submit-id-clone").attr("onclick", "return submitHiddenJava();");
-    $("#submit-id-submit").attr("onclick", "return submitHiddenJava();");
-    $("#submit-id-attempt").attr("onclick", "return submitHiddenJava();");
+    $("#submit-id-clone").click(submitHiddenJava);
+    $("#submit-id-submit").click(submitHiddenJava);
+    $("#submit-id-attempt").click(submitHiddenJava);
 
     $('form').append('<input type="hidden" id="id_test_suite_tmp" name="test_suite" value=""></input>');
 

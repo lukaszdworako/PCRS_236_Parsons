@@ -103,11 +103,36 @@ TabbedCodeMirror.prototype._createAddFileTab = function() {
     var $addButton = $('<a href="#" class="add-file-button"></a>')
         .append($('<span class="glyphicon glyphicon-plus"></span>'))
         .click(function() {
-            that.addFile(that.newFileOptions);
+            var options = $.extend({}, that.newFileOptions); // copy
+
+            // Ensure the name is unique
+            var i = 1;
+            while (that.indexForTabWithName(options.name) != -1) {
+                options.name = i + '_' + that.newFileOptions.name;
+                i++;
+            }
+
+            that.addFile(options);
             that.setActiveTabIndex(that.getFileCount() - 1);
             return false;
         });
     return $('<li></li>').append($addButton);
+}
+
+/**
+ * Finds the index of the tab with the given name.
+ *
+ * @param name {string} The name of the tab
+ * @return {number} Index of the tab, or -1 if not found.
+ */
+TabbedCodeMirror.prototype.indexForTabWithName = function(name) {
+    for (var i = 0; i < this.mirrors.length; i++) {
+        var tabTitle = this._tabTitleButtonAtIndex(i).text();
+        if (tabTitle == name) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 // Event callback to rename a tab
@@ -117,11 +142,13 @@ TabbedCodeMirror.prototype._attemptRenamingTab = function(index) {
         return;
     }
 
-    if (name.match(/^[\._a-zA-Z0-9]+$/)) {
-        this.renameFileAtIndex(index, name);
-    } else {
+    if ( ! name.match(/^[\._a-zA-Z0-9]+$/)) {
         alert('Please enter a name with only numbers' +
             ', letters, underscores, and periods.');
+    } else if (this.indexForTabWithName(name) != -1) {
+        alert('Tab with name "' + name + '" already exists.');
+    } else {
+        this.renameFileAtIndex(index, name);
     }
 }
 

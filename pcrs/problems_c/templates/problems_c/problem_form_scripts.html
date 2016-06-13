@@ -34,19 +34,24 @@
                 f.code = TagManager.addStudentCodeTags(f.code);
             }
 
-            if (files.length == 1) {
-                // For PCRS-C
-                return files[0].code;
-            }
             return TagManager.concatFilesIntoCode(files);
         }
 
-        function submitHidden() {
-            var source_code = addTagsToStarterCode();
+        function submitHiddenC() {
+            try {
+                // NOTE: In the future, we may want to allow multiple files for C.
+                var tcm = cmh_list[id_starter_code_field];
+                var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
+                var solutionCode = cmh_list[id_solution_field].getValue();
 
-            // Move values to temporary variables
-            document.getElementById("id_starter_code_tmp").value += source_code;
-            document.getElementById("id_solution_tmp").value += cmh_list[id_solution_field].getValue();
+                // Move values to temporary variables
+                document.getElementById("id_starter_code_tmp").value += code;
+                document.getElementById("id_solution_tmp").value += solutionCode;
+                return true;
+            } catch (err) {
+                alert('Error submitting code: ' + err.message);
+                return false;
+            }
         }
 
         /**
@@ -208,9 +213,9 @@
 
         $(function() {
             // Add function to submit button to update hidden field data
-            $("#submit-id-clone").attr("onclick", "return submitHidden();");
-            $("#submit-id-submit").attr("onclick", "return submitHidden();");
-            $("#submit-id-attempt").attr("onclick", "return submitHidden();");
+            $("#submit-id-clone").attr("onclick", "return submitHiddenC();");
+            $("#submit-id-submit").attr("onclick", "return submitHiddenC();");
+            $("#submit-id-attempt").attr("onclick", "return submitHiddenC();");
 
             // Add hidden values to submit code
             $('form').append(
