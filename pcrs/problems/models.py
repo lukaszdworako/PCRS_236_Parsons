@@ -452,7 +452,11 @@ class SubmissionPreprocessorMixin:
                 'code': self.submission,
             }]
 
-        code = self._fuseStudentCodeIntoStarterCode()
+        #Code not from editor, process tags
+        code = self.fuseStudentCodeIntoStarterCode()
+        # Strip blocked/hidden tags but leave their contents (for compiling)
+        code = re.sub(r'\[\/?(hidden|blocked)\]\r?\n?', '', code)
+
         return self.parseCodeIntoFiles(code) or [{
             # If there were no file tags
             'name': 'StudentCode.java',
@@ -482,61 +486,45 @@ class SubmissionPreprocessorMixin:
             startMatch = startTagRegex.search(code)
         return files
 
-    def _fuseStudentCodeIntoStarterCode(self):
+    def fuseStudentCodeIntoStarterCode(self):
         '''Processes the tags in this submission.
 
         Returns:
-            A list of processed files - ready to compile / run.
+            A string representation of the files (including [file] tags)
         '''
-        #Code not from editor, process tags
-        student_code_key = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-        student_code_key_list = [m.start() for m in re.finditer(student_code_key, self.submission)]
-        student_code_key_len = len(student_code_key)
-        student_code_key_list_len = len(student_code_key_list)
+        delim = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
+        student_code_list = self._parseStudentCodeChunks(self.submission, delim)
 
-        # Could not find student code
-        if student_code_key_list_len == 0:
-            raise Exception("No student code found!")
-
-        # Get student code from submission and add it to the official exercise (from the database)
-        if student_code_key_list_len % 2 != 0:
-            student_code_key_list = student_code_key_list[:-1]
-
-        student_code_list = []
-        while len(student_code_key_list) >= 2:
-            student_code_list.append(
-                self.submission[student_code_key_list[0] + student_code_key_len + 1: student_code_key_list[1]])
-            del student_code_key_list[0], student_code_key_list[0]
-
-        # Create variable mod_submission to handle the fusion of student code with starter_code from the database
-        mod_submission = self._emplaceStudentCodeSnippets(student_code_list, self.problem.starter_code)
-
-        # Replace hashed key with text (Implementation start/end)
-        x = 0
-        while x < student_code_key_list_len:
-            m = re.search(student_code_key, self.submission)
-            self.submission = self.submission[: m.start()] + self.submission[m.end():]
-            x += 1
-
-        # Store hidden code lines for previous use when showing compilation and warning errors
-        inside_hidden_tag = False
-        line_num = 1
-        for line in mod_submission.split('\n'):
-            if line.find("[hidden]") > -1:
-                inside_hidden_tag = True
-                continue
-            elif line.find("[/hidden]") > -1:
-                inside_hidden_tag = False
-                continue
-            if inside_hidden_tag:
-                self.hidden_lines_list.append(line_num)
-            line_num += 1
-
-        # Remove hidden and blocked tags from the source code
-        mod_submission = re.sub(r'\[\/?hidden\]\r?\n?', '', mod_submission)
-        mod_submission = re.sub(r'\[\/?blocked\]\r?\n?', '', mod_submission)
+        # The fusion of student code with starter_code (from the database)
+        mod_submission = self._emplaceStudentCodeSnippets(student_code_list,
+            self.problem.starter_code)
 
         return mod_submission
+
+    def _parseStudentCodeChunks(self, sub, delim):
+        '''Extracts code chunks out of a given submission.
+
+        Note that submissions are sent with a delimiter to seperate
+        student code chunks.
+
+        Args:
+            sub:   The raw submission from the student.
+            delim: The delimiter to extract code around.
+        '''
+        delim_list = [m.start() for m in re.finditer(delim, sub)]
+
+        # Could not find student code
+        if len(delim_list) == 0:
+            raise Exception("No student code found!")
+
+        chunks = []
+        while len(delim_list) >= 2:
+            begin = delim_list[0] + len(delim) + 1
+            end =  delim_list[1]
+            chunks.append(sub[begin:end])
+            del delim_list[0], delim_list[0]
+
+        return chunks
 
     def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
         '''Emplaces the given code snippets into the given starter code.

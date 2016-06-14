@@ -24,7 +24,7 @@ CSubmissionWrapper.prototype.createCodeMirrors = function() {
         $("#id_preview_code_debugger"), codeObj.code, true);
 
     var mirror = myCodeMirrors[this.wrapperDivId];
-    highlightCodeMirrorWithTags(mirror, codeObj.blocked_ranges);
+    highlightCodeMirrorWithTags(mirror, codeObj.block_ranges);
     preventDeleteLastLine(mirror);
 }
 

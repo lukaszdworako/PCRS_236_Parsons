@@ -30,7 +30,8 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
             'code': codeObj.code,
             'mode': 'text/x-java',
             'theme': user_theme,
-            'blocked_lines': codeObj.blocked_ranges,
+            'block_ranges': codeObj.block_ranges,
+            'hash_ranges': codeObj.hash_ranges,
         });
     }
 

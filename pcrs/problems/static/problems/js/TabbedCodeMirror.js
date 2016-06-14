@@ -199,7 +199,8 @@ TabbedCodeMirror.prototype._tabTitleButtonAtIndex = function(index) {
  * @param {string} options.code The content of the file.
  * @param {string} options.mode The CodeMirror mode.
  * @param {string} [options.theme=undefined] CodeMirror theme name.
- * @param {string} [options.blocked_lines=[]] Lines to block the user from editing.
+ * @param {string} [options.block_ranges=[]] Lines to block the user from editing.
+ * @param {string} [options.hash_ranges=[]] Lines to hash. See getHashedCode
  * @param {string} [options.readOnly=false]] If this file is read only.
  */
 TabbedCodeMirror.prototype.addFile = function(options) {
@@ -228,8 +229,11 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     mirror.getWrapperElement().className += ' tab-pane';
     this.mirrors.push(mirror);
 
-    if ('blocked_lines' in options) {
-        TabbedCodeMirror._blockLinesInMirror(mirror, options.blocked_lines);
+    if ('block_ranges' in options) {
+        TabbedCodeMirror._blockLinesInMirror(mirror, options.block_ranges);
+    }
+    if ('hash_ranges' in options) {
+        TabbedCodeMirror._hashLinesInMirror(mirror, options.hash_ranges);
     }
 
     // Refresh code mirrors when switching tabs to prevent UI glitches
@@ -253,7 +257,7 @@ TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {
     // Highlight the given ranges
     for (var i = 0; i < ranges.length; i++) {
         for (var j = ranges[i].start; j <= ranges[i].end; j++) {
-            mirror.addLineClass(j - 1, '', 'CodeMirror-activeline-background');
+            mirror.addLineClass(j - 1, '', TabbedCodeMirror._blockedLineClass);
         }
     }
     // Block the given ranges
@@ -267,13 +271,22 @@ TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {
     });
 }
 
+TabbedCodeMirror._hashLinesInMirror = function(mirror, ranges) {
+    for (var i = 0; i < ranges.length; i++) {
+        var start = ranges[i].start - 1;
+        var end = ranges[i].end - 1;
+        mirror.addLineClass(start, '', 'hash-start');
+        mirror.addLineClass(end, '', 'hash-end');
+    }
+}
+
 /**
  * Determines if a range intersects the target ranges.
  */
 TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
     for (var i = start; i <= end; i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
-        if (wrapClass == 'CodeMirror-activeline-background') {
+        if (wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
             return true;
         }
     }
@@ -370,7 +383,7 @@ TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
 
 /**
  * Hashes all of the code mirrors in order.
- * Hashes surround modifiable code for the server to parse.
+ * Hashes surround specified code for the server to parse.
  */
 TabbedCodeMirror.prototype.getHashedCode = function(hash) {
     var code = '';
@@ -390,27 +403,25 @@ TabbedCodeMirror.prototype.getHashedCode = function(hash) {
  */
 TabbedCodeMirror._getHashedCodeFromMirror = function(mirror, hash) {
     var code = '';
-    var inside_student_code = false;
 
-    for (var i = 0; i < mirror.lineCount(); i++){
+    for (var i = 0; i < mirror.lineCount(); i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
-
-        if (wrapClass == 'CodeMirror-activeline-background') {
-            if (inside_student_code) {
-                code += hash + '\n';
-                inside_student_code = false;
-            }
-        } else {
-            if ( ! inside_student_code) {
-                code += hash + '\n';
-                inside_student_code = true;
-            }
+        // Blocked code
+        if (wrapClass && wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
+            continue;
+        }
+        // The start of a hash segment
+        if (wrapClass && wrapClass.indexOf('hash-start') > -1) {
+            code += hash + '\n';
         }
 
-        code += mirror.getLine(i);
-        code += '\n';
+        code += mirror.getLine(i) + '\n';
+
+        // The end of a hash segment
+        if (wrapClass && wrapClass.indexOf('hash-end') > -1) {
+            code += hash + '\n';
+        }
     }
-    code += hash;
     return code;
 }
 

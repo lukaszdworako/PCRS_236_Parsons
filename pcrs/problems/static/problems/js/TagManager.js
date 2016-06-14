@@ -173,24 +173,28 @@ TagManager.findRangesWithTags = function(code) {
 TagManager.stripTagsForStudent = function(code) {
     var lines = code.split("\n");
     var student_view_line = 1;
-    var blocked_tag_num = 0;
 
-    var blocked_ranges = [];
+    var block_ranges = [];
+    var hash_ranges = [];
 
     code = "";
-    for( var i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
 
         if (line.indexOf("[blocked]") > -1) {
-            blocked_ranges.push({
+            block_ranges.push({
                 'start': student_view_line,
                 'end': 0,
             });
         } else if( line.indexOf("[/blocked]") > -1) {
-            blocked_ranges[blocked_tag_num].end = student_view_line - 1;
-            blocked_tag_num++;
+            block_ranges[block_ranges.length - 1].end = student_view_line - 1;
         } else if (line.indexOf("[student_code]") > -1) {
+            hash_ranges.push({
+                'start': student_view_line,
+                'end': 0,
+            });
         } else if (line.indexOf("[/student_code]") > -1) {
+            hash_ranges[hash_ranges.length - 1].end = student_view_line - 1;
         } else {
             code += lines[i] + '\n';
             student_view_line++;
@@ -200,6 +204,10 @@ TagManager.stripTagsForStudent = function(code) {
     // Remove last \n escape sequence
     code = code.substring(0, code.length - 1);
 
-    return {code: code, blocked_ranges: blocked_ranges};
+    return {
+        code:         code,
+        block_ranges: block_ranges,
+        hash_ranges:  hash_ranges,
+    };
 }
 
