@@ -24,7 +24,7 @@
 
         /**
          * Add [student_code] tag respecting [blocked] and
-         * [hidden] tags to garantie the exercise integrity.
+         * [hidden] tags to guarantee the exercise integrity.
          */
         function addTagsToStarterCode() {
             var files = cmh_list[id_starter_code_field].getFiles();
@@ -45,8 +45,8 @@
                 var solutionCode = cmh_list[id_solution_field].getValue();
 
                 // Move values to temporary variables
-                document.getElementById("id_starter_code_tmp").value += code;
-                document.getElementById("id_solution_tmp").value += solutionCode;
+                document.getElementById("id_starter_code_tmp").value = code;
+                document.getElementById("id_solution_tmp").value = solutionCode;
                 return true;
             } catch (err) {
                 alert('Error submitting code: ' + err.message);

@@ -53,16 +53,17 @@ function getHistory(div_id){
 }
 
 
-function add_history_entry(data, div_id, flag){
+function add_history_entry(data, div_id){
     /**
      * Add "data" to the history inside the given "div_id"
-     * "flag" 0 appends anf "flag" 1 prepends
      */
 
     // Exit if the history window has fbeen requested by the user
     if (!window[div_id+'_history_init']) {
         return;
     }
+
+    var $accordion = $('#' + div_id).find('#history_accordion');
 
     var sub_time = new Date(data['sub_time']);
     var panel_class = "pcrs-panel-default";
@@ -79,8 +80,8 @@ function add_history_entry(data, div_id, flag){
         panel_class = "pcrs-panel-star";
         star_text = '<icon style="font-size:1.2em" class="star-icon" title="Latest Best Submission"> </icon>';
 
-        $('#'+div_id).find('#history_accordion').find(".star-icon").remove();
-        $('#'+div_id).find('#history_accordion').find(".pcrs-panel-star")
+        $accordion.find(".star-icon").remove();
+        $accordion.find(".pcrs-panel-star")
             .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
     }
 
@@ -156,36 +157,26 @@ function add_history_entry(data, div_id, flag){
     cont1.append(cont3);
     entry.append(cont1);
 
-    if (flag == 0){
-        $('#'+div_id).find('#history_accordion').append(entry);
-    }
-    else{
-        $('#'+div_id).find('#history_accordion').prepend(entry);
+    if ($accordion.children().length == 0) {
+        $accordion.append(entry);
+    } else {
+        $accordion.prepend(entry);
     }
 
-    var language = check_language(div_id);
-    if (language == "python"){
-        create_to_code_mirror("python", 3, "history_mirror_"
-                                                + data['problem_pk']
-                                                + "_"
-                                                + data['sub_pk']);
-    }
-    else{
-        create_to_code_mirror(language, false, "history_mirror_"
-                                                + data['problem_pk']
-                                                + "_"
-                                                + data['sub_pk']);
-    }
+    var historyMirrorId = "history_mirror_" +
+        data['problem_pk'] + "_" + data['sub_pk'];
+    // A bit of a hack for now - The only possibly version is "3" for Python
+    // Soon, this will be polymorphized so we can check the class version instead
+    var language_version = 3;
+    create_to_code_mirror(language, language_version, historyMirrorId);
 }
 
-
-function show_history(data, div_id){
-    /**
-     * Given all the previous submissions "data" add it to the "div_id"
-     */
-
-    for (var x = 0; x < data.length; x++){
-        add_history_entry(data[x], div_id, 0);
+/**
+ * Given all the previous submissions "data" add it to the "div_id"
+ */
+function show_history(data, div_id) {
+    for (var x = 0; x < data.length; x++) {
+        add_history_entry(data[x], div_id);
     }
 }
 

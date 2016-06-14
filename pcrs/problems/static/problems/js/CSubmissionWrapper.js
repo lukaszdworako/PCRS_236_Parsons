@@ -62,20 +62,20 @@ CSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
  * @override
  */
 CSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
-    var newRow = SubmissionWrapper.prototype.prepareGradingTable.apply(
+    var $newRow = SubmissionWrapper.prototype._createTestCaseRow.apply(
         this, arguments);
 
     if ('exception' in testcase) {
-        return newRow;
+        return $newRow;
     }
 
-    newRow.append('<td class="description">' + testcase.test_desc + '</td>');
+    $newRow.append('<td class="description">' + testcase.test_desc + '</td>');
 
     if (testcase.test_input != null) {
-        newRow.append('<td class="expression"><div class="expression_div">' +
+        $newRow.append('<td class="expression"><div class="expression_div">' +
                 testcase.test_input + '</div></td>');
     } else {
-        newRow.append('<td class="expression">' +
+        $newRow.append('<td class="expression">' +
                 "Hidden Test" +'</td>');
     }
 
@@ -84,17 +84,19 @@ CSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     var testResultDiv = $('<div class="ExecutionVisualizer"></div>')
         .append('<span class="stringObj">' + testcase.test_val + '</span>');
 
-    newRow.append($('<td class="expected"></td>')
+    $newRow.append($('<td class="expected"></td>')
         .append($('<div class="ptd"></div>')
             .append(expTestValDiv)));
-    newRow.append($('<td class="result"></td>')
+    $newRow.append($('<td class="result"></td>')
         .append($('<div class="ptd"></div>')
             .append(testResultDiv)));
 
-    this._addFaceColumnToTestRow(newRow, testcase.passed_test);
-    this._addDebugColumnToTestRow(newRow, testcase.debug);
-    this._addA11yToTestRow(newRow, testcase.test_val,
+    this._addFaceColumnToTestRow($newRow, testcase.passed_test);
+    this._addDebugColumnToTestRow($newRow, testcase.debug);
+    this._addA11yToTestRow($newRow, testcase.test_val,
         testcase.passed_test, testcase.expected_output);
+
+    return $newRow;
 }
 
 /**

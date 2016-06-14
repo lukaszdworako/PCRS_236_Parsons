@@ -10,33 +10,42 @@ PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
  * @override
  */
 PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
-    newRow.append('<td class="description">' + testcase.test_desc + '</td>');
+    var $newRow = SubmissionWrapper.prototype._createTestCaseRow.apply(
+        this, arguments);
+
+    if ('exception' in testcase) {
+        return $newRow;
+    }
+
+    $newRow.append('<td class="description">' + testcase.test_desc + '</td>');
 
     if (testcase.test_input != null) {
-        newRow.append('<td class="expression"><div class="expression_div">' +
+        $newRow.append('<td class="expression"><div class="expression_div">' +
                 testcase.test_input + '</div></td>');
     } else {
-        newRow.append('<td class="expression">' +
+        $newRow.append('<td class="expression">' +
                 "Hidden Test" +'</td>');
     }
 
     var expTestValDiv = $('<div class="ExecutionVisualizer"></div>');
     var testResultDiv = $('<div class="ExecutionVisualizer"></div>');
 
-    newRow.append($('<td class="expected"></td>')
+    $newRow.append($('<td class="expected"></td>')
         .append($('<div class="ptd"></div>')
             .append(expTestValDiv)));
-    newRow.append($('<td class="result"></td>')
+    $newRow.append($('<td class="result"></td>')
         .append($('<div class="ptd"></div>')
             .append(testResultDiv)));
 
     renderData_ignoreID(testcase.test_val, testResultDiv);
     renderData_ignoreID(testcase.expected_output, expTestValDiv);
 
-    this._addFaceColumnToTestRow(newRow, testcase.passed_test);
-    this._addA11yToTestRow(newRow, create_output(testcase.test_val),
+    this._addFaceColumnToTestRow($newRow, testcase.passed_test);
+    this._addA11yToTestRow($newRow, create_output(testcase.test_val),
         testcase.passed_test, testcase.expected_output);
-    this._addDebugColumnToTestRow(newRow, testcase.debug);
+    this._addDebugColumnToTestRow($newRow, testcase.debug);
+
+    return $newRow;
 }
 
 /**

@@ -43,10 +43,10 @@ SubmissionWrapper.prototype.pageLoad = function() {
 }
 
 SubmissionWrapper.prototype.createCodeMirrors = function() {
-    var submissionDiv = this.wrapperDiv.find("#div_id_submission");
+    var $submissionDiv = this.wrapperDiv.find("#div_id_submission");
     myCodeMirrors[this.wrapperDivId] = to_code_mirror(
         this.language, this.language_version,
-        submissionDiv, submissionDiv.text(), false);
+        $submissionDiv, $submissionDiv.text(), false);
 }
 
 SubmissionWrapper.prototype.submitAllCode = function() {
@@ -119,10 +119,10 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
 
     var score = data['score'];
     var max_score = data['max_score'];
-    var decider = score == max_score;
 
     if ( ! this.isEditor) {
         var $alertBox = this.wrapperDiv.find('#alert');
+        var decider = score == max_score;
 
         $alertBox.toggleClass("red-alert", ! decider);
         $alertBox.toggleClass("green-alert", decider);
@@ -140,7 +140,7 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
                 score + " out of " + max_score + " cases!";
 
             $alertBox.children('span').text(resultText);
-            this.wrapperDiv.find('.screen-reader-text').text(resultText);
+            this.wrapperDiv.find('.screen-reader-text').prop(resultText);
         }
     }
 
@@ -172,24 +172,24 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     var past_dead_line = testData['past_dead_line'];
     var sub_pk = testData['sub_pk'];
     var max_score = testData['max_score'];
+    var error_msg = testData['error_msg'];
 
-    var gradingTable = this.wrapperDiv.find("#gradeMatrix");
-    gradingTable.find(".red-alert").remove();
+    var $gradingTable = this.wrapperDiv.find("#gradeMatrix");
+    $gradingTable.find(".red-alert").remove();
+    $gradingTable.find('.pcrs-table-row').remove();
+
     var score = 0;
     var tests = [];
 
     if (error_msg != null) {
-        var tableRow = $(gradingTable).find('.pcrs-table-row');
-        while (tableRow.length) {
-            tableRow.remove();
-            tableRow = $(gradingTable).find('.pcrs-table-row');
-        }
-        gradingTable.append("<th class='red-alert' colspan='12' style='width:100%;'>" + error_msg + "</th>");
-        error_msg = null;
+        $gradingTable.append($('<th class="red-alert"></th>')
+            .attr('style', 'width:100%;')
+            .attr('colspan', '12')
+            .text(error_msg));
     } else {
 	    for (var i = 0; i < testcases.length; i++) {
             var testcase = testcases[i];
-            if (testcase.test_desc == "") {
+            if (testcase.test_desc == '') {
                 testcase.test_desc = "No Description Provided"
             }
             testcase.expected_output = testcase.expected_output
@@ -208,21 +208,16 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
                 score++;
             }
 
-            var newRow = this._createTestCaseRow(testcase);
-
-            // FIXME figure out what the hell this is doing here.
-            var cleaner = $(gradingTable).find('#tcase_' + div_id + '_' + i);
-            if (cleaner) {
-                cleaner.remove();
-            }
+            var $newRow = this._createTestCaseRow(testcase);
+            $gradingTable.append($newRow);
 	    }
     }
 
-    var data = {
+    // FIXME somehow, show the tabs.
+
+    var historyData = {
         'sub_time':new Date(),
-        // Now that we have multiple code mirrors, this should change a bit.
-        //'submission':myCodeMirrors[div_id].getValue(), // FIXME
-        'submission': '',
+        'submission': this.getAllCode(),
         'score':score,
         'best':best,
         'past_dead_line':past_dead_line,
@@ -232,12 +227,11 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         'tests': tests
     };
 
-    if (best && !data['past_dead_line']) {
+    if (best && ! past_dead_line) {
         update_marks(this.wrapperDivId, score, max_score);
     }
 
-    var flag = (this.wrapperDiv.find('#history_accordion').children().length != 0);
-    add_history_entry(data, this.wrapperDivId, flag);
+    add_history_entry(historyData, this.wrapperDivId);
 }
 
 /**
@@ -256,31 +250,31 @@ SubmissionWrapper.prototype.getAllCode = function() {
  */
 SubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     var div_id = this.wrapperDivId;
-    var newRow = $('<tr class="pcrs-table-row" id="tcase_' + div_id + '_' + i + '"></tr>');
+    var $newRow = $('<tr class="pcrs-table-row"></tr>');
 
     if ("exception" in testcase) {
-        newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
+        $newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
             testcase.exception + '</th>');
     }
 
-    return newRow;
+    return $newRow;
 }
 
 /**
  * Adds a status smiley/frowney face to a test row.
  */
-SubmissionWrapper.prototype._addFaceColumnToTestRow = function(row, passed) {
+SubmissionWrapper.prototype._addFaceColumnToTestRow = function($row, passed) {
     var smFace = passed ? happyFace : sadFace;
-    newRow.append($('<td class="passed"></td>').html(smFace.clone()));
+    $row.append($('<td class="passed"></td>').html(smFace.clone()));
 }
 
 /**
  * Adds accessibility test results to a test row.
  */
-SubmissionWrapper.prototype._addA11yToTestRow = function(row, result, passed,
+SubmissionWrapper.prototype._addA11yToTestRow = function($row, result, passed,
         expected) {
     var pass_status = passed ? 'passed' : 'failed'
-    row.append('<a class="at" href="">This testcase has ' + pass_status +
+    $row.append('<a class="at" href="">This testcase has ' + pass_status +
         '. Expected: ' + expected +
         '. Result: ' + result + '</a>');
 }
@@ -290,25 +284,25 @@ SubmissionWrapper.prototype._addA11yToTestRow = function(row, result, passed,
  *
  * @see _prepareVisualizer
  */
-SubmissionWrapper.prototype._addDebugColumnToTestRow = function(row, debug) {
+SubmissionWrapper.prototype._addDebugColumnToTestRow = function($row, debug) {
     if (debug) {
-        var button = $('<button class="debugBtn" type="button"></button>')
+        var $button = $('<button class="debugBtn" type="button"></button>')
             .attr('data-toggle', 'modal')
             .attr('data-target', '#visualizerModal')
             .text('Trace');
-        row.append($('<td class="debug"></td>').append(button));
+        $row.append($('<td class="debug"></td>').append($button));
 
         var that = this;
-        button.bind('click', function() {
+        $button.bind('click', function() {
             setTimeout(function() {
                 $('#waitingModal').modal('show');
-                that._prepareVisualizer(row);
+                that._prepareVisualizer($row);
                 $('#waitingModal').modal('hide');
             }, 250);
         });
     } else {
         // Test cases that don't allow debugging.
-        row.append('<td class="debug">-</td>')
+        $row.append('<td class="debug">-</td>')
     }
 }
 

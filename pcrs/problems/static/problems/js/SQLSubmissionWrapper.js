@@ -165,7 +165,6 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         update_marks(div_id, score, max_score);
     }
 
-    var flag = ($('#'+div_id).find('#history_accordion').children().length != 0);
-    add_history_entry(data, div_id, flag);
+    add_history_entry(data, div_id);
 }
 

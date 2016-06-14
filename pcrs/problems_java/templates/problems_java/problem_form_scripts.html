@@ -12,9 +12,9 @@ function submitHiddenJava() {
         var testSuiteCode = cmh_list[id_test_suite_field].getValue();
 
         // Move values to temporary variables
-        document.getElementById("id_starter_code_tmp").value += starterCode;
-        document.getElementById("id_solution_tmp").value += solutionCode;
-        document.getElementById("id_test_suite_tmp").value += testSuiteCode;
+        document.getElementById("id_starter_code_tmp").value = starterCode;
+        document.getElementById("id_solution_tmp").value = solutionCode;
+        document.getElementById("id_test_suite_tmp").value = testSuiteCode;
         return true;
     } catch (err) {
         alert('Error submitting code: ' + err.message);
