@@ -337,13 +337,54 @@ SubmissionWrapper.prototype.loadAndShowHistory = function() {
  * Show the history modal with the given entries.
  */
 SubmissionWrapper.prototype.showHistoryModal = function(entries) {
-    var $historyDiv = $('#' + 'history_window_' + this.wrapperDivId);
-    // Delete the old
+    var $historyDiv = $('#history_window_' + this.wrapperDivId);
     var $accordion = $historyDiv.find('#history_accordion');
+    // Delete the old
     $accordion.empty();
     // Add the new
-    for (var x = 0; x < data.length; x++) {
-        add_history_entry(data[x], div_id);
+    for (var x = 0; x < entries.length; x++) {
+        this._addHistoryEntry(entries[x], $accordion);
     }
+}
+
+/**
+ * Add "data" to the history inside the given "div_id"
+ */
+SubmissionWrapper.prototype._addHistoryEntry = function(entry, $accordion) {
+    var sub_time = new Date(entry['sub_time']);
+    var panel_class = "pcrs-panel-default";
+    var star_text = "";
+
+    sub_time = jsDateTimeToPCRSDatetime(sub_time);
+
+    if (entry['past_dead_line']) {
+        panel_class = "pcrs-panel-warning";
+        sub_time = sub_time + " Submitted after the deadline";
+    }
+    if (entry['best'] && ! entry['past_dead_line']) {
+        panel_class = "pcrs-panel-star";
+    }
+
+    var mirrorId = 'history_mirror_' + entry['problem_pk'] + '_' + entry['sub_pk'];
+    var template = Handlebars.getTemplate('hb_history_row');
+    var config = {
+        panelClass: panel_class,
+        problemPk:  entry['problem_pk'],
+        subPk:      entry['sub_pk'],
+        title:      sub_time,
+        score:      entry['score'],
+        maxScore:   entry['out_of'],
+        isBest:     entry['best'] && ! entry['past_dead_line'],
+        testcases:  entry['tests'],
+        mirrorId:   mirrorId,
+        submission: entry['submission'],
+    };
+
+    $accordion.append(template(config));
+    this._createHistoryCodeMirror(mirrorId);
+}
+
+SubmissionWrapper.prototype._createHistoryCodeMirror = function(mirrorId) {
+    create_to_code_mirror(this.language, this.language_version, mirrorId);
 }
 

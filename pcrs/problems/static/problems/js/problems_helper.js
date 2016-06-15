@@ -64,3 +64,31 @@ function update_marks(div_id, score, max_score){
 
     side_bar.prop('title', new_title);
 }
+
+/**
+ * Convert django "datetime" to PCRS style for history
+ */
+function jsDateTimeToPCRSDatetime(datetime) {
+    var month_names = ["January","February","March","April","May","June","July",
+                   "August","September","October","November","December"];
+
+    var day = datetime.getDate();
+    var month = month_names[datetime.getMonth()];
+    var year = datetime.getFullYear();
+    var hour = datetime.getHours();
+    var minute = datetime.getMinutes();
+
+    if (String(minute).length == 1){
+        minute = "0" + minute
+    }
+    if (hour > 12){
+        hour -= 12;
+        cycle = "p.m.";
+    } else {
+        cycle = "a.m.";
+    }
+
+    var formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
+    return formated_datetime;
+}
+

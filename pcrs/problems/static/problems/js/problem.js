@@ -9,7 +9,6 @@ var debugger_id = "";
 var visPostComplete = true;
 //root is a global variable from base.html
 
-
 function getVisualizerComponents(newCode, testcaseCode, problemId) {
     /**
      * Get Components for coding problem visualization
@@ -27,120 +26,6 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
-}
-
-/**
- * Add "data" to the history inside the given "div_id"
- */
-// FIXME Bite the proverbial bullet and start using mustache!
-function add_history_entry(data, div_id) {
-    var $accordion = $('#' + div_id).find('#history_accordion');
-
-    var sub_time = new Date(data['sub_time']);
-    var panel_class = "pcrs-panel-default";
-    var star_text = "";
-
-    sub_time = create_timestamp(sub_time);
-
-    if (data['past_dead_line']){
-        panel_class = "pcrs-panel-warning";
-        sub_time = sub_time + " Submitted after the deadline";
-    }
-
-    if (data['best'] && !data['past_dead_line']){
-        panel_class = "pcrs-panel-star";
-        star_text = '<icon style="font-size:1.2em" class="star-icon" title="Latest Best Submission"> </icon>';
-
-        $accordion.find(".star-icon").remove();
-        $accordion.find(".pcrs-panel-star")
-            .addClass("pcrs-panel-default").removeClass("pcrs-panel-star");
-    }
-
-    var entry = $('<div/>',{class:panel_class});
-    var header1 = $('<div/>',{class:"pcrs-panel-heading"});
-    var header2 = $('<h4/>', {class:"pcrs-panel-title"});
-    var header4 = $('<td/>', {html:"<span class='pull-right'> " + star_text + " "
-                                      + "<sup class='h_score'>" + data['score'] + "</sup>"
-                                      + " / "
-                                      + "<sub class='h_score'>" + data['out_of'] + "</sub>"
-                                      + "</span>"});
-
-    var header3 = $('<a/>', {'data-toggle':"collapse",
-                             'data-parent':"#history_accordion",
-                              href:"#collapse_"+data['sub_pk'],
-                              onclick:"delay_refresh_cm('history_mirror_"
-                                + data['problem_pk']
-                                + "_"
-                                + data['sub_pk']
-                                + "')",
-                              html:sub_time + header4.html()});
-
-    var cont1 = $('<div/>', {class:"pcrs-panel-collapse collapse",
-                                  id:"collapse_" + data['sub_pk']});
-
-    var cont2 = $('<div/>', {id:"history_mirror_"
-                                      + data['problem_pk']
-                                      + "_"
-                                      + data['sub_pk'],
-                                  html:data['submission']});
-    cont2.html = cont2.text(data['submission']).html();
-
-    var cont3 = $('<ul/>', {class:"pcrs-list-group"});
-
-
-    for (var num = 0; num < data['tests'].length; num++){
-
-        var lc = "";
-        var ic = "";
-        var test_msg = "";
-        if (data['tests'][num]['passed']){
-            lc = "testcase-success";
-            ic = "<icon class='ok-icon'> </icon>";
-        }
-        else{
-            lc = "testcase-fail";
-            ic = "<icon class='remove-icon'> </icon>";
-        }
-
-        if (data['tests'][num]['visible']){
-            test_msg = " " + data['tests'][num]['input'] + " -> " + data['tests'][num]['output'];
-        }
-        else{
-            if (data['tests'][num]['description'] == ""){
-                test_msg = " Hidden Test";
-            }
-            else{
-                test_msg = " " + data['tests'][num]['description'];
-            }
-        }
-
-        var cont4 = $('<li/>', {class:lc,
-                                   html:ic + test_msg});
-        cont3.append(cont4);
-    }
-
-
-    header2.append(header3);
-    header1.append(header2);
-
-    entry.append(header1);
-    cont1.append(cont2);
-    cont1.append(cont3);
-    entry.append(cont1);
-
-    if ($accordion.children().length == 0) {
-        $accordion.append(entry);
-    } else {
-        $accordion.prepend(entry);
-    }
-
-    var historyMirrorId = "history_mirror_" +
-        data['problem_pk'] + "_" + data['sub_pk'];
-    // A bit of a hack for now - The only possibly version is "3" for Python
-    // Soon, this will be polymorphized so we can check the class version instead
-    // TODO replace this with a TabbedCodeMirror on PCRS-Java!!!
-    var language_version = 3;
-    create_to_code_mirror(language, language_version, historyMirrorId);
 }
 
 /**
@@ -232,35 +117,6 @@ function handleCompileMessages(div_id, testcases) {
     }
 
     return dont_visualize;
-}
-
-function create_timestamp(datetime){
-    /**
-     * Convert django "datetime" to PCRS style for history
-     */
-
-    var month_names = ["January","February","March","April","May","June","July",
-                   "August","September","October","November","December"];
-
-    var day = datetime.getDate();
-    var month = month_names[datetime.getMonth()];
-    var year = datetime.getFullYear();
-    var hour = datetime.getHours();
-    var minute = datetime.getMinutes();
-
-    if (String(minute).length == 1){
-        minute = "0" + minute
-    }
-    if (hour > 12){
-        hour -= 12;
-        cycle = "p.m.";
-    }
-    else{
-        cycle = "a.m.";
-    }
-
-    var formated_datetime = month + " " + day + ", "+year + ", " + hour+":"+minute+" "+cycle
-    return formated_datetime;
 }
 
 /**
