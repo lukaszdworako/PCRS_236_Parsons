@@ -33,10 +33,9 @@ SubmissionWrapper.prototype.pageLoad = function() {
         event.preventDefault();
         that.submitAllCode();
     });
-    this.wrapperDiv.find("[name='history']").one("click", (function() {
-        // FIXME: Show multiple files / tabs in Java wrappers.
-        getHistory(that.wrapperDivId);
-    }));
+    this.wrapperDiv.find("[name='history']").click(function() {
+        that.loadAndShowHistory();
+    });
 
     this.wrapperDiv.children('#grade-code').hide();
     this.createCodeMirrors();
@@ -192,6 +191,7 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
             if (testcase.test_desc == '') {
                 testcase.test_desc = "No Description Provided"
             }
+            // FIXME this should only be in PCRS-Python, no?
             testcase.expected_output = testcase.expected_output
                 ? create_output(testcase.expected_output)
                 : null;
@@ -230,8 +230,6 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     if (best && ! past_dead_line) {
         update_marks(this.wrapperDivId, score, max_score);
     }
-
-    add_history_entry(historyData, this.wrapperDivId);
 }
 
 /**
@@ -312,5 +310,40 @@ SubmissionWrapper.prototype._addDebugColumnToTestRow = function($row, debug) {
  * This does nothing by default - interesting things happen in subclasses.
  */
 SubmissionWrapper.prototype._prepareVisualizer = function(row) {
+}
+
+/**
+ * Get submission history for a coding problem based on id of the problem.
+ */
+SubmissionWrapper.prototype.loadAndShowHistory = function() {
+    var postParams = {
+        csrftoken: csrftoken
+    };
+
+    // Empty the accordion, in case any manual insertions were performed.
+
+    var problem_path = root + '/problems/' + this.language + '/' + this.problemId +'/history';
+    var that = this;
+    $.post(problem_path, postParams,
+        function(data) {
+            that.showHistoryModal(data);
+        }, 'json')
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.log(textStatus);
+        });
+}
+
+/**
+ * Show the history modal with the given entries.
+ */
+SubmissionWrapper.prototype.showHistoryModal = function(entries) {
+    var $historyDiv = $('#' + 'history_window_' + this.wrapperDivId);
+    // Delete the old
+    var $accordion = $historyDiv.find('#history_accordion');
+    $accordion.empty();
+    // Add the new
+    for (var x = 0; x < data.length; x++) {
+        add_history_entry(data[x], div_id);
+    }
 }
 

@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_delete
 
+from problems.helper import remove_tag
 from problems.pcrs_languages import GenericLanguage
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
     SubmissionPreprocessorMixin, AbstractSelfAwareModel, AbstractTestCase,
@@ -168,6 +169,13 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     A coding problem submission.
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+
+    def get_displayable_submission(self):
+        '''We want to return the tags for the history modal in PCRS-Java.
+        '''
+        code = self.fuseStudentCodeIntoStarterCode()
+        code = remove_tag('[hidden]', '[/hidden]', code)
+        return code
 
     def run_testcases(self, request, save=True):
         """

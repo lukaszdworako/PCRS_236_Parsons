@@ -29,40 +29,11 @@ function getVisualizerComponents(newCode, testcaseCode, problemId) {
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
 }
 
-
-function getHistory(div_id){
-    /**
-     * Get submission history for a coding problem based on 'div_id' of the problem
-     */
-
-    var postParams = { csrftoken: csrftoken };
-    var problem_path = "";
-
-    // Empty the accordion, in case any manual insertions were performed.
-
-    var language = check_language(div_id);
-    problem_path = root + '/problems/' + language + '/' + div_id.split("-")[1]+'/history';
-    $.post(problem_path,
-        postParams,
-        function(data){
-            window[div_id+'_history_init'] = 1;
-            show_history(data, div_id);
-        },
-        'json')
-        .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
-}
-
-
-function add_history_entry(data, div_id){
-    /**
-     * Add "data" to the history inside the given "div_id"
-     */
-
-    // Exit if the history window has fbeen requested by the user
-    if (!window[div_id+'_history_init']) {
-        return;
-    }
-
+/**
+ * Add "data" to the history inside the given "div_id"
+ */
+// FIXME Bite the proverbial bullet and start using mustache!
+function add_history_entry(data, div_id) {
     var $accordion = $('#' + div_id).find('#history_accordion');
 
     var sub_time = new Date(data['sub_time']);
@@ -167,17 +138,9 @@ function add_history_entry(data, div_id){
         data['problem_pk'] + "_" + data['sub_pk'];
     // A bit of a hack for now - The only possibly version is "3" for Python
     // Soon, this will be polymorphized so we can check the class version instead
+    // TODO replace this with a TabbedCodeMirror on PCRS-Java!!!
     var language_version = 3;
     create_to_code_mirror(language, language_version, historyMirrorId);
-}
-
-/**
- * Given all the previous submissions "data" add it to the "div_id"
- */
-function show_history(data, div_id) {
-    for (var x = 0; x < data.length; x++) {
-        add_history_entry(data[x], div_id);
-    }
 }
 
 /**

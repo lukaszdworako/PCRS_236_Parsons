@@ -9,6 +9,7 @@ from users.models import Section
 
 from problems.widgets.select_multiple_field import SelectMultipleField
 
+from problems.helper import remove_tag
 
 class BaseProblemForm(CrispyFormMixin):
     clear_button = HTML('<a class="red-button" role="button" '
@@ -97,28 +98,12 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
         problem = kwargs.get('problem', None)
 
         # Remove hidden code from the student
-        problem.starter_code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
+        code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
 
         super().__init__(*args, **kwargs)
-        self.fields['submission'].initial = problem.starter_code
+        self.fields['submission'].initial = code
         layout_fields = (Fieldset('', 'submission'), Div(self.history_button, self.submit_button))
         self.helper.layout = Layout(*layout_fields)
-
-
-def remove_tag(tag_open, tag_close, source_code):
-    source_code = source_code.split('\n')
-    source_code_output = []
-    tag_count = 0
-    for line in source_code:
-        if line.find(tag_open) > -1:
-            tag_count += 1
-            continue
-        elif line.find(tag_close) > -1:
-            tag_count -= 1
-            continue
-        if tag_count == 0:
-            source_code_output.append(line)
-    return "\n".join(source_code_output)
 
 
 class MonitoringForm(CrispyFormMixin, forms.Form):

@@ -266,6 +266,11 @@ class AbstractSubmission(AbstractSelfAwareModel):
     def get_for_students(cls, active_only):
         return cls.get_for_users(active_only).filter(user__is_student=True)
 
+    def get_displayable_submission(self):
+        '''Override this method to decorate submission text (e.g. in history)
+        '''
+        return self.submission
+
     def set_best_submission(self):
         """
         Update the submission such that the latest submission with highest score

@@ -369,7 +369,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
         for sub in data:
             returnable.append({
                 'sub_time': sub.timestamp.isoformat(),
-                'submission': sub.submission,
+                'submission': sub.get_displayable_submission(),
                 'score': sub.score,
                 'out_of': problem.max_score,
                 'best': sub.has_best_score and \

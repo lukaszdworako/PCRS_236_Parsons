@@ -164,7 +164,5 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     if (best && !data['past_dead_line']){
         update_marks(div_id, score, max_score);
     }
-
-    add_history_entry(data, div_id);
 }
 
