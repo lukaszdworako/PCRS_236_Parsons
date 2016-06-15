@@ -92,3 +92,36 @@ function jsDateTimeToPCRSDatetime(datetime) {
     return formated_datetime;
 }
 
+/**
+ * Replaces a div with code inside with a TabbedCodeMirror
+ *
+ * @param $codeDiv The code div to replace.
+ * @return The TabbedCodeMirror object.
+ */
+function emplaceTabbedCodeMirrorOnCodeDiv($codeDiv) {
+    var tcm = new TabbedCodeMirror();
+    var codeText = $codeDiv.text();
+
+    // Replace the code div with the tabbed code mirror
+    $codeDiv.before(tcm.getJQueryObject());
+    $codeDiv.remove();
+
+    var files = TagManager.parseCodeIntoFiles(codeText);
+
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var codeObj = TagManager.stripTagsForStudent(file.code);
+        tcm.addFile({
+            'name': file.name,
+            'code': codeObj.code,
+            'mode': 'text/x-java',
+            'theme': user_theme,
+            'block_ranges': codeObj.block_ranges,
+            'hash_ranges': codeObj.hash_ranges,
+        });
+    }
+
+    tcm.setActiveTabIndex(0);
+    return tcm;
+}
+

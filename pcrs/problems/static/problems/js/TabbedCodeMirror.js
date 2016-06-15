@@ -13,6 +13,20 @@ function TabbedCodeMirror() {
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
 
 /**
+ * Get the jQuery representation of the TabbedCodeMirror
+ */
+TabbedCodeMirror.prototype.getJQueryObject = function() {
+    return this.$tabs.add(this.$content);
+}
+
+/**
+ * Refresh the active code mirror.
+ */
+TabbedCodeMirror.prototype.refresh = function() {
+    this.mirrors[this.getActiveTabIndex()].refresh();
+}
+
+/**
  * Adds a set of edit widgets.
  *
  * After calling this, widgets for deleting, inserting, moving,
