@@ -40,11 +40,12 @@ table.numbered tr.numbered td:first-child::before {
 
 .tabbed-code-mirror li a:hover {
     background-color: transparent;
+    border: none !important;
 }
 
 .tabbed-code-mirror li a {
     margin: 0px;
-    border: none;
+    border: none !important;
     background-color: transparent;
     color: #777777;
     display: inline-block;
@@ -52,13 +53,13 @@ table.numbered tr.numbered td:first-child::before {
 
 .tabbed-code-mirror li.active a {
     background-color: transparent;
-    border: none;
+    border: none !important;
     cursor: pointer;
 }
 
 .tabbed-code-mirror li.active a:hover {
     background-color: transparent;
-    border: none;
+    border: none !important;
 }
 
 .tabbed-code-mirror li a.tab-dropdown-title {

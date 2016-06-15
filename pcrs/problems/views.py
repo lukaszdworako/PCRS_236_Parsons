@@ -11,6 +11,7 @@ from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime
 
+from pcrs.settings import DEBUG
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
@@ -266,7 +267,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
         try:
             results = self.record_submission(request)
         except AttributeError: # Probably an anonymous user
-            if pcrs.settings.DEBUG:
+            if DEBUG:
                 raise
             return HttpResponse(json.dumps({
                                 'results': ([], "Your session has expired. Please copy your submission (to save it) and refresh the page before submitting again."),

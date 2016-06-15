@@ -98,13 +98,10 @@ function jsDateTimeToPCRSDatetime(datetime) {
  * @param $codeDiv The code div to replace.
  * @return The TabbedCodeMirror object.
  */
-function emplaceTabbedCodeMirrorOnCodeDiv($codeDiv) {
-    var tcm = new TabbedCodeMirror();
-    var codeText = $codeDiv.text();
-
-    // Replace the code div with the tabbed code mirror
-    $codeDiv.before(tcm.getJQueryObject());
-    $codeDiv.remove();
+function setTabbedCodeMirrorFilesFromTagText(tcm, codeText) {
+    while (tcm.getFileCount() > 0) {
+        tcm.removeFileAtIndex(0);
+    }
 
     var files = TagManager.parseCodeIntoFiles(codeText);
 
@@ -122,6 +119,5 @@ function emplaceTabbedCodeMirrorOnCodeDiv($codeDiv) {
     }
 
     tcm.setActiveTabIndex(0);
-    return tcm;
 }
 

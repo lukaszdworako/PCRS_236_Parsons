@@ -2,6 +2,7 @@ function JavaSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "java";
     this.language_version = 'text/x-java';
+    this.tcm = new TabbedCodeMirror();
 }
 JavaSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
@@ -11,8 +12,15 @@ JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
  */
 JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
     var $codeDiv = this.wrapperDiv.find("#div_id_submission");
-    myCodeMirrors[this.wrapperDivId] =
-        emplaceTabbedCodeMirrorOnCodeDiv($codeDiv);
+    var codeText = $codeDiv.text();
+
+    setTabbedCodeMirrorFilesFromTagText(this.tcm, codeText);
+
+    // Replace the code div with the tabbed code mirror
+    $codeDiv.before(this.tcm.getJQueryObject());
+    $codeDiv.remove();
+
+    myCodeMirrors[this.wrapperDivId] = this.tcm;
 }
 
 /**
@@ -63,6 +71,37 @@ JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  */
 JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(mirrorId) {
     var $codeDiv = $("#" + mirrorId);
-    cmh_list[mirrorId] = emplaceTabbedCodeMirrorOnCodeDiv($codeDiv);
+    var codeText = $codeDiv.text();
+    var tcm = new TabbedCodeMirror();
+    console.log(codeText);
+
+    setTabbedCodeMirrorFilesFromTagText(tcm, codeText);
+
+    // Add a button to revert to this submission
+    var that = this;
+    $codeDiv.before($('<a class="btn btn-danger pull-right" role="button"></a>')
+        .text('Revert')
+        .click(function() {
+            that._revertToCodeFromHistoryModal(codeText);
+        }));
+
+    // Replace the code div with the tabbed code mirror
+    $codeDiv.before(tcm.getJQueryObject());
+    $codeDiv.remove();
+
+    cmh_list[mirrorId] = tcm;
+}
+
+JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
+    if ( ! confirm('Revert current code to this submission?')) {
+        return;
+    }
+
+    setTabbedCodeMirrorFilesFromTagText(this.tcm, code);
+
+    var $historyDiv = $('#history_window_' + this.wrapperDivId);
+    $historyDiv.modal('hide');
+    this.wrapperDiv.find('#grade-code').hide();
+    this.wrapperDiv.find('#alert').hide();
 }
 

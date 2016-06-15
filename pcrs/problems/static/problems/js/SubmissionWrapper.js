@@ -121,6 +121,7 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
 
     if ( ! this.isEditor) {
         var $alertBox = this.wrapperDiv.find('#alert');
+        $alertBox.show();
         var decider = score == max_score;
 
         $alertBox.toggleClass("red-alert", ! decider);

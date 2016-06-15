@@ -289,8 +289,8 @@ TabbedCodeMirror._hashLinesInMirror = function(mirror, ranges) {
     for (var i = 0; i < ranges.length; i++) {
         var start = ranges[i].start - 1;
         var end = ranges[i].end - 1;
+        // We only care about the start index - the end is determined dynamically
         mirror.addLineClass(start, '', 'hash-start');
-        mirror.addLineClass(end, '', 'hash-end');
     }
 }
 
@@ -300,7 +300,8 @@ TabbedCodeMirror._hashLinesInMirror = function(mirror, ranges) {
 TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
     for (var i = start; i <= end; i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
-        if (wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
+        if (wrapClass !== undefined &&
+                wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
             return true;
         }
     }
@@ -417,24 +418,32 @@ TabbedCodeMirror.prototype.getHashedCode = function(hash) {
  */
 TabbedCodeMirror._getHashedCodeFromMirror = function(mirror, hash) {
     var code = '';
+    var inHash = false;
 
     for (var i = 0; i < mirror.lineCount(); i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
         // Blocked code
         if (wrapClass && wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
+            if (inHash) {
+                code += hash + '\n';
+                inHash = false;
+            }
             continue;
         }
         // The start of a hash segment
         if (wrapClass && wrapClass.indexOf('hash-start') > -1) {
+            if (inHash) {
+                // student_code tags back to back
+                code += hash + '\n';
+            }
             code += hash + '\n';
+            inHash = true;
         }
 
         code += mirror.getLine(i) + '\n';
-
-        // The end of a hash segment
-        if (wrapClass && wrapClass.indexOf('hash-end') > -1) {
-            code += hash + '\n';
-        }
+    }
+    if (inHash) {
+        code += hash + '\n';
     }
     return code;
 }

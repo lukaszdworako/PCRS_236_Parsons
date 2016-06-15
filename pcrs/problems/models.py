@@ -459,8 +459,8 @@ class SubmissionPreprocessorMixin:
 
         #Code not from editor, process tags
         code = self.fuseStudentCodeIntoStarterCode()
-        # Strip blocked/hidden tags but leave their contents (for compiling)
-        code = re.sub(r'\[\/?(hidden|blocked)\]\r?\n?', '', code)
+        # Strip tags but leave their contents (for compiling)
+        code = re.sub(r'\[\/?(student_code|blocked|hidden)\]\r?\n?', '', code)
 
         return self.parseCodeIntoFiles(code) or [{
             # If there were no file tags
@@ -541,10 +541,15 @@ class SubmissionPreprocessorMixin:
         Returns:
             The given snippets emplaced into the corresponding code tag positions.
         '''
-        emplacementRegex = re.compile('\[student_code\].*?\[\/student_code\]\r?\n?', re.DOTALL)
-        while len(student_code_list) > 0 and starter_code.find('[student_code]') != -1:
+        emplacementRegex = re.compile('(?<=\[student_code\]).*?(?=\[\/student_code\])\r?\n?', re.DOTALL)
+        # re.sub has no way to replace _after_ a given index, so we break up the starter code.
+        after = 0
+        while len(student_code_list) > 0:
             student_code = student_code_list.pop(0)
-            starter_code = re.sub(emplacementRegex, student_code, starter_code, 1)
+            segment = starter_code[after:]
+            segment = re.sub(emplacementRegex, student_code, segment, 1)
+            student_code = student_code[:after] + segment
+            after += segment.find('[\/student_code]')
         return starter_code
 
 # Signal handlers
