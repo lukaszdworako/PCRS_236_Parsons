@@ -498,13 +498,13 @@ class SubmissionPreprocessorMixin:
             A string representation of the files (including [file] tags)
         '''
         delim = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-        student_code_list = self._parseStudentCodeChunks(self.submission, delim)
+        studentCodeList = self._parseStudentCodeChunks(self.submission, delim)
 
         # The fusion of student code with starter_code (from the database)
-        mod_submission = self._emplaceStudentCodeSnippets(student_code_list,
+        modSubmission = self._emplaceStudentCodeChunks(studentCodeList,
             self.problem.starter_code)
 
-        return mod_submission
+        return modSubmission
 
     def _parseStudentCodeChunks(self, sub, delim):
         '''Extracts code chunks out of a given submission.
@@ -531,26 +531,30 @@ class SubmissionPreprocessorMixin:
 
         return chunks
 
-    def _emplaceStudentCodeSnippets(self, student_code_list, starter_code):
+    def _emplaceStudentCodeChunks(self, studentCodeList, starter_code):
         '''Emplaces the given code snippets into the given starter code.
         The [student_code] tags will be replaced appropriately.
 
         Args:
-            student_code_list: A list of student code snippets.
-            starter_code:      The starter code - probably from the Problem class.
+            studentCodeList: A list of student code snippets.
+            starter_code:    The starter code - probably from the Problem class.
         Returns:
             The given snippets emplaced into the corresponding code tag positions.
         '''
-        emplacementRegex = re.compile('(?<=\[student_code\]).*?(?=\[\/student_code\])\r?\n?', re.DOTALL)
-        # re.sub has no way to replace _after_ a given index, so we break up the starter code.
-        after = 0
-        while len(student_code_list) > 0:
-            student_code = student_code_list.pop(0)
-            segment = starter_code[after:]
-            segment = re.sub(emplacementRegex, student_code, segment, 1)
-            student_code = student_code[:after] + segment
-            after += segment.find('[\/student_code]')
-        return starter_code
+
+        emplacementRegex = re.compile('\[student_code\]\r?\n.*?\[\/student_code\]', re.DOTALL)
+        # Break up the starter code into non-student_code segments
+        nonStudentCodeChunks = emplacementRegex.split(starter_code)
+
+        newCode = ""
+        # Interleave the non-student and student code chunks
+        for i in range(len(nonStudentCodeChunks)):
+            newCode += nonStudentCodeChunks[i]
+
+            if len(studentCodeList) > 0:
+                newCode += '[student_code]\n'
+                newCode += studentCodeList.pop(0) + '[/student_code]'
+        return newCode
 
 # Signal handlers
 

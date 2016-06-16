@@ -175,7 +175,11 @@ class JavaSpecifics(BaseLanguage):
         '''
         m = re.search("(?:org\.junit\.\w+|java\.lang\.AssertionError):? ?(.*)", trace)
         if m:
-            return m.group(1).strip()
+            message = m.group(1).strip()
+            # The instructor didn't provide a message, so this should be hidden
+            if message.startswith('expected:'):
+                return ''
+            return message
         return trace
 
     def _stripTestCodeCompileError(self, error):
@@ -187,10 +191,10 @@ class JavaSpecifics(BaseLanguage):
             A nicely stripped error message, not exposing the test case code.
         '''
         if re.search('cannot find symbol', error):
-            message = ''
+            messages = set()
             for m in re.findall('\s*symbol:\s*\w+\s*([\w_]+)', error):
-                message += "You must define '{0}' as described.\n".format(m)
-            return message
+                messages.add("You must define '{0}' as described.".format(m))
+            return '\n'.join(messages)
 
         m = re.search('error: non\-static (?:method|variable) ([\w_]+\(?\)?)', error)
         if m:

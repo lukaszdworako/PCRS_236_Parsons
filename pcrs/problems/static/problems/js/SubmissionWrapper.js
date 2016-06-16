@@ -173,6 +173,7 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     var sub_pk = testData['sub_pk'];
     var max_score = testData['max_score'];
     var error_msg = testData['error_msg'];
+    var testcases = testData['testcases'];
 
     var $gradingTable = this.wrapperDiv.find("#gradeMatrix");
     $gradingTable.find(".red-alert").remove();

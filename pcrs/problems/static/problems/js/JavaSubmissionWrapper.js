@@ -58,10 +58,10 @@ JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
        '</div></td>');
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
-    this._addA11yToTestRow($newRow, testcase.test_val,
-        testcase.passed_test, testcase.expected_output);
     // NOTE: We might remove this in place of a single debug button.
     $newRow.append('<td class="debug">-</td>');
+    this._addA11yToTestRow($newRow, testcase.test_val,
+        testcase.passed_test, testcase.expected_output);
 
     return $newRow;
 }

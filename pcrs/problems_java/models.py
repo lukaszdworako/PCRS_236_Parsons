@@ -216,7 +216,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             failures = test_results['failures']
             if test_name in failures:
                 message = self._formatTextForHTML(failures[test_name])
-                res['test_val'] = message if len(message) > 0 else '(hidden)'
+                res['test_val'] = message if len(message.strip()) > 0 else '(hidden)'
                 res['passed_test'] = False
             if save:
                 TestRun.objects.create(submission=self, testcase=testcase,
