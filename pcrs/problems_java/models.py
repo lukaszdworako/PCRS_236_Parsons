@@ -72,19 +72,18 @@ class Problem(AbstractProgrammingProblem):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # Check before initial save
-        testsHaveChanged = self._testSuiteHasChanged()
-        super().save(force_insert, force_update, using, update_fields)
+        # We need the problem to exist before generating test cases
+        if not self.pk:
+            super().save(force_insert, force_update, using, update_fields)
 
         '''
         We have to generate the test case table whenever we save a problem.
         It seems a bit hacky to do this, but most of PCRS depends on
         problems having a dedicated test case table.
         '''
-        if testsHaveChanged:
-            self._repopulateTestCaseTable()
-            self.max_score = len(self.testcase_set.all())
-            super().save(force_insert, force_update, using, update_fields)
+        self._repopulateTestCaseTable()
+        self.max_score = len(self.testcase_set.all())
+        super().save(force_insert, force_update, using, update_fields)
 
     def _repopulateTestCaseTable(self):
         # Regenerate the test case table entries for this problem's test_suite

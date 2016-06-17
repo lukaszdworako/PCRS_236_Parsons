@@ -27,8 +27,17 @@ function clearSubmissionsForCurrentProblem() {
         url:    "{{ object.get_absolute_url }}/clear",
         method: "POST",
     }).success(function(data) {
-        // This will resend form data (e.g. if "save" was clicked previously)
-        location.reload();
+        // Clear errors on the page.
+        $('.has-error').removeClass('has-error');
+        // Remove error help blocks
+        var helpBlocks = $('.help-block');
+        for (var i = 0; i < helpBlocks.length; i++) {
+            var block = $(helpBlocks[i]);
+            if (block.attr('id').indexOf('error') > -1) {
+                block.remove();
+            }
+        }
+        $('#clearSubmissionsModal').modal('hide');
     });
 }
 </script>
