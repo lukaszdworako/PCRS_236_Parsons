@@ -58,3 +58,48 @@ PythonSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     getVisualizerComponents(newCode, testcaseCode, this.problemId);
 }
 
+/**
+ * @override
+ */
+PythonSubmissionWrapper.prototype._formatTestCaseObject = function(testcase) {
+    testcase = SubmissionWrapper.prototype._formatTestCaseObject.apply(
+        this, arguments);
+    testcase.expected_output = testcase.expected_output
+        ? this._createOutput(testcase.expected_output)
+        : null;
+    return testcase;
+}
+
+/**
+ * Convert the given "input" in to a string representing the
+ * students python solution.
+ */
+PythonSubmissionWrapper.prototype._createOutput = function(input) {
+    var brakets_o = {"list":"[","tuple":"(","dict":"{"};
+    var brakets_c = {"list":"]","tuple":")","dict":"}"};
+
+    if (input.length == 2) {
+        return this._createOutput(input[0]) + ":" + this._createOutput(input[1]);
+    } else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict") {
+        var output = brakets_o[input[0]];
+        for (var o_index = 2; o_index < input.length; o_index++) {
+            output += this._createOutput(input[o_index]);
+            if (o_index != input.length - 1) {
+                output += ", ";
+            }
+        }
+        output += brakets_c[input[0]];
+        return output
+    } else if (input[0] == "string") {
+        return "'" + input[2] + "'";
+    } else if(input[0] == "float") {
+        if (String(input[2]).indexOf(".") > -1) {
+            return input[2];
+        } else {
+            return input[2] + ".0"
+        }
+    } else {
+        return input[2]
+    }
+}
+

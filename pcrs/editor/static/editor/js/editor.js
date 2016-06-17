@@ -16,7 +16,7 @@ $(document).ready(function() {
 
     $(code_wrapper).children('#grade-code').hide();
 
-    check_language(code_wrapper_id);
+    checkLanguageFromContainerId(code_wrapper_id);
 
     if (language == "python"){
         myCodeMirrors[code_wrapper_id] = to_code_mirror(language, 3, $(code_wrapper).find("#div_id_code_box"), '', false);
@@ -49,6 +49,7 @@ $(document).ready(function() {
             if (user_code == '') {
                 alert('There is no code to submit.');
             } else {
+                // FIXME this method no longer exists
                 getTestcases(div_id);
             }
         });
@@ -90,5 +91,24 @@ function start_editor_visualizer(user_code, code_wrapper_id) {
             },
         "json")
      .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
+}
+
+/**
+ * Check the language of a problem container. (the id of the main_div)
+ */
+function checkLanguageFromContainerId(containerId) {
+    if (containerId.indexOf("c") > -1){
+        return 'c';
+    } else if (containerId.indexOf("python") > -1){
+        return 'python';
+    } else if (containerId.indexOf("java") > -1){
+        return 'java';
+    } else if (containerId.indexOf("sql") > -1){
+        return 'sql';
+    } else if (containerId.indexOf("ra") > -1){
+        return 'ra';
+    } else {
+        throw new Error('Could not detect language of ' + containerId + '!');
+    }
 }
 

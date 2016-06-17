@@ -13,3 +13,10 @@ RASubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     SQLSubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
 }
 
+/**
+ * @override
+ */
+RASubmissionWrapper.prototype._shouldUseGradeTable = function() {
+    SQLSubmissionWrapper.prototype._shouldUseGradeTable.apply(this, arguments);
+}
+

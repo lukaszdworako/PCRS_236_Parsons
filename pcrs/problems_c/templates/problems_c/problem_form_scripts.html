@@ -42,7 +42,7 @@
                 // NOTE: In the future, we may want to allow multiple files for C.
                 var tcm = cmh_list[id_starter_code_field];
                 var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
-                var solutionCode = cmh_list[id_solution_field].getFiles()[0].getValue();
+                var solutionCode = cmh_list[id_solution_field].getFiles()[0].code;
 
                 // Move values to temporary variables
                 document.getElementById("id_starter_code_tmp").value = code;

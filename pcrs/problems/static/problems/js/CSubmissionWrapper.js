@@ -9,6 +9,15 @@ CSubmissionWrapper.prototype.constructor = CSubmissionWrapper;
 /**
  * @override
  */
+CSubmissionWrapper.prototype.getTestcases = function(code) {
+    SubmissionWrapper.prototype.getTestcases.apply(this, arguments);
+    // For the debugger
+    document.getElementById('feedback_code').value = code;
+}
+
+/**
+ * @override
+ */
 CSubmissionWrapper.prototype.createCodeMirrors = function() {
     var codeDiv = this.wrapperDiv.find('#div_id_submission');
     var codeObj = TagManager.stripTagsForStudent(codeDiv.text());
@@ -32,9 +41,7 @@ CSubmissionWrapper.prototype.createCodeMirrors = function() {
  * @override
  */
 CSubmissionWrapper.prototype.getAllCode = function() {
-    var hash = CryptoJS.SHA1(this.problemId);
-    return TabbedCodeMirror._getHashedCodeFromMirror(
-        myCodeMirrors[this.wrapperDivId], hash);
+    return this._addHashkey(myCodeMirrors[this.wrapperDivId]);
 }
 
 /**
@@ -44,18 +51,75 @@ CSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     if (this.isEditor) {
         var testcases = testData['testcases'];
         // Handle compilation error and warning messages
-        var dont_visualize = handleCompileMessages(this.wrapperDivId, testcases);
+        var shouldVisualize = this._handleCompileMessages(testcases);
         /*
          * If it's the editor, start calling
          * visualizer functions now so long as no errors exist.
          */
-        if ( ! dont_visualize) {
-            getVisualizerComponents(code, "", 9999999);
+        if (shouldVisualize) {
+            getVisualizerComponents(code, '', 9999999);
         }
         return;
     }
 
     SubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
+}
+
+/**
+ * Handle error and warning messages.
+ *
+ * Errors will be highlighted in red.
+ * Warnings will be highlighted in yellow.
+ */
+CSubmissionWrapper.prototype._handleCompileMessages = function(testcases) {
+    // Handle C warnings and exceptions
+    this.wrapperDiv.find('#c_warning').remove();
+    this.wrapperDiv.find('#c_error').remove();
+
+    // Find testcase with warning/error
+    var bad_testcase = null;
+    for (var i = 0; i < testcases.length; i++) {
+        if ("exception_type" in testcases[i]) {
+            bad_testcase = testcases[i];
+            break;
+        }
+    }
+
+    var shouldVisualize = true;
+
+    if (bad_testcase != null) {
+        var class_type;
+        if (bad_testcase.exception_type == "warning") {
+            class_type = 'alert alert-warning';
+        } else if (bad_testcase.exception_type == "error") {
+            class_type = 'alert alert-danger';
+            shouldVisualize = false;
+        }
+
+        var bad_testcase_message = "";
+        if ("exception" in bad_testcase) {
+            bad_testcase_message = bad_testcase.exception;
+        } else if ("runtime_error" in bad_testcase) {
+            bad_testcase_message = "Runtime error for input '" +
+                bad_testcase.test_input +
+                "':<br/>" + bad_testcase.runtime_error;
+        }
+
+        this.wrapperDiv
+            .find('#alert')
+            .after('<div id="c_warning" class="' +
+                class_type + '" style="font-weight: bold">' +
+                bad_testcase_message + '</div>');
+    }
+
+    // The grade table clutters up the interface when we have compile errors
+    if (shouldVisualize) {
+        $('#gradeMatrix').show();
+    } else {
+        $('#gradeMatrix').hide();
+    }
+
+    return shouldVisualize;
 }
 
 /**
@@ -104,8 +168,38 @@ CSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  */
 CSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var testcaseCode = row.find(".expression_div").text();
-    var newCode =
-        addHashkey(myCodeMirrors[this.wrapperDivId], this.problemId);
+    var newCode = this._addHashkey(myCodeMirrors[this.wrapperDivId]);
     getVisualizerComponents(newCode, testcaseCode, this.problemId);
+}
+
+/**
+ * Generate a Hashkey based on the problem_id to identify
+ * where the student code starts and ends.
+ */
+CSubmissionWrapper.prototype._addHashkey = function(mirror) {
+    var hashCode = CryptoJS.SHA1(this.problemId);
+    var code = '';
+    var inside_student_code = false;
+
+    for (var i = 0; i < mirror.lineCount(); i++){
+        var wrapClass = mirror.lineInfo(i).wrapClass;
+
+        if (wrapClass == 'CodeMirror-activeline-background') {
+            if (inside_student_code) {
+                code += hashCode + '\n';
+                inside_student_code = false;
+            }
+        } else {
+            if ( ! inside_student_code) {
+                code += hashCode + '\n';
+                inside_student_code = true;
+            }
+        }
+
+        code += mirror.getLine(i);
+        code += '\n';
+    }
+    code += hashCode;
+    return code;
 }
 

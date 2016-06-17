@@ -2,7 +2,6 @@ function SubmissionWrapper(wrapperDivId) {
     this.wrapperDivId = wrapperDivId;
     this.wrapperDiv = $('#' + wrapperDivId);
     this.problemId = wrapperDivId.split("-")[1];
-    // FIXME I don't like the isEditor property...
     // If this is in a visualizer code editor
     this.isEditor = this.wrapperDivId.split("-")[2];
     // Null is evil, but these MUST be changed in the subclass constructors.
@@ -59,8 +58,6 @@ SubmissionWrapper.prototype.submitAllCode = function() {
     }
 }
 
-// FIXME this is called in editor.js.
-
 /**
  * Submit the current code and populate the grad table.
  */
@@ -70,13 +67,8 @@ SubmissionWrapper.prototype.getTestcases = function(code) {
     if (this.isEditor) {
         call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
-        call_path = root + '/problems/' + this.language + '/' + this.wrapperDivId.split("-")[1]+ '/run';
-    }
-
-    // FIXME nuuuu not language checks!
-    // Not including java yet, since debugger is not implemented
-    if (this.language == 'c') {
-        document.getElementById('feedback_code').value = code;
+        call_path = root + '/problems/' + this.language + '/' +
+            this.wrapperDivId.split("-")[1]+ '/run';
     }
 
     var postParams = { csrftoken: csrftoken, submission: code };
@@ -100,6 +92,10 @@ SubmissionWrapper.prototype.getTestcases = function(code) {
         });
 }
 
+SubmissionWrapper.prototype._shouldUseGradeTable = function() {
+    return ! this.isEditor;
+}
+
 SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
     if (data['past_dead_line']) {
         alert("This submission is past the deadline!")
@@ -109,10 +105,8 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
             'Submitted after the deadline!<div>');
     }
 
-    // FIXME rats nest
-    var use_gradetable = ( ! this.isEditor) || this.language == 'ra' || this.language == 'sql';
     // use_simpleui is global... gur.
-    if (use_simpleui == 'False' && use_gradetable) {
+    if (use_simpleui == 'False' && this._shouldUseGradeTable()) {
         this.wrapperDiv.find("#grade-code").show();
     }
 
@@ -143,10 +137,6 @@ SubmissionWrapper.prototype._getTestcasesCallback = function(data) {
             this.wrapperDiv.find('.screen-reader-text').prop(resultText);
         }
     }
-
-    // FIXME ugly global variables
-    error_msg = data['results'][1];
-    testcases = data['results'][0];
 
     this.prepareGradingTable({
         'testcases': data['results'][0],
@@ -182,21 +172,14 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     var score = 0;
     var tests = [];
 
-    if (error_msg != null) {
+    if (error_msg) {
         $gradingTable.append($('<th class="red-alert"></th>')
             .attr('style', 'width:100%;')
             .attr('colspan', '12')
             .text(error_msg));
     } else {
 	    for (var i = 0; i < testcases.length; i++) {
-            var testcase = testcases[i];
-            if (testcase.test_desc == '') {
-                testcase.test_desc = "No Description Provided"
-            }
-            // FIXME this should only be in PCRS-Python, no?
-            testcase.expected_output = testcase.expected_output
-                ? create_output(testcase.expected_output)
-                : null;
+            var testcase = this._formatTestCaseObject(testcases[i]);
 
             tests.push({
                 'visible': testcase.test_input != null,
@@ -215,8 +198,6 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
 	    }
     }
 
-    // FIXME somehow, show the tabs.
-
     var historyData = {
         'sub_time':new Date(),
         'submission': this.getAllCode(),
@@ -232,6 +213,13 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     if (best && ! past_dead_line) {
         update_marks(this.wrapperDivId, score, max_score);
     }
+}
+
+SubmissionWrapper.prototype._formatTestCaseObject = function(testcase) {
+    if (testcase.test_desc == '') {
+        testcase.test_desc = "No Description Provided"
+    }
+    return testcase;
 }
 
 /**
@@ -253,8 +241,9 @@ SubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     var $newRow = $('<tr class="pcrs-table-row"></tr>');
 
     if ("exception" in testcase) {
-        $newRow.append('<th class="red-alert" colspan="12" style="width:100%;">' +
-            testcase.exception + '</th>');
+        $newRow.append($('<th class="red-alert" colspan="12"></th>')
+            .attr('style', 'width: 100%;')
+            .append(testcase.exception));
     }
 
     return $newRow;
@@ -324,7 +313,8 @@ SubmissionWrapper.prototype.loadAndShowHistory = function() {
 
     // Empty the accordion, in case any manual insertions were performed.
 
-    var problem_path = root + '/problems/' + this.language + '/' + this.problemId +'/history';
+    var problem_path = root + '/problems/' + this.language + '/' +
+        this.problemId + '/history';
     var that = this;
     $.post(problem_path, postParams,
         function(data) {
@@ -367,7 +357,8 @@ SubmissionWrapper.prototype._addHistoryEntry = function(entry, $accordion) {
         panel_class = "pcrs-panel-star";
     }
 
-    var mirrorId = 'history_mirror_' + entry['problem_pk'] + '_' + entry['sub_pk'];
+    var mirrorId = 'history_mirror_' + entry['problem_pk'] + '_' +
+        entry['sub_pk'];
     var template = Handlebars.getTemplate('hb_history_row');
     var config = {
         panelClass: panel_class,

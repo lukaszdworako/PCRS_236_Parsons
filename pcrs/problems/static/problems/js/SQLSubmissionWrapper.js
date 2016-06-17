@@ -9,12 +9,21 @@ SQLSubmissionWrapper.prototype.constructor = SQLSubmissionWrapper;
 /**
  * @override
  */
+SQLSubmissionWrapper.prototype._shouldUseGradeTable = function() {
+    return true;
+}
+
+/**
+ * @override
+ */
 SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     var div_id = this.wrapperDivId;
     var best = testData['best_score'];
     var max_score = testData['max_score'];
     var sub_pk = testData['sub_pk'];
     var past_dead_line = testData['past_dead_line'];
+    var error_msg = testData['error_msg'];
+    var testcases = testData['testcases'];
 
     var score = 0;
     var tests = [];
@@ -22,7 +31,7 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     table_location.empty();
 
     // Error ra
-    if (error_msg != null){
+    if (error_msg) {
         table_location.append("<div class='red-alert'>"+error_msg+"</div>");
 
         var test = {'visible': false,
@@ -31,7 +40,6 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
                     'passed': false,
                     'description': error_msg};
         tests.push(test);
-        error_msg = null;
     } else {
         for (var i = 0; i < testcases.length; i++) {
             var current_testcase = testcases[i];
