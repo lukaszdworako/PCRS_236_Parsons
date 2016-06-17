@@ -162,3 +162,25 @@ function blockInput(mirror) {
     }
 }
 
+/**
+ * Extends the selection of a given code mirror to wrap entire lines.
+ *
+ * For instance, if part of one line is selected, it will
+ * select that entire line. If part of multiple lines are
+ * selected, it will wrap around them all.
+ */
+function extendMirrorSelectionAroundLines(mirror) {
+    var head = mirror.getCursor('head');
+    var anchor = mirror.getCursor('anchor');
+
+    if (anchor.line >= head.line) {
+        head.ch = 0;
+        anchor.ch = mirror.getDoc().getLine(anchor.line).length;
+    } else {
+        head.ch = mirror.getDoc().getLine(head.line).length;
+        anchor.ch = 0;
+    }
+
+    mirror.setSelection(anchor, head);
+}
+

@@ -8,9 +8,22 @@ function TabbedCodeMirror() {
     this.$content = $('<div class="tab-content"></div>');
     // Used for the add-file-button widget
     this.newFileOptions = {};
+    this._tabChangeCallback = function() {};
 }
 
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
+
+/**
+ * Set the callback for when a tab changes.
+ *
+ * @param callback {function} A function with an index parameter.
+ * Specifying "null" will unset the callback.
+ */
+TabbedCodeMirror.prototype.setTabChangeCallback = function(callback) {
+    this._tabChangeCallback = callback
+        ? callback
+        : function(index) {};
+}
 
 /**
  * Get the jQuery representation of the TabbedCodeMirror
@@ -394,6 +407,7 @@ TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
     this.$content.find('.CodeMirror').eq(index).addClass('active');
 
     this.mirrors[index].refresh();
+    this._tabChangeCallback(index);
 }
 
 /**

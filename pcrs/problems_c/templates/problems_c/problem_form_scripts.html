@@ -83,6 +83,7 @@
                 return;
             }
 
+            extendMirrorSelectionAroundLines(mirror);
             // Add tag after verifications
             var selected_area = mirror.getSelection();
             mirror.replaceSelection(tag_start + '\n' + selected_area + '\n' + tag_end);
@@ -246,14 +247,11 @@
             addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
             var tcm = cmh_list[id_starter_code_field];
             updateCodeHighLight();
-            for (var i = 0; i < tcm.getFileCount(); i++) {
-                var mirror = tcm.getCodeMirror(i);
-                /**
-                 * For some reason, it doesn't work if we pass in the mirror var.
-                 * So we just update ALL the highlights... bleh.
-                 */
-                mirror.on('change', updateCodeHighLight);
-            }
+            tcm.setTabChangeCallback(function(index) {
+                tcm.getCodeMirror(index).on('change', updateCodeHighLight);
+            });
+            tcm.setActiveTabIndex(0);
+
             addCodeMirrorToFieldWithId(id_solution_field);
 
             $(window).bind("load", function() {
