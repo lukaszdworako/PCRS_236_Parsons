@@ -37,12 +37,12 @@
             return TagManager.concatFilesIntoCode(files);
         }
 
-        function submitHiddenC() {
+        function submitHidden() {
             try {
                 // NOTE: In the future, we may want to allow multiple files for C.
                 var tcm = cmh_list[id_starter_code_field];
                 var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
-                var solutionCode = cmh_list[id_solution_field].getValue();
+                var solutionCode = cmh_list[id_solution_field].getFiles()[0].getValue();
 
                 // Move values to temporary variables
                 document.getElementById("id_starter_code_tmp").value = code;
@@ -212,38 +212,37 @@
             return tcm;
         }
 
-        $(function() {
-            // Add function to submit button to update hidden field data
-            $("#submit-id-clone").attr("onclick", "return submitHiddenC();");
-            $("#submit-id-submit").attr("onclick", "return submitHiddenC();");
-            $("#submit-id-attempt").attr("onclick", "return submitHiddenC();");
+        function addTagInsertButtonsAfterStarterCodeField() {
+            var field = $('#div_' + id_starter_code_field + ' div.controls');
+            var btnTemplate = Handlebars.getTemplate('hb_icon_button');
+            field.after('<br />' +
+                btnTemplate({
+                    type: 'primary',
+                    onclick: 'previewCode()',
+                    glyph: 'eye-open',
+                    text: 'Preview Exercise',
+                }) +
+                btnTemplate({
+                    type: 'success',
+                    onclick: 'createTag(\'[student_code]\',\'[/student_code]\')',
+                    glyph: 'pencil',
+                    text: 'Student Code',
+                }) +
+                btnTemplate({
+                    type: 'danger',
+                    onclick: 'createTag(\'[blocked]\',\'[/blocked]\')',
+                    glyph: 'ban-circle',
+                    text: 'Blocked',
+                }) +
+                btnTemplate({
+                    type: 'danger',
+                    onclick: 'createTag(\'[hidden]\',\'[/hidden]\')',
+                    glyph: 'ban-eye-close',
+                    text: 'Hidden',
+                }));
+        }
 
-            // Add hidden values to submit code
-            $('form').append(
-                '<input type="hidden" id="id_starter_code_tmp" name="starter_code" value=""></input>' +
-                '<input type="hidden" id="id_solution_tmp" name="solution" value=""></input>');
-
-            // Tag insertion buttons
-            var starter_code_field =
-                $('#div_' + id_starter_code_field + ' div.controls');
-            starter_code_field.after('<br />' +
-                '<a class="btn btn-primary" role="button" ' +
-                        'onclick="previewCode()">' +
-                    '<span class="glyphicon glyphicon-eye-open"></span>   Preview Exercise' +
-                '</a>&nbsp;&nbsp;&nbsp;' +
-                '<a class="btn btn-success" role="button" ' +
-                        'onclick="createTag(\'[student_code]\',\'[/student_code]\')">' +
-                    '<span class="glyphicon glyphicon-pencil"></span>   Student Code' +
-                '</a>&nbsp;&nbsp;&nbsp;' +
-                '<a class="btn btn-danger" role="button" ' +
-                        'onclick="createTag(\'[blocked]\',\'[/blocked]\')">' +
-                    '<span class="glyphicon glyphicon-ban-circle"></span>   Blocked' +
-                '</a>&nbsp;&nbsp;&nbsp;' +
-                '<a class="btn btn-danger" role="button" ' +
-                        'onclick="createTag(\'[hidden]\',\'[/hidden]\')">' +
-                    '<span class="glyphicon glyphicon-eye-close"></span>   Hidden' +
-                '</a>');
-
+        function setupCodeMirrors() {
             addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
             var tcm = cmh_list[id_starter_code_field];
             updateCodeHighLight();
@@ -252,13 +251,38 @@
             });
             tcm.setActiveTabIndex(0);
 
-            addCodeMirrorToFieldWithId(id_solution_field);
+            addTabbedCodeMirrorToFieldWithId(id_solution_field);
 
             $(window).bind("load", function() {
                 $('.CodeMirror').each(function(i, el) {
                     el.CodeMirror.refresh();
                 });
             });
+        }
+
+        $(function() {
+            // Add function to submit button to update hidden field data
+            $("#submit-id-clone").click(submitHidden);
+            $("#submit-id-submit").click(submitHidden);
+            $("#submit-id-attempt").click(submitHidden);
+
+            // Add hidden values to submit code
+            $('form').append('<input type="hidden" id="id_starter_code_tmp" ' +
+                                'name="starter_code" value=""></input>' +
+                            '<input type="hidden" id="id_solution_tmp" ' +
+                                'name="solution" value=""></input>');
+
+            addTagInsertButtonsAfterStarterCodeField();
+            setupCodeMirrors();
         });
-    </script>
+</script>
 {% endcompress %}
+
+{% verbatim %}
+<script id="hb_icon_button" type="text/x-handlebars-template">
+<a class="btn btn-{{type}}" role="button" onclick="{{onclick}}">
+    <span class="glyphicon glyphicon-{{glyph}}"></span>   {{text}}
+</a>&nbsp;&nbsp;&nbsp;
+</script>
+{% endverbatim %}
+

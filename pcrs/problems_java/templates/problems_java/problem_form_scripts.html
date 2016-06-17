@@ -2,14 +2,17 @@
 var id_test_suite_field = 'id_test_suite';
 language = 'java';
 language_version = '7';
-// Defined later to reduce clutter (since it is a big blob of text)
-var sample_junit_suite_code;
 
-function submitHiddenJava() {
+/**
+ * @override
+ */
+submitHidden = function() {
     try {
         var starterCode = addTagsToStarterCode();
-        var solutionCode = cmh_list[id_solution_field].getValue();
         var testSuiteCode = cmh_list[id_test_suite_field].getValue();
+
+        var solutionFiles = cmh_list[id_solution_field].getFiles();
+        var solutionCode = TagManager.concatFilesIntoCode(solutionFiles);
 
         // Move values to temporary variables
         document.getElementById("id_starter_code_tmp").value = starterCode;
@@ -26,25 +29,11 @@ function submitHiddenJava() {
  * Show a help dialog including some sample code for the instructor.
  */
 function showJunitHelp() {
-    showPreviewModal('Sample Test Suite Code', sample_junit_suite_code);
+    var sampleCode = $('#sampleJUnitSuiteCode').text().trim();
+    showPreviewModal('Sample Test Suite Code', sampleCode);
 }
 
-$(function() {
-    $("#submit-id-clone").click(submitHiddenJava);
-    $("#submit-id-submit").click(submitHiddenJava);
-    $("#submit-id-attempt").click(submitHiddenJava);
-
-    $('form').append('<input type="hidden" id="id_test_suite_tmp" name="test_suite" value=""></input>');
-
-    var obj = $('#' + id_test_suite_field);
-    addCodeMirrorToFieldWithId(id_test_suite_field);
-
-    var test_suite_field = $('#div_' + id_test_suite_field + ' div.controls');
-    test_suite_field.after('<a class="btn btn btn-primary" role="button" onclick="showJunitHelp()">' +
-        '<span class="glyphicon glyphicon-question-sign"></span>   Help</a>');
-    test_suite_field.after('<br />');
-
-    var tcm = cmh_list[id_starter_code_field];
+function setTabbedCodeMirrorAsEditable(tcm) {
     tcm.enableTabEditingWidgets();
     tcm.setNewFileOptions({
         'name': 'NewFile.java',
@@ -52,62 +41,89 @@ $(function() {
         'mode': cmModeForLanguageAndVersion(language, language_version),
         'theme': user_theme,
     });
-});
+}
 
-sample_junit_suite_code =
-'import org.junit.*;\n' +
-'import static org.junit.Assert.*;\n' +
-'import java.io.PrintStream;\n' +
-'import java.io.ByteArrayOutputStream;\n' +
-'\n' +
-'public class Tests {\n' +
-'    private java.util.List list;\n' +
-'    private ByteArrayOutputStream out;\n' +
-'    private PrintStream oldSystemOut;\n' +
-'\n' +
-'    // Called before every test case.\n' +
-'    @Before\n' +
-'    public void setUp() {\n' +
-'        list = new java.util.ArrayList();\n' +
-'        // Used to capture stdout - handy for testing\n' +
-'        out = new ByteArrayOutputStream();\n' +
-'        oldSystemOut = System.out;\n' +
-'        System.setOut(new PrintStream(out));\n' +
-'    }\n' +
-'\n' +
-'    // Called after every test case. Used to clean up resources.\n' +
-'    @After\n' +
-'    public void tearDown() {\n' +
-'        System.setOut(oldSystemOut);\n' +
-'        // Dump stdout - we still want it to print eventually\n' +
-'        System.out.println(out.toString());\n' +
-'        list = null;\n' +
-'        out = null;\n' +
-'    }\n' +
-'\n' +
-'    /**\n' +
-'     * Test case comments will be shown to the student when they submit code.\n' +
-'     * You can either have them as a block comment or a line comment above\n' +
-'     * each test case.\n' +
-'     */\n' +
-'    @Test\n' +
-'    public void testFoo() {\n' +
-'        // Not providing an assert description will hide the assertion details.\n' +
-'        assertEquals(4, 2 + 2);\n' +
-'        // If you provide a description, the assert will _not_ be hidden.\n' +
-'        assertEquals("Arithmetic is broken!", 6, 3 + 3);\n' +
-'    }\n' +
-'\n' +
-'    @Test(expected=IndexOutOfBoundsException.class)\n' +
-'    public void testIndexException() {\n' +
-'        Object o = list.get(42);\n' +
-'    }\n' +
-'\n' +
-'    @Test\n' +
-'    public void testCaptureStdout() {\n' +
-'        System.out.println("o hai");\n' +
-'        assertEquals("o hai\n", out.toString());\n' +
-'    }\n' +
-'}\n';
+$(function() {
+    $('form').append('<input type="hidden" id="id_test_suite_tmp" ' +
+                     'name="test_suite" value=""></input>');
+
+    var obj = $('#' + id_test_suite_field);
+    addCodeMirrorToFieldWithId(id_test_suite_field);
+
+    var btnTemplate = Handlebars.getTemplate('hb_icon_button');
+    var testSuiteField = $('#div_' + id_test_suite_field + ' div.controls');
+    testSuiteField.after('<br />' +
+        btnTemplate({
+            type: 'primary',
+            onclick: 'showJunitHelp()',
+            glyph: 'question-sign',
+            text: 'Help',
+        }));
+
+    var solutionTcm = cmh_list[id_solution_field];
+    if (solutionTcm.getFiles()[0].name == '') {
+        solutionTcm.renameFileAtIndex(0, 'NewFile.java');
+    }
+
+    setTabbedCodeMirrorAsEditable(cmh_list[id_starter_code_field]);
+    setTabbedCodeMirrorAsEditable(solutionTcm);
+});
+</script>
+
+<script id="sampleJUnitSuiteCode" type="text/plain">
+import org.junit.*;
+import static org.junit.Assert.*;
+import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+
+public class Tests {
+    private java.util.List list;
+    private ByteArrayOutputStream out;
+    private PrintStream oldSystemOut;
+
+    // Called before every test case.
+    @Before
+    public void setUp() {
+        list = new java.util.ArrayList();
+        // Used to capture stdout - handy for testing
+        out = new ByteArrayOutputStream();
+        oldSystemOut = System.out;
+        System.setOut(new PrintStream(out));
+    }
+
+    // Called after every test case. Used to clean up resources.
+    @After
+    public void tearDown() {
+        System.setOut(oldSystemOut);
+        // Dump stdout - we still want it to print eventually
+        System.out.println(out.toString());
+        list = null;
+        out = null;
+    }
+
+    /**
+     * Test case comments will be shown to the student when they submit code.
+     * You can either have them as a block comment or a line comment above
+     * each test case.
+     */
+    @Test
+    public void testFoo() {
+        // Not providing an assert description will hide the assertion details.
+        assertEquals(4, 2 + 2);
+        // If you provide a description, the assert will _not_ be hidden.
+        assertEquals("Arithmetic is broken!", 6, 3 + 3);
+    }
+
+    @Test(expected=IndexOutOfBoundsException.class)
+    public void testIndexException() {
+        Object o = list.get(42);
+    }
+
+    @Test
+    public void testCaptureStdout() {
+        System.out.println("o hai");
+        assertEquals("o hai\n", out.toString());
+    }
+}
 </script>
 
