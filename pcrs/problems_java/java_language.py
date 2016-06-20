@@ -60,21 +60,22 @@ class JavaSpecifics(BaseLanguage):
             return ret
 
         try:
-            flags = " ".join([
-                "-Djava.security.manager=default",
-                "-Djava.security.policy={0}pcrs.policy".format(self.jvm_res_path),
-                self._createDependencyFlagString(),
-                "org.junit.runner.JUnitCore", # run our test through JUnit
-            ])
+            args = [
+                'java',
+                '-Djava.security.manager=default',
+                '-Djava.security.policy={0}pcrs.policy'.format(self.jvm_res_path),
+            ] + self._createDependencyFlags() + [
+                'org.junit.runner.JUnitCore', # run our test through JUnit
+                self.testSuiteClassName,
+            ]
             proc = subprocess.Popen(
-                    "java {0} {1}".format(flags, self.testSuiteClassName),
+                    args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
-                    shell=True,
                     universal_newlines=True)
             output, err = proc.communicate(timeout=8) # 8 second timeout on run
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired:
             try:
                 proc.kill()
             except:    # May already have terminated or been killed
@@ -107,51 +108,71 @@ class JavaSpecifics(BaseLanguage):
                     prefix="{0}-{1}-".format(user, datetime.now().strftime('%m%d-%H:%M:%S'), dir=self.temp_path),
                     dir=self.temp_path)
 
-            for f in user_files:
-                self._compileSource(f['code'], fileName=f['name'])
+            self._compileFiles(user_files, isTestCode=False)
 
-            self._compileSource(test_code, isTestCode=True)
+            # Just one test file for now. Maybe one day we'll allow multiple
+            testFiles = [{
+                'name': None,
+                'code': test_code,
+            }]
+            self._compileFiles(testFiles, isTestCode=True)
             self.compiled = True
         except Exception as e:
             self.clear()
             raise # reraise
 
-    def _compileSource(self, source_code, fileName=None, isTestCode=False):
-        ''''Compiles given source code into the temporary run directory.
+    def _saveJavaFile(self, code, name=None, isTestCode=False):
+        '''Saves the given source file to an isolated compilation directory.
 
         Args:
-            source_code: The raw source code to compile
-            fileName:    The file to compile to - defaults to the public class
-            isTestCode:  If this is test code, it will be more
-                         cautious with error message information.
-        Raises:
-            CompilationError: On failure
+            code: The code to save.
+            name: The name of the file, or None to auto-detect.
+            isTestCode: If the saved code is a JUnit test suite.
+        Returns:
+            The name of the saved file.
         '''
-        if not fileName:
-            className = re.search('public\s+class\s+(\w+)', source_code).group(1)
-            fileName = '{0}.java'.format(className)
+        if not name:
+            className = re.search('public\s+class\s+(\w+)', code).group(1)
+            name = '{0}.java'.format(className)
 
             if isTestCode: # Used to determine which file to run
                 self.testSuiteClassName = className
 
-        source_path = "{0}{1}{2}".format(self.tempdir, os.sep, fileName)
-        with open(source_path, "w") as f:
-            f.write(source_code)
+        path = "{0}{1}{2}".format(self.tempdir, os.sep, name)
+        with open(path, "w") as f:
+            f.write(code)
+
+        return name
+
+    def _compileFiles(self, files, isTestCode=False):
+        '''Compiles given source code into the temporary run directory.
+
+        Args:
+            files[].code: The raw source code to compile
+            files[].name: The file to compile to - defaults to the public class
+            isTestCode:   If this is test code, it will be more
+                          cautious with error message information.
+        Raises:
+            CompilationError: On failure
+        '''
+        fileNames = []
+        for f in files:
+            name = self._saveJavaFile(f['code'], f['name'], isTestCode)
+            fileNames.append(name)
 
         # Actual compilation
         try:
-            flags = self._createDependencyFlagString()
+            flags = self._createDependencyFlags()
             proc = subprocess.Popen(
-                    'javac {0} {1}'.format(flags, fileName),
+                    ['javac'] + flags + fileNames,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=self.tempdir,
-                    shell=True,
                     universal_newlines=True)
             output, err = proc.communicate(timeout=8) # 8 second timeout on run
         except subprocess.CalledProcessError as e:
             raise CompilationError("javac failed with:\n" + str(e.output))
-        except TimeoutExpired:
+        except subprocess.TimeoutExpired:
             try:
                 proc.kill()
             except:
@@ -163,11 +184,11 @@ class JavaSpecifics(BaseLanguage):
                 err = self._stripTestCodeCompileError(err)
             raise CompilationError(err)
 
-    def _createDependencyFlagString(self):
+    def _createDependencyFlags(self):
         dependencies = [ 'junit-4.12.jar', 'hamcrest-core-1.3.jar' ]
         classpath = ":".join([self.jvm_res_path + d for d in dependencies])
         # We need '.' in the classpath to load student class files
-        return "-cp .:" + classpath
+        return ['-cp', '.:' + classpath]
 
     def _steralizeStackTrace(self, trace):
         '''Ensures no JUnit errors are exposed to the student. Instead, this
