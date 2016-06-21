@@ -39,10 +39,11 @@ function setUpMultipleSelectFields() {
 }
 
 function showAddTagDialog() {
-    var name = prompt('Tag name: ');
-    if (name) {
-      createProblemTag(name);
-    }
+    AlertModal.prompt('Create New Tag', function(value) {
+        if (value) {
+            createProblemTag(value);
+        }
+    });
 }
 
 function createProblemTag(name) {
@@ -54,7 +55,9 @@ function createProblemTag(name) {
         },
     }).success(function(data) {
         if ('validation_error' in data) {
-            alert(data['validation_error']['name']);
+            AlertModal.alert(
+                'Tag Format Error',
+                data['validation_error']['name']);
             return;
         }
 
@@ -63,6 +66,40 @@ function createProblemTag(name) {
             text: data['name'],
             index: 0,
         });
+    });
+}
+
+function showClearSubmissionsDialog() {
+    AlertModal
+        .clear()
+        .setTitle('Clear submissions to this problem?')
+        .setBody('All submissions to this problem will be removed.')
+        .addFooterElement($('<button class="btn btn-danger pull-left"></button>')
+            .attr('type', 'button')
+            .text('Clear')
+            .click(function() {
+                clearSubmissionsForCurrentProblem();
+            }))
+        .addCancelButtonToFooter('right')
+        .show();
+}
+
+function clearSubmissionsForCurrentProblem() {
+    $.ajax({
+        url:    "{{ object.get_absolute_url }}/clear",
+        method: "POST",
+    }).success(function(data) {
+        // Clear errors on the page.
+        $('.has-error').removeClass('has-error');
+        // Remove error help blocks
+        var helpBlocks = $('.help-block');
+        for (var i = 0; i < helpBlocks.length; i++) {
+            var block = $(helpBlocks[i]);
+            if (block.attr('id').indexOf('error') > -1) {
+                block.remove();
+            }
+        }
+        AlertModal.hide();
     });
 }
 

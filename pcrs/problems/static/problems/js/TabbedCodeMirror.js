@@ -181,39 +181,57 @@ TabbedCodeMirror.prototype.indexForTabWithName = function(name) {
 
 // Event callback to rename a tab
 TabbedCodeMirror.prototype._attemptRenamingTab = function(index) {
-    var name = prompt('Tab name:');
-    if ( ! name) {
-        return;
-    }
+    var that = this;
+    AlertModal.prompt('File Name:', function(value) {
+        if ( ! value) {
+            return;
+        }
+        var err = that._validateTabName(value);
+        if (err) {
+            AlertModal.alert('Invalid File Name', err);
+        } else {
+            that.renameFileAtIndex(index, value);
+        }
+    });
+}
 
-    if ( ! name.match(/^[\._a-zA-Z0-9]+$/)) {
-        alert('Please enter a name with only numbers' +
-            ', letters, underscores, and periods.');
-    } else if (this.indexForTabWithName(name) != -1) {
-        alert('Tab with name "' + name + '" already exists.');
-    } else {
-        this.renameFileAtIndex(index, name);
+// Returns a string when a validation error occured. Otherwise null.
+TabbedCodeMirror.prototype._validateTabName = function(value) {
+    if ( ! value.match(/^[\._a-zA-Z0-9]+$/)) {
+        return 'Please enter a name with only numbers' +
+            ', letters, underscores, and periods.';
+    } else if (this.indexForTabWithName(value) != -1) {
+        return 'Tab with name "' + value + '" already exists.';
     }
+    return false;
 }
 
 // Event callback to delete a tab
 TabbedCodeMirror.prototype._attemptDeletingTab = function(index) {
     if (this.getFileCount() == 1) {
-        alert('You cannot delete the last tab');
+        AlertModal.alert('', 'You cannot delete the last tab');
         return;
     }
 
-    var confirmation = confirm('Are you sure you want to delete ' +
-        this._tabTitleButtonAtIndex(index).text() + '?');
-    if ( ! confirmation) {
-        return;
-    }
-
-    // If we are deleting the current tab, switch away.
-    if (index == this.getActiveTabIndex()) {
-        this.setActiveTabIndex(index == 0 ? 1 : index - 1);
-    }
-    this.removeFileAtIndex(index);
+    var that = this;
+    AlertModal
+        .clear()
+        .setTitle('Are you sure you want to delete ' +
+            this._tabTitleButtonAtIndex(index).text() + '?')
+        .setBody('This file will be permenantly deleted.')
+        .addFooterElement($('<button class="btn btn-danger pull-left"></button>')
+            .attr('type', 'button')
+            .text('Delete')
+            .click(function() {
+                // If we are deleting the current tab, switch away.
+                if (index == that.getActiveTabIndex()) {
+                    that.setActiveTabIndex(index == 0 ? 1 : index - 1);
+                }
+                that.removeFileAtIndex(index);
+                AlertModal.hide();
+            }))
+        .addCancelButtonToFooter('right')
+        .show();
 }
 
 /**

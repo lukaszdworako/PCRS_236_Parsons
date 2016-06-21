@@ -1,0 +1,117 @@
+<div class="pcrs-modal-preview" id="genericAlertModal" tabindex="-1"
+        aria-labelledby="genericAlertModalLabel" aria-hidden="true">
+    <div class="pcrs-modal-content">
+        <div class="pcrs-modal-header">
+            <h4 class="pcrs-modal-title" id="genericAlertModalLabel">Title</h4>
+        </div>
+        <div class="pcrs-modal-body"></div>
+        <div class="pcrs-modal-footer"></div>
+    </div>
+</div>
+
+{% load staticfiles %}
+{% load compress %}
+{% compress js %}
+<script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
+    type="text/javascript"></script>
+<script type="text/javascript">
+/**
+ * Handy object to help show bootstrap-style modals, alerts, and prompts.
+ */
+var AlertModal = {
+    show: function() {
+        $('#genericAlertModal').modal('show');
+        return AlertModal;
+    },
+    hide: function() {
+        $('#genericAlertModal').modal('hide');
+        return AlertModal;
+    },
+    clear: function() {
+        var $modal = $('#genericAlertModal');
+        $modal.find('.pcrs-modal-header h4').html('');
+        $modal.find('.pcrs-modal-body').html('');
+        $modal.find('.pcrs-modal-footer').html('');
+        return AlertModal;
+    },
+    setTitle: function(title) {
+        $('#genericAlertModal').find('.pcrs-modal-header h4').html(title);
+        return AlertModal;
+    },
+    setBody: function(body) {
+        $('#genericAlertModal').find('.pcrs-modal-body').html(body);
+        return AlertModal;
+    },
+    addFooterElement: function($element) {
+        $('#genericAlertModal').find('.pcrs-modal-footer').append($element);
+        return AlertModal;
+    },
+    /**
+     * @param {string} align By default 'left'. 'right' is the other option.
+     */
+    addCancelButtonToFooter: function(align) {
+        var classes = 'btn btn-default';
+        if (align === undefined || align != 'right') {
+            classes += ' pull-left';
+        }
+        var $button = $('<button class="' + classes + '"></button>')
+            .attr('type', 'button')
+            .attr('data-dismiss', 'modal')
+            .text('Cancel');
+        $('#genericAlertModal').find('.pcrs-modal-footer').append($button);
+        return AlertModal;
+    },
+    /**
+     * Shows an alert modal.
+     *
+     * @param {string} title The title to display on the modal.
+     * @param {string} message The message to display. HTML is allowed.
+     */
+    alert: function(title, message) {
+        var $dismissButton = $('<button class="btn btn-default"></button>')
+            .attr('type', 'button')
+            .attr('data-dismiss', 'modal')
+            .text('OK');
+        AlertModal
+            .clear()
+            .setTitle(title)
+            .setBody(message)
+            .addFooterElement($dismissButton)
+            .show();
+        return AlertModal;
+    },
+    /**
+     * Shows an prompt modal.
+     * A prompt is a dialog with a title and a text box for user input.
+     *
+     * @param {string} title The title to display on the modal.
+     * @param {f(value)} callback The callback for submitting text>
+     */
+    prompt: function(title, callback) {
+        var $input = $('<input class="textinput form-control" type="text" />');
+        $input.keyup(function(e) {
+            if (e.keyCode == 13) { // enter
+                AlertModal.hide();
+                callback($input.val());
+            }
+        });
+        AlertModal
+            .clear()
+            .setTitle(title)
+            .setBody($input)
+            .addFooterElement($('<button class="btn btn-success"></button>')
+                .attr('type', 'button')
+                .text('Add')
+                .click(function() {
+                    AlertModal.hide();
+                    callback($input.val());
+                }))
+            .addCancelButtonToFooter()
+            .show();
+        $input.focus();
+        return AlertModal;
+    },
+};
+</script>
+{% endcompress %}
+
