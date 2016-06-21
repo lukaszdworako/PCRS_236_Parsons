@@ -9,6 +9,18 @@ SQLSubmissionWrapper.prototype.constructor = SQLSubmissionWrapper;
 /**
  * @override
  */
+SQLSubmissionWrapper.prototype.createCodeMirrors = function() {
+    SubmissionWrapper.prototype.createCodeMirrors.apply(this, arguments);
+
+    if (this.isEditor) {
+        var mirror = myCodeMirrors[this.wrapperDivId];
+        mirror.getDoc().setValue("select eid from sales;");
+    }
+}
+
+/**
+ * @override
+ */
 SQLSubmissionWrapper.prototype._shouldUseGradeTable = function() {
     return true;
 }

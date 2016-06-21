@@ -3,7 +3,7 @@ function SubmissionWrapper(wrapperDivId) {
     this.wrapperDiv = $('#' + wrapperDivId);
     this.problemId = wrapperDivId.split("-")[1];
     // If this is in a visualizer code editor
-    this.isEditor = this.wrapperDivId.split("-")[2];
+    this.isEditor = this.wrapperDivId.split("-")[2] === 'editor';
     // Null is evil, but these MUST be changed in the subclass constructors.
     this.language = null;
     this.language_version = null
@@ -13,38 +13,59 @@ function SubmissionWrapper(wrapperDivId) {
  * Factory method for creating language-specific submission wrappers.
  */
 SubmissionWrapper.createWrapperFromDivId = function(wrapperDivId) {
-    if (wrapperDivId.indexOf("c-") > -1){
+    if (wrapperDivId.indexOf("c-") > -1) {
         return new CSubmissionWrapper(wrapperDivId);
-    } else if (wrapperDivId.indexOf("python-") > -1){
+    } else if (wrapperDivId.indexOf("python-") > -1) {
         return new PythonSubmissionWrapper(wrapperDivId);
-    } else if (wrapperDivId.indexOf("java-") > -1){
+    } else if (wrapperDivId.indexOf("java-") > -1) {
         return new JavaSubmissionWrapper(wrapperDivId);
-    } else if (wrapperDivId.indexOf("sql-") > -1){
+    } else if (wrapperDivId.indexOf("sql-") > -1) {
         return new SQLSubmissionWrapper(wrapperDivId);
-    } else if (wrapperDivId.indexOf("ra-") > -1){
+    } else if (wrapperDivId.indexOf("ra-") > -1) {
         return new RASubmissionWrapper(wrapperDivId);
     }
 }
 
 SubmissionWrapper.prototype.pageLoad = function() {
     var that = this;
-    this.wrapperDiv.find('#submit-id-submit').click(function(event) {
-        event.preventDefault();
-        that.submitAllCode();
-    });
-    this.wrapperDiv.find("[name='history']").click(function() {
-        that.loadAndShowHistory();
-    });
+    if (this.isEditor) {
+        this.wrapperDiv.find('#submit-id-trace').click(function(event) {
+            event.preventDefault();
+            var code = that.getAllCode();
+
+            if (code == '') {
+                alert('There is no code to submit.');
+                return;
+            }
+
+            that._showEditorTraceDialog();
+        });
+    } else {
+        this.wrapperDiv.find('#submit-id-submit').click(function(event) {
+            event.preventDefault();
+            that.submitAllCode();
+        });
+        this.wrapperDiv.find("[name='history']").click(function() {
+            that.loadAndShowHistory();
+        });
+    }
 
     this.wrapperDiv.children('#grade-code').hide();
     this.createCodeMirrors();
 }
 
 SubmissionWrapper.prototype.createCodeMirrors = function() {
-    var $submissionDiv = this.wrapperDiv.find("#div_id_submission");
+    var $submissionDiv = this.wrapperDiv.find(this.isEditor
+        ? '#div_id_code_box' : '#div_id_submission');
+    var submissionText = $submissionDiv.find('textarea').text();
     myCodeMirrors[this.wrapperDivId] = to_code_mirror(
         this.language, this.language_version,
-        $submissionDiv, $submissionDiv.text(), false);
+        $submissionDiv, submissionText, false);
+}
+
+SubmissionWrapper.prototype._showEditorTraceDialog = function() {
+    var code = this.getAllCode();
+    this.getTestcases(code);
 }
 
 SubmissionWrapper.prototype.submitAllCode = function() {

@@ -9,6 +9,29 @@ PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
 /**
  * @override
  */
+PythonSubmissionWrapper.prototype._showEditorTraceDialog = function(code) {
+    var code = this.getAllCode();
+    $('#waitingModal').modal('show');
+    getVisualizerComponents(code, '', 9999999);
+    $('#visualizerModal').modal('show');
+    setTimeout(PythonSubmissionWrapper._waitVis, 100);
+}
+
+// TODO At some point, this should be a callback. Polling is bad!
+PythonSubmissionWrapper._waitVis = function() {
+    if (visPostComplete) {
+        $('#waitingModal').modal('hide');
+        if (pythonVisError) {
+            $('#visualizerModal').modal('hide');
+        }
+    } else {
+        setTimeout(PythonSubmissionWrapper._waitVis, 100);
+    }
+}
+
+/**
+ * @override
+ */
 PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     var $newRow = SubmissionWrapper.prototype._createTestCaseRow.apply(
         this, arguments);
