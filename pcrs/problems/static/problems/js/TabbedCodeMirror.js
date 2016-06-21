@@ -59,6 +59,23 @@ TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
 
     this.$tabs.append(this._createAddFileTab());
     this._showOrHideTabs();
+
+    var that = this;
+    this.$tabs.sortable({
+        axis: 'x',
+        items: '> :not(:last)',
+        start: function(event, ui) {
+            var startPosition = ui.item.index();
+            ui.item.data('startPosition', startPosition);
+        },
+        stop: function(event, ui) {
+            var startPosition = ui.item.data('startPosition');
+            var endPosition = ui.item.index();
+            // Cancel because we swap the tabs manually
+            $(this).sortable('cancel');
+            that.moveTab(startPosition, endPosition);
+        },
+    });
 }
 
 /**
@@ -341,7 +358,7 @@ TabbedCodeMirror.prototype.renameFileAtIndex = function(index, name) {
 /**
  * Move a tab.
  *
- * @param {int} to The index to move from.
+ * @param {int} from The index to move from.
  * @param {int} to The index to move to.
  */
 TabbedCodeMirror.prototype.moveTab = function(from, to) {

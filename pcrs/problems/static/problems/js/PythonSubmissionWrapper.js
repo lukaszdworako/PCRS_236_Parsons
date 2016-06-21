@@ -64,9 +64,9 @@ PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     renderData_ignoreID(testcase.expected_output, expTestValDiv);
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
+    this._addDebugColumnToTestRow($newRow, testcase.debug);
     this._addA11yToTestRow($newRow, this._createOutput(testcase.test_val),
         testcase.passed_test, testcase.expected_output);
-    this._addDebugColumnToTestRow($newRow, testcase.debug);
 
     return $newRow;
 }
