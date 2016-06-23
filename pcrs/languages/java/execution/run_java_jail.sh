@@ -9,7 +9,7 @@ then
     exit 1
 fi
 
-export CLASSPATH=./build/:./jar/javax.json-1.0.jar:./java/lib/tools.jar
+export CLASSPATH="./build/:./jar/javax.json-1.0.jar:$JAVA_HOME/lib/tools.jar"
 # Forward STDIN directly into the jail
-cat | ./java/bin/java traceprinter.InMemory
+cat | java traceprinter.InMemory
 
