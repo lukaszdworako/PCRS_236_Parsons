@@ -35,20 +35,37 @@ class EditorViewMixin:
         return None
 
     def get_problem(self):
-        """
-        Return the Problem object for the submission.
-        """
+        '''Return the Problem object for the submission.
+        '''
+        pClass = self.model.get_problem_class()
+        editorId = pClass.editor_problem_id()
+
         if self.pType == 'c':
             starter = '#include <stdio.h>'
-            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', starter_code=starter, id=9999999, language=self.pType)
+            p, created = pClass.get_problem_class().objects.get_or_create(
+                name='blank', starter_code=starter,
+                id=editorId, language=self.pType)
         elif self.pType == 'python':
-            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', starter_code='', id=9999999, language=self.pType)
+            p, created = self.model.get_problem_class().objects.get_or_create(
+                name='blank', starter_code='',
+                id=editorId, language=self.pType)
         elif self.pType == 'ra':
-            # TODO: This relies on the existence of specific schema. Using schema 10 (HR) from 343 and the Extended Grammar.
-            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', description='', starter_code='', grammar='Extended Grammar', semantics='set', id=9999999, schema_id=10)
+            # TODO: This relies on the existence of specific schema.
+            # Using schema 10 (HR) from 343 and the Extended Grammar.
+            p, created = self.model.get_problem_class().objects.get_or_create(
+                name='blank', description='', starter_code='',
+                grammar='Extended Grammar', semantics='set',
+                id=editorId, schema_id=10)
         elif self.pType == 'sql':
-            # TODO: This relies on the existence of specific schema. Using schema 10 (HR) from 343.
-            p, created = self.model.get_problem_class().objects.get_or_create(name='blank', description='', starter_code='', id=9999999, schema_id=10)
+            # TODO: This relies on the existence of specific schema.
+            # Using schema 10 (HR) from 343.
+            p, created = self.model.get_problem_class().objects.get_or_create(
+                name='blank', description='', starter_code='',
+                id=editorId, schema_id=10)
+        elif self.pType == 'java':
+            p, created = self.model.get_problem_class().objects.get_or_create(
+                name='blank', starter_code='test', test_suite='',
+                id=editorId, language=self.pType)
         return p
 
     def get_form_kwargs(self):

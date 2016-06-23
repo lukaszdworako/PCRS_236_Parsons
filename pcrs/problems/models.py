@@ -175,6 +175,13 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         return self.get_submission_class()\
             .get_best_score_before_deadline(self, user)
 
+    def is_editor_problem(self):
+        return self.pk == AbstractProblem.editor_problem_id()
+
+    @classmethod
+    def editor_problem_id(cls):
+        return 9999999
+
 
 class AbstractProgrammingProblem(AbstractProblem, AbstractNamedObject):
     """
@@ -449,7 +456,7 @@ class SubmissionPreprocessorMixin:
         self.hidden_lines_list = []
 
         # if code from editor, just return code -- there were no tags
-        if self.problem_id == 9999999:
+        if self.problem.is_editor_problem():
             if len(self.submission) == 0:
                 raise Exception("No code found!")
             return [{

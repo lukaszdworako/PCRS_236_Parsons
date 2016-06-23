@@ -72,17 +72,20 @@ class Problem(AbstractProgrammingProblem):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # We need the problem to exist before generating test cases
-        if not self.pk:
-            super().save(force_insert, force_update, using, update_fields)
+        # In the editor, we don't save testcases
+        if not self.is_editor_problem():
+            # We need the problem to exist before generating test cases
+            if not self.pk:
+                pass
+                super().save(force_insert, force_update, using, update_fields)
 
-        '''
-        We have to generate the test case table whenever we save a problem.
-        It seems a bit hacky to do this, but most of PCRS depends on
-        problems having a dedicated test case table.
-        '''
-        self._repopulateTestCaseTable()
-        self.max_score = len(self.testcase_set.all())
+            '''
+            We have to generate the test case table whenever we save a problem.
+            It seems a bit hacky to do this, but most of PCRS depends on
+            problems having a dedicated test case table.
+            '''
+            self._repopulateTestCaseTable()
+            self.max_score = len(self.testcase_set.all())
         super().save(force_insert, force_update, using, update_fields)
 
     def _repopulateTestCaseTable(self):
