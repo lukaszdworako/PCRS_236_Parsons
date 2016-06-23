@@ -20,6 +20,7 @@ import problems_c.models as c_models
 import problems_python.models as python_models
 import problems_ra.models as ra_models
 import problems_sql.models as sql_models
+import problems_java.models as java_models
 
 
 # Helper class to encode datetime objects
@@ -64,7 +65,7 @@ class EditorViewMixin:
                 id=editorId, schema_id=10)
         elif self.pType == 'java':
             p, created = self.model.get_problem_class().objects.get_or_create(
-                name='blank', starter_code='test', test_suite='',
+                name='blank', starter_code='test',
                 id=editorId, language=self.pType)
         return p
 
@@ -88,16 +89,24 @@ class EditorViewMixin:
         results, error = [], None
         if submission_code:
             if self.pType == 'python':
-            	submission = python_models.Submission(user=request.user, problem=self.get_problem(),
+            	submission = python_models.Submission(
+                    user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
             elif self.pType == 'c':
-            	submission = c_models.Submission(user=request.user, problem=self.get_problem(),
+            	submission = c_models.Submission(
+                    user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
             elif self.pType == 'ra':
-                submission = ra_models.Submission(user=request.user, problem=self.get_problem(),
+                submission = ra_models.Submission(
+                    user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
             elif self.pType == 'sql':
-                submission = sql_models.Submission(user=request.user, problem=self.get_problem(),
+                submission = sql_models.Submission(
+                    user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
+            elif self.pType == 'java':
+                submission = java_models.Submission(
+                    user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             self.object = submission

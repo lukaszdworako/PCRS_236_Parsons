@@ -22,16 +22,17 @@
  */
 
 function executeGenericVisualizer(option, data, newCode) {
-    var supportedVisualization = ['python', 'c'];
+    var supportedVisualization = ['python', 'c', 'java'];
 
-    if (visualizationSupported()){
+    if (visualizationSupported()) {
         if (language == 'python') {
             return executePythonVisualizer(option, data);
-        }
-        else if (language == 'c') {
+        } else if (language == 'c') {
             return executeCVisualizer(option, data, newCode);
+        } else if (language == 'java') {
+            return executeJavaVisualizer(option, data);
         }
-    }else{
+    } else {
         alert("No support for visualization available!");
         return null;
     }

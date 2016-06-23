@@ -11,11 +11,27 @@ JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
  * @override
  */
 JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
-    var $codeDiv = this.wrapperDiv.find("#div_id_submission");
-    var codeText = $codeDiv.text();
+    var $codeDiv = this.wrapperDiv.find(this.isEditor
+        ? '#div_id_code_box' : '#div_id_submission');
 
-    setTabbedCodeMirrorFilesFromTagText(this.tcm, codeText);
+    var code;
 
+    if (this.isEditor) {
+        code = '[file Hello.java]\n' +
+            'public class Hello {\n' +
+            '    public static void main(String args[]) {\n' +
+            '       System.out.println("Well hello there");\n' +
+            '    }\n' +
+            '}\n' +
+            '\n' +
+            '[/file]\n';
+        // FIXME this doesn't work for some reason.
+        //this.tcm.enableTabEditingWidgets();
+    } else {
+        code = $codeDiv.find('textarea').text();
+    }
+
+    setTabbedCodeMirrorFilesFromTagText(this.tcm, code);
     // Replace the code div with the tabbed code mirror
     $codeDiv.before(this.tcm.getJQueryObject());
     $codeDiv.remove();
@@ -26,16 +42,29 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
 /**
  * @override
  */
-JavaSubmissionWrapper.prototype.getAllCode = function() {
-    var hash = CryptoJS.SHA1(this.problemId);
-    return myCodeMirrors[this.wrapperDivId].getHashedCode(hash);
+JavaSubmissionWrapper.prototype._showEditorTraceDialog = function() {
+    var code = this._generateCodeForEditor();
+    getVisualizerComponents(code, '', 9999999);
+}
+
+JavaSubmissionWrapper.prototype._generateCodeForEditor = function() {
+    var files = this.tcm.getFiles();
+    var code = '';
+
+    for (var i = 0; i < files.length; i++) {
+        code += '[file ' + files[i].name + ']\n' +
+            files[i].code +
+            '\n[/file]\n';
+    }
+    return code;
 }
 
 /**
  * @override
  */
-JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
-    CSubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
+JavaSubmissionWrapper.prototype.getAllCode = function() {
+    var hash = CryptoJS.SHA1(this.problemId);
+    return myCodeMirrors[this.wrapperDivId].getHashedCode(hash);
 }
 
 /**

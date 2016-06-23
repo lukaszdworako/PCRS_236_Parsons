@@ -1,4 +1,5 @@
 import sys
+import json
 import os
 import shutil
 import subprocess
@@ -9,6 +10,7 @@ from datetime import datetime
 from pcrs.settings import PROJECT_ROOT
 from problems.pcrs_languages import BaseLanguage
 
+from problems.helper import parseCodeIntoFiles
 
 class CompilationError(Exception):
     pass
@@ -25,6 +27,8 @@ class JavaSpecifics(BaseLanguage):
               for a tool that could be used to provide support
     '''
 
+    jail_execution_path = (PROJECT_ROOT +
+        "/languages/java/execution/")
     temp_path = PROJECT_ROOT + "/languages/java/execution/temporary/"
     jvm_res_path = PROJECT_ROOT + "/languages/java/execution/resources/"
 
@@ -37,12 +41,37 @@ class JavaSpecifics(BaseLanguage):
     def encode_str(self, target_value):
         ''' Encode string target_value in visualizer format.
         '''
+        # TODO
         raise NotImplementedError("Visualization not yet supported")
 
     def get_exec_trace(self, user_script, add_params):
         ''' Get execution trace of string user_script providing additional parameters.
         '''
-        raise NotImplementedError("Visualization not yet supported")
+        proc = subprocess.Popen(
+                './run_java_jail.sh',
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                cwd=self.jail_execution_path,
+                universal_newlines=True)
+
+        files = parseCodeIntoFiles(user_script)
+        for f in files:
+            # JavaJail expects no ".java" extensions
+            f['name'] = f['name'].replace('.java', '')
+
+        data = {
+            'files': files,
+            'options': {},
+            'args': [],
+            'stdin': ''
+        }
+        proc.stdin.write(json.dumps(data))
+        output, err = proc.communicate(timeout=8)
+
+        if err:
+            return { 'trace': output, 'exception': err }
+        return { 'trace': output }
 
     def run_test_suite(self):
         ''' Return dictionary ret containing results of a testrun.
@@ -132,6 +161,7 @@ class JavaSpecifics(BaseLanguage):
             The name of the saved file.
         '''
         if not name:
+            raise Exception(code)
             className = re.search('public\s+class\s+(\w+)', code).group(1)
             name = '{0}.java'.format(className)
 

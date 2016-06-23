@@ -15,6 +15,8 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          get_submission_content_types)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
+from problems.helper import parseCodeIntoFiles
+
 
 def get_problem_labels():
     """
@@ -469,34 +471,11 @@ class SubmissionPreprocessorMixin:
         # Strip tags but leave their contents (for compiling)
         code = re.sub(r'\[\/?(student_code|blocked|hidden)\]\r?\n?', '', code)
 
-        return self.parseCodeIntoFiles(code) or [{
+        return parseCodeIntoFiles(code) or [{
             # If there were no file tags
             'name': 'NewFile.java',
             'code': code,
         }]
-
-    def parseCodeIntoFiles(self, code):
-        '''Parses this submission into corresponding files
-
-        The file tag format is [file <fileName>][/file]
-        Returns:
-            A list of name-code file dictionaries.
-        '''
-        files = []
-
-        startTagRegex = re.compile('[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n')
-        endTagRegex = re.compile('\n[\t ]*\[\/file\][\t ]*');
-
-        startMatch = startTagRegex.search(code)
-        while startMatch:
-            endMatch = endTagRegex.search(code)
-            files.append({
-                'name': startMatch.group(1),
-                'code': code[startMatch.end():endMatch.start()],
-            })
-            code = code[endMatch.end():]
-            startMatch = startTagRegex.search(code)
-        return files
 
     def fuseStudentCodeIntoStarterCode(self):
         '''Processes the tags in this submission.

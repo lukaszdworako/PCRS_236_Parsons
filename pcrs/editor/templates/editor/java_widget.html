@@ -25,3 +25,13 @@
     {#% include "problems/wait_async_job.html" %#}
 {% endblock %}
 
+{% block scripts %}
+    {% load static %}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static 'jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js' %}"
+            type="text/javascript" ></script>
+    {% endcompress %}
+    {{ block.super }}
+{% endblock %}
+
