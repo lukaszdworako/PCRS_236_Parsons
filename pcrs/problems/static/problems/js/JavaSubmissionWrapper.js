@@ -44,7 +44,11 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
  */
 JavaSubmissionWrapper.prototype._showEditorTraceDialog = function() {
     var code = this._generateCodeForEditor();
+    $('#waitingModal').modal('show');
     getVisualizerComponents(code, '', 9999999);
+    $('#visualizerModal').modal('show');
+    // FIXME proper-i-fy-this  - and when you fix it, fix the Python one too
+    setTimeout(PythonSubmissionWrapper._waitVis, 100);
 }
 
 JavaSubmissionWrapper.prototype._generateCodeForEditor = function() {

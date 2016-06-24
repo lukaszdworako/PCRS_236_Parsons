@@ -14,7 +14,11 @@
     <script src="{% static 'cryptojs-3.1.2/rollups/sha1.js' %}"></script>
 {% endcompress %}
 
-{% include "problems/visualizer_python_includes.html" %}
+{% if problem.language == "python" %}
+    {% include "problems/visualizer_python_includes.html" %}
+{% elif problem.language == "java" %}
+    {% include "problems/visualizer_java_includes.html" %}
+{% endif %}
 
 {# When another language is added modify code_mirror.js #}
 <script src="{% static 'code_mirror.js' %}"></script>
