@@ -20,11 +20,21 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
         code = '[file Hello.java]\n' +
             'public class Hello {\n' +
             '    public static void main(String args[]) {\n' +
+            '       Hai h = new Hai();\n' +
             '       System.out.println("Well hello there");\n' +
             '    }\n' +
             '}\n' +
             '\n' +
-            '[/file]\n';
+            '[/file]\n' +
+            '[file Hai.java]\n' +
+            'public class Hai {\n' +
+            '    private int bar;\n' +
+            '    public Hai() {\n' +
+            '        bar = 3;\n' +
+            '    }\n' +
+            '}\n' +
+            '\n' +
+            '[/file]\n'
         var mode = cmModeForLanguageAndVersion(
             this.language, this.language_version);
         this.tcm.setNewFileOptions({

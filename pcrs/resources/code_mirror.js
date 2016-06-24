@@ -45,7 +45,7 @@ function to_tabbed_code_mirror(language, version, location, value, lock) {
         tcm.addFile({
             'name': file.name,
             'code': file.code,
-            'mode': cmModeForLanguageAndVersion(language, language_version),
+            'mode': cmModeForLanguageAndVersion(language, version),
             'theme': user_theme,
         });
     }

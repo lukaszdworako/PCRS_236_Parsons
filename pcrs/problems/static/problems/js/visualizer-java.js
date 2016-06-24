@@ -2,10 +2,10 @@ function executeJavaVisualizer(option, data) {
     switch(option) {
         case "create_visualizer":
             // FIXME über hax
-            var code = myCodeMirrors['java-1-editor'].getFiles()[0].code;
+            var files = myCodeMirrors['java-1-editor'].getFiles();
             // FIXME possibly include other data too
             var visualizerData = {
-                code: code,
+                files: files,
                 trace: JSON.parse(data.trace).trace,
             };
             console.log(data);

@@ -280,6 +280,8 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     };
     if ('readOnly' in options) {
         codeMirrorOptions.readOnly = options.readOnly;
+        // Hide the cursor
+        codeMirrorOptions.cursorHeight = 0;
     }
     if ('theme' in options) {
         codeMirrorOptions.theme = options.theme;

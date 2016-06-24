@@ -119,9 +119,11 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //          'ts' for TypeScript, 'ruby' for Ruby, 'c' for C, 'cpp' for C++
 //          [default is Python-style labels]
 //   debugMode - some extra debugging printouts
-function ExecutionVisualizer(domRootID, dat, params) {
-    this.curInputCode = dat.code.rtrim(); // kill trailing spaces
-    this.curTrace = dat.trace;
+function ExecutionVisualizer(domRootID, data, params) {
+    // FIXME destroy all traces of this
+    //this.curInputCode = dat.code.rtrim(); // kill trailing spaces
+    this.files = data.files;
+    this.curTrace = data.trace;
 
     this.DEFAULT_EMBEDDED_CODE_DIV_WIDTH = 350;
     this.DEFAULT_EMBEDDED_CODE_DIV_HEIGHT = 400;
@@ -259,6 +261,8 @@ function ExecutionVisualizer(domRootID, dat, params) {
     if (lastStdout) {
         this.numStdoutLines = lastStdout.rtrim().split('\n').length;
     }
+
+    this.tcm = new EditorTabbedCodeMirror();
 
     this.try_hook("end_constructor", {myViz:this});
 
@@ -724,10 +728,25 @@ ExecutionVisualizer.prototype.render = function() {
         myViz.executeCodeWithRawInputFunc(userInput, myViz.curInstr + 1);
     });
 
-
     this.updateOutput();
 
     this.hasRendered = true;
+
+    $('#pyCodeOutputDiv').before(this.tcm.getJQueryObject());
+    $('#pyCodeOutputDiv').remove();
+
+    for (var i = 0; i < this.files.length; i++) {
+        var file = this.files[i];
+        this.tcm.addFile({
+            'name': file.name,
+            'code': file.code,
+            // You will want to change this to a generic language if you port it
+            'mode': cmModeForLanguageAndVersion('java', ''),
+            'readOnly': true,
+            'theme': user_theme,
+        });
+    }
+    this.tcm.setActiveTabIndex(0);
 }
 
 
@@ -771,7 +790,7 @@ ExecutionVisualizer.prototype.destroyAllAnnotationBubbles = function() {
     }
 
     // remove this handler as well!
-    this.domRoot.find('#pyCodeOutputDiv').unbind('scroll');
+    //this.domRoot.find('#pyCodeOutputDiv').unbind('scroll');
 
     myViz.allAnnotationBubbles = null;
 }
@@ -824,6 +843,7 @@ ExecutionVisualizer.prototype.initAllAnnotationBubbles = function() {
     $.each(frameIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'frame', e));});
 
 
+    /*
     this.domRoot.find('#pyCodeOutputDiv').scroll(function() {
         $.each(myViz.allAnnotationBubbles, function(i, e) {
             if (e.type == 'codeline') {
@@ -831,6 +851,7 @@ ExecutionVisualizer.prototype.initAllAnnotationBubbles = function() {
             }
         });
     });
+    */
 
     //console.log('initAllAnnotationBubbles', myViz.allAnnotationBubbles.length);
 }
@@ -1085,7 +1106,6 @@ ExecutionVisualizer.prototype.renderSliderBreakpoints = function() {
 ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
     var myViz = this; // to prevent confusion of 'this' inside of nested functions
 
-
     // initialize!
     this.breakpoints = d3.map();
     this.sortedBreakpointsList = [];
@@ -1136,6 +1156,7 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
         myViz.renderSliderBreakpoints();
     }
 
+    /* FIXME maybe remove this.
     var lines = this.curInputCode.split('\n');
 
     for (var i = 0; i < lines.length; i++) {
@@ -1158,7 +1179,8 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
         // then set a breakpoint on this line
         var breakpointInComment = false;
         var toks = cod.split('#');
-        for (var j = 1 /* start at index 1, not 0 */; j < toks.length; j++) {
+        // start at index 1, not 0
+        for (var j = 1; j < toks.length; j++) {
             if (toks[j].indexOf('breakpoint') != -1) {
                 breakpointInComment = true;
             }
@@ -1172,7 +1194,6 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
         this.codeOutputLines.push(n);
     }
 
-
     myViz.domRoot.find('#pyCodeOutputDiv').empty();
 
     // maps this.codeOutputLines to both table columns
@@ -1183,32 +1204,33 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
         .data(this.codeOutputLines)
         .enter().append('tr')
         .selectAll('td')
-        .data(function(d, i){return [d, d] /* map full data item down both columns */;})
+        .data(function(d, i) {
+            // Map full data item down both columns
+            return [d, d];
+        })
         .enter().append('td')
         .attr('class', function(d, i) {
             if (i == 0) {
                 return 'lineNo';
-            }
-            else {
+            } else {
                 return 'cod';
             }
         })
-    .attr('id', function(d, i) {
-        if (i == 0) {
-            return 'lineNo' + d.lineNumber;
-        }
-        else {
-            return myViz.generateID('cod' + d.lineNumber); // make globally unique (within the page)
-        }
-    })
-    .html(function(d, i) {
-        if (i == 0) {
-            return d.lineNumber;
-        }
-        else {
-            return htmlspecialchars(d.text);
-        }
-    });
+        .attr('id', function(d, i) {
+            if (i == 0) {
+                return 'lineNo' + d.lineNumber;
+            } else {
+                // make globally unique (within the page)
+                return myViz.generateID('cod' + d.lineNumber);
+            }
+        })
+        .html(function(d, i) {
+            if (i == 0) {
+                return d.lineNumber;
+            } else {
+                return htmlspecialchars(d.text);
+            }
+        });
 
     // create a left-most gutter td that spans ALL rows ...
     // (NB: valign="top" is CRUCIAL for this to work in IE)
@@ -1257,6 +1279,7 @@ ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
             unsetBreakpoint(this, d);
         }
     });
+    */
 }
 
 
@@ -1457,6 +1480,7 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
 
     var gutterSVG = myViz.domRoot.find('svg#leftCodeGutterSVG');
 
+/* FIXME maybe remove
     // one-time initialization of the left gutter
     // (we often can't do this earlier since the entire pane
     //  might be invisible and hence returns a height of zero or NaN
@@ -1497,6 +1521,7 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         assert(0 <= myViz.arrowOffsetY && myViz.arrowOffsetY <= myViz.codeRowHeight);
     }
 
+*/
     // call the callback if necessary (BEFORE rendering)
     if (this.params.updateOutputCallback) {
         this.params.updateOutputCallback(this);
@@ -1671,122 +1696,122 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
             }
         }
 
+        /* FIXME maybe in the future
         if (myViz.params.arrowLines) {
             if (prevLineNumber) {
+                var yTranslate = ((prevLineNumber - 1) * myViz.codeRowHeight) +
+                    myViz.arrowOffsetY + prevVerticalNudge;
                 var pla = myViz.domRootD3.select('#prevLineArrow');
-                var translatePrevCmd = 'translate(0, ' + (((prevLineNumber - 1) * myViz.codeRowHeight) + myViz.arrowOffsetY + prevVerticalNudge) + ')';
+                var translatePrevCmd = 'translate(0, ' + yTranslate + ')';
 
-                        if (smoothTransition) {
+                if (smoothTransition) {
+                    pla
+                        .transition()
+                        .duration(200)
+                        .attr('fill', 'white')
+                        .each('end', function() {
                             pla
-                                .transition()
-                                .duration(200)
-                                .attr('fill', 'white')
-                                .each('end', function() {
-                                    pla
-                                        .attr('transform', translatePrevCmd)
-                                        .attr('fill', lightArrowColor);
+                                .attr('transform', translatePrevCmd)
+                                .attr('fill', lightArrowColor);
 
-                                    gutterSVG.find('#prevLineArrow').show(); // show at the end to avoid flickering
-                                });
-                        }
-                        else {
-                            pla.attr('transform', translatePrevCmd)
-                                gutterSVG.find('#prevLineArrow').show();
-                        }
-
-                        }
-            else {
+                            gutterSVG.find('#prevLineArrow').show(); // show at the end to avoid flickering
+                        });
+                } else {
+                    pla.attr('transform', translatePrevCmd)
+                        gutterSVG.find('#prevLineArrow').show();
+                }
+            } else {
                 gutterSVG.find('#prevLineArrow').hide();
             }
 
             if (curLineNumber) {
+                var yTranslate = ((curLineNumber - 1) * myViz.codeRowHeight) +
+                    myViz.arrowOffsetY + curVerticalNudge;
                 var cla = myViz.domRootD3.select('#curLineArrow');
-                var translateCurCmd = 'translate(0, ' + (((curLineNumber - 1) * myViz.codeRowHeight) + myViz.arrowOffsetY + curVerticalNudge) + ')';
+                var translateCurCmd = 'translate(0, ' + yTranslate + ')';
 
-                        if (smoothTransition) {
-                            cla
-                                .transition()
-                                .delay(200)
-                                .duration(250)
-                                .attr('transform', translateCurCmd);
-                        }
-                        else {
-                            cla.attr('transform', translateCurCmd);
-                        }
+                if (smoothTransition) {
+                    cla
+                        .transition()
+                        .delay(200)
+                        .duration(250)
+                        .attr('transform', translateCurCmd);
+                } else {
+                    cla.attr('transform', translateCurCmd);
+                }
 
-                        gutterSVG.find('#curLineArrow').show();
-                        }
-                        else {
-                            gutterSVG.find('#curLineArrow').hide();
-                        }
-                        }
+                gutterSVG.find('#curLineArrow').show();
+            } else {
+                gutterSVG.find('#curLineArrow').hide();
+            }
+        }
 
-                        myViz.domRootD3.selectAll('#pyCodeOutputDiv td.cod')
-                            .style('border-top', function(d) {
-                                if (hasError && (d.lineNumber == curEntry.line)) {
-                                    return '1px solid ' + errorColor;
-                                }
-                                else {
-                                    return '';
-                                }
-                            })
-                        .style('border-bottom', function(d) {
-                            // COPY AND PASTE ALERT!
-                            if (hasError && (d.lineNumber == curEntry.line)) {
-                                return '1px solid ' + errorColor;
-                            }
-                            else {
-                                return '';
-                            }
-                        });
+        myViz.domRootD3.selectAll('#pyCodeOutputDiv td.cod')
+            .style('border-top', function(d) {
+                if (hasError && (d.lineNumber == curEntry.line)) {
+                    return '1px solid ' + errorColor;
+                }
+                else {
+                    return '';
+                }
+            })
+        .style('border-bottom', function(d) {
+            // COPY AND PASTE ALERT!
+            if (hasError && (d.lineNumber == curEntry.line)) {
+                return '1px solid ' + errorColor;
+            }
+            else {
+                return '';
+            }
+        });
 
-                        // returns True iff lineNo is visible in pyCodeOutputDiv
-                        function isOutputLineVisible(lineNo) {
-                            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
-                            var LO = lineNoTd.offset().top;
+        // returns True iff lineNo is visible in pyCodeOutputDiv
+        function isOutputLineVisible(lineNo) {
+            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
+            var LO = lineNoTd.offset().top;
 
-                            var PO = pcod.offset().top;
-                            var ST = pcod.scrollTop();
-                            var H = pcod.height();
+            var PO = pcod.offset().top;
+            var ST = pcod.scrollTop();
+            var H = pcod.height();
 
-                            // add a few pixels of fudge factor on the bottom end due to bottom scrollbar
-                            return (PO <= LO) && (LO < (PO + H - 30));
-                        }
+            // add a few pixels of fudge factor on the bottom end due to bottom scrollbar
+            return (PO <= LO) && (LO < (PO + H - 30));
+        }
 
 
-                        // smoothly scroll pyCodeOutputDiv so that the given line is at the center
-                        function scrollCodeOutputToLine(lineNo) {
-                            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
-                            var LO = lineNoTd.offset().top;
+        // smoothly scroll pyCodeOutputDiv so that the given line is at the center
+        function scrollCodeOutputToLine(lineNo) {
+            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
+            var LO = lineNoTd.offset().top;
 
-                            var PO = pcod.offset().top;
-                            var ST = pcod.scrollTop();
-                            var H = pcod.height();
+            var PO = pcod.offset().top;
+            var ST = pcod.scrollTop();
+            var H = pcod.height();
 
-                            pcod.stop(); // first stop all previously-queued animations
-                            pcod.animate({scrollTop: (ST + (LO - PO - (Math.round(H / 2))))}, 300);
-                        }
+            pcod.stop(); // first stop all previously-queued animations
+            pcod.animate({scrollTop: (ST + (LO - PO - (Math.round(H / 2))))}, 300);
+        }
 
-                        if (myViz.params.highlightLines) {
-                            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-prev');
-                            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-cur');
-                            if (curLineNumber)
-                                myViz.domRoot.find('#'+myViz.generateID('cod'+curLineNumber)).addClass('highlight-cur');
-                            if (prevLineNumber)
-                                myViz.domRoot.find('#'+myViz.generateID('cod'+prevLineNumber)).addClass('highlight-prev');
-                        }
+        if (myViz.params.highlightLines) {
+            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-prev');
+            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-cur');
+            if (curLineNumber)
+                myViz.domRoot.find('#'+myViz.generateID('cod'+curLineNumber)).addClass('highlight-cur');
+            if (prevLineNumber)
+                myViz.domRoot.find('#'+myViz.generateID('cod'+prevLineNumber)).addClass('highlight-prev');
+        }
 
+        // smoothly scroll code display
+        if ( ! isOutputLineVisible(curEntry.line)) {
+            scrollCodeOutputToLine(curEntry.line);
+        }
+        */
 
-                        // smoothly scroll code display
-                        if (!isOutputLineVisible(curEntry.line)) {
-                            scrollCodeOutputToLine(curEntry.line);
-                        }
-
-                        // add these fields to myViz
-                        myViz.curLineNumber = curLineNumber;
-                        myViz.prevLineNumber = prevLineNumber;
-                        myViz.curLineIsReturn = curIsReturn;
-                        myViz.prevLineIsReturn = prevIsReturn;
+        // add these fields to myViz
+        myViz.curLineNumber = curLineNumber;
+        myViz.prevLineNumber = prevLineNumber;
+        myViz.curLineIsReturn = curIsReturn;
+        myViz.prevLineIsReturn = prevIsReturn;
 
     } // end of highlightCodeLine
 
@@ -1840,8 +1865,8 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     }
 
+    this.tcm.setHighligtedLineAndFile(curEntry.line, curEntry.file);
 } // end of updateOutputFull
-
 
 ExecutionVisualizer.prototype.updateOutputMini = function() {
     assert(this.params.hideCode);
@@ -4602,4 +4627,42 @@ ExecutionVisualizer.prototype.activateJavaFrontend = function() {
                 });
     };
 }
+
+/**
+ * An extension to the TabbedCodeMirror that helps with trace highlighting.
+ */
+function EditorTabbedCodeMirror() {
+    TabbedCodeMirror.call(this);
+    this.activeLine = -1;
+    this.activeMirror = -1;
+}
+EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
+EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
+
+EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
+        line, fileName) {
+    if (this.getFileCount() == 0) {
+        // It hasn't been initialized yet
+        return;
+    }
+
+    line -= 1; // The line passed in starts at line 1, not line 0.
+
+    // Reset the old highlight
+    if (this.activeLine != -1 && this.activeMirror != -1) {
+        this.mirrors[this.activeMirror].removeLineClass(this.activeLine, '',
+            EditorTabbedCodeMirror._tracedLineClass);
+    }
+
+    this.activeMirror = this.indexForTabWithName(fileName);
+    this.activeLine = line;
+
+    this.mirrors[this.activeMirror].addLineClass(this.activeLine, '',
+        EditorTabbedCodeMirror._tracedLineClass);
+
+    this.setActiveTabIndex(this.activeMirror);
+}
+
+EditorTabbedCodeMirror._tracedLineClass = 'CodeMirror-activeline-background';
+
 
