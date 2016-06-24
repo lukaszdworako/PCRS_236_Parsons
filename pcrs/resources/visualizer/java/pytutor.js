@@ -1,3 +1,5 @@
+// NOTE: This version will only work with Java!
+
 /*
 
    Online Python Tutor
@@ -116,8 +118,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   arrowLines     - draw arrows pointing to current and previously executed lines (default: true)
 //   compactFuncLabels - render functions with a 'func' prefix and no type label
 //   showAllFrameLabels - display frame and parent frame labels for all functions (default: false)
-//   pyCrazyMode    - run with Py2crazy, which provides expression-level
-//                    granularity instead of line-level granularity (HIGHLY EXPERIMENTAL!)
 //   hideCode - hide the code display and show only the data structure viz
 //   tabularView - render a tabular view of ALL steps at once (EXPERIMENTAL)
 //   lang - to render labels in a style appropriate for other languages,
@@ -178,11 +178,6 @@ function ExecutionVisualizer(domRootID, dat, params) {
     }
 
     this.compactFuncLabels = this.params.compactFuncLabels;
-
-    // audible!
-    if (this.params.pyCrazyMode) {
-        this.params.arrowLines = this.params.highlightLines = false;
-    }
 
     if (this.params.visualizerIdOverride) {
         this.visualizerID = this.params.visualizerIdOverride;
@@ -255,9 +250,7 @@ function ExecutionVisualizer(domRootID, dat, params) {
     // API for adding a hook, created by David Pritchard
     this.pytutor_hooks = {}; // keys, hook names; values, list of functions
 
-    if (this.params.lang === 'java') {
-        this.activateJavaFrontend(); // ohhhh yeah!
-    }
+    this.activateJavaFrontend(); // ohhhh yeah!
 
     // how many lines does curTrace print to stdout max?
     this.numStdoutLines = 0;
@@ -548,77 +541,26 @@ ExecutionVisualizer.prototype.render = function() {
             .append('<span class="highlight-legend highlight-prev">line that has just executed</span> ')
             .append('<span class="highlight-legend highlight-cur">next line to execute</span>')
     }
-    else if (this.params.pyCrazyMode) {
-        myViz.domRoot.find('#legendDiv')
-            .append('<a href="https://github.com/pgbovine/Py2crazy">Py2crazy</a> mode!')
-            .append(' Stepping through (roughly) each executed expression. Color codes:<p/>')
-            .append('<span class="pycrazy-highlight-prev">expression that just executed</span><br/>')
-            .append('<span class="pycrazy-highlight-cur">next expression to execute</span>');
-    }
-
 
     if (this.params.editCodeBaseURL) {
-        // kinda kludgy
-        var pyVer = '2'; // default
-        if (this.params.lang === 'js') {
-            pyVer = 'js';
-        } else if (this.params.lang === 'ts') {
-            pyVer = 'ts';
-        } else if (this.params.lang === 'java') {
-            pyVer = 'java';
-        } else if (this.params.lang === 'py3') {
-            pyVer = '3';
-        } else if (this.params.lang === 'c') {
-            pyVer = 'c';
-        } else if (this.params.lang === 'cpp') {
-            pyVer = 'cpp';
-        }
-
-        var urlStr = $.param.fragment(this.params.editCodeBaseURL,
-                {code: this.curInputCode, py: pyVer},
-                2);
+        var urlStr = $.param.fragment(this.params.editCodeBaseURL, {
+            code: this.curInputCode,
+            py: 'java'
+        }, 2);
         this.domRoot.find('#editBtn').attr('href', urlStr);
-    }
-    else {
+    } else {
         this.domRoot.find('#editCodeLinkDiv').hide(); // just hide for simplicity!
         this.domRoot.find('#editBtn').attr('href', "#");
         this.domRoot.find('#editBtn').click(function(){return false;}); // DISABLE the link!
     }
 
-    if (this.params.lang !== undefined) {
-        if (this.params.lang === 'js') {
-            this.domRoot.find('#langDisplayDiv').html('JavaScript');
-        } else if (this.params.lang === 'ts') {
-            this.domRoot.find('#langDisplayDiv').html('TypeScript');
-        } else if (this.params.lang === 'ruby') {
-            this.domRoot.find('#langDisplayDiv').html('Ruby');
-        } else if (this.params.lang === 'java') {
-            this.domRoot.find('#langDisplayDiv').html('Java');
-        } else if (this.params.lang === 'py2') {
-            this.domRoot.find('#langDisplayDiv').html('Python 2.7');
-        } else if (this.params.lang === 'py3') {
-            this.domRoot.find('#langDisplayDiv').html('Python 3.3');
-        } else if (this.params.lang === 'c') {
-            this.domRoot.find('#langDisplayDiv').html('C (gcc 4.8, C11) <font color="#e93f34">EXPERIMENTAL!</font><br/>see <a href="https://github.com/pgbovine/opt-cpp-backend/issues" target="_blank">known bugs</a> and report to philip@pgbovine.net');
-        } else if (this.params.lang === 'cpp') {
-            this.domRoot.find('#langDisplayDiv').html('C++ (gcc 4.8, C++11) <font color="#e93f34">EXPERIMENTAL!</font><br/>see <a href="https://github.com/pgbovine/opt-cpp-backend/issues" target="_blank">known bugs</a> and report to philip@pgbovine.net');
-        } else {
-            this.domRoot.find('#langDisplayDiv').hide();
-        }
-    }
+    this.domRoot.find('#langDisplayDiv').html('Java');
 
     if (this.params.allowEditAnnotations !== undefined) {
         this.allowEditAnnotations = this.params.allowEditAnnotations;
     }
     else {
         this.allowEditAnnotations = false;
-    }
-
-    if (this.params.pyCrazyMode !== undefined) {
-        this.pyCrazyMode = this.params.pyCrazyMode;
-    }
-    else {
-        this.pyCrazyMode = false;
     }
 
     this.domRoot.find('#stepAnnotationEditor').hide();
@@ -1736,11 +1678,6 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         var curLineNumber = null;
         var prevLineNumber = null;
 
-        // only relevant if in myViz.pyCrazyMode
-        var prevColumn = undefined;
-        var prevExprStartCol = undefined;
-        var prevExprWidth = undefined;
-
         var curIsReturn = (curEntry.event == 'return');
         var prevIsReturn = false;
 
@@ -1796,81 +1733,9 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
                     smoothTransition = false;
                 }
             }
-
-            if (myViz.pyCrazyMode) {
-                var p = myViz.curTrace[myViz.curInstr - 1];
-                prevColumn = p.column;
-                // if these don't exist, set reasonable defaults
-                prevExprStartCol = (p.expr_start_col !== undefined) ? p.expr_start_col : p.column;
-                prevExprWidth = (p.expr_width !== undefined) ? p.expr_width : 1;
-            }
         }
 
         curLineNumber = curEntry.line;
-
-        if (myViz.pyCrazyMode) {
-            var curColumn = curEntry.column;
-
-            // if these don't exist, set reasonable defaults
-            var curExprStartCol = (curEntry.expr_start_col !== undefined) ? curEntry.expr_start_col : curColumn;
-            var curExprWidth = (curEntry.expr_width !== undefined) ? curEntry.expr_width : 1;
-
-            var curLineInfo = myViz.codeOutputLines[curLineNumber - 1];
-            assert(curLineInfo.lineNumber == curLineNumber);
-            var codeAtLine = curLineInfo.text;
-
-            // shotgun approach: reset ALL lines to their natural (unbolded) state
-            $.each(myViz.codeOutputLines, function(i, e) {
-                var d = myViz.generateID('cod' + e.lineNumber);
-                myViz.domRoot.find('#' + d).html(htmlspecialchars(e.text));
-            });
-
-
-            // Three possible cases:
-            // 1. previous and current trace entries are on the SAME LINE
-            // 2. previous and current trace entries are on different lines
-            // 3. there is no previous trace entry
-
-            if (prevLineNumber == curLineNumber) {
-                var curLineHTML = '';
-
-                // tricky tricky!
-                // generate a combined line with both previous and current
-                // columns highlighted
-
-                for (var i = 0; i < codeAtLine.length; i++) {
-                    var isCur = (curExprStartCol <= i) && (i < curExprStartCol + curExprWidth);
-                    var isPrev = (prevExprStartCol <= i) && (i < prevExprStartCol + prevExprWidth);
-
-                    var htmlEscapedChar = htmlspecialchars(codeAtLine[i]);
-
-                    if (isCur && isPrev) {
-                        curLineHTML += '<span class="pycrazy-highlight-prev-and-cur">' + htmlEscapedChar + '</span>';
-                    }
-                    else if (isPrev) {
-                        curLineHTML += '<span class="pycrazy-highlight-prev">' + htmlEscapedChar + '</span>';
-                    }
-                    else if (isCur) {
-                        curLineHTML += '<span class="pycrazy-highlight-cur">' + htmlEscapedChar + '</span>';
-                    }
-                    else {
-                        curLineHTML += htmlEscapedChar;
-                    }
-                }
-
-                assert(curLineHTML);
-                myViz.domRoot.find('#' + myViz.generateID('cod' + curLineNumber)).html(curLineHTML);
-            }
-            else {
-                if (prevLineNumber) {
-                    var prevLineInfo = myViz.codeOutputLines[prevLineNumber - 1];
-                    var prevLineHTML = htmlWithHighlight(prevLineInfo.text, prevExprStartCol, prevExprWidth, 'pycrazy-highlight-prev');
-                    myViz.domRoot.find('#' + myViz.generateID('cod' + prevLineNumber)).html(prevLineHTML);
-                }
-                var curLineHTML = htmlWithHighlight(codeAtLine, curExprStartCol, curExprWidth, 'pycrazy-highlight-cur');
-                myViz.domRoot.find('#' + myViz.generateID('cod' + curLineNumber)).html(curLineHTML);
-            }
-        }
 
         // on 'return' events, give a bit more of a vertical nudge to show that
         // the arrow is aligned with the 'bottom' of the line ...
@@ -2174,15 +2039,7 @@ ExecutionVisualizer.prototype.precomputeCurTraceLayouts = function() {
             // structurally identical and then lay them out as siblings in the same "row"
             var heapObj = curEntry.heap[id];
 
-            if (myViz.isCppMode()) {
-                // soften this assumption since C-style pointers might not point
-                // to the heap; they can point to any piece of data!
-                if (!heapObj) {
-                    return;
-                }
-            } else {
-                assert(heapObj);
-            }
+            assert(heapObj);
 
             if (isLinearObj(heapObj)) {
                 $.each(heapObj, function(ind, child) {
@@ -2413,7 +2270,9 @@ ExecutionVisualizer.prototype.precomputeCurTraceLayouts = function() {
                 } else {
                     if (!myViz.isPrimitiveType(val)) {
                         var id = getRefID(val);
-                        updateCurLayout(id, null, []);
+                        if (id != 'VOID') {
+                            updateCurLayout(id, null, []);
+                        }
                     }
                 }
             });
@@ -3135,18 +2994,7 @@ ExecutionVisualizer.prototype.renderDataStructures = function(curEntry, curTople
 
     // use jsPlumb scopes to keep the different kinds of pointers separated
     function renderVarValueConnector(varID, valueID) {
-        // special-case handling for C/C++ pointers, just to keep from rocking
-        // the boat on my existing (battle-tested) code
-        if (myViz.isCppMode()) {
-            if (myViz.domRoot.find('#' + valueID).length) {
-                myViz.jsPlumbInstance.connect({source: varID, target: valueID, scope: 'varValuePointer'});
-            } else {
-                // pointer isn't pointing to anything valid; put a poo emoji here
-                myViz.domRoot.find('#' + varID).html('\uD83D\uDCA9' /* pile of poo emoji */);
-            }
-        } else {
-            myViz.jsPlumbInstance.connect({source: varID, target: valueID, scope: 'varValuePointer'});
-        }
+        myViz.jsPlumbInstance.connect({source: varID, target: valueID, scope: 'varValuePointer'});
     }
 
 
@@ -3177,15 +3025,9 @@ ExecutionVisualizer.prototype.renderDataStructures = function(curEntry, curTople
         totalParentPointersRendered++;
     }
 
-    if (!myViz.textualMemoryLabels) {
+    if ( ! myViz.textualMemoryLabels) {
         // re-render existing connectors and then ...
-        //
-        // NB: in C/C++ mode, to keep things simple, don't try to redraw
-        // existingConnectionEndpointIDs since we want to redraw all arrows
-        // each and every time.
-        if (!myViz.isCppMode()) {
-            existingConnectionEndpointIDs.forEach(renderVarValueConnector);
-        }
+        existingConnectionEndpointIDs.forEach(renderVarValueConnector);
         // add all the NEW connectors that have arisen in this call to renderDataStructures
         myViz.jsPlumbManager.connectionEndpointIDs.forEach(renderVarValueConnector);
     }
@@ -4220,6 +4062,8 @@ function isHeapRef(obj, heap) {
 function getRefID(obj) {
     if (obj[0] == 'REF') {
         return obj[1];
+    } else if (obj[0] == 'VOID') {
+        return 'VOID';
     } else {
         assert (obj[0] === 'C_DATA' && obj[2] === 'pointer');
         assert (obj[3] != '<UNINITIALIZED>' && obj[3] != '<UNALLOCATED>');
