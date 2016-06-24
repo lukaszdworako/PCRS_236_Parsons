@@ -1,4 +1,4 @@
-// NOTE: This version will only work with Java!
+// NOTE: This version _might_ work with other versions!
 
 /*
 
@@ -87,14 +87,8 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   startingInstruction - the (zero-indexed) execution point to display upon rendering
 //                         if this is set, then it *overrides* jumpToEnd
 //   hideOutput - hide "Program output" display
-//   codeDivHeight - maximum height of #pyCodeOutputDiv (in integer pixels)
-//   codeDivWidth  - maximum width  of #pyCodeOutputDiv (in integer pixels)
 //   editCodeBaseURL - the base URL to visit when the user clicks 'Edit code' (if null, then 'Edit code' link hidden)
 //   allowEditAnnotations - allow user to edit per-step annotations (default: false)
-//   embeddedMode         - shortcut for allowEditAnnotations=false,
-//                                       codeDivWidth=this.DEFAULT_EMBEDDED_CODE_DIV_WIDTH,
-//                                       codeDivHeight=this.DEFAULT_EMBEDDED_CODE_DIV_HEIGHT
-//                          (and don't activate keyboard shortcuts!)
 //   disableHeapNesting   - if true, then render all heap objects at the top level (i.e., no nested objects)
 //   drawParentPointers   - if true, then draw environment diagram parent pointers for all frames
 //                          WARNING: there are hard-to-debug MEMORY LEAKS associated with activating this option
@@ -119,7 +113,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   compactFuncLabels - render functions with a 'func' prefix and no type label
 //   showAllFrameLabels - display frame and parent frame labels for all functions (default: false)
 //   hideCode - hide the code display and show only the data structure viz
-//   tabularView - render a tabular view of ALL steps at once (EXPERIMENTAL)
 //   lang - to render labels in a style appropriate for other languages,
 //          and to display the proper language in langDisplayDiv:
 //          'py2' for Python 2, 'py3' for Python 3, 'js' for JavaScript, 'java' for Java,
@@ -198,7 +191,6 @@ function ExecutionVisualizer(domRootID, dat, params) {
     this.drawParentPointers = (this.params.drawParentPointers == true);
     this.textualMemoryLabels = (this.params.textualMemoryLabels == true);
     this.showOnlyOutputs = (this.params.showOnlyOutputs == true);
-    this.tabularView = (this.params.tabularView == true);
     this.showAllFrameLabels = (this.params.showAllFrameLabels == true);
 
     this.executeCodeWithRawInputFunc = this.params.executeCodeWithRawInputFunc;
@@ -411,29 +403,32 @@ ExecutionVisualizer.prototype.render = function() {
         '<div id="codeDisplayDiv">\
         <div id="langDisplayDiv"></div>\
         <div id="pyCodeOutputDiv"/>\
-        <div id="editCodeLinkDiv"><a id="editBtn">Edit code</a>\
-        <span id="liveModeSpan" style="display: none;">| <a id="editLiveModeBtn" href="#">Live programming</a></a>\
+        <div id="editCodeLinkDiv">\
+            <a id="editBtn">Edit code</a>\
+            <span id="liveModeSpan" style="display: none;">| <a id="editLiveModeBtn" href="#">Live programming</a></a>\
         </div>\
         <div id="legendDiv"/>\
-        <div id="executionSliderDocs"><font color="#e93f34">NEW!</font> Click on a line of code to set a breakpoint. Then use the Forward and Back buttons to jump there.</div>\
+        <div id="executionSliderDocs">\
+            <font color="#e93f34">NEW!</font> Click on a line of code to set a breakpoint. Then use the Forward and Back buttons to jump there.\
+        </div>\
         <div id="executionSlider"/>\
         <div id="executionSliderFooter"/>\
         <div id="vcrControls">\
-        <button id="jmpFirstInstr", type="button">&lt;&lt; First</button>\
-        <button id="jmpStepBack", type="button">&lt; Back</button>\
-        <span id="curInstr">Step ? of ?</span>\
-        <button id="jmpStepFwd", type="button">Forward &gt;</button>\
-        <button id="jmpLastInstr", type="button">Last &gt;&gt;</button>\
+            <button id="jmpFirstInstr", type="button">&lt;&lt; First</button>\
+            <button id="jmpStepBack", type="button">&lt; Back</button>\
+            <span id="curInstr">Step ? of ?</span>\
+            <button id="jmpStepFwd", type="button">Forward &gt;</button>\
+            <button id="jmpLastInstr", type="button">Last &gt;&gt;</button>\
         </div>\
         <div id="rawUserInputDiv">\
-        <span id="userInputPromptStr"/>\
-        <input type="text" id="raw_input_textbox" size="30"/>\
-        <button id="raw_input_submit_btn">Submit</button>\
+            <span id="userInputPromptStr"/>\
+            <input type="text" id="raw_input_textbox" size="30"/>\
+            <button id="raw_input_submit_btn">Submit</button>\
         </div>\
         <div id="errorOutput"/>\
         <div id="stepAnnotationDiv">\
-        <textarea class="annotationText" id="stepAnnotationEditor" cols="60" rows="3"></textarea>\
-        <div class="annotationText" id="stepAnnotationViewer"></div>\
+            <textarea class="annotationText" id="stepAnnotationEditor" cols="60" rows="3"></textarea>\
+            <div class="annotationText" id="stepAnnotationViewer"></div>\
         </div>\
         <div id="annotateLinkDiv"><button id="annotateBtn" type="button">Annotate this step</button></div>\
         </div>';
@@ -441,40 +436,35 @@ ExecutionVisualizer.prototype.render = function() {
     var outputsHTML =
         '<div id="htmlOutputDiv"></div>\
         <div id="progOutputs">\
-        <div id="printOutputDocs">Print output (drag lower right corner to resize)</div>\n\
-        <textarea id="pyStdout" cols="40" rows="5" wrap="off" readonly></textarea>\
+            <div id="printOutputDocs">Print output (drag lower right corner to resize)</div>\n\
+            <textarea id="pyStdout" cols="40" rows="5" wrap="off" readonly></textarea>\
         </div>';
 
     var codeVizHTML =
         '<div id="dataViz">\
-        <table id="stackHeapTable">\
-        <tr>\
-        <td id="stack_td">\
-        <div id="globals_area">\
-        <div id="stackHeader">Frames</div>\
-        </div>\
-        <div id="stack"></div>\
-        </td>\
-        <td id="heap_td">\
-        <div id="heap">\
-        <div id="heapHeader">Objects</div>\
-        </div>\
-        </td>\
-        </tr>\
-        </table>\
+            <table id="stackHeapTable">\
+                <tr>\
+                    <td id="stack_td">\
+                        <div id="globals_area">\
+                        <div id="stackHeader">Frames</div>\
+                        </div>\
+                        <div id="stack"></div>\
+                    </td>\
+                    <td id="heap_td">\
+                        <div id="heap">\
+                        <div id="heapHeader">Objects</div>\
+                        </div>\
+                    </td>\
+                </tr>\
+            </table>\
         </div>';
-
-    // override
-    if (myViz.tabularView) {
-        codeVizHTML = '<div id="optTabularView"></div>';
-    }
 
     var vizHeaderHTML =
         '<div id="vizHeader">\
-        <textarea class="vizTitleText" id="vizTitleEditor" cols="60" rows="1"></textarea>\
-        <div class="vizTitleText" id="vizTitleViewer"></div>\
-        <textarea class="vizDescriptionText" id="vizDescriptionEditor" cols="75" rows="2"></textarea>\
-        <div class="vizDescriptionText" id="vizDescriptionViewer"></div>\
+            <textarea class="vizTitleText" id="vizTitleEditor" cols="60" rows="1"></textarea>\
+            <div class="vizTitleText" id="vizTitleViewer"></div>\
+            <textarea class="vizDescriptionText" id="vizDescriptionEditor" cols="75" rows="2"></textarea>\
+            <div class="vizDescriptionText" id="vizDescriptionViewer"></div>\
         </div>';
 
     if (this.params.verticalStack) {
@@ -504,9 +494,6 @@ ExecutionVisualizer.prototype.render = function() {
         // heuristic for code with really small outputs
         if (this.numStdoutLines <= 3) {
             stdoutHeight = (18 * this.numStdoutLines) + 'px';
-        }
-        if (this.params.embeddedMode) {
-            stdoutHeight = '45px';
         }
 
         // position this under the code:
@@ -565,29 +552,6 @@ ExecutionVisualizer.prototype.render = function() {
 
     this.domRoot.find('#stepAnnotationEditor').hide();
 
-    if (this.params.embeddedMode) {
-        this.embeddedMode = true;
-        // nix this for now ...
-        //this.params.hideOutput = true; // put this before hideOutput handler
-
-        // don't override if they've already been set!
-        if (this.params.codeDivWidth === undefined) {
-            this.params.codeDivWidth = this.DEFAULT_EMBEDDED_CODE_DIV_WIDTH;
-        }
-
-        if (this.params.codeDivHeight === undefined) {
-            this.params.codeDivHeight = this.DEFAULT_EMBEDDED_CODE_DIV_HEIGHT;
-        }
-
-        this.allowEditAnnotations = false;
-
-        // add an extra label to link back to the main site, so that viewers
-        // on the embedded page know that they're seeing an OPT visualization
-        this.domRoot.find('#codeDisplayDiv').append('<div style="font-size: 8pt; margin-bottom: 20px;">Visualized using <a href="http://pythontutor.com" target="_blank" style="color: #3D58A2;">Online Python Tutor</a> by <a href="http://www.pgbovine.net/" target="_blank" style="color: #3D58A2;">Philip Guo</a></div>');
-
-        myViz.domRoot.find('#executionSliderDocs').hide(); // cut out extraneous docs
-    }
-
     myViz.editAnnotationMode = false;
 
     if (this.allowEditAnnotations) {
@@ -615,22 +579,6 @@ ExecutionVisualizer.prototype.render = function() {
     }
 
 
-    // not enough room for these extra buttons ...
-    if (this.params.codeDivWidth &&
-            this.params.codeDivWidth < 470) {
-        this.domRoot.find('#jmpFirstInstr').hide();
-        this.domRoot.find('#jmpLastInstr').hide();
-    }
-
-
-    if (this.params.codeDivWidth) {
-        // set width once
-        this.domRoot.find('#codeDisplayDiv').width(this.params.codeDivWidth);
-        // it will propagate to the slider
-
-        //this.domRoot.find("#pyStdout").css("width", this.params.codeDivWidth - 20 /* wee tweaks */);
-    }
-
     // enable left-right draggable pane resizer (originally from David Pritchard)
     this.domRoot.find('#codeDisplayDiv').resizable({
         handles: "e",
@@ -644,12 +592,6 @@ ExecutionVisualizer.prototype.render = function() {
             if (myViz.params.updateOutputCallback) // report size change
                 myViz.params.updateOutputCallback(this);
         }});
-
-    if (this.params.codeDivHeight) {
-        this.domRoot.find('#pyCodeOutputDiv')
-            .css('max-height', this.params.codeDivHeight + 'px');
-    }
-
 
     // create a persistent globals frame
     // (note that we need to keep #globals_area separate from #stack for d3 to work its magic)
@@ -773,32 +715,6 @@ ExecutionVisualizer.prototype.render = function() {
     if (!this.params.hideCode) {
         this.renderPyCodeOutput();
     }
-
-    // EXPERIMENTAL!
-    if (this.tabularView) {
-        this.renderTabularView();
-
-        // scroll vizLayoutTdFirst down to always align with the vertical
-        // scrolling ...
-        $(window).scroll(function() {
-            var codePane = myViz.domRoot.find('#vizLayoutTdFirst');
-            var docScrollTop = $(document).scrollTop();
-            var offset = codePane.offset().top;
-            var delta = docScrollTop - offset;
-            if (delta < 0) {
-                delta = 0;
-            }
-
-            // don't scroll past the bottom of the optTabularView table:
-            var optTable = myViz.domRoot.find('#optTabularView');
-            var optTableBottom = optTable.height() + optTable.offset().top;
-            var codeDisplayHeight = myViz.domRoot.find('#codeDisplayDiv').height();
-            if (delta - offset < optTableBottom - codeDisplayHeight) {
-                codePane.css('padding-top', delta);
-            }
-        });
-    }
-
 
     var ruiDiv = myViz.domRoot.find('#rawUserInputDiv');
     ruiDiv.find('#userInputPromptStr').html(myViz.userInputPromptStr);
@@ -2336,10 +2252,6 @@ var rightwardNudgeHack = true; // suggested by John DeNero, toggle with global
 // multiple times, and a unique ID label was used to identify aliases.
 ExecutionVisualizer.prototype.renderDataStructures = function(curEntry, curToplevelLayout) {
     var myViz = this; // to prevent confusion of 'this' inside of nested functions
-
-    if (myViz.tabularView) {
-        return; // return EARLY!!!
-    }
 
     myViz.resetJsPlumbManager(); // very important!!!
 

@@ -25,8 +25,15 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
             '}\n' +
             '\n' +
             '[/file]\n';
-        // FIXME this doesn't work for some reason.
-        //this.tcm.enableTabEditingWidgets();
+        var mode = cmModeForLanguageAndVersion(
+            this.language, this.language_version);
+        this.tcm.setNewFileOptions({
+            'name': 'NewFile.java',
+            'code': '',
+            'mode': mode,
+            'theme': user_theme,
+        });
+        this.tcm.enableTabEditingWidgets();
     } else {
         code = $codeDiv.find('textarea').text();
     }
