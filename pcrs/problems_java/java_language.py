@@ -161,12 +161,14 @@ class JavaSpecifics(BaseLanguage):
             The name of the saved file.
         '''
         if not name:
-            raise Exception(code)
             className = re.search('public\s+class\s+(\w+)', code).group(1)
             name = '{0}.java'.format(className)
 
-            if isTestCode: # Used to determine which file to run
+            if isTestCode:
+                # Used to determine which file to run
                 self.testSuiteClassName = className
+            else:
+                raise CompilationError('Only test code can omit file names!')
 
         path = "{0}{1}{2}".format(self.tempdir, os.sep, name)
         with open(path, "w") as f:
