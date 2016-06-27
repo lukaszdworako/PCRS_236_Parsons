@@ -1,19 +1,15 @@
 function executeJavaVisualizer(option, data) {
+    // FIXME this should be a parameter passed in!
+    // TODO subclass SubmissionWrapper
+    var wrapperDiv = $('#java-1-editor');
+    var tcm = myCodeMirrors['java-1-editor'];
+
     switch(option) {
         case "create_visualizer":
-            // FIXME über hax
-            var files = myCodeMirrors['java-1-editor'].getFiles();
-            // FIXME possibly include other data too
-            var visualizerData = {
-                files: files,
-                trace: JSON.parse(data.trace).trace,
-            };
-            console.log(data);
-            createVisualizer(visualizerData);
+            createVisualizer(data);
             break;
 
         case "gen_execution_trace_params":
-            console.log(data);
             getExecutionTraceParams(data);
             break;
 
@@ -39,12 +35,22 @@ function executeJavaVisualizer(option, data) {
      * othervise don't enter visualization mode.
      */
     function createVisualizer(data) {
-        if ( ! errorsInTracePy(data)) {
-            // assign global
-            visualizer = createVisualizerPy(data);
-            visualizer.updateOutput();
+        if (data.trace) {
+            data.trace = JSON.parse(data.trace).trace;
         }
 
+        // FIXME hax!
+        if (pythonVisError = errorsInTraceJava(data)) {
+            return;
+        }
+
+        var files = tcm.getFiles();
+
+        var visualizer = createVisualizerJava({
+            files: files,
+            trace: data.trace,
+        });
+        visualizer.updateOutput();
     }
 
     /**
@@ -58,49 +64,58 @@ function executeJavaVisualizer(option, data) {
      * Return boolean true if there are errors in trace, false otherwise.
      * Note that this function raises alerts.
      */
-    function errorsInTracePy(data) {
-        // don't enter visualize mode if there are killer errors:
-        var errors_caught = false;
+    function errorsInTraceJava(data) {
+        var trace = data.trace;
 
         if (data.exception) {
             alert(data.exception);
-            errors_caught = true;
-            pythonVisError = true;
-        } else {
-            pythonVisError = false;
-            trace = data.trace;
-
-            if (trace.length == 0) {
-                var errorLineNo = trace[0].line - 1; /* CodeMirror lines are zero-indexed */
-                if (errorLineNo !== undefined) {
-                    // highlight the faulting line in mainCodeMirror
-                    mainCodeMirror.focus();
-                    mainCodeMirror.setCursor(errorLineNo, 0);
-                    mainCodeMirror.setLineClass(errorLineNo, null, 'errorLine');
-
-                    mainCodeMirror.setOption('onChange', function() {
-                        mainCodeMirror.setLineClass(errorLineNo, null, null); // reset line back to normal
-                        mainCodeMirror.setOption('onChange', null); // cancel
-                    });
-                }
-
-                alert("Syntax error, cannot visualize code execution");
-                errors_caught = true;
-            }
-
-            else if (trace[trace.length - 1].exception_msg) {
-                alert(trace[trace.length - 1].exception_msg);
-                errors_caught = true;
-            }
-
-            else if (!trace) {
-                alert("Unknown error.");
-                errors_caught = true;
-
-            }
+            return true;
+        } else if ( ! trace || trace.length == 0) {
+            alert("Unknown error.");
+            return true;
         }
 
-        return errors_caught;
+        var lastStep = trace[trace.length - 1];
+        if (lastStep.exception_msg) {
+            displayErrorInStepJson(lastStep);
+            return true;
+        }
+
+        return false;
+    }
+
+    function displayErrorInStepJson(json) {
+        // CodeMirror lines are zero-indexed
+        var errorLineNo = json.line - 1;
+
+        var tabIndex = tcm.indexForTabWithName(json.file);
+        var mirror = tcm.getCodeMirror(tabIndex);
+        tcm.setActiveTabIndex(tabIndex);
+
+        var errorClass = 'CodeMirror-error-background';
+        // highlight the faulting line in the current file
+        mirror.focus();
+        mirror.setCursor(errorLineNo, 0);
+        mirror.addLineClass(errorLineNo, '', errorClass);
+
+        var changeHandler = function() {
+            // Reset line back to normal
+            mirror.removeLineClass(errorLineNo, '', errorClass);
+            mirror.off('change', changeHandler);
+            wrapperDiv.find('#alert').hide();
+        }
+        mirror.on('change', changeHandler);
+
+        /*
+         * FIXME Once we inherit from SubmissionWrapper, we shouldn't
+         * access this globally.
+         */
+        var $alertBox = wrapperDiv.find('#alert');
+        $alertBox.show();
+        $alertBox.toggleClass('red-alert', true);
+        $alertBox.children('icon').toggleClass('remove-icon', true);
+        $alertBox.children('span').text(json.exception_msg);
+        wrapperDiv.find('.screen-reader-text').text(json.exception_msg);
     }
 
     /**
@@ -113,8 +128,8 @@ function executeJavaVisualizer(option, data) {
      *
      * Return an instance of Python visualizer.
      */
-    function createVisualizerPy(data) {
-        var pyVisualizer = new ExecutionVisualizer('visualize-code', data, {
+    function createVisualizerJava(data) {
+        var javaVisualizer = new ExecutionVisualizer('visualize-code', data, {
             startingInstruction:  0,
             updateOutputCallback: function() {
                 $('#urlOutput,#embedCodeOutput').val('');
@@ -126,30 +141,22 @@ function executeJavaVisualizer(option, data) {
             //allowEditAnnotations: true,
         });
 
-        // set keyboard bindings
         $(document).keydown(function(k) {
-            if (k.keyCode == 37) { // left arrow
-                if (pyVisualizer.stepBack()) {
-                    k.preventDefault(); // don't horizontally scroll the display
-                    keyStuckDown = true;
-                }
+            // Left arrow
+            if (k.keyCode == 37 && javaVisualizer.stepBack()) {
+                // Don't horizontally scroll the display
+                k.preventDefault();
+            // Right arrow
+            } else if (k.keyCode == 39 && javaVisualizer.stepForward()) {
+                // Don't horizontally scroll the display
+                k.preventDefault();
             }
-            else if (k.keyCode == 39) { // right arrow
-                if (pyVisualizer.stepForward()) {
-                    k.preventDefault(); // don't horizontally scroll the display
-                    keyStuckDown = true;
-                }
-            }
-        });
-
-        $(document).keyup(function(k) {
-          keyStuckDown = false;
         });
 
         // also scroll to top to make the UI more usable on smaller monitors
         $(document).scrollTop(0);
 
-        return pyVisualizer;
+        return javaVisualizer;
     }
 }
 

@@ -20,8 +20,8 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
         code = '[file Hello.java]\n' +
             'public class Hello {\n' +
             '    public static void main(String args[]) {\n' +
-            '       Hai h = new Hai();\n' +
-            '       System.out.println("Well hello there");\n' +
+            '        Hai h = new Hai();\n' +
+            '        System.out.println("Well hello there");\n' +
             '    }\n' +
             '}\n' +
             '\n' +

@@ -350,7 +350,7 @@ TabbedCodeMirror._hashLinesInMirror = function(mirror, ranges) {
 TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
     for (var i = start; i <= end; i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
-        if (wrapClass !== undefined &&
+        if (wrapClass &&
                 wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
             return true;
         }
