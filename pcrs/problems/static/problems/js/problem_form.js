@@ -69,7 +69,7 @@ function createProblemTag(name) {
     });
 }
 
-function showClearSubmissionsDialog() {
+function showClearSubmissionsDialog(clearUrl) {
     AlertModal
         .clear()
         .setTitle('Clear submissions to this problem?')
@@ -78,15 +78,15 @@ function showClearSubmissionsDialog() {
             .attr('type', 'button')
             .text('Clear')
             .click(function() {
-                clearSubmissionsForCurrentProblem();
+                clearSubmissionsForCurrentProblem(clearUrl);
             }))
         .addCancelButtonToFooter('right')
         .show();
 }
 
-function clearSubmissionsForCurrentProblem() {
+function clearSubmissionsForCurrentProblem(clearUrl) {
     $.ajax({
-        url:    "{{ object.get_absolute_url }}/clear",
+        url:    clearUrl,
         method: "POST",
     }).success(function(data) {
         // Clear errors on the page.

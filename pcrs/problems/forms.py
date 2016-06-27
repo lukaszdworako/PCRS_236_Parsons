@@ -12,37 +12,8 @@ from problems.widgets.select_multiple_field import SelectMultipleField
 from problems.helper import remove_tag
 
 class BaseProblemForm(CrispyFormMixin):
-    clear_button = HTML('<a class="red-button" role="button" '
-        'onclick="showClearSubmissionsDialog()"/clear">'
-        'Clear submissions</a>')
-    save_button = Submit('submit', 'Save', css_class='green-button-right')
-    attempt_button = Submit('attempt', 'Save & Attempt', css_class='green-button-right')
-
-    save_and_add = Submit('submit', 'Save and add testcases',
-                           css_class='green-button-right',
-                           formaction='create_and_add_testcase')
-
-    buttons = None
-
     def __init__(self, *args, **kwargs):
-        if self.instance.pk:
-            clone = Submit('clone', 'Clone', css_class='green-button',
-                           formaction='{}/clone'.format(
-                               self.instance.get_absolute_url()))
-
-            self.buttons = (Div(CrispyFormMixin.delete_button,
-                                self.clear_button,
-                                css_class='button-group'),
-                            Div(clone, self.save_button, self.attempt_button,
-                                css_class='button-group-right'),
-                            )
-
-        elif self.instance:
-            # cloning
-            self.buttons = self.save_button,
-        else:
-            # creating a new one
-            self.buttons = self.save_and_add,
+        self.buttons = self._createButtons()
 
         super().__init__(*args, **kwargs)
         self.helper.layout = Layout(Fieldset('', *self.Meta.fields),
@@ -54,6 +25,44 @@ class BaseProblemForm(CrispyFormMixin):
             self.fields['tags'].widget = SelectMultipleField(
                 choices=self.fields['tags'].choices
             )
+
+    def _createButtons(self):
+        '''Generate the buttons for the problem form.
+
+        Returns:
+            A tuple of button elements
+        '''
+        absUrl = self.instance.get_absolute_url()
+        cloneUrl = '{}/clone'.format(absUrl)
+        clearUrl = '{}/clear'.format(absUrl)
+
+        clear_button = HTML('<a class="red-button" role="button" '
+            'onclick="showClearSubmissionsDialog(\'' + clearUrl + '\')">'
+            'Clear submissions</a>')
+        clone_button = Submit('clone', 'Clone',
+            css_class='green-button', formaction=cloneUrl)
+        save_button = Submit('submit', 'Save',
+            css_class='green-button-right')
+        attempt_button = Submit('attempt', 'Save & Attempt',
+            css_class='green-button-right')
+        save_and_add_button = Submit('submit', 'Save and add testcases',
+            css_class='green-button-right',
+            formaction='create_and_add_testcase')
+
+        # Existing problem
+        if self.instance.pk:
+            return (
+                Div(CrispyFormMixin.delete_button, clear_button,
+                    css_class='button-group'),
+                Div(clone_button, save_button, attempt_button,
+                    css_class='button-group-right'),
+            )
+        # Cloning a problem
+        elif self.instance:
+            return save_button,
+        # Creating a new problem
+        else:
+            return self.save_and_add_button,
 
 
 class EditorForm(CrispyFormMixin, forms.Form):
