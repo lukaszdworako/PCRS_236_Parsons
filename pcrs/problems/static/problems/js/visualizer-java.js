@@ -76,7 +76,8 @@ function executeJavaVisualizer(option, data) {
         }
 
         var lastStep = trace[trace.length - 1];
-        if (lastStep.exception_msg) {
+        var isCompileError = trace.length == 1 && lastStep.exception_msg;
+        if (isCompileError) {
             displayErrorInStepJson(lastStep);
             return true;
         }

@@ -92,7 +92,7 @@ EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
         // It hasn't been initialized yet
         return;
     }
-    this._resetOldHighlight();
+    this.resetHighlight();
 
     this.activeMirror = this.indexForTabWithName(fileName);
     this.activeLine = lineNumber;
@@ -103,7 +103,7 @@ EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
     this.setActiveTabIndex(this.activeMirror);
 }
 
-EditorTabbedCodeMirror.prototype._resetOldHighlight = function() {
+EditorTabbedCodeMirror.prototype.resetHighlight = function() {
     if (this.activeLine != -1 && this.activeMirror != -1) {
         this.mirrors[this.activeMirror].removeLineClass(this.activeLine, '',
             EditorTabbedCodeMirror._tracedLineClass);

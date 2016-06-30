@@ -422,7 +422,7 @@ ExecutionVisualizer.prototype.render = function() {
             <input type="text" id="raw_input_textbox" size="30"/>\
             <button id="raw_input_submit_btn">Submit</button>\
         </div>\
-        <div id="errorOutput"/>\
+        <div id="errorOutput" class="alert-container red-alert"/>\
         <div id="stepAnnotationDiv">\
             <textarea class="annotationText" id="stepAnnotationEditor" cols="60" rows="3"></textarea>\
             <div class="annotationText" id="stepAnnotationViewer"></div>\
@@ -1701,7 +1701,12 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     }
 
-    this.tcm.setHighligtedLineAndFile(curEntry.line - 1, curEntry.file);
+    if (curEntry.file && curEntry.line !== undefined) {
+        this.tcm.setHighligtedLineAndFile(curEntry.line - 1, curEntry.file);
+    } else {
+        // Sometimes a line is not being executed in student code (e.g. on exit)
+        this.tcm.resetHighlight();
+    }
 } // end of updateOutputFull
 
 ExecutionVisualizer.prototype.updateOutputMini = function() {

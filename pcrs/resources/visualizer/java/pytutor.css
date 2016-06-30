@@ -168,15 +168,6 @@ div.ExecutionVisualizer textarea#vizDescriptionEditor {
     resize: none;
 }
 
-
-div.ExecutionVisualizer #errorOutput {
-    color: #e93f34; /* should match brightRed JavaScript variable */
-    font-size: 12pt;
-    padding: 2px;
-    line-height: 1.5em;
-    margin-bottom: 4px;
-}
-
 /* VCR control buttons for stepping through execution */
 
 div.ExecutionVisualizer #vcrControls {
