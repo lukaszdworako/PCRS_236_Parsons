@@ -270,22 +270,7 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     var $tabButton = $('<a data-toggle="tab" href="#"></a>')
         .append(options.name);
 
-    var codeMirrorOptions = {
-        mode: options.mode,
-        value: options.code,
-        lineNumbers: 'True',
-        indentUnit: 4,
-        lineWrapping: 'True',
-        flattenSpans: 'False',
-    };
-    if ('readOnly' in options) {
-        codeMirrorOptions.readOnly = options.readOnly;
-        // Hide the cursor
-        codeMirrorOptions.cursorHeight = 0;
-    }
-    if ('theme' in options) {
-        codeMirrorOptions.theme = options.theme;
-    }
+    var codeMirrorOptions = this._createCodeMirrorOptions(options);
 
     var mirror = CodeMirror(function(elt) {
         that.$content.append(elt);
@@ -315,6 +300,32 @@ TabbedCodeMirror.prototype.addFile = function(options) {
         this.$tabs.append($listButton);
     }
     this._showOrHideTabs();
+}
+
+/**
+ * Creates the options for new CodeMirror instances.
+ *
+ * @param {Object} options The TCM options.
+ * @see addFile(options)
+ */
+TabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
+    var codeMirrorOptions = {
+        mode: options.mode,
+        value: options.code,
+        lineNumbers: 'True',
+        indentUnit: 4,
+        lineWrapping: 'True',
+        flattenSpans: 'False',
+    };
+    if ('readOnly' in options) {
+        codeMirrorOptions.readOnly = options.readOnly;
+        // Hide the cursor
+        codeMirrorOptions.cursorHeight = 0;
+    }
+    if ('theme' in options) {
+        codeMirrorOptions.theme = options.theme;
+    }
+    return codeMirrorOptions;
 }
 
 TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {

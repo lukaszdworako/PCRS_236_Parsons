@@ -36,6 +36,7 @@
    <script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
    <script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script> <!-- for handling back button and URL hashes -->
    <script type="text/javascript" src="js/jquery.jsPlumb-1.3.10-all-min.js "></script> <!-- for rendering SVG connectors
+   <script type="text/javascript" src="js/EditorTabbedCodeMirror.js"></script>
    DO NOT UPGRADE ABOVE 1.3.10 OR ELSE BREAKAGE WILL OCCUR -->
    <script type="text/javascript" src="js/jquery-ui-1.11.4/jquery-ui.min.js"></script> <!-- for sliders and other UI elements -->
    <link type="text/css" href="js/jquery-ui-1.11.4/jquery-ui.css" rel="stylesheet" />
@@ -87,7 +88,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   startingInstruction - the (zero-indexed) execution point to display upon rendering
 //                         if this is set, then it *overrides* jumpToEnd
 //   hideOutput - hide "Program output" display
-//   editCodeBaseURL - the base URL to visit when the user clicks 'Edit code' (if null, then 'Edit code' link hidden)
 //   allowEditAnnotations - allow user to edit per-step annotations (default: false)
 //   disableHeapNesting   - if true, then render all heap objects at the top level (i.e., no nested objects)
 //   drawParentPointers   - if true, then draw environment diagram parent pointers for all frames
@@ -120,8 +120,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //          [default is Python-style labels]
 //   debugMode - some extra debugging printouts
 function ExecutionVisualizer(domRootID, data, params) {
-    // FIXME destroy all traces of this
-    //this.curInputCode = dat.code.rtrim(); // kill trailing spaces
     this.files = data.files;
     this.curTrace = data.trace;
 
@@ -234,17 +232,16 @@ function ExecutionVisualizer(domRootID, data, params) {
     this.domRoot = this.domRoot.find('div.ExecutionVisualizer');
     this.domRootD3 = this.domRootD3.select('div.ExecutionVisualizer');
 
-    // initialize in renderPyCodeOutput()
-    this.codeOutputLines = null;
-    this.breakpoints = null;           // set of execution points to set as breakpoints
-    this.sortedBreakpointsList = [];   // sorted and synced with breakpointLines
+    this.sortedBreakpointSteps = [];
 
     this.classAttrsHidden = {}; // kludgy hack for 'show/hide attributes' for class objects
 
     // API for adding a hook, created by David Pritchard
     this.pytutor_hooks = {}; // keys, hook names; values, list of functions
 
-    this.activateJavaFrontend(); // ohhhh yeah!
+    if (this.params.lang == 'java') {
+        this.activateJavaFrontend(); // ohhhh yeah!
+    }
 
     // how many lines does curTrace print to stdout max?
     this.numStdoutLines = 0;
@@ -407,13 +404,9 @@ ExecutionVisualizer.prototype.render = function() {
         '<div id="codeDisplayDiv">\
         <div id="langDisplayDiv"></div>\
         <div id="pyCodeOutputDiv"/>\
-        <div id="editCodeLinkDiv">\
-            <a id="editBtn">Edit code</a>\
-            <span id="liveModeSpan" style="display: none;">| <a id="editLiveModeBtn" href="#">Live programming</a></a>\
-        </div>\
         <div id="legendDiv"/>\
         <div id="executionSliderDocs">\
-            <font color="#e93f34">NEW!</font> Click on a line of code to set a breakpoint. Then use the Forward and Back buttons to jump there.\
+            Click on a line number to set a breakpoint, then use the Forward and Back buttons to jump there.\
         </div>\
         <div id="executionSlider"/>\
         <div id="executionSliderFooter"/>\
@@ -533,18 +526,6 @@ ExecutionVisualizer.prototype.render = function() {
             .append('<span class="highlight-legend highlight-cur">next line to execute</span>')
     }
 
-    if (this.params.editCodeBaseURL) {
-        var urlStr = $.param.fragment(this.params.editCodeBaseURL, {
-            code: this.curInputCode,
-            py: 'java'
-        }, 2);
-        this.domRoot.find('#editBtn').attr('href', urlStr);
-    } else {
-        this.domRoot.find('#editCodeLinkDiv').hide(); // just hide for simplicity!
-        this.domRoot.find('#editBtn').attr('href', "#");
-        this.domRoot.find('#editBtn').click(function(){return false;}); // DISABLE the link!
-    }
-
     this.domRoot.find('#langDisplayDiv').html('Java');
 
     if (this.params.allowEditAnnotations !== undefined) {
@@ -565,14 +546,14 @@ ExecutionVisualizer.prototype.render = function() {
             if (myViz.editAnnotationMode) {
                 myViz.enterViewAnnotationsMode();
 
-                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#editCodeLinkDiv,#stepAnnotationViewer").show();
+                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#stepAnnotationViewer").show();
                 myViz.domRoot.find('#stepAnnotationEditor').hide();
                 ab.html('Annotate this step');
             }
             else {
                 myViz.enterEditAnnotationsMode();
 
-                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#editCodeLinkDiv,#stepAnnotationViewer").hide();
+                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#stepAnnotationViewer").hide();
                 myViz.domRoot.find('#stepAnnotationEditor').show();
                 ab.html('Done annotating');
             }
@@ -716,8 +697,8 @@ ExecutionVisualizer.prototype.render = function() {
 
     this.precomputeCurTraceLayouts();
 
-    if (!this.params.hideCode) {
-        this.renderPyCodeOutput();
+    if ( ! this.params.hideCode) {
+        this.renderSliderBreakpoints();
     }
 
     var ruiDiv = myViz.domRoot.find('#rawUserInputDiv');
@@ -730,10 +711,19 @@ ExecutionVisualizer.prototype.render = function() {
 
     this.updateOutput();
 
+    this._renderInitialTabbedCodeMirrorOver($('#pyCodeOutputDiv'));
     this.hasRendered = true;
+}
 
-    $('#pyCodeOutputDiv').before(this.tcm.getJQueryObject());
-    $('#pyCodeOutputDiv').remove();
+/**
+ * Create the initial tabbed code mirorr.
+ *
+ * @param {jQuery} $element The element to replace in the DOM.
+ */
+ExecutionVisualizer.prototype._renderInitialTabbedCodeMirrorOver =
+        function($element) {
+    $element.before(this.tcm.getJQueryObject());
+    $element.remove();
 
     for (var i = 0; i < this.files.length; i++) {
         var file = this.files[i];
@@ -746,9 +736,54 @@ ExecutionVisualizer.prototype.render = function() {
             'theme': user_theme,
         });
     }
+
+    var that = this;
+    this.tcm.setGutterClickCallback(function(fileName, lineNumber) {
+        that.tcm.toggleBreakpointIndicator(fileName, lineNumber);
+
+        var steps = that._stepsMatchingFileAndLine(fileName, lineNumber + 1);
+        that._toggleStepBreakpoints(steps);
+        that.renderSliderBreakpoints();
+    });
     this.tcm.setActiveTabIndex(0);
 }
 
+/**
+ * Toggles the given step breakpoints in the slider bar.
+ *
+ * @param {array} steps A list of integer steps
+ */
+ExecutionVisualizer.prototype._toggleStepBreakpoints = function(steps) {
+    if (steps.length == 0) return;
+
+    var alreadyMarked = this.sortedBreakpointSteps.indexOf(steps[0]) > -1;
+
+    this.sortedBreakpointSteps = alreadyMarked
+        ? $(this.sortedBreakpointSteps).not(steps).get() // Remove them all
+        : this.sortedBreakpointSteps.concat(steps); // Add them all
+
+    // sort() is lexicographical by default
+    this.sortedBreakpointSteps.sort(function(first, second) {
+        return first - second;
+    });
+}
+
+/**
+ * @param {string} fileName The file name to look for steps inside
+ * @param {number} lineNumber The 1-indexed line number
+ * @return {array} A list of integer step indices.
+ */
+ExecutionVisualizer.prototype._stepsMatchingFileAndLine =
+        function(fileName, lineNumber) {
+    var steps = [];
+    for (var stepIndex = 0; stepIndex < this.curTrace.length; stepIndex++) {
+        var step = this.curTrace[stepIndex];
+        if (step.file == fileName && step.line == lineNumber) {
+            steps.push(stepIndex);
+        }
+    }
+    return steps;
+}
 
 ExecutionVisualizer.prototype.showVizHeaderViewMode = function() {
     var titleVal = this.domRoot.find('#vizTitleEditor').val().trim();
@@ -814,11 +849,6 @@ ExecutionVisualizer.prototype.initAllAnnotationBubbles = function() {
     //console.log('initAllAnnotationBubbles');
 
     myViz.destroyAllAnnotationBubbles();
-
-    var codelineIDs = [];
-    $.each(this.domRoot.find('#pyCodeOutput .cod'), function(i, e) {
-        codelineIDs.push($(e).attr('id'));
-    });
 
     var heapObjectIDs = [];
     $.each(this.domRoot.find('.heapObject'), function(i, e) {
@@ -962,13 +992,13 @@ ExecutionVisualizer.prototype.findPrevBreakpoint = function() {
     var myViz = this;
     var c = myViz.curInstr;
 
-    if (myViz.sortedBreakpointsList.length == 0) {
+    if (myViz.sortedBreakpointSteps.length == 0) {
         return -1;
     }
     else {
-        for (var i = 1; i < myViz.sortedBreakpointsList.length; i++) {
-            var prev = myViz.sortedBreakpointsList[i-1];
-            var cur = myViz.sortedBreakpointsList[i];
+        for (var i = 1; i < myViz.sortedBreakpointSteps.length; i++) {
+            var prev = myViz.sortedBreakpointSteps[i-1];
+            var cur = myViz.sortedBreakpointSteps[i];
             if (c <= prev)
                 return -1;
             if (cur >= c)
@@ -976,7 +1006,7 @@ ExecutionVisualizer.prototype.findPrevBreakpoint = function() {
         }
 
         // final edge case:
-        var lastElt = myViz.sortedBreakpointsList[myViz.sortedBreakpointsList.length - 1];
+        var lastElt = myViz.sortedBreakpointSteps[myViz.sortedBreakpointSteps.length - 1];
         return (lastElt < c) ? lastElt : -1;
     }
 }
@@ -985,20 +1015,20 @@ ExecutionVisualizer.prototype.findNextBreakpoint = function() {
     var myViz = this;
     var c = myViz.curInstr;
 
-    if (myViz.sortedBreakpointsList.length == 0) {
+    if (myViz.sortedBreakpointSteps.length == 0) {
         return -1;
     }
     // usability hack: if you're currently on a breakpoint, then
     // single-step forward to the next execution point, NOT the next
     // breakpoint. it's often useful to see what happens when the line
     // at a breakpoint executes.
-    else if ($.inArray(c, myViz.sortedBreakpointsList) >= 0) {
+    else if ($.inArray(c, myViz.sortedBreakpointSteps) >= 0) {
         return c + 1;
     }
     else {
-        for (var i = 0; i < myViz.sortedBreakpointsList.length - 1; i++) {
-            var cur = myViz.sortedBreakpointsList[i];
-            var next = myViz.sortedBreakpointsList[i+1];
+        for (var i = 0; i < myViz.sortedBreakpointSteps.length - 1; i++) {
+            var cur = myViz.sortedBreakpointSteps[i];
+            var next = myViz.sortedBreakpointSteps[i+1];
             if (c < cur)
                 return cur;
             if (cur <= c && c < next) // subtle
@@ -1006,7 +1036,7 @@ ExecutionVisualizer.prototype.findNextBreakpoint = function() {
         }
 
         // final edge case:
-        var lastElt = myViz.sortedBreakpointsList[myViz.sortedBreakpointsList.length - 1];
+        var lastElt = myViz.sortedBreakpointSteps[myViz.sortedBreakpointSteps.length - 1];
         return (lastElt > c) ? lastElt : -1;
     }
 }
@@ -1022,7 +1052,7 @@ ExecutionVisualizer.prototype.stepForward = function() {
 
     if (myViz.curInstr < myViz.curTrace.length - 1) {
         // if there is a next breakpoint, then jump to it ...
-        if (myViz.sortedBreakpointsList.length > 0) {
+        if (myViz.sortedBreakpointSteps.length > 0) {
             var nextBreakpoint = myViz.findNextBreakpoint();
             if (nextBreakpoint != -1)
                 myViz.curInstr = nextBreakpoint;
@@ -1049,7 +1079,7 @@ ExecutionVisualizer.prototype.stepBack = function() {
 
     if (myViz.curInstr > 0) {
         // if there is a prev breakpoint, then jump to it ...
-        if (myViz.sortedBreakpointsList.length > 0) {
+        if (myViz.sortedBreakpointSteps.length > 0) {
             var prevBreakpoint = myViz.findPrevBreakpoint();
             if (prevBreakpoint != -1)
                 myViz.curInstr = prevBreakpoint;
@@ -1066,28 +1096,25 @@ ExecutionVisualizer.prototype.stepBack = function() {
     return false;
 }
 
-
 ExecutionVisualizer.prototype.renderSliderBreakpoints = function() {
-    var myViz = this; // to prevent confusion of 'this' inside of nested functions
-
-    myViz.domRoot.find("#executionSliderFooter").empty();
-    var w = myViz.domRoot.find('#executionSlider').width();
+    this.domRoot.find("#executionSliderFooter").empty();
+    var w = this.domRoot.find('#executionSlider').width();
 
     // I originally didn't want to delete and re-create this overlay every time,
     // but if I don't do so, there are weird flickering artifacts with clearing
     // the SVG container; so it's best to just delete and re-create the container each time
-    var sliderOverlay = myViz.domRootD3.select('#executionSliderFooter')
+    var sliderOverlay = this.domRootD3.select('#executionSliderFooter')
         .append('svg')
         .attr('id', 'sliderOverlay')
         .attr('width', w)
         .attr('height', 12);
 
     var xrange = d3.scale.linear()
-        .domain([0, myViz.curTrace.length - 1])
+        .domain([0, this.curTrace.length - 1])
         .range([0, w]);
 
     sliderOverlay.selectAll('rect')
-        .data(myViz.sortedBreakpointsList)
+        .data(this.sortedBreakpointSteps)
         .enter().append('rect')
         .attr('x', function(d, i) {
             // make edge case of 0 look decent:
@@ -1100,188 +1127,6 @@ ExecutionVisualizer.prototype.renderSliderBreakpoints = function() {
             return breakpointColor;
         });
 }
-
-
-
-ExecutionVisualizer.prototype.renderPyCodeOutput = function() {
-    var myViz = this; // to prevent confusion of 'this' inside of nested functions
-
-    // initialize!
-    this.breakpoints = d3.map();
-    this.sortedBreakpointsList = [];
-
-    // an array of objects with the following fields:
-    //   'text' - the text of the line of code
-    //   'lineNumber' - one-indexed (always the array index + 1)
-    //   'executionPoints' - an ordered array of zero-indexed execution points where this line was executed
-    //   'breakpointHere' - has a breakpoint been set here?
-    this.codeOutputLines = [];
-
-    function _getSortedBreakpointsList() {
-        var ret = [];
-        myViz.breakpoints.forEach(function(k, v) {
-            ret.push(Number(k)); // these should be NUMBERS, not strings
-        });
-        ret.sort(function(x,y){return x-y}); // WTF, javascript sort is lexicographic by default!
-        return ret;
-    }
-
-    function addToBreakpoints(executionPoints) {
-        $.each(executionPoints, function(i, ep) {
-            myViz.breakpoints.set(ep, 1);
-        });
-        myViz.sortedBreakpointsList = _getSortedBreakpointsList();
-    }
-
-    function removeFromBreakpoints(executionPoints) {
-        $.each(executionPoints, function(i, ep) {
-            myViz.breakpoints.remove(ep);
-        });
-        myViz.sortedBreakpointsList = _getSortedBreakpointsList();
-    }
-
-    function setBreakpoint(t, d) {
-        addToBreakpoints(d.executionPoints);
-        d3.select(t.parentNode).select('td.lineNo').style('color', breakpointColor);
-        d3.select(t.parentNode).select('td.lineNo').style('font-weight', 'bold');
-        d3.select(t.parentNode).select('td.cod').style('color', breakpointColor);
-        myViz.renderSliderBreakpoints();
-    }
-
-    function unsetBreakpoint(t, d) {
-        removeFromBreakpoints(d.executionPoints);
-        d3.select(t.parentNode).select('td.lineNo').style('color', '');
-        d3.select(t.parentNode).select('td.lineNo').style('font-weight', '');
-        d3.select(t.parentNode).select('td.cod').style('color', '');
-        myViz.renderSliderBreakpoints();
-    }
-
-    /* FIXME maybe remove this.
-    var lines = this.curInputCode.split('\n');
-
-    for (var i = 0; i < lines.length; i++) {
-        var cod = lines[i];
-
-        var n = {};
-        n.text = cod;
-        n.lineNumber = i + 1;
-        n.executionPoints = [];
-        n.breakpointHere = false;
-
-        $.each(this.curTrace, function(j, elt) {
-            if (elt.line == n.lineNumber) {
-                n.executionPoints.push(j);
-            }
-        });
-
-
-        // if there is a comment containing 'breakpoint' and this line was actually executed,
-        // then set a breakpoint on this line
-        var breakpointInComment = false;
-        var toks = cod.split('#');
-        // start at index 1, not 0
-        for (var j = 1; j < toks.length; j++) {
-            if (toks[j].indexOf('breakpoint') != -1) {
-                breakpointInComment = true;
-            }
-        }
-
-        if (breakpointInComment && n.executionPoints.length > 0) {
-            n.breakpointHere = true;
-            addToBreakpoints(n.executionPoints);
-        }
-
-        this.codeOutputLines.push(n);
-    }
-
-    myViz.domRoot.find('#pyCodeOutputDiv').empty();
-
-    // maps this.codeOutputLines to both table columns
-    var codeOutputD3 = this.domRootD3.select('#pyCodeOutputDiv')
-        .append('table')
-        .attr('id', 'pyCodeOutput')
-        .selectAll('tr')
-        .data(this.codeOutputLines)
-        .enter().append('tr')
-        .selectAll('td')
-        .data(function(d, i) {
-            // Map full data item down both columns
-            return [d, d];
-        })
-        .enter().append('td')
-        .attr('class', function(d, i) {
-            if (i == 0) {
-                return 'lineNo';
-            } else {
-                return 'cod';
-            }
-        })
-        .attr('id', function(d, i) {
-            if (i == 0) {
-                return 'lineNo' + d.lineNumber;
-            } else {
-                // make globally unique (within the page)
-                return myViz.generateID('cod' + d.lineNumber);
-            }
-        })
-        .html(function(d, i) {
-            if (i == 0) {
-                return d.lineNumber;
-            } else {
-                return htmlspecialchars(d.text);
-            }
-        });
-
-    // create a left-most gutter td that spans ALL rows ...
-    // (NB: valign="top" is CRUCIAL for this to work in IE)
-    if (myViz.params.arrowLines) {
-        myViz.domRoot.find('#pyCodeOutput tr:first')
-            .prepend('<td id="gutterTD" valign="top" rowspan="' + this.codeOutputLines.length + '"><svg id="leftCodeGutterSVG"/></td>');
-
-        // create prevLineArrow and curLineArrow
-        myViz.domRootD3.select('svg#leftCodeGutterSVG')
-            .append('polygon')
-            .attr('id', 'prevLineArrow')
-            .attr('points', SVG_ARROW_POLYGON)
-            .attr('fill', lightArrowColor);
-
-        myViz.domRootD3.select('svg#leftCodeGutterSVG')
-            .append('polygon')
-            .attr('id', 'curLineArrow')
-            .attr('points', SVG_ARROW_POLYGON)
-            .attr('fill', darkArrowColor);
-    }
-
-    // 2012-09-05: Disable breakpoints for now to simplify UX
-    // 2016-05-01: Revive breakpoint functionality
-    codeOutputD3
-        .style('cursor', function(d, i) {
-            // don't do anything if exePts empty (i.e., this line was never executed)
-            var exePts = d.executionPoints;
-            if (!exePts || exePts.length == 0) {
-                return;
-            } else {
-                return 'pointer'
-            }
-        })
-    .on('click', function(d, i) {
-        // don't do anything if exePts empty (i.e., this line was never executed)
-        var exePts = d.executionPoints;
-        if (!exePts || exePts.length == 0) {
-            return;
-        }
-
-        d.breakpointHere = !d.breakpointHere; // toggle
-        if (d.breakpointHere) {
-            setBreakpoint(this, d);
-        }
-        else {
-            unsetBreakpoint(this, d);
-        }
-    });
-    */
-}
-
 
 // takes a string inputStr and returns an HTML version with
 // the characters from [highlightIndex, highlightIndex+extent) highlighted with
@@ -1458,15 +1303,6 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
     myViz.curLineIsReturn = undefined;
     myViz.prevLineIsReturn = undefined;
     myViz.curLineExceptionMsg = undefined;
-
-    // really nitpicky!!! gets the difference in width between the code display
-    // and the maximum width of its enclosing div
-    myViz.codeHorizontalOverflow = myViz.domRoot.find('#pyCodeOutput').width() - myViz.domRoot.find('#pyCodeOutputDiv').width();
-    // should always be positive
-    if (myViz.codeHorizontalOverflow < 0) {
-        myViz.codeHorizontalOverflow = 0;
-    }
-
 
     // TODO: don't do this since it screws with other stuff, and we're not
     // activating annotation bubbles right now ...
@@ -1865,7 +1701,7 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     }
 
-    this.tcm.setHighligtedLineAndFile(curEntry.line, curEntry.file);
+    this.tcm.setHighligtedLineAndFile(curEntry.line - 1, curEntry.file);
 } // end of updateOutputFull
 
 ExecutionVisualizer.prototype.updateOutputMini = function() {
@@ -4627,42 +4463,4 @@ ExecutionVisualizer.prototype.activateJavaFrontend = function() {
                 });
     };
 }
-
-/**
- * An extension to the TabbedCodeMirror that helps with trace highlighting.
- */
-function EditorTabbedCodeMirror() {
-    TabbedCodeMirror.call(this);
-    this.activeLine = -1;
-    this.activeMirror = -1;
-}
-EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
-EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
-
-EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
-        line, fileName) {
-    if (this.getFileCount() == 0) {
-        // It hasn't been initialized yet
-        return;
-    }
-
-    line -= 1; // The line passed in starts at line 1, not line 0.
-
-    // Reset the old highlight
-    if (this.activeLine != -1 && this.activeMirror != -1) {
-        this.mirrors[this.activeMirror].removeLineClass(this.activeLine, '',
-            EditorTabbedCodeMirror._tracedLineClass);
-    }
-
-    this.activeMirror = this.indexForTabWithName(fileName);
-    this.activeLine = line;
-
-    this.mirrors[this.activeMirror].addLineClass(this.activeLine, '',
-        EditorTabbedCodeMirror._tracedLineClass);
-
-    this.setActiveTabIndex(this.activeMirror);
-}
-
-EditorTabbedCodeMirror._tracedLineClass = 'CodeMirror-activeline-background';
-
 

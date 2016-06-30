@@ -143,16 +143,6 @@ div.ExecutionVisualizer div#legendDiv {
     font-size: 9pt;
 }
 
-div.ExecutionVisualizer div#editCodeLinkDiv {
-    text-align: center;
-    /*
-    margin-top: 12px;
-    margin-bottom: 4px;
-     */
-margin: 8px auto;
-font-size: 11pt;
-}
-
 div.ExecutionVisualizer div#annotateLinkDiv {
     /*text-align: left;*/
     margin-top: 0px;
@@ -918,3 +908,13 @@ div.ExecutionVisualizer td.queueFElt table.dictTbl {
 }
 
 /* END Java frontend by David Pritchard and Will Gwozdz */
+
+div.EditorTabbedCodeMirror-breakpoint {
+    border-radius: 50%;
+    behavior: 'url(PIE.htc)'; /* IE8 */
+    background-color: #f00;
+    width: 10px;
+    height: 10px;
+    margin: 4px;
+}
+
