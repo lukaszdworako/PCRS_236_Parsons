@@ -2060,6 +2060,15 @@ ExecutionVisualizer.prototype.precomputeCurTraceLayouts = function() {
             });
         });
 
+        // Needed to show "temporarily lost" refs (when they are returned).
+        if (curEntry.last_return_value) {
+            var val = curEntry.last_return_value;
+            var type = val[0];
+            if (type == 'REF') {
+                var refId = val[1];
+                updateCurLayoutAndRecurse(val);
+            }
+        }
 
         // iterate through remaining elements of idsToRemove and REMOVE them from curLayout
         idsToRemove.forEach(function(id, xxx) {
@@ -3612,7 +3621,8 @@ ExecutionVisualizer.prototype.redrawConnectors = function() {
 
 
 ExecutionVisualizer.prototype.getRealLabel = function(label) {
-    if (this.params.lang === 'js' || this.params.lang === 'ts' || this.params.lang === 'ruby') {
+    if (this.params.lang === 'js' || this.params.lang === 'ts' ||
+            this.params.lang === 'ruby' || this.params.lang === 'java') {
         if (label === 'list') {
             return 'array';
         } else if (label === 'instance') {
@@ -3643,6 +3653,12 @@ ExecutionVisualizer.prototype.getRealLabel = function(label) {
             return 'nil';
         } else if (label === 'Global frame') {
             return 'Global Object';
+        }
+    }
+
+    if (this.params.lang === 'java') {
+        if (label === 'None') {
+            return 'null';
         }
     }
 
