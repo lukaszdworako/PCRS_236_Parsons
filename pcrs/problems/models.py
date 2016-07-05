@@ -473,7 +473,7 @@ class SubmissionPreprocessorMixin:
 
         return parseCodeIntoFiles(code) or [{
             # If there were no file tags
-            'name': 'NewFile.java',
+            'name': None, # There should be a fallback for an empty file name
             'code': code,
         }]
 

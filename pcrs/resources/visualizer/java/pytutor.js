@@ -3208,7 +3208,7 @@ ExecutionVisualizer.prototype.renderNestedObject = function(obj, stepNum, d3DomE
 
 
 ExecutionVisualizer.prototype.renderCompoundObject =
-function(objID, stepNum, d3DomElement, isTopLevel) {
+        function(objID, stepNum, d3DomElement, isTopLevel) {
     var myViz = this; // to prevent confusion of 'this' inside of nested functions
 
     var heapObjID = myViz.generateHeapObjID(objID, stepNum);
@@ -3267,7 +3267,10 @@ function(objID, stepNum, d3DomElement, isTopLevel) {
     // prepend the type label with a memory address label
     var typeLabelPrefix = '';
     if (myViz.textualMemoryLabels) {
-        typeLabelPrefix = 'id' + objID + ':';
+        if (this.heapObjectIsFromReturn(objID)) {
+            typeLabelPrefix += '(returned) ';
+        }
+        typeLabelPrefix += 'id' + objID + ':';
     }
 
     var hook_result = myViz.try_hook("renderCompoundObject",
@@ -3539,6 +3542,24 @@ function(objID, stepNum, d3DomElement, isTopLevel) {
         d3DomElement.append('<div class="typeLabel">' + typeLabelPrefix + typeName + '</div>');
         d3DomElement.append('<table class="customObjTbl"><tr><td class="customObjElt">' + strRepr + '</td></tr></table>');
     }
+}
+
+/**
+ * If the given object was freshly returned from a method.
+ * If so, it will not be assigned to a variable yet.
+ *
+ * @param {number} objID The object ID to check for
+ */
+ExecutionVisualizer.prototype.heapObjectIsFromReturn = function(objID) {
+    var curEntry = this.curTrace[this.curInstr];
+    if (curEntry.last_return_value) {
+        var val = curEntry.last_return_value;
+        var type = val[0];
+        if (type == 'REF' && val[1] == objID) {
+            return true;
+        }
+    }
+    return false;
 }
 
 ExecutionVisualizer.prototype.renderCStructArray = function(obj, stepNum, d3DomElement) {

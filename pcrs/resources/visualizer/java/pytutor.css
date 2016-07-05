@@ -903,7 +903,7 @@ div.ExecutionVisualizer td.queueFElt table.dictTbl {
 div.EditorTabbedCodeMirror-breakpoint {
     border-radius: 50%;
     behavior: 'url(PIE.htc)'; /* IE8 */
-    background-color: #f00;
+    background-color: #e93f34;
     width: 10px;
     height: 10px;
     margin: 4px;

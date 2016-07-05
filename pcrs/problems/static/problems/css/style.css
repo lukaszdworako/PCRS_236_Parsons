@@ -13,10 +13,6 @@ table.numbered tr.numbered td:first-child::before {
     margin-right: 0.5em;
 }
 
-.CodeMirror-error-background {
-    background: #b22222 !important;
-}
-
 .tabbed-code-mirror li {
     border: 1px solid #dddddd;
     border-bottom-color: transparent;
@@ -115,5 +111,33 @@ table.numbered tr.numbered td:first-child::before {
     text-decoration: none;
     color: #262626;
     background-color: #f5f5f5 !important;
+}
+
+/*
+ * CodeMirror style extensions
+ *
+ * We only use 3 of the styles:
+ * monokai: dark, eclipse: light, shaped: black&white
+ */
+
+.cm-s-monokai .CodeMirror-error-background {
+    background: #992626 !important;
+}
+.cm-s-eclipse .CodeMirror-error-background {
+    color: #f00 !important;
+}
+.cm-s-shaped .CodeMirror-error-background {
+    background: lightgrey !important;
+    color: #f8f8f0 !important;
+}
+
+.cm-s-monokai .CodeMirror-trace-background {
+    background: #474841 !important;
+}
+.cm-s-eclipse .CodeMirror-trace-background {
+    background: #d8e2ef !important;
+}
+.cm-s-shaped .CodeMirror-trace-background {
+    background: #c7c8c1 !important
 }
 

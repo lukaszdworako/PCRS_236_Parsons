@@ -9,7 +9,7 @@ function EditorTabbedCodeMirror() {
 EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
 EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
 
-EditorTabbedCodeMirror._tracedLineClass = 'CodeMirror-activeline-background';
+EditorTabbedCodeMirror._tracedLineClass = 'CodeMirror-trace-background';
 EditorTabbedCodeMirror._breakpointGutterId = 'EditorTabbedCodeMirror-bpgi';
 
 /**
