@@ -71,10 +71,11 @@ class EditorForm(CrispyFormMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         problem = kwargs.pop('problem', None)
         simpleui = kwargs.pop('simpleui', False)
+        initial_code = kwargs.pop('initial_code', '')
         super().__init__(*args, **kwargs)
 
         self.trace_button = Submit('Trace', value='Trace', css_class='debugBtn pull-right')
-        self.fields['code_box'].initial = ''
+        self.fields['code_box'].initial = initial_code
         layout_fields = (Fieldset('', 'code_box'), Div(self.trace_button, css_class="floatdiv"))
         self.helper.layout = Layout(*layout_fields)
 

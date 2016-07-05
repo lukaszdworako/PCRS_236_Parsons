@@ -41,33 +41,37 @@ class EditorViewMixin:
         pClass = self.model.get_problem_class()
         editorId = pClass.editor_problem_id()
 
-        if self.pType == 'c':
-            starter = '#include <stdio.h>'
-            p, created = pClass.get_problem_class().objects.get_or_create(
-                name='blank', starter_code=starter,
-                id=editorId, language=self.pType)
-        elif self.pType == 'python':
-            p, created = self.model.get_problem_class().objects.get_or_create(
-                name='blank', starter_code='',
-                id=editorId, language=self.pType)
-        elif self.pType == 'ra':
+        if self.pType == 'ra':
             # TODO: This relies on the existence of specific schema.
             # Using schema 10 (HR) from 343 and the Extended Grammar.
-            p, created = self.model.get_problem_class().objects.get_or_create(
-                name='blank', description='', starter_code='',
-                grammar='Extended Grammar', semantics='set',
+            p, created = pClass.objects.get_or_create(
+                name='blank', starter_code=self.get_starter_code(),
+                description='', grammar='Extended Grammar', semantics='set',
                 id=editorId, schema_id=10)
         elif self.pType == 'sql':
             # TODO: This relies on the existence of specific schema.
             # Using schema 10 (HR) from 343.
-            p, created = self.model.get_problem_class().objects.get_or_create(
-                name='blank', description='', starter_code='',
-                id=editorId, schema_id=10)
-        elif self.pType == 'java':
-            p, created = self.model.get_problem_class().objects.get_or_create(
-                name='blank', starter_code='test',
+            p, created = pClass.objects.get_or_create(
+                name='blank', starter_code=self.get_starter_code(),
+                description='', id=editorId, schema_id=10)
+        else:
+            p, created = pClass.objects.get_or_create(
+                name='blank', starter_code=self.get_starter_code(),
                 id=editorId, language=self.pType)
         return p
+
+    def get_starter_code(self):
+        if self.pType == 'c':
+            return '#include <stdio.h>'
+        elif self.pType == 'java':
+            return (
+                '[file Code.java]\n'
+                'public class Code {\n'
+                '    public static void main(String args[]) {\n    }\n'
+                '}\n'
+                '[/file]\n'
+            )
+        return ''
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

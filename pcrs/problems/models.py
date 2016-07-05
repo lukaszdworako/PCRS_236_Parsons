@@ -469,13 +469,20 @@ class SubmissionPreprocessorMixin:
         #Code not from editor, process tags
         code = self.fuseStudentCodeIntoStarterCode()
         # Strip tags but leave their contents (for compiling)
-        code = re.sub(r'\[\/?(student_code|blocked|hidden)\]\r?\n?', '', code)
+        code = self.removeTags(code)
 
         return parseCodeIntoFiles(code) or [{
             # If there were no file tags
             'name': None, # There should be a fallback for an empty file name
             'code': code,
         }]
+
+    def removeTags(self, code):
+        '''Removes student_code, blocked, and hidden tags.
+
+        The content inside each of these tags will _NOT_ be removed.
+        '''
+        return re.sub(r'\[\/?(student_code|blocked|hidden)\]\r?\n?', '', code)
 
     def fuseStudentCodeIntoStarterCode(self):
         '''Processes the tags in this submission.

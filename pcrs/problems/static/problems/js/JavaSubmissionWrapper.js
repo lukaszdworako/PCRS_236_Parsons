@@ -14,27 +14,9 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
     var $codeDiv = this.wrapperDiv.find(this.isEditor
         ? '#div_id_code_box' : '#div_id_submission');
 
-    var code;
+    var code = $codeDiv.find('textarea').text();
 
     if (this.isEditor) {
-        code = '[file Hello.java]\n' +
-            'public class Hello {\n' +
-            '    public static void main(String args[]) {\n' +
-            '        Hai h = new Hai();\n' +
-            '        System.out.println("Well hello there");\n' +
-            '    }\n' +
-            '}\n' +
-            '\n' +
-            '[/file]\n' +
-            '[file Hai.java]\n' +
-            'public class Hai {\n' +
-            '    private int bar;\n' +
-            '    public Hai() {\n' +
-            '        bar = 3;\n' +
-            '    }\n' +
-            '}\n' +
-            '\n' +
-            '[/file]\n'
         var mode = cmModeForLanguageAndVersion(
             this.language, this.language_version);
         this.tcm.setNewFileOptions({
@@ -44,8 +26,6 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
             'theme': user_theme,
         });
         this.tcm.enableTabEditingWidgets();
-    } else {
-        code = $codeDiv.find('textarea').text();
     }
 
     setTabbedCodeMirrorFilesFromTagText(this.tcm, code);
@@ -108,8 +88,6 @@ JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
        '</div></td>');
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
-    // NOTE: We might remove this in place of a single debug button.
-    $newRow.append('<td class="debug">-</td>');
     this._addA11yToTestRow($newRow, testcase.test_val,
         testcase.passed_test, testcase.expected_output);
 
