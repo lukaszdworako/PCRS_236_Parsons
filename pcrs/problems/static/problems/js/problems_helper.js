@@ -98,7 +98,11 @@ function jsDateTimeToPCRSDatetime(datetime) {
  * @param $codeDiv The code div to replace.
  * @return The TabbedCodeMirror object.
  */
-function setTabbedCodeMirrorFilesFromTagText(tcm, codeText) {
+function setTabbedCodeMirrorFilesFromTagText(tcm, codeText, lock) {
+    if (lock === undefined) {
+        lock = false;
+    }
+
     while (tcm.getFileCount() > 0) {
         tcm.removeFileAtIndex(0);
     }
@@ -112,6 +116,7 @@ function setTabbedCodeMirrorFilesFromTagText(tcm, codeText) {
             'name': file.name,
             'code': codeObj.code,
             'mode': 'text/x-java',
+            'readOnly': lock,
             'theme': user_theme,
             'block_ranges': codeObj.block_ranges,
             'hash_ranges': codeObj.hash_ranges,

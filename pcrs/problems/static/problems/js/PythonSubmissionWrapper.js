@@ -79,6 +79,8 @@ PythonSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var newCode = myCodeMirrors[this.wrapperDivId].getValue() +
         "\n" + testcaseCode;
     getVisualizerComponents(newCode, testcaseCode, this.problemId);
+    $('#visualizerModal').modal('show');
+    setTimeout(PythonSubmissionWrapper._waitVis, 100);
 }
 
 /**

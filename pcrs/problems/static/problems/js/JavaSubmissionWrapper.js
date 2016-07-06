@@ -124,7 +124,8 @@ JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
     var codeText = $codeDiv.text();
     var tcm = new TabbedCodeMirror();
 
-    setTabbedCodeMirrorFilesFromTagText(tcm, codeText);
+    var readOnly = true;
+    setTabbedCodeMirrorFilesFromTagText(tcm, codeText, readOnly);
 
     var that = this;
     $codeDiv

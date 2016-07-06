@@ -189,6 +189,8 @@ CSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var testcaseCode = row.find(".expression_div").text();
     var newCode = this._addHashkey(myCodeMirrors[this.wrapperDivId]);
     getVisualizerComponents(newCode, testcaseCode, this.problemId);
+    $('#visualizerModal').modal('show');
+    setTimeout(PythonSubmissionWrapper._waitVis, 100);
 }
 
 /**
