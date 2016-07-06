@@ -2,11 +2,12 @@ function SubmissionWrapper(wrapperDivId) {
     this.wrapperDivId = wrapperDivId;
     this.wrapperDiv = $('#' + wrapperDivId);
     this.problemId = wrapperDivId.split("-")[1];
+    this.submissionHistory = [];
     // If this is in a visualizer code editor
     this.isEditor = this.wrapperDivId.split("-")[2] === 'editor';
     // Null is evil, but these MUST be changed in the subclass constructors.
     this.language = null;
-    this.language_version = null
+    this.language_version = null;
 }
 
 /**
@@ -80,15 +81,15 @@ SubmissionWrapper.prototype.submitAllCode = function() {
 }
 
 /**
- * Submit the current code and populate the grad table.
+ * Submit the current code and populate the grade table.
  */
 SubmissionWrapper.prototype.getTestcases = function(code) {
     var call_path = "";
 
     if (this.isEditor) {
-        call_path = root + '/problems/' + this.language + '/editor/run';
+        call_path = root + 'problems/' + this.language + '/editor/run';
     } else {
-        call_path = root + '/problems/' + this.language + '/' +
+        call_path = root + 'problems/' + this.language + '/' +
             this.wrapperDivId.split("-")[1]+ '/run';
     }
 
@@ -190,50 +191,39 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     $gradingTable.find(".red-alert").remove();
     $gradingTable.find('.pcrs-table-row').remove();
 
-    var score = 0;
-    var tests = [];
-
     if (error_msg) {
         $gradingTable.append($('<th class="red-alert"></th>')
             .attr('style', 'width:100%;')
             .attr('colspan', '12')
             .text(error_msg));
-    } else {
-	    for (var i = 0; i < testcases.length; i++) {
-            var testcase = this._formatTestCaseObject(testcases[i]);
-
-            tests.push({
-                'visible': testcase.test_input != null,
-                'input': testcase.test_input,
-                'output': testcase.expected_output,
-                'passed': testcase.passed_test,
-                'description': testcase.test_desc
-            });
-
-            if (testcase.passed_test) {
-                score++;
-            }
-
-            var $newRow = this._createTestCaseRow(testcase);
-            $gradingTable.append($newRow);
-	    }
+        return;
     }
 
-    var historyData = {
-        'sub_time':new Date(),
-        'submission': this.getAllCode(),
-        'score':score,
-        'best':best,
-        'past_dead_line':past_dead_line,
-        'problem_pk':this.problemId,
-        'sub_pk':sub_pk,
-        'out_of':max_score,
-        'tests': tests
-    };
+    this._addTestCasesToTable(testcases, $gradingTable);
 
     if (best && ! past_dead_line) {
+        var score = this._calculateSubmissionScore(testcases);
         update_marks(this.wrapperDivId, score, max_score);
     }
+}
+
+SubmissionWrapper.prototype._addTestCasesToTable = function(testcases,
+        $gradingTable) {
+    for (var i = 0; i < testcases.length; i++) {
+        var testcase = this._formatTestCaseObject(testcases[i]);
+        var $newRow = this._createTestCaseRow(testcase);
+        $gradingTable.append($newRow);
+    }
+}
+
+SubmissionWrapper.prototype._calculateSubmissionScore = function(testcases) {
+    var score = 0;
+    for (var i = 0; i < testcases.length; i++) {
+        if (testcases[i].passed_test) {
+            score++;
+        }
+    }
+    return score;
 }
 
 SubmissionWrapper.prototype._formatTestCaseObject = function(testcase) {
@@ -334,14 +324,16 @@ SubmissionWrapper.prototype.loadAndShowHistory = function() {
 
     // Empty the accordion, in case any manual insertions were performed.
 
-    var problem_path = root + '/problems/' + this.language + '/' +
+    var problem_path = root + 'problems/' + this.language + '/' +
         this.problemId + '/history';
     var that = this;
     $.post(problem_path, postParams,
         function(data) {
-            that.showHistoryModal(data);
+            that.setHistoryEntries(data);
+            that.showHistoryModal();
         }, 'json')
         .fail(function(jqXHR, textStatus, errorThrown) {
+            alert('Failed fetching history. Please try again.');
             console.log(textStatus);
         });
 }
@@ -350,20 +342,36 @@ SubmissionWrapper.prototype.loadAndShowHistory = function() {
  * Show the history modal with the given entries.
  */
 SubmissionWrapper.prototype.showHistoryModal = function(entries) {
+    $('#history_window_' + this.wrapperDivId).modal('show');
+}
+
+/**
+ * Set's the history.
+ *
+ * @param entries {array} The history entries.
+ * @see _addHistoryEntryToAccordion for entry format
+ */
+SubmissionWrapper.prototype.setHistoryEntries = function(entries) {
+    this.submissionHistory = entries;
+
     var $historyDiv = $('#history_window_' + this.wrapperDivId);
     var $accordion = $historyDiv.find('#history_accordion');
     // Delete the old
     $accordion.empty();
     // Add the new
     for (var x = 0; x < entries.length; x++) {
-        this._addHistoryEntry(entries[x], $accordion);
+        this._addHistoryEntryToAccordion(entries[x], $accordion);
     }
 }
 
 /**
- * Add "data" to the history inside the given "div_id"
+ * Add the given entry to the specified history accordion.
+ *
+ * @param entry {object}
+ * @param $accordion {object} A jQuery accordion object
  */
-SubmissionWrapper.prototype._addHistoryEntry = function(entry, $accordion) {
+SubmissionWrapper.prototype._addHistoryEntryToAccordion = function(entry,
+        $accordion) {
     var sub_time = new Date(entry['sub_time']);
     var panel_class = "pcrs-panel-default";
     var star_text = "";
@@ -380,6 +388,7 @@ SubmissionWrapper.prototype._addHistoryEntry = function(entry, $accordion) {
 
     var mirrorId = 'history_mirror_' + entry['problem_pk'] + '_' +
         entry['sub_pk'];
+
     var template = Handlebars.getTemplate('hb_history_row');
     var config = {
         panelClass: panel_class,
@@ -395,10 +404,11 @@ SubmissionWrapper.prototype._addHistoryEntry = function(entry, $accordion) {
     };
 
     $accordion.append(template(config));
-    this._createHistoryCodeMirror(mirrorId);
+    this._createHistoryCodeMirror(entry, mirrorId);
 }
 
-SubmissionWrapper.prototype._createHistoryCodeMirror = function(mirrorId) {
+SubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
+        mirrorId) {
     create_to_code_mirror(this.language, this.language_version, mirrorId);
 }
 

@@ -3,6 +3,7 @@ function JavaSubmissionWrapper(name) {
     this.language = "java";
     this.language_version = 'text/x-java';
     this.tcm = new TabbedCodeMirror();
+    this.lastSubmissionPk = 0;
 }
 JavaSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
@@ -97,30 +98,59 @@ JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
 /**
  * @override
  */
-JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(mirrorId) {
+JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
+    SubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
+    var $gradingTable = this.wrapperDiv.find("#gradeMatrix");
+
+    this.lastSubmissionPk = testData['sub_pk'];
+
+    if (this.wrapperDiv.find('#visualizeButton').length == 0) {
+        var that = this;
+        $gradingTable.before(
+            $('<a id="visualizeButton" class="btn btn-info" role="button"></a>')
+                .text('Visualize')
+                .click(function() {
+                    that._visualizeHistoryEntryPk(that.lastSubmissionPk);
+                }));
+    }
+}
+
+/**
+ * @override
+ */
+JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
+        mirrorId) {
     var $codeDiv = $("#" + mirrorId);
     var codeText = $codeDiv.text();
     var tcm = new TabbedCodeMirror();
-    console.log(codeText);
 
     setTabbedCodeMirrorFilesFromTagText(tcm, codeText);
 
-    // Add a button to revert to this submission
     var that = this;
-    $codeDiv.before($('<a class="btn btn-danger pull-right" role="button"></a>')
-        .text('Revert')
-        .click(function() {
-            that._revertToCodeFromHistoryModal(codeText);
-        }));
-
-    // Replace the code div with the tabbed code mirror
-    $codeDiv.before(tcm.getJQueryObject());
-    $codeDiv.remove();
+    $codeDiv
+        .before($('<a class="btn btn-danger pull-right" role="button"></a>')
+            .text('Revert')
+            .click(function() {
+                that._revertToCodeFromHistoryModal(codeText);
+            }))
+        .before($('<a class="btn btn-info pull-right" role="button"></a>')
+            .text('Visualize')
+            .click(function() {
+                that._visualizeHistoryEntryPk(entry['sub_pk']);
+            }))
+        // Replace the code div with the tabbed code mirror
+        .before(tcm.getJQueryObject())
+        .remove();
 
     cmh_list[mirrorId] = tcm;
 }
 
 JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
+    /*
+     * This can't be a modal confirmation since the history modal is
+     * already being shown. Bootstrap doesn't support multiple modals being
+     * open at the same time.
+     */
     if ( ! confirm('Revert current code to this submission?')) {
         return;
     }
@@ -131,5 +161,12 @@ JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
     $historyDiv.modal('hide');
     this.wrapperDiv.find('#grade-code').hide();
     this.wrapperDiv.find('#alert').hide();
+}
+
+/**
+ * Jumps to the visualizer for the given submission history entry.
+ */
+JavaSubmissionWrapper.prototype._visualizeHistoryEntryPk = function(entryPk) {
+    window.location.href = root + 'editor/java/visualize/' + entryPk;
 }
 
