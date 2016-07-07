@@ -90,11 +90,5 @@
         type="text/javascript"></script>
 {% endcompress %}
 
-{% if problem.language == "python" %}
-    {% include "problems/visualizer_python_includes.html" %}
-{% elif problem.language == "java" %}
-    {% include "problems/visualizer_java_includes.html" %}
-{% endif %}
-
 {% include "problems/handlebars/history_row.html" %}
 

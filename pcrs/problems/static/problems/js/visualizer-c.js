@@ -1,3 +1,39 @@
+/*
+ * NOTE: We are now using polymorphism to handle language specific visualizers.
+ * Eventually, in this file should be a method in the below class.
+ */
+
+function CVisualizer() {
+    Visualizer.call(this);
+    this.language = 'c';
+}
+CVisualizer.prototype = Object.create(Visualizer.prototype);
+CVisualizer.prototype.constructor = CVisualizer;
+
+/**
+ * @override
+ */
+CVisualizer.prototype._showVisualizerWithData = function(data) {
+    executeCVisualizer("create_visualizer", data, this.code);
+}
+
+/**
+ * @override
+ */
+CVisualizer.prototype._generatePostParams = function() {
+    var postParams = Visualizer.prototype._generatePostParams.apply(this, arguments);
+    executeCVisualizer("gen_execution_trace_params", postParams, this.code);
+    return postParams;
+}
+
+//
+//
+// LEGACY VISUALIZER CODE FORMAT BEGINS HERE
+//
+//
+
+var debugger_id = ""; // Set in CSubmissionWrapper
+
 var last_stepped_line_debugger = 0;
 var c_debugger_load = false;
 var debugger_data = null;
@@ -43,6 +79,32 @@ var free_list = {};
 
 var hex_mode_on = false;
 //---
+
+/**
+ * Generate a Hashkey based on
+ * the problem_id to identify
+ * where the student code starts and ends
+ */
+function removeHashkeyForDisplay(div_id, newCode) {
+    var codeArray = newCode.split('\n');
+    var line_count = codeArray.length;
+    var hash_code = CryptoJS.SHA1(div_id.split("-")[1]);
+    var code = "";
+    var i;
+    for (i = 0; i < line_count; i++){
+        //wrapClass = newCode.lineInfo(i).wrapClass;
+        if (codeArray[i] == hash_code) {
+            continue;
+        }
+        else {
+            code += codeArray[i];
+            //Check for the main function declaration, this is the line we should start
+            //student steps from, if it is not hidden
+        }
+        code += '\n';
+    }
+    return code.substring(0, code.length-1);
+}
 
 function zeroPad(str, max) {
   str = str.toString();
@@ -130,30 +192,21 @@ function repeat_string(str, count) {
 }
 
 
-function executeCVisualizer(option, data, newCode) {
 /**
  * C visualizer representation.
  */
+function executeCVisualizer(option, data, newCode) {
     switch(option) {
-
         case "create_visualizer":
-            if(!errorsInTraceC(data)) {
+            if( ! errorsInTraceC(data)) {
                     createVisualizer(data, newCode);
             }
             break;
-
         case "gen_execution_trace_params":
             getExecutionTraceParams(data);
             break;
-
-        case "render_data":
-            codeStr = data.codeStr;
-            targetElement = data.targetElement;
-            renderVal(codeStr, targetElement);
-            break;
-
         default:
-            return "option not supported";
+            throw new Error('option not supported');
     }
 
     function replaceAll(find, replace, str) {
@@ -2444,19 +2497,12 @@ function executeCVisualizer(option, data, newCode) {
         }
     }
 
-    function getExecutionTraceParams(initPostParams) {
     /**
      * Update dictionary initPostParams with additional parameters
      * that will be used to create a visualizer.
      */
+    function getExecutionTraceParams(initPostParams) {
         initPostParams.add_params = JSON.stringify({test_case : initPostParams.test_case});
     }
-
-    function renderVal(codeStr, targetElement) {
-    /**
-     * Make sure to clean targetElement, then call actual visualizer function.
-     */
-        targetElement.empty();
-        renderData_ignoreID(codeStr, targetElement);
-    }
 }
+

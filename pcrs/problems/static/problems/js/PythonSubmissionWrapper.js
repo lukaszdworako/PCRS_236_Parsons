@@ -2,6 +2,8 @@ function PythonSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "python";
     this.language_version = 3;
+    this.visualizer = new PythonVisualizer();
+    this.visualizer.setProblemId(this.problemId);
 }
 PythonSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
@@ -11,22 +13,8 @@ PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
  */
 PythonSubmissionWrapper.prototype._showEditorTraceDialog = function(code) {
     var code = this.getAllCode();
-    $('#waitingModal').modal('show');
-    getVisualizerComponents(code, '', 9999999);
-    $('#visualizerModal').modal('show');
-    setTimeout(PythonSubmissionWrapper._waitVis, 100);
-}
-
-// TODO At some point, this should be a callback. Polling is bad!
-PythonSubmissionWrapper._waitVis = function() {
-    if (visPostComplete) {
-        $('#waitingModal').modal('hide');
-        if (pythonVisError) {
-            $('#visualizerModal').modal('hide');
-        }
-    } else {
-        setTimeout(PythonSubmissionWrapper._waitVis, 100);
-    }
+    this.visualizer.setCode(code);
+    this.visualizer.loadVisualizer();
 }
 
 /**
@@ -76,11 +64,11 @@ PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  */
 PythonSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var testcaseCode = row.find(".expression_div").text();
-    var newCode = myCodeMirrors[this.wrapperDivId].getValue() +
-        "\n" + testcaseCode;
-    getVisualizerComponents(newCode, testcaseCode, this.problemId);
-    $('#visualizerModal').modal('show');
-    setTimeout(PythonSubmissionWrapper._waitVis, 100);
+    var code = myCodeMirrors[this.wrapperDivId].getValue() +
+        '\n' + testcaseCode;
+
+    this.visualizer.setCode(code);
+    this.visualizer.loadTestCaseVisualizer(testcaseCode);
 }
 
 /**

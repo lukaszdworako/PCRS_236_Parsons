@@ -2,6 +2,8 @@ function CSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "c";
     this.language_version = 'text/x-csrc';
+    this.visualizer = new CVisualizer();
+    this.visualizer.setProblemId(this.problemId);
 }
 CSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 CSubmissionWrapper.prototype.constructor = CSubmissionWrapper;
@@ -76,7 +78,8 @@ CSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
          */
         if (shouldVisualize) {
             var code = myCodeMirrors[this.wrapperDivId].getDoc().getValue();
-            getVisualizerComponents(code, '', 9999999);
+            this.visualizer.setCode(code);
+            this.visualizer.loadVisualizer();
         }
         return;
     }
@@ -187,10 +190,10 @@ CSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  */
 CSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var testcaseCode = row.find(".expression_div").text();
-    var newCode = this._addHashkey(myCodeMirrors[this.wrapperDivId]);
-    getVisualizerComponents(newCode, testcaseCode, this.problemId);
-    $('#visualizerModal').modal('show');
-    setTimeout(PythonSubmissionWrapper._waitVis, 100);
+    var code = this._addHashkey(myCodeMirrors[this.wrapperDivId]);
+
+    this.visualizer.setCode(code);
+    this.visualizer.loadTestCaseVisualizer(testcaseCode);
 }
 
 /**

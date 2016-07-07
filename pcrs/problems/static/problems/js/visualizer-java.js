@@ -1,163 +1,113 @@
-function executeJavaVisualizer(option, data) {
-    // FIXME this should be a parameter passed in!
-    // TODO subclass SubmissionWrapper
-    var wrapperDiv = $('#java-1-editor');
-    var tcm = myCodeMirrors['java-1-editor'];
+function JavaVisualizer() {
+    Visualizer.call(this);
+    this.language = 'java';
+    this.compileErrorCallback = function(file, line, message) {};
+    this.files = [];
+}
+JavaVisualizer.prototype = Object.create(Visualizer.prototype);
+JavaVisualizer.prototype.constructor = JavaVisualizer;
 
-    switch(option) {
-        case "create_visualizer":
-            createVisualizer(data);
-            break;
+/**
+ * Convenience method to set the submission code by a file array.
+ */
+JavaVisualizer.prototype.setFiles = function(files) {
+    this.files = files;
+    this.setCode(this._generateEditorCodeFromFiles(files));
+}
 
-        case "gen_execution_trace_params":
-            getExecutionTraceParams(data);
-            break;
+/**
+ * @param callback {function} With params file, line, and message.
+ */
+JavaVisualizer.prototype.setCompileErrorCallback = function(callback) {
+    this.compileErrorCallback = callback;
+}
 
-        case "render_data":
-            throw new Error('This method is legacy! Why is it being called?');
-            break;
-
-        default:
-            return "option not supported";
+/**
+ * @override
+ */
+JavaVisualizer.prototype._showVisualizerWithData = function(data) {
+    if (data.trace) {
+        data.trace = JSON.parse(data.trace).trace;
     }
 
-    /**
-     * Update dictionary initPostParams with additional parameters
-     * that will be used to create a visualizer.
-     */
-    function getExecutionTraceParams(initPostParams) {
-        initPostParams.add_params = JSON.stringify({
-        });
+    if (this._errorsInTrace(data)) {
+        return;
     }
 
-    /**
-     * Verify trace does not contain errors and create visualizer,
-     * othervise don't enter visualization mode.
-     */
-    function createVisualizer(data) {
-        if (data.trace) {
-            data.trace = JSON.parse(data.trace).trace;
+    $('#visualizerModal').modal('show');
+
+    var pyTutor = this._createPyTutorVisualizer({
+        files: this.files,
+        trace: data.trace,
+    });
+
+    pyTutor.updateOutput();
+}
+
+/**
+ * Turns a file list into a submittable code string with [file] tags.
+ */
+JavaVisualizer.prototype._generateEditorCodeFromFiles = function(files) {
+    var code = '';
+    for (var i = 0; i < files.length; i++) {
+        code += '[file ' + files[i].name + ']\n' +
+            files[i].code +
+            '\n[/file]\n';
+    }
+    return code;
+}
+
+JavaVisualizer.prototype._errorsInTrace = function(data) {
+    var trace = data.trace;
+
+    if (data.exception) {
+        alert(data.exception);
+        return true;
+    } else if ( ! trace || trace.length == 0) {
+        alert("Unknown error.");
+        return true;
+    }
+
+    var lastStep = trace[trace.length - 1];
+    var isCompileError = trace.length == 1 && lastStep.exception_msg;
+    if (isCompileError) {
+        var file = lastStep.file - 1; // Should be 0-indexed
+        var line = lastStep.line;
+        var message = lastStep.exception_msg;
+        this.compileErrorCallback(file, line, message);
+        return true;
+    }
+
+    return false;
+}
+
+JavaVisualizer.prototype._createPyTutorVisualizer = function(data) {
+    var javaVisualizer = new ExecutionVisualizer('visualize-code', data, {
+        startingInstruction:  0,
+        updateOutputCallback: function() {
+            $('#urlOutput,#embedCodeOutput').val('');
+        },
+        disableHeapNesting: true,
+        drawParentPointers: true,
+        textualMemoryLabels: true,
+        //allowEditAnnotations: true,
+    });
+
+    $(document).keydown(function(k) {
+        // Left arrow
+        if (k.keyCode == 37 && javaVisualizer.stepBack()) {
+            // Don't horizontally scroll the display
+            k.preventDefault();
+        // Right arrow
+        } else if (k.keyCode == 39 && javaVisualizer.stepForward()) {
+            // Don't horizontally scroll the display
+            k.preventDefault();
         }
+    });
 
-        // FIXME hax!
-        if (pythonVisError = errorsInTraceJava(data)) {
-            return;
-        }
+    // also scroll to top to make the UI more usable on smaller monitors
+    $(document).scrollTop(0);
 
-        var files = tcm.getFiles();
-
-        var visualizer = createVisualizerJava({
-            files: files,
-            trace: data.trace,
-        });
-        visualizer.updateOutput();
-    }
-
-    /**
-     * This function has been taken from:
-     *
-     * Online Python Tutor
-     * https://github.com/pgbovine/OnlinePythonTutor/
-     *
-     * Copyright (C) 2010-2013 Philip J. Guo (philip@pgbovine.net)
-     *
-     * Return boolean true if there are errors in trace, false otherwise.
-     * Note that this function raises alerts.
-     */
-    function errorsInTraceJava(data) {
-        var trace = data.trace;
-
-        if (data.exception) {
-            alert(data.exception);
-            return true;
-        } else if ( ! trace || trace.length == 0) {
-            alert("Unknown error.");
-            return true;
-        }
-
-        var lastStep = trace[trace.length - 1];
-        var isCompileError = trace.length == 1 && lastStep.exception_msg;
-        if (isCompileError) {
-            displayErrorInStepJson(lastStep);
-            return true;
-        }
-
-        return false;
-    }
-
-    function displayErrorInStepJson(json) {
-        // CodeMirror lines are zero-indexed
-        var errorLineNo = json.line - 1;
-
-        var tabIndex = tcm.indexForTabWithName(json.file);
-        var mirror = tcm.getCodeMirror(tabIndex);
-        tcm.setActiveTabIndex(tabIndex);
-
-        var errorClass = 'CodeMirror-error-background';
-        // highlight the faulting line in the current file
-        mirror.focus();
-        mirror.setCursor(errorLineNo, 0);
-        mirror.addLineClass(errorLineNo, '', errorClass);
-
-        var changeHandler = function() {
-            // Reset line back to normal
-            mirror.removeLineClass(errorLineNo, '', errorClass);
-            mirror.off('change', changeHandler);
-            wrapperDiv.find('#alert').hide();
-        }
-        mirror.on('change', changeHandler);
-
-        /*
-         * FIXME Once we inherit from SubmissionWrapper, we shouldn't
-         * access this globally.
-         */
-        var $alertBox = wrapperDiv.find('#alert');
-        $alertBox.show();
-        $alertBox.toggleClass('red-alert', true);
-        $alertBox.children('icon').toggleClass('remove-icon', true);
-        $alertBox.children('span').text(json.exception_msg);
-        wrapperDiv.find('.screen-reader-text').text(json.exception_msg);
-    }
-
-    /**
-     * Content of this function has been taken from:
-     *
-     * Online Python Tutor
-     * https://github.com/pgbovine/OnlinePythonTutor/
-     *
-     * Copyright (C) 2010-2013 Philip J. Guo (philip@pgbovine.net)
-     *
-     * Return an instance of Python visualizer.
-     */
-    function createVisualizerJava(data) {
-        var javaVisualizer = new ExecutionVisualizer('visualize-code', data, {
-            startingInstruction:  0,
-            updateOutputCallback: function() {
-                $('#urlOutput,#embedCodeOutput').val('');
-            },
-            // tricky: selector 'true' and 'false' values are strings!
-            disableHeapNesting: ('true' == 'true'),
-            drawParentPointers: ('true' == 'true'),
-            textualMemoryLabels: ('true' == 'true'),
-            //allowEditAnnotations: true,
-        });
-
-        $(document).keydown(function(k) {
-            // Left arrow
-            if (k.keyCode == 37 && javaVisualizer.stepBack()) {
-                // Don't horizontally scroll the display
-                k.preventDefault();
-            // Right arrow
-            } else if (k.keyCode == 39 && javaVisualizer.stepForward()) {
-                // Don't horizontally scroll the display
-                k.preventDefault();
-            }
-        });
-
-        // also scroll to top to make the UI more usable on smaller monitors
-        $(document).scrollTop(0);
-
-        return javaVisualizer;
-    }
+    return javaVisualizer;
 }
 

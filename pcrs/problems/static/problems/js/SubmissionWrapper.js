@@ -1,10 +1,10 @@
 function SubmissionWrapper(wrapperDivId) {
     this.wrapperDivId = wrapperDivId;
     this.wrapperDiv = $('#' + wrapperDivId);
-    this.problemId = wrapperDivId.split("-")[1];
     this.submissionHistory = [];
     // If this is in a visualizer code editor
     this.isEditor = this.wrapperDivId.split("-")[2] === 'editor';
+    this.problemId = this.isEditor ? '9999999' : wrapperDivId.split("-")[1];
     // Null is evil, but these MUST be changed in the subclass constructors.
     this.language = null;
     this.language_version = null;
@@ -295,9 +295,7 @@ SubmissionWrapper.prototype._addDebugColumnToTestRow = function($row, debug) {
         var that = this;
         $button.bind('click', function() {
             setTimeout(function() {
-                $('#waitingModal').modal('show');
                 that._prepareVisualizer($row);
-                $('#waitingModal').modal('hide');
             }, 250);
         });
     } else {

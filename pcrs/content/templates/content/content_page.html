@@ -15,6 +15,7 @@
     {{ block.super }}
     {% load staticfiles %}
     {% include "problems/code_problem_scripts.html" %}
+    {% include "problems/visualizer_python_includes.html" %}
     {% load compress %}
     {% compress js %}
         <script src="{% static "csrf_protection.js" %}"

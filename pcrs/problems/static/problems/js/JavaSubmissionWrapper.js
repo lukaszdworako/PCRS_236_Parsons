@@ -4,6 +4,8 @@ function JavaSubmissionWrapper(name) {
     this.language_version = 'text/x-java';
     this.tcm = new TabbedCodeMirror();
     this.lastSubmissionPk = 0;
+    this.visualizer = new JavaVisualizer();
+    this.visualizer.setProblemId(this.problemId);
 }
 JavaSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
@@ -41,24 +43,12 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
  * @override
  */
 JavaSubmissionWrapper.prototype._showEditorTraceDialog = function() {
-    var code = this._generateCodeForEditor();
-    $('#waitingModal').modal('show');
-    getVisualizerComponents(code, '', 9999999);
-    $('#visualizerModal').modal('show');
-    // FIXME proper-i-fy-this  - and when you fix it, fix the Python one too
-    setTimeout(PythonSubmissionWrapper._waitVis, 100);
-}
-
-JavaSubmissionWrapper.prototype._generateCodeForEditor = function() {
-    var files = this.tcm.getFiles();
-    var code = '';
-
-    for (var i = 0; i < files.length; i++) {
-        code += '[file ' + files[i].name + ']\n' +
-            files[i].code +
-            '\n[/file]\n';
-    }
-    return code;
+    this.visualizer.setFiles(this.tcm.getFiles());
+    var that = this;
+    this.visualizer.setCompileErrorCallback(function(file, line, message) {
+        that.displayCodeError(file, line, message);
+    });
+    this.visualizer.loadVisualizer();
 }
 
 /**
@@ -169,5 +159,40 @@ JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
  */
 JavaSubmissionWrapper.prototype._visualizeHistoryEntryPk = function(entryPk) {
     window.location.href = root + 'editor/java/visualize/' + entryPk;
+}
+
+/**
+ * Highlights the given line and displays the given error message.
+ *
+ * @param file {string}
+ * @param line {number} zero-indexed
+ */
+JavaSubmissionWrapper.prototype.displayCodeError = function(file, line,
+        message) {
+    var tabIndex = this.tcm.indexForTabWithName(file);
+    var mirror = this.tcm.getCodeMirror(tabIndex);
+    this.tcm.setActiveTabIndex(tabIndex);
+
+    var errorClass = 'CodeMirror-error-background';
+    // highlight the faulting line in the current file
+    mirror.focus();
+    mirror.setCursor(errorLineNo, 0);
+    mirror.addLineClass(errorLineNo, '', errorClass);
+
+    var that = this;
+    var changeHandler = function() {
+        // Reset line back to normal
+        mirror.removeLineClass(errorLineNo, '', errorClass);
+        mirror.off('change', changeHandler);
+        that.wrapperDiv.find('#alert').hide();
+    }
+    mirror.on('change', changeHandler);
+
+    var $alertBox = this.wrapperDiv.find('#alert');
+    $alertBox.show();
+    $alertBox.toggleClass('red-alert', true);
+    $alertBox.children('icon').toggleClass('remove-icon', true);
+    $alertBox.children('span').text(message);
+    this.wrapperDiv.find('.screen-reader-text').text(message);
 }
 

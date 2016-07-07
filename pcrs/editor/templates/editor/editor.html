@@ -5,6 +5,11 @@
     {{ block.super }}
     {% load staticfiles %}
     {% include "problems/code_problem_scripts.html" %}
+    {% if problem.language == 'python' %}
+        {% include "problems/visualizer_python_includes.html" %}
+    {% elif problem.language == 'java' %}
+        {% include "problems/visualizer_java_includes.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block stylesheets %}

@@ -1,4 +1,36 @@
-var pythonVisError = false;
+/*
+ * NOTE: We are now using polymorphism to handle language specific visualizers.
+ * Eventually, in this file should be a method in the below class.
+ */
+
+function PythonVisualizer() {
+    Visualizer.call(this);
+    this.language = 'python';
+}
+PythonVisualizer.prototype = Object.create(Visualizer.prototype);
+PythonVisualizer.prototype.constructor = PythonVisualizer;
+
+/**
+ * @override
+ */
+PythonVisualizer.prototype._showVisualizerWithData = function(data) {
+    executePythonVisualizer("create_visualizer", data);
+}
+
+/**
+ * @override
+ */
+PythonVisualizer.prototype._generatePostParams = function() {
+    var postParams = Visualizer.prototype._generatePostParams.apply(this, arguments);
+    executePythonVisualizer("gen_execution_trace_params", postParams);
+    return postParams;
+}
+
+//
+//
+// LEGACY VISUALIZER CODE FORMAT BEGINS HERE
+//
+//
 
 function executePythonVisualizer(option, data) {
 /**
@@ -8,32 +40,24 @@ function executePythonVisualizer(option, data) {
         case "create_visualizer":
             createVisualizer(data);
             break;
-
         case "gen_execution_trace_params":
             getExecutionTraceParams(data);
             break;
-
-        case "render_data":
-            codeStr = data.codeStr;
-            targetElement = data.targetElement;
-            renderVal(codeStr, targetElement);
-            break;
-
         default:
-            return "option not supported";
+            throw new Error('option not supported');
     }
 
-    function createVisualizer(data) {
     /**
      * Verify trace does not contain errors and create visualizer,
      * othervise don't enter visualization mode.
      */
-        if (!errorsInTracePy(data)) {
+    function createVisualizer(data) {
+        if ( ! errorsInTracePy(data)) {
+            $('#visualizerModal').modal('show');
             // assign global
             visualizer = createVisualizerPy(data);
             visualizer.updateOutput();
         }
-
     }
 
     function errorsInTracePy(data) {
@@ -54,10 +78,7 @@ function executePythonVisualizer(option, data) {
         if (data.exception) {
             alert(data.exception);
             errors_caught = true;
-            pythonVisError = true;
-        }
-        else {
-            pythonVisError = false;
+        } else {
             trace = data.trace;
 
             if (trace.length == 0) {
@@ -152,12 +173,5 @@ function executePythonVisualizer(option, data) {
         initPostParams.add_params = JSON.stringify({cumulative_mode : cumulative_mode, heap_primitives : heap_primitives});
 
     }
-
-    function renderVal(codeStr, targetElement) {
-    /**
-     * Make sure to clean targetElement, then call actual visualizer function.
-     */
-        targetElement.empty();
-        renderData_ignoreID(codeStr, targetElement);
-    }
 }
+
