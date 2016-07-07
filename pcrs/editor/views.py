@@ -44,30 +44,54 @@ class EditorViewMixin:
         if self.pType == 'ra':
             # TODO: This relies on the existence of specific schema.
             # Using schema 10 (HR) from 343 and the Extended Grammar.
-            p, created = pClass.objects.get_or_create(
-                name='blank', starter_code=self.get_starter_code(),
+            return self.get_or_create_problem(pClass,
+                name='blank', starter_code='',
                 description='', grammar='Extended Grammar', semantics='set',
                 id=editorId, schema_id=10)
         elif self.pType == 'sql':
             # TODO: This relies on the existence of specific schema.
             # Using schema 10 (HR) from 343.
-            p, created = pClass.objects.get_or_create(
-                name='blank', starter_code=self.get_starter_code(),
+            return self.get_or_create_problem(pClass,
+                name='blank', starter_code='',
                 description='', id=editorId, schema_id=10)
-        else:
-            p, created = pClass.objects.get_or_create(
-                name='blank', starter_code=self.get_starter_code(),
-                id=editorId, language=self.pType)
+
+        return self.get_or_create_problem(pClass,
+            name='blank', starter_code='',
+            id=editorId, language=self.pType)
+
+    def get_or_create_problem(self, problemClass, **kwargs):
+        '''Get or create a problem with the given parameters.
+
+        Normally with get_or_create, something trivial such as a name change
+        will cause an integrity error. The function _only_ cares about the id.
+
+        Params:
+            kwargs: Must include id. Other options are problems type specific.
+        Return:
+            The problem object.
+        '''
+        problemId = kwargs['id']
+        if problemClass.objects.filter(id=problemId).exists():
+            return problemClass.objects.get(id=problemId)
+        p, created = problemClass.objects.get_or_create(**kwargs)
         return p
 
     def get_starter_code(self):
+        '''The code to display when initially going to the editor.
+        '''
         if self.pType == 'c':
-            return '#include <stdio.h>'
+            return (
+                '#include <stdio.h>\n'
+                'int main() {\n'
+                '    return 0;\n'
+                '}\n'
+            )
         elif self.pType == 'java':
             return (
                 '[file Code.java]\n'
                 'public class Code {\n'
-                '    public static void main(String args[]) {\n    }\n'
+                '    public static void main(String args[]) {\n'
+                '    }\n'
                 '}\n'
                 '[/file]\n'
             )
@@ -77,12 +101,12 @@ class EditorViewMixin:
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()
         kwargs['simpleui'] = True
+        kwargs['initial_code'] = self.get_starter_code()
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        problem = self.get_problem()
-        context['problem'] = problem
+        context['problem'] = self.get_problem()
         return context
 
     def record_submission(self, request):

@@ -319,8 +319,10 @@ TabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
     };
     if ('readOnly' in options) {
         codeMirrorOptions.readOnly = options.readOnly;
-        // Hide the cursor
-        codeMirrorOptions.cursorHeight = 0;
+        if (options.readOnly) {
+            // Hide the cursor
+            codeMirrorOptions.cursorHeight = 0;
+        }
     }
     if ('theme' in options) {
         codeMirrorOptions.theme = options.theme;
@@ -448,6 +450,11 @@ TabbedCodeMirror.prototype.getActiveTabIndex = function() {
  * Switch to the tab at the given index.
  */
 TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
+    if (index < 0 || index >= this.mirrors.length) {
+        throw new Error('index ' + index +
+            ' is out of range [0,' + this.mirrors.length + ']')
+    }
+
     this.$tabs.find('.active').removeClass('active');
     this.$content.find('.active').removeClass('active');
 

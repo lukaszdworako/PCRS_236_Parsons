@@ -31,7 +31,8 @@ CSubmissionWrapper.prototype._showEditorTraceDialog = function() {
 CSubmissionWrapper.prototype.createCodeMirrors = function() {
     var codeDiv = this.wrapperDiv.find(this.isEditor
         ? '#div_id_code_box' : '#div_id_submission');
-    var codeObj = TagManager.stripTagsForStudent(codeDiv.text());
+    var code = codeDiv.find('textarea').text();
+    var codeObj = TagManager.stripTagsForStudent(code);
 
     myCodeMirrors[this.wrapperDivId] = to_code_mirror(
         this.language, this.language_version,
@@ -46,15 +47,6 @@ CSubmissionWrapper.prototype.createCodeMirrors = function() {
     var mirror = myCodeMirrors[this.wrapperDivId];
     highlightCodeMirrorWithTags(mirror, codeObj.block_ranges);
     preventDeleteLastLine(mirror);
-
-    if (this.isEditor) {
-        mirror.getDoc().setValue(
-            '#include <stdio.h>\n\n' +
-            'int main() {\n\n' +
-            '    return 0;\n' +
-            '}\n'
-        );
-    }
 }
 
 /**

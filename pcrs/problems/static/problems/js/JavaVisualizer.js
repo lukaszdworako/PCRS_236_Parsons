@@ -71,8 +71,8 @@ JavaVisualizer.prototype._errorsInTrace = function(data) {
     var lastStep = trace[trace.length - 1];
     var isCompileError = trace.length == 1 && lastStep.exception_msg;
     if (isCompileError) {
-        var file = lastStep.file - 1; // Should be 0-indexed
-        var line = lastStep.line;
+        var file = lastStep.file;
+        var line = lastStep.line - 1; // Should be 0-indexed
         var message = lastStep.exception_msg;
         this.compileErrorCallback(file, line, message);
         return true;

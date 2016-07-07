@@ -176,13 +176,13 @@ JavaSubmissionWrapper.prototype.displayCodeError = function(file, line,
     var errorClass = 'CodeMirror-error-background';
     // highlight the faulting line in the current file
     mirror.focus();
-    mirror.setCursor(errorLineNo, 0);
-    mirror.addLineClass(errorLineNo, '', errorClass);
+    mirror.setCursor(line, 0);
+    mirror.addLineClass(line, '', errorClass);
 
     var that = this;
     var changeHandler = function() {
         // Reset line back to normal
-        mirror.removeLineClass(errorLineNo, '', errorClass);
+        mirror.removeLineClass(line, '', errorClass);
         mirror.off('change', changeHandler);
         that.wrapperDiv.find('#alert').hide();
     }
