@@ -38,7 +38,7 @@ Visualizer.prototype.loadTestCaseVisualizer = function(testcaseCode) {
 
 Visualizer.prototype._loadVisualizerWithPostParams = function(postParams) {
     $('#waitingModal').modal('show');
-    var url = root + 'problems/' + this.language + '/visualizer-details';
+    var url = root + '/problems/' + this.language + '/visualizer-details';
     var that = this;
     $.post(url, postParams, function(data) {
             that._showVisualizerWithData(data);

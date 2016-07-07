@@ -87,9 +87,9 @@ SubmissionWrapper.prototype.getTestcases = function(code) {
     var call_path = "";
 
     if (this.isEditor) {
-        call_path = root + 'problems/' + this.language + '/editor/run';
+        call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
-        call_path = root + 'problems/' + this.language + '/' +
+        call_path = root + '/problems/' + this.language + '/' +
             this.wrapperDivId.split("-")[1]+ '/run';
     }
 
@@ -322,7 +322,7 @@ SubmissionWrapper.prototype.loadAndShowHistory = function() {
 
     // Empty the accordion, in case any manual insertions were performed.
 
-    var problem_path = root + 'problems/' + this.language + '/' +
+    var problem_path = root + '/problems/' + this.language + '/' +
         this.problemId + '/history';
     var that = this;
     $.post(problem_path, postParams,
