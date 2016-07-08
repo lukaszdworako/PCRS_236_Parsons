@@ -169,6 +169,18 @@ JavaSubmissionWrapper.prototype._visualizeHistoryEntryPk = function(entryPk) {
  */
 JavaSubmissionWrapper.prototype.displayCodeError = function(file, line,
         message) {
+    var $alertBox = this.wrapperDiv.find('#alert');
+    $alertBox.show();
+    $alertBox.toggleClass('red-alert', true);
+    $alertBox.children('icon').toggleClass('remove-icon', true);
+    $alertBox.children('span').text(message);
+    this.wrapperDiv.find('.screen-reader-text').text(message);
+
+    // Not an error with a specific file.
+    if (file == '') {
+        return;
+    }
+
     var tabIndex = this.tcm.indexForTabWithName(file);
     var mirror = this.tcm.getCodeMirror(tabIndex);
     this.tcm.setActiveTabIndex(tabIndex);
@@ -187,12 +199,5 @@ JavaSubmissionWrapper.prototype.displayCodeError = function(file, line,
         that.wrapperDiv.find('#alert').hide();
     }
     mirror.on('change', changeHandler);
-
-    var $alertBox = this.wrapperDiv.find('#alert');
-    $alertBox.show();
-    $alertBox.toggleClass('red-alert', true);
-    $alertBox.children('icon').toggleClass('remove-icon', true);
-    $alertBox.children('span').text(message);
-    this.wrapperDiv.find('.screen-reader-text').text(message);
 }
 

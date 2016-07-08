@@ -106,10 +106,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   visualizerIdOverride - override visualizer ID instead of auto-assigning it
 //                          (BE CAREFUL ABOUT NOT HAVING DUPLICATE IDs ON THE SAME PAGE,
 //                           OR ELSE ARROWS AND OTHER STUFF WILL GO HAYWIRE!)
-//   executeCodeWithRawInputFunc - function to call when you want to re-execute the given program
-//                                 with some new user input (somewhat hacky!)
-//   highlightLines - highlight current and previously executed lines (default: false)
-//   arrowLines     - draw arrows pointing to current and previously executed lines (default: true)
 //   compactFuncLabels - render functions with a 'func' prefix and no type label
 //   showAllFrameLabels - display frame and parent frame labels for all functions (default: false)
 //   hideCode - hide the code display and show only the data structure viz
@@ -126,48 +122,11 @@ function ExecutionVisualizer(domRootID, data, params) {
     this.DEFAULT_EMBEDDED_CODE_DIV_WIDTH = 350;
     this.DEFAULT_EMBEDDED_CODE_DIV_HEIGHT = 400;
 
-    // if the final entry is raw_input or mouse_input, then trim it from the trace and
-    // set a flag to prompt for user input when execution advances to the
-    // end of the trace
-    if (this.curTrace.length > 0) {
-        var lastEntry = this.curTrace[this.curTrace.length - 1];
-        if (lastEntry.event == 'raw_input') {
-            this.promptForUserInput = true;
-            this.userInputPromptStr = htmlspecialchars(lastEntry.prompt);
-            this.curTrace.pop() // kill last entry so that it doesn't get displayed
-        }
-        else if (lastEntry.event == 'mouse_input') {
-            this.promptForMouseInput = true;
-            this.userInputPromptStr = htmlspecialchars(lastEntry.prompt);
-            this.curTrace.pop() // kill last entry so that it doesn't get displayed
-        }
-    }
-
     this.curInstr = 0;
 
     this.params = params;
     if (!this.params) {
         this.params = {}; // make it an empty object by default
-    }
-
-    var arrowLinesDef = (this.params.arrowLines !== undefined);
-    var highlightLinesDef = (this.params.highlightLines !== undefined);
-
-    if (!arrowLinesDef && !highlightLinesDef) {
-        // neither is set
-        this.params.highlightLines = false;
-        this.params.arrowLines = true;
-    }
-    else if (arrowLinesDef && highlightLinesDef) {
-        // both are set, so just use their set values
-    }
-    else if (arrowLinesDef) {
-        // only arrowLines set
-        this.params.highlightLines = !(this.params.arrowLines);
-    }
-    else {
-        // only highlightLines set
-        this.params.arrowLines = !(this.params.highlightLines);
     }
 
     this.compactFuncLabels = this.params.compactFuncLabels;
@@ -192,8 +151,6 @@ function ExecutionVisualizer(domRootID, data, params) {
     this.textualMemoryLabels = (this.params.textualMemoryLabels == true);
     this.showOnlyOutputs = (this.params.showOnlyOutputs == true);
     this.showAllFrameLabels = (this.params.showAllFrameLabels == true);
-
-    this.executeCodeWithRawInputFunc = this.params.executeCodeWithRawInputFunc;
 
     // cool, we can create a separate jsPlumb instance for each visualization:
     this.jsPlumbInstance = jsPlumb.getInstance({
@@ -411,16 +368,19 @@ ExecutionVisualizer.prototype.render = function() {
         <div id="executionSlider"/>\
         <div id="executionSliderFooter"/>\
         <div id="vcrControls">\
-            <button id="jmpFirstInstr", type="button">&lt;&lt; First</button>\
-            <button id="jmpStepBack", type="button">&lt; Back</button>\
+            <button id="jmpFirstInstr" class="btn btn-default" type="button">\
+                &lt;&lt; First</button>\
+            <button id="jmpBreakpointBack" class="btn btn-default" type="button">\
+                &lt; Breakpoint</button>\
+            <button id="jmpStepBack" class="btn btn-default" type="button">\
+                &lt; Step</button>\
+            <button id="jmpStepFwd" class="btn btn-default" type="button">\
+                Step &gt;</button>\
+            <button id="jmpBreakpointFwd" class="btn btn-default" type="button">\
+                Breakpoint &gt;</button>\
+            <button id="jmpLastInstr" class="btn btn-default" type="button">\
+                Last &gt;&gt;</button>\
             <span id="curInstr">Step ? of ?</span>\
-            <button id="jmpStepFwd", type="button">Forward &gt;</button>\
-            <button id="jmpLastInstr", type="button">Last &gt;&gt;</button>\
-        </div>\
-        <div id="rawUserInputDiv">\
-            <span id="userInputPromptStr"/>\
-            <input type="text" id="raw_input_textbox" size="30"/>\
-            <button id="raw_input_submit_btn">Submit</button>\
         </div>\
         <div id="errorOutput" class="alert-container red-alert"/>\
         <div id="stepAnnotationDiv">\
@@ -505,26 +465,19 @@ ExecutionVisualizer.prototype.render = function() {
             .resizable();
     }
 
-    if (this.params.arrowLines) {
-        this.domRoot.find('#legendDiv')
-            .append('<svg id="prevLegendArrowSVG"/> line that has just executed')
-            .append('<p style="margin-top: 4px"><svg id="curLegendArrowSVG"/> next line to execute</p>');
+    this.domRoot.find('#legendDiv')
+        .append('<svg id="prevLegendArrowSVG"/> line that has just executed')
+        .append('<p style="margin-top: 4px"><svg id="curLegendArrowSVG"/> next line to execute</p>');
 
-        myViz.domRootD3.select('svg#prevLegendArrowSVG')
-            .append('polygon')
-            .attr('points', SVG_ARROW_POLYGON)
-            .attr('fill', lightArrowColor);
+    myViz.domRootD3.select('svg#prevLegendArrowSVG')
+        .append('polygon')
+        .attr('points', SVG_ARROW_POLYGON)
+        .attr('fill', lightArrowColor);
 
-        myViz.domRootD3.select('svg#curLegendArrowSVG')
-            .append('polygon')
-            .attr('points', SVG_ARROW_POLYGON)
-            .attr('fill', darkArrowColor);
-    }
-    else if (this.params.highlightLines) {
-        myViz.domRoot.find('#legendDiv')
-            .append('<span class="highlight-legend highlight-prev">line that has just executed</span> ')
-            .append('<span class="highlight-legend highlight-cur">next line to execute</span>')
-    }
+    myViz.domRootD3.select('svg#curLegendArrowSVG')
+        .append('polygon')
+        .attr('points', SVG_ARROW_POLYGON)
+        .attr('fill', darkArrowColor);
 
     this.domRoot.find('#langDisplayDiv').html('Java');
 
@@ -593,26 +546,21 @@ ExecutionVisualizer.prototype.render = function() {
     this.domRoot.find("#jmpFirstInstr").click(function() {
         myViz.renderStep(0);
     });
-
     this.domRoot.find("#jmpLastInstr").click(function() {
         myViz.renderStep(myViz.curTrace.length - 1);
     });
-
     this.domRoot.find("#jmpStepBack").click(function() {
         myViz.stepBack();
     });
-
     this.domRoot.find("#jmpStepFwd").click(function() {
         myViz.stepForward();
     });
-
-    // disable controls initially ...
-    this.domRoot.find("#vcrControls #jmpFirstInstr").attr("disabled", true);
-    this.domRoot.find("#vcrControls #jmpStepBack").attr("disabled", true);
-    this.domRoot.find("#vcrControls #jmpStepFwd").attr("disabled", true);
-    this.domRoot.find("#vcrControls #jmpLastInstr").attr("disabled", true);
-
-
+    this.domRoot.find("#jmpBreakpointBack").click(function() {
+        myViz.stepBackToBreakpoint();
+    });
+    this.domRoot.find("#jmpBreakpointFwd").click(function() {
+        myViz.stepForwardToBreakpoint();
+    });
 
     // must postprocess curTrace prior to running precomputeCurTraceLayouts() ...
     var lastEntry = this.curTrace[this.curTrace.length - 1];
@@ -650,12 +598,6 @@ ExecutionVisualizer.prototype.render = function() {
 
     if (this.params.startingInstruction) {
         this.params.jumpToEnd = false; // override! make sure to handle FIRST
-
-        // weird special case for something like:
-        // e=raw_input(raw_input("Enter something:"))
-        if (this.params.startingInstruction == this.curTrace.length) {
-            this.params.startingInstruction--;
-        }
 
         // fail-soft with out-of-bounds startingInstruction values:
         if (this.params.startingInstruction < 0) {
@@ -700,14 +642,6 @@ ExecutionVisualizer.prototype.render = function() {
     if ( ! this.params.hideCode) {
         this.renderSliderBreakpoints();
     }
-
-    var ruiDiv = myViz.domRoot.find('#rawUserInputDiv');
-    ruiDiv.find('#userInputPromptStr').html(myViz.userInputPromptStr);
-    ruiDiv.find('#raw_input_submit_btn').click(function() {
-        var userInput = ruiDiv.find('#raw_input_textbox').val();
-        // advance instruction count by 1 to get to the NEXT instruction
-        myViz.executeCodeWithRawInputFunc(userInput, myViz.curInstr + 1);
-    });
 
     this.updateOutput();
 
@@ -824,9 +758,6 @@ ExecutionVisualizer.prototype.destroyAllAnnotationBubbles = function() {
         });
     }
 
-    // remove this handler as well!
-    //this.domRoot.find('#pyCodeOutputDiv').unbind('scroll');
-
     myViz.allAnnotationBubbles = null;
 }
 
@@ -871,17 +802,6 @@ ExecutionVisualizer.prototype.initAllAnnotationBubbles = function() {
     $.each(heapObjectIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'object', e));});
     $.each(variableIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'variable', e));});
     $.each(frameIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'frame', e));});
-
-
-    /*
-    this.domRoot.find('#pyCodeOutputDiv').scroll(function() {
-        $.each(myViz.allAnnotationBubbles, function(i, e) {
-            if (e.type == 'codeline') {
-                e.redrawCodelineBubble();
-            }
-        });
-    });
-    */
 
     //console.log('initAllAnnotationBubbles', myViz.allAnnotationBubbles.length);
 }
@@ -994,8 +914,7 @@ ExecutionVisualizer.prototype.findPrevBreakpoint = function() {
 
     if (myViz.sortedBreakpointSteps.length == 0) {
         return -1;
-    }
-    else {
+    } else {
         for (var i = 1; i < myViz.sortedBreakpointSteps.length; i++) {
             var prev = myViz.sortedBreakpointSteps[i-1];
             var cur = myViz.sortedBreakpointSteps[i];
@@ -1017,15 +936,7 @@ ExecutionVisualizer.prototype.findNextBreakpoint = function() {
 
     if (myViz.sortedBreakpointSteps.length == 0) {
         return -1;
-    }
-    // usability hack: if you're currently on a breakpoint, then
-    // single-step forward to the next execution point, NOT the next
-    // breakpoint. it's often useful to see what happens when the line
-    // at a breakpoint executes.
-    else if ($.inArray(c, myViz.sortedBreakpointSteps) >= 0) {
-        return c + 1;
-    }
-    else {
+    } else {
         for (var i = 0; i < myViz.sortedBreakpointSteps.length - 1; i++) {
             var cur = myViz.sortedBreakpointSteps[i];
             var next = myViz.sortedBreakpointSteps[i+1];
@@ -1042,58 +953,29 @@ ExecutionVisualizer.prototype.findNextBreakpoint = function() {
 }
 
 
-// returns true if action successfully taken
 ExecutionVisualizer.prototype.stepForward = function() {
-    var myViz = this;
-
-    if (myViz.editAnnotationMode) {
-        return;
-    }
-
-    if (myViz.curInstr < myViz.curTrace.length - 1) {
-        // if there is a next breakpoint, then jump to it ...
-        if (myViz.sortedBreakpointSteps.length > 0) {
-            var nextBreakpoint = myViz.findNextBreakpoint();
-            if (nextBreakpoint != -1)
-                myViz.curInstr = nextBreakpoint;
-            else
-                myViz.curInstr += 1; // prevent "getting stuck" on a solitary breakpoint
-        }
-        else {
-            myViz.curInstr += 1;
-        }
-        myViz.updateOutput(true);
-        return true;
-    }
-
-    return false;
+    this.stepTo(this.curInstr + 1);
 }
-
-// returns true if action successfully taken
+ExecutionVisualizer.prototype.stepForwardToBreakpoint = function() {
+    var index = this.findNextBreakpoint();
+    if (index != -1) this.stepTo(index);
+}
 ExecutionVisualizer.prototype.stepBack = function() {
-    var myViz = this;
-
-    if (myViz.editAnnotationMode) {
+    this.stepTo(this.curInstr - 1);
+}
+ExecutionVisualizer.prototype.stepBackToBreakpoint = function() {
+    var index = this.findPrevBreakpoint();
+    if (index != -1) this.stepTo(index);
+}
+ExecutionVisualizer.prototype.stepTo = function(index) {
+    if (this.editAnnotationMode) {
         return;
     }
-
-    if (myViz.curInstr > 0) {
-        // if there is a prev breakpoint, then jump to it ...
-        if (myViz.sortedBreakpointSteps.length > 0) {
-            var prevBreakpoint = myViz.findPrevBreakpoint();
-            if (prevBreakpoint != -1)
-                myViz.curInstr = prevBreakpoint;
-            else
-                myViz.curInstr -= 1; // prevent "getting stuck" on a solitary breakpoint
-        }
-        else {
-            myViz.curInstr -= 1;
-        }
-        myViz.updateOutput();
-        return true;
+    if (index < 0 || index > this.curTrace.length - 1) {
+        return;
     }
-
-    return false;
+    this.curInstr = index;
+    this.updateOutput();
 }
 
 ExecutionVisualizer.prototype.renderSliderBreakpoints = function() {
@@ -1316,48 +1198,6 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
 
     var gutterSVG = myViz.domRoot.find('svg#leftCodeGutterSVG');
 
-/* FIXME maybe remove
-    // one-time initialization of the left gutter
-    // (we often can't do this earlier since the entire pane
-    //  might be invisible and hence returns a height of zero or NaN
-    //  -- the exact format depends on browser)
-    if (!myViz.leftGutterSvgInitialized && myViz.params.arrowLines) {
-        // set the gutter's height to match that of its parent
-        gutterSVG.height(gutterSVG.parent().height());
-
-        var firstRowOffsetY = myViz.domRoot.find('table#pyCodeOutput tr:first').offset().top;
-
-        // first take care of edge case when there's only one line ...
-        myViz.codeRowHeight = myViz.domRoot.find('table#pyCodeOutput td.cod:first').height();
-
-        // ... then handle the (much more common) multi-line case ...
-        // this weird contortion is necessary to get the accurate row height on Internet Explorer
-        // (simpler methods work on all other major browsers, erghhhhhh!!!)
-        if (this.codeOutputLines && this.codeOutputLines.length > 1) {
-            var secondRowOffsetY = myViz.domRoot.find('table#pyCodeOutput tr:nth-child(2)').offset().top;
-            myViz.codeRowHeight = secondRowOffsetY - firstRowOffsetY;
-        }
-
-        assert(myViz.codeRowHeight > 0);
-
-        var gutterOffsetY = gutterSVG.offset().top;
-        var teenyAdjustment = gutterOffsetY - firstRowOffsetY;
-
-        // super-picky detail to adjust the vertical alignment of arrows so that they line up
-        // well with the pointed-to code text ...
-        // (if you want to manually adjust tableTop, then ~5 is a reasonable number)
-        myViz.arrowOffsetY = Math.floor((myViz.codeRowHeight / 2) - (SVG_ARROW_HEIGHT / 2)) - teenyAdjustment;
-
-        myViz.leftGutterSvgInitialized = true;
-    }
-
-    if (myViz.params.arrowLines) {
-        assert(myViz.arrowOffsetY !== undefined);
-        assert(myViz.codeRowHeight !== undefined);
-        assert(0 <= myViz.arrowOffsetY && myViz.arrowOffsetY <= myViz.codeRowHeight);
-    }
-
-*/
     // call the callback if necessary (BEFORE rendering)
     if (this.params.updateOutputCallback) {
         this.params.updateOutputCallback(this);
@@ -1386,41 +1226,19 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
     var vcrControls = myViz.domRoot.find("#vcrControls");
 
     if (isLastInstr) {
-        if (this.promptForUserInput || this.promptForMouseInput) {
-            vcrControls.find("#curInstr").html('<b><font color="' + brightRed + '">Enter user input below:</font></b>');
-        }
-        else if (this.instrLimitReached) {
+        if (this.instrLimitReached) {
             vcrControls.find("#curInstr").html("Instruction limit reached");
-        }
-        else {
+        } else {
             vcrControls.find("#curInstr").html("Program terminated");
         }
-    }
-    else {
+    } else {
         vcrControls.find("#curInstr").html("Step " +
                 String(this.curInstr + 1) +
                 " of " + String(totalInstrs-1));
     }
 
-
-    vcrControls.find("#jmpFirstInstr").attr("disabled", false);
-    vcrControls.find("#jmpStepBack").attr("disabled", false);
-    vcrControls.find("#jmpStepFwd").attr("disabled", false);
-    vcrControls.find("#jmpLastInstr").attr("disabled", false);
-
-    if (this.curInstr == 0) {
-        vcrControls.find("#jmpFirstInstr").attr("disabled", true);
-        vcrControls.find("#jmpStepBack").attr("disabled", true);
-    }
-    if (isLastInstr) {
-        vcrControls.find("#jmpLastInstr").attr("disabled", true);
-        vcrControls.find("#jmpStepFwd").attr("disabled", true);
-    }
-
-
     // PROGRAMMATICALLY change the value, so evt.originalEvent should be undefined
     myViz.domRoot.find('#executionSlider').slider('value', this.curInstr);
-
 
     // render error (if applicable):
     if (curEntry.event == 'exception' ||
@@ -1445,7 +1263,6 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     }
 
-
     function highlightCodeLine() {
         /* if instrLimitReached, then treat like a normal non-terminating line */
         var isTerminated = (!myViz.instrLimitReached && isLastInstr);
@@ -1457,7 +1274,6 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
 
         var curIsReturn = (curEntry.event == 'return');
         var prevIsReturn = false;
-
 
         if (myViz.curInstr > 0) {
             prevLineNumber = myViz.curTrace[myViz.curInstr - 1].line;
@@ -1519,9 +1335,8 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         var prevVerticalNudge = prevIsReturn ? Math.floor(myViz.codeRowHeight / 3) : 0;
         var curVerticalNudge  = curIsReturn  ? Math.floor(myViz.codeRowHeight / 3) : 0;
 
-
         // edge case for the final instruction :0
-        if (isTerminated && !hasError) {
+        if (isTerminated && ! hasError) {
             // don't show redundant arrows on the same line when terminated ...
             if (prevLineNumber == curLineNumber) {
                 curLineNumber = null;
@@ -1532,125 +1347,12 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
             }
         }
 
-        /* FIXME maybe in the future
-        if (myViz.params.arrowLines) {
-            if (prevLineNumber) {
-                var yTranslate = ((prevLineNumber - 1) * myViz.codeRowHeight) +
-                    myViz.arrowOffsetY + prevVerticalNudge;
-                var pla = myViz.domRootD3.select('#prevLineArrow');
-                var translatePrevCmd = 'translate(0, ' + yTranslate + ')';
-
-                if (smoothTransition) {
-                    pla
-                        .transition()
-                        .duration(200)
-                        .attr('fill', 'white')
-                        .each('end', function() {
-                            pla
-                                .attr('transform', translatePrevCmd)
-                                .attr('fill', lightArrowColor);
-
-                            gutterSVG.find('#prevLineArrow').show(); // show at the end to avoid flickering
-                        });
-                } else {
-                    pla.attr('transform', translatePrevCmd)
-                        gutterSVG.find('#prevLineArrow').show();
-                }
-            } else {
-                gutterSVG.find('#prevLineArrow').hide();
-            }
-
-            if (curLineNumber) {
-                var yTranslate = ((curLineNumber - 1) * myViz.codeRowHeight) +
-                    myViz.arrowOffsetY + curVerticalNudge;
-                var cla = myViz.domRootD3.select('#curLineArrow');
-                var translateCurCmd = 'translate(0, ' + yTranslate + ')';
-
-                if (smoothTransition) {
-                    cla
-                        .transition()
-                        .delay(200)
-                        .duration(250)
-                        .attr('transform', translateCurCmd);
-                } else {
-                    cla.attr('transform', translateCurCmd);
-                }
-
-                gutterSVG.find('#curLineArrow').show();
-            } else {
-                gutterSVG.find('#curLineArrow').hide();
-            }
-        }
-
-        myViz.domRootD3.selectAll('#pyCodeOutputDiv td.cod')
-            .style('border-top', function(d) {
-                if (hasError && (d.lineNumber == curEntry.line)) {
-                    return '1px solid ' + errorColor;
-                }
-                else {
-                    return '';
-                }
-            })
-        .style('border-bottom', function(d) {
-            // COPY AND PASTE ALERT!
-            if (hasError && (d.lineNumber == curEntry.line)) {
-                return '1px solid ' + errorColor;
-            }
-            else {
-                return '';
-            }
-        });
-
-        // returns True iff lineNo is visible in pyCodeOutputDiv
-        function isOutputLineVisible(lineNo) {
-            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
-            var LO = lineNoTd.offset().top;
-
-            var PO = pcod.offset().top;
-            var ST = pcod.scrollTop();
-            var H = pcod.height();
-
-            // add a few pixels of fudge factor on the bottom end due to bottom scrollbar
-            return (PO <= LO) && (LO < (PO + H - 30));
-        }
-
-
-        // smoothly scroll pyCodeOutputDiv so that the given line is at the center
-        function scrollCodeOutputToLine(lineNo) {
-            var lineNoTd = myViz.domRoot.find('#lineNo' + lineNo);
-            var LO = lineNoTd.offset().top;
-
-            var PO = pcod.offset().top;
-            var ST = pcod.scrollTop();
-            var H = pcod.height();
-
-            pcod.stop(); // first stop all previously-queued animations
-            pcod.animate({scrollTop: (ST + (LO - PO - (Math.round(H / 2))))}, 300);
-        }
-
-        if (myViz.params.highlightLines) {
-            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-prev');
-            myViz.domRoot.find('#pyCodeOutputDiv td.cod').removeClass('highlight-cur');
-            if (curLineNumber)
-                myViz.domRoot.find('#'+myViz.generateID('cod'+curLineNumber)).addClass('highlight-cur');
-            if (prevLineNumber)
-                myViz.domRoot.find('#'+myViz.generateID('cod'+prevLineNumber)).addClass('highlight-prev');
-        }
-
-        // smoothly scroll code display
-        if ( ! isOutputLineVisible(curEntry.line)) {
-            scrollCodeOutputToLine(curEntry.line);
-        }
-        */
-
         // add these fields to myViz
         myViz.curLineNumber = curLineNumber;
         myViz.prevLineNumber = prevLineNumber;
         myViz.curLineIsReturn = curIsReturn;
         myViz.prevLineIsReturn = prevIsReturn;
-
     } // end of highlightCodeLine
-
 
     // render code output:
     if (curEntry.line) {
@@ -1691,21 +1393,12 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     }
 
-    // handle raw user input
-    var ruiDiv = myViz.domRoot.find('#rawUserInputDiv');
-    ruiDiv.hide(); // hide by default
-
-    if (isLastInstr && myViz.executeCodeWithRawInputFunc) {
-        if (myViz.promptForUserInput) {
-            ruiDiv.show();
-        }
-    }
-
     if (curEntry.file && curEntry.line !== undefined) {
+        // TODO set the previous line and file
         this.tcm.setHighligtedLineAndFile(curEntry.line - 1, curEntry.file);
     } else {
         // Sometimes a line is not being executed in student code (e.g. on exit)
-        this.tcm.resetHighlight();
+        this.tcm.resetStepArrows();
     }
 } // end of updateOutputFull
 
@@ -4191,7 +3884,6 @@ AnnotationBubble.prototype.redrawBubble = function() {
 }
 
 
-// NB: copy-and-paste from isOutputLineVisible with some minor tweaks
 function isOutputLineVisibleForBubbles(lineDivID) {
     var pcod = $('#pyCodeOutputDiv');
 

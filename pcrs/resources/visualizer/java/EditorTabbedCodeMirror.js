@@ -3,14 +3,17 @@
  */
 function EditorTabbedCodeMirror() {
     TabbedCodeMirror.call(this);
-    this.activeLine = -1;
-    this.activeMirror = -1;
+    this.mirrorHeight = 300;
+    this._makeContentResizable();
 }
 EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
 EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
 
-EditorTabbedCodeMirror._tracedLineClass = 'CodeMirror-trace-background';
-EditorTabbedCodeMirror._breakpointGutterId = 'EditorTabbedCodeMirror-bpgi';
+EditorTabbedCodeMirror._arrowPolygon = '0,3 12,3 12,0 18,5 12,10 12,7 0,7';
+EditorTabbedCodeMirror._traceGutterId =
+    'EditorTabbedCodeMirror-trace-gutter-id';
+EditorTabbedCodeMirror._breakpointGutterId =
+    'EditorTabbedCodeMirror-breakpoint-gutter-id';
 
 /**
  * Adds a click callback to all file gutters.
@@ -45,6 +48,7 @@ EditorTabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
 
     codeMirrorOptions.gutters = [
         EditorTabbedCodeMirror._breakpointGutterId,
+        EditorTabbedCodeMirror._traceGutterId,
         'CodeMirror-linenumbers',
     ];
     return codeMirrorOptions;
@@ -62,18 +66,20 @@ EditorTabbedCodeMirror.prototype.toggleBreakpointIndicator =
     var mirror = this.mirrors[fileIndex];
     var fileInfo = mirror.lineInfo(lineNumber);
 
-    var marker = fileInfo.gutterMarkers
-        ? null
-        : this._createBreakpointMarkerDom();
-
     var gutterId = EditorTabbedCodeMirror._breakpointGutterId;
+
+    var marker = fileInfo.gutterMarkers && fileInfo.gutterMarkers[gutterId]
+        ? null // hide the breakpoint if it exists
+        : this._renderBreakpointMarkerDom();
+
     mirror.setGutterMarker(lineNumber, gutterId, marker);
+    mirror.refresh();
 }
 
 /**
  * Generates a DOM element to display as a breakpoint.
  */
-EditorTabbedCodeMirror.prototype._createBreakpointMarkerDom = function() {
+EditorTabbedCodeMirror.prototype._renderBreakpointMarkerDom = function() {
     var marker = document.createElement('div');
     marker.className = 'EditorTabbedCodeMirror-breakpoint';
     return marker;
@@ -92,21 +98,89 @@ EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
         // It hasn't been initialized yet
         return;
     }
-    this.resetHighlight();
+    var mirrorIndex = this.indexForTabWithName(fileName);
+    var mirror = this.mirrors[mirrorIndex];
 
-    this.activeMirror = this.indexForTabWithName(fileName);
-    this.activeLine = lineNumber;
+    this.setActiveTabIndex(mirrorIndex);
+    mirror.scrollIntoView({
+        ch: 0,
+        line: lineNumber,
+    });
 
-    this.mirrors[this.activeMirror].addLineClass(this.activeLine, '',
-        EditorTabbedCodeMirror._tracedLineClass);
-
-    this.setActiveTabIndex(this.activeMirror);
+    var marker = this._renderArrowWithColor(darkArrowColor);
+    var gutterId = EditorTabbedCodeMirror._traceGutterId;
+    this.clearGutter(gutterId);
+    mirror.setGutterMarker(lineNumber, gutterId, marker);
 }
 
-EditorTabbedCodeMirror.prototype.resetHighlight = function() {
-    if (this.activeLine != -1 && this.activeMirror != -1) {
-        this.mirrors[this.activeMirror].removeLineClass(this.activeLine, '',
-            EditorTabbedCodeMirror._tracedLineClass);
+EditorTabbedCodeMirror.prototype.resetStepArrows = function() {
+    this.clearGutter(EditorTabbedCodeMirror._traceGutterId);
+}
+
+/**
+ * Clears all gutters for the given gutterId.
+ *
+ * @param {string} gutterId The gutter class to clear.
+ */
+EditorTabbedCodeMirror.prototype.clearGutter = function(gutterId) {
+    for (var i = 0; i < this.mirrors.length; i++) {
+        var mirror = this.mirrors[i];
+        mirror.clearGutter(gutterId);
+    }
+}
+
+/**
+ * Renders a nice DOM arrow for the given CSS color.
+ *
+ * @param {string} color The color for the allow
+ * @return A DOM SVG arrow elemnt.
+ */
+EditorTabbedCodeMirror.prototype._renderArrowWithColor = function(color) {
+    var elementNamespace = 'http://www.w3.org/2000/svg';
+
+    var svg = document.createElementNS(elementNamespace, 'svg');
+    svg.setAttribute('class', 'EditorTabbedCodeMirror-trace-arrow');
+
+    var polygon = document.createElementNS(elementNamespace, 'polygon');
+    polygon.setAttribute('points', EditorTabbedCodeMirror._arrowPolygon);
+    polygon.setAttribute('fill', color);
+
+    svg.appendChild(polygon);
+    return svg;
+}
+
+/**
+ * @override
+ */
+EditorTabbedCodeMirror.prototype.addFile = function(options) {
+    TabbedCodeMirror.prototype.addFile.apply(this, arguments);
+    var newMirror = this.mirrors[this.mirrors.length - 1];
+    newMirror.setSize(null, this.mirrorHeight + 'px');
+}
+
+/**
+ * Allows the code mirrors to be manually resizable (vertically).
+ */
+EditorTabbedCodeMirror.prototype._makeContentResizable = function() {
+    var that = this;
+    this.$content.addClass('EditorTabbedCodeMirror-content');
+    this.$content.resizable({
+        handles: 's',
+        minHeight: 100,
+        resize: function(ev, ui) {
+            that.setMirrorHeight($(this).height());
+        },
+    });
+}
+
+/**
+ * Set a static height for all the mirrors
+ */
+EditorTabbedCodeMirror.prototype.setMirrorHeight = function(height) {
+    this.mirrorHeight = height;
+    for (var i = 0; i < this.mirrors.length; i++) {
+        var mirror = this.mirrors[i];
+        mirror.setSize(null, this.mirrorHeight + 'px');
     }
 }
 

@@ -176,14 +176,14 @@ div.ExecutionVisualizer #vcrControls {
     text-align: center;
 }
 
-div.ExecutionVisualizer #vcrControls button {
-    margin-left: 2px;
-    margin-right: 2px;
+div.ExecutionVisualizer #vcrControls button:focus {
+    outline: none;
+    background: none;
 }
 
 div.ExecutionVisualizer #vcrControls #curInstr {
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-top: 4px;
+    display: block;
 }
 
 div.ExecutionVisualizer #pyStdout {
@@ -781,14 +781,18 @@ div.ExecutionVisualizer .highlight-legend {
 }
 
 /* resizing sliders from David Pritchard */
-.ui-resizable-e {
+.ui-resizable-handle {
     background-color: #dddddd;
-    width: 1px;
     border: 3px solid white;
 }
-
-.ui-resizable-e:hover {
+.ui-resizable-handle:hover {
     border-color: #dddddd;
+}
+.ui-resizing-e { /* "east" handle */
+    width: 1px;
+}
+.ui-resizing-s { /* "south" handle */
+    width: 1px;
 }
 
 div.ExecutionVisualizer div#rawUserInputDiv {
@@ -907,5 +911,23 @@ div.EditorTabbedCodeMirror-breakpoint {
     width: 10px;
     height: 10px;
     margin: 4px;
+}
+
+.EditorTabbedCodeMirror-breakpoint-gutter-id {
+    width: 18px;
+}
+
+.EditorTabbedCodeMirror-trace-gutter-id {
+    width: 18px;
+}
+
+svg.EditorTabbedCodeMirror-trace-arrow {
+    width: 18px;
+    height: 10px;
+}
+
+.EditorTabbedCodeMirror-content {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
 }
 
