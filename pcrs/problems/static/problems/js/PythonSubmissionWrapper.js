@@ -53,8 +53,10 @@ PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
     this._addDebugColumnToTestRow($newRow, testcase.debug);
-    this._addA11yToTestRow($newRow, this._createOutput(testcase.test_val),
-        testcase.passed_test, testcase.expected_output);
+    this._addA11yToTestRow($newRow,
+        this._accessibilityOutput(testcase.test_val),
+        testcase.passed_test,
+        this._accessibilityOutput(testcase.expected_output));
 
     return $newRow;
 }
@@ -72,31 +74,20 @@ PythonSubmissionWrapper.prototype._prepareVisualizer = function(row) {
 }
 
 /**
- * @override
- */
-PythonSubmissionWrapper.prototype._formatTestCaseObject = function(testcase) {
-    testcase = SubmissionWrapper.prototype._formatTestCaseObject.apply(
-        this, arguments);
-    testcase.expected_output = testcase.expected_output
-        ? this._createOutput(testcase.expected_output)
-        : null;
-    return testcase;
-}
-
-/**
  * Convert the given "input" in to a string representing the
  * students python solution.
  */
-PythonSubmissionWrapper.prototype._createOutput = function(input) {
+PythonSubmissionWrapper.prototype._accessibilityOutput = function(input) {
     var brakets_o = {"list":"[","tuple":"(","dict":"{"};
     var brakets_c = {"list":"]","tuple":")","dict":"}"};
 
     if (input.length == 2) {
-        return this._createOutput(input[0]) + ":" + this._createOutput(input[1]);
+        return this._accessibilityOutput(
+            input[0]) + ":" + this._accessibilityOutput(input[1]);
     } else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict") {
         var output = brakets_o[input[0]];
         for (var o_index = 2; o_index < input.length; o_index++) {
-            output += this._createOutput(input[o_index]);
+            output += this._accessibilityOutput(input[o_index]);
             if (o_index != input.length - 1) {
                 output += ", ";
             }
