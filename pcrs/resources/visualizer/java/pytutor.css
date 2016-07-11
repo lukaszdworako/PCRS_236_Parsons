@@ -108,7 +108,7 @@ div.ExecutionVisualizer #leftCodeGutterSVG {
 
 div.ExecutionVisualizer #prevLegendArrowSVG,
 div.ExecutionVisualizer #curLegendArrowSVG {
-    width: 18px;
+    width: 12px;
     height: 10px;
 }
 
@@ -917,12 +917,13 @@ div.EditorTabbedCodeMirror-breakpoint {
     width: 18px;
 }
 
-.EditorTabbedCodeMirror-trace-gutter-id {
-    width: 18px;
+.EditorTabbedCodeMirror-trace-gutter-id-0,
+.EditorTabbedCodeMirror-trace-gutter-id-1 {
+    width: 12px;
 }
 
 svg.EditorTabbedCodeMirror-trace-arrow {
-    width: 18px;
+    width: 12px;
     height: 10px;
 }
 

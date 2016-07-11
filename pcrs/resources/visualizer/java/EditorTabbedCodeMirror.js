@@ -9,10 +9,9 @@ function EditorTabbedCodeMirror() {
 EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
 EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
 
-//EditorTabbedCodeMirror._arrowPolygon = '12,3 12,0 18,5 12,10 12,7';
-EditorTabbedCodeMirror._arrowPolygon = '0,3 12,3 12,0 18,5 12,10 12,7 0,7';
+EditorTabbedCodeMirror._arrowPolygon = '0,0 6,5 0,10 0,0';
 EditorTabbedCodeMirror._traceGutterId =
-    'EditorTabbedCodeMirror-trace-gutter-id';
+    'EditorTabbedCodeMirror-trace-gutter-id-';
 EditorTabbedCodeMirror._breakpointGutterId =
     'EditorTabbedCodeMirror-breakpoint-gutter-id';
 
@@ -49,7 +48,9 @@ EditorTabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
 
     codeMirrorOptions.gutters = [
         EditorTabbedCodeMirror._breakpointGutterId,
-        EditorTabbedCodeMirror._traceGutterId,
+        // Two trace gutters for both arrows
+        EditorTabbedCodeMirror._traceGutterId + '0',
+        EditorTabbedCodeMirror._traceGutterId + '1',
         'CodeMirror-linenumbers',
     ];
     return codeMirrorOptions;
@@ -87,14 +88,14 @@ EditorTabbedCodeMirror.prototype._renderBreakpointMarkerDom = function() {
 }
 
 /**
- * Highlights the given line for a given visualizer step.
- *
  * @param {number} lineNumber The line to highlight - starting at 0
  * @param {string} fileName The file to highlight inside.
  *                          The TCM will automatically switch here.
+ * @param {number} arrow.offset 0 or 1 to put the arrow in different gutters.
+ * @param {string} arrow.color  A CSS color string for the arrow
  */
 EditorTabbedCodeMirror.prototype.addArrowToLineAndFile = function(
-        line, file, arrowColor) {
+        line, file, arrow) {
     if (this.getFileCount() == 0) {
         // It hasn't been initialized yet
         return;
@@ -108,13 +109,14 @@ EditorTabbedCodeMirror.prototype.addArrowToLineAndFile = function(
         line: line,
     });
 
-    var marker = this._renderArrowWithColor(arrowColor);
-    var gutterId = EditorTabbedCodeMirror._traceGutterId;
+    var marker = this._renderArrowWithColor(arrow.color);
+    var gutterId = EditorTabbedCodeMirror._traceGutterId + arrow.offset;
     mirror.setGutterMarker(line, gutterId, marker);
 }
 
 EditorTabbedCodeMirror.prototype.resetStepArrows = function() {
-    this.clearGutter(EditorTabbedCodeMirror._traceGutterId);
+    this.clearGutter(EditorTabbedCodeMirror._traceGutterId + '0');
+    this.clearGutter(EditorTabbedCodeMirror._traceGutterId + '1');
 }
 
 /**

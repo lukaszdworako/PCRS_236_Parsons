@@ -451,12 +451,12 @@ ExecutionVisualizer.prototype.render = function() {
     myViz.domRootD3.select('svg#prevLegendArrowSVG')
         .append('polygon')
         .attr('points', EditorTabbedCodeMirror._arrowPolygon)
-        .attr('fill', lightArrowColor);
+        .attr('fill', prevArrowColor);
 
     myViz.domRootD3.select('svg#curLegendArrowSVG')
         .append('polygon')
         .attr('points', EditorTabbedCodeMirror._arrowPolygon)
-        .attr('fill', darkArrowColor);
+        .attr('fill', nextArrowColor);
 
     this.domRoot.find('#langDisplayDiv').html('Java');
 
@@ -913,14 +913,26 @@ ExecutionVisualizer.prototype.renderTraceArrows = function() {
     if (this.curInstr > 0) {
         var prevEntry = this.curTrace[this.curInstr - 1];
         if (prevEntry.file && prevEntry.line !== undefined) {
+            var overlap = curEntry.line == prevEntry.line &&
+                curEntry.file == prevEntry.file;
+            var arrow = {
+                color: prevArrowColor,
+                // If the arrows overlap, offset the previous arrow
+                offset: overlap ? 0 : 1,
+            };
             this.tcm.addArrowToLineAndFile(prevEntry.line - 1, prevEntry.file,
-                lightArrowColor);
+                arrow);
         }
     }
 
+    // Next arrow
     if (curEntry.file && curEntry.line !== undefined) {
+        var arrow = {
+            color: nextArrowColor,
+            offset: 1,
+        };
         this.tcm.addArrowToLineAndFile(curEntry.line - 1, curEntry.file,
-            darkArrowColor);
+            arrow);
     }
 }
 
@@ -2914,8 +2926,8 @@ var connectorInactiveColor = '#cccccc';
 var breakpointColor = brightRed;
 
 // Unicode arrow types: '\u21d2', '\u21f0', '\u2907'
-var darkArrowColor = brightRed;
-var lightArrowColor = '#c9e6ca';
+var nextArrowColor = brightRed;
+var prevArrowColor = '#3f3fe9';
 
 function assert(cond) {
     if (!cond) {
