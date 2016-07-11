@@ -86,7 +86,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   textualMemoryLabels  - render references using textual memory labels rather than as jsPlumb arrows.
 //                          this is good for slow browsers or when used with disableHeapNesting
 //                          to prevent "arrow overload"
-//   showOnlyOutputs      - show only program outputs and NOT internal data structures
 //   updateOutputCallback - function to call (with 'this' as parameter)
 //                          whenever this.updateOutput() is called
 //                          (BEFORE rendering the output display)
@@ -100,8 +99,7 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   compactFuncLabels - render functions with a 'func' prefix and no type label
 //   showAllFrameLabels - display frame and parent frame labels for all functions (default: false)
 //   hideCode - hide the code display and show only the data structure viz
-//   lang - to render labels in a style appropriate for other languages,
-//          and to display the proper language in langDisplayDiv:
+//   lang - to render labels in a style appropriate for other languages
 //          'py2' for Python 2, 'py3' for Python 3, 'js' for JavaScript, 'java' for Java,
 //          'ts' for TypeScript, 'ruby' for Ruby, 'c' for C, 'cpp' for C++
 //          [default is Python-style labels]
@@ -140,7 +138,6 @@ function ExecutionVisualizer(domRootID, data, params) {
     this.disableHeapNesting = (this.params.disableHeapNesting == true);
     this.drawParentPointers = (this.params.drawParentPointers == true);
     this.textualMemoryLabels = (this.params.textualMemoryLabels == true);
-    this.showOnlyOutputs = (this.params.showOnlyOutputs == true);
     this.showAllFrameLabels = (this.params.showAllFrameLabels == true);
 
     // cool, we can create a separate jsPlumb instance for each visualization:
@@ -350,7 +347,6 @@ ExecutionVisualizer.prototype.render = function() {
 
     var codeDisplayHTML =
         '<div id="codeDisplayDiv">\
-        <div id="langDisplayDiv"></div>\
         <div id="pyCodeOutputDiv"/>\
         <div id="legendDiv"/>\
         <div id="executionSliderDocs">\
@@ -388,14 +384,15 @@ ExecutionVisualizer.prototype.render = function() {
             <table id="stackHeapTable">\
                 <tr>\
                     <td id="stack_td">\
-                        <div id="globals_area">\
                         <div id="stackHeader">Frames</div>\
-                        </div>\
                         <div id="stack"></div>\
                     </td>\
                     <td id="heap_td">\
+                        <div id="globals_area">\
+                            <div id="heapHeader">Globals</div>\
+                        </div>\
                         <div id="heap">\
-                        <div id="heapHeader">Objects</div>\
+                            <div id="heapHeader">Objects</div>\
                         </div>\
                     </td>\
                 </tr>\
@@ -414,35 +411,11 @@ ExecutionVisualizer.prototype.render = function() {
             codeVizHTML + '</td></tr></table>');
     }
 
-    if (this.showOnlyOutputs) {
-        myViz.domRoot.find('#dataViz').hide();
-        this.domRoot.find('#vizLayoutTdSecond').append(outputsHTML);
+    // position this under the code:
+    //this.domRoot.find('#vizLayoutTdFirst').append(outputsHTML);
 
-        if (this.params.verticalStack) {
-            this.domRoot.find('#vizLayoutTdSecond').css('padding-top', '25px');
-        }
-        else {
-            this.domRoot.find('#vizLayoutTdSecond').css('padding-left', '25px');
-        }
-    }
-    else {
-        var stdoutHeight = '75px';
-        // heuristic for code with really small outputs
-        if (this.numStdoutLines <= 3) {
-            stdoutHeight = (18 * this.numStdoutLines) + 'px';
-        }
-
-        // position this under the code:
-        //this.domRoot.find('#vizLayoutTdFirst').append(outputsHTML);
-
-        // position this above visualization (started trying this on 2016-06-01)
-        this.domRoot.find('#vizLayoutTdSecond').prepend(outputsHTML);
-
-        // do this only after adding to DOM
-        this.domRoot.find('#pyStdout').width('350px')
-            .height(stdoutHeight)
-            .resizable();
-    }
+    // position this above visualization (started trying this on 2016-06-01)
+    this.domRoot.find('#vizLayoutTdSecond').prepend(outputsHTML);
 
     this.domRoot.find('#legendDiv')
         .append('<svg id="prevLegendArrowSVG"/> line that has just executed')
@@ -458,8 +431,6 @@ ExecutionVisualizer.prototype.render = function() {
         .attr('points', EditorTabbedCodeMirror._arrowPolygon)
         .attr('fill', nextArrowColor);
 
-    this.domRoot.find('#langDisplayDiv').html('Java');
-
     // enable left-right draggable pane resizer (originally from David Pritchard)
     this.domRoot.find('#codeDisplayDiv').resizable({
         handles: "e",
@@ -474,13 +445,10 @@ ExecutionVisualizer.prototype.render = function() {
                 myViz.params.updateOutputCallback(this);
         }});
 
-    // create a persistent globals frame
-    // (note that we need to keep #globals_area separate from #stack for d3 to work its magic)
+    // Create a persistent globals frame
     this.domRoot.find("#globals_area").append('<div class="stackFrame" id="'
-            + myViz.generateID('globals') + '"><div id="' + myViz.generateID('globals_header')
-            + '" class="stackFrameHeader">' + this.getRealLabel('Global frame') + '</div><table class="stackFrameVarTable" id="'
+            + myViz.generateID('globals') + '"><table class="stackFrameVarTable" id="'
             + myViz.generateID('global_table') + '"></table></div>');
-
 
     if (this.params.hideOutput) {
         this.domRoot.find('#progOutputs').hide();
@@ -1533,6 +1501,12 @@ ExecutionVisualizer.prototype.renderDataStructures = function(curEntry, curTople
     var globalsID = myViz.generateID('globals');
     var globalTblID = myViz.generateID('global_table');
 
+    if (realGlobalsLst.length == 0) {
+        this.domRoot.find("#globals_area").hide();
+    } else {
+        this.domRoot.find("#globals_area").show();
+    }
+
     var globalVarTable = myViz.domRootD3.select('#' + globalTblID)
         .selectAll('tr')
         .data(realGlobalsLst,
@@ -1670,7 +1644,7 @@ ExecutionVisualizer.prototype.renderDataStructures = function(curEntry, curTople
             return (frame.parent_frame_id_list.length > 0) ? frame.parent_frame_id_list[0] : null;
         })
     .each(function(frame, i) {
-        if (!myViz.drawParentPointers) {
+        if ( ! myViz.drawParentPointers) {
             return;
         }
         // only run if myViz.drawParentPointers is true ...
@@ -3219,10 +3193,6 @@ ExecutionVisualizer.prototype.activateJavaFrontend = function() {
             "end_render",
             function(args) {
                 var myViz = args.myViz;
-
-                // uhh, dunno what this was for ...
-                //myViz.domRoot.find('#pyStdout').attr('cols', 1); // commented out by pgbovine
-                //myViz.domRoot.find('#pyStdout').attr('rows', Math.min(10, myViz.stdoutLines));
 
                 if (myViz.params.stdin && myViz.params.stdin != "") {
                     var stdinHTML = '<div id="stdinWrap">stdin:<pre id="stdinShow" style="border:1px solid gray"></pre></div>';

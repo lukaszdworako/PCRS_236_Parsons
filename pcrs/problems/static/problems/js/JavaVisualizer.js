@@ -88,7 +88,6 @@ JavaVisualizer.prototype._createPyTutorVisualizer = function(data) {
             $('#urlOutput,#embedCodeOutput').val('');
         },
         disableHeapNesting: true,
-        drawParentPointers: true,
         textualMemoryLabels: true,
         //allowEditAnnotations: true,
     });

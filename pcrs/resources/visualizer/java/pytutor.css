@@ -193,8 +193,8 @@ div.ExecutionVisualizer #pyStdout {
     font-family: Andale mono, monospace;
 
     overflow: auto; /* to look pretty on IE */
-    /* make sure textarea doesn't grow and stretch */
-    resize: none;
+    height: 75px;
+    width: 350px;
 }
 
 
@@ -441,14 +441,13 @@ div.ExecutionVisualizer .typeLabel {
     margin-bottom: 2px;
 }
 
-div.ExecutionVisualizer div#stack,
-div.ExecutionVisualizer div#globals_area {
+div.ExecutionVisualizer div#stack {
     padding-left: 10px;
     padding-right: 30px;
+}
 
-    /* no longer necessary ... */
-    /*float: left;*/
-    /* border-right: 1px dashed #bbbbbb; */
+div.ExecutionVisualizer div#globals_area {
+    padding-left: 30px;
 }
 
 div.ExecutionVisualizer div.stackFrame,
