@@ -41,10 +41,6 @@
    <script type="text/javascript" src="js/jquery-ui-1.11.4/jquery-ui.min.js"></script> <!-- for sliders and other UI elements -->
    <link type="text/css" href="js/jquery-ui-1.11.4/jquery-ui.css" rel="stylesheet" />
 
-   <!-- for annotation bubbles -->
-   <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
-   <link type="text/css" href="css/jquery.qtip.css" rel="stylesheet" />
-
    <script type="text/javascript" src="js/pytutor.js"></script>
    <link rel="stylesheet" href="css/pytutor.css"/>
 
@@ -70,10 +66,6 @@ String.prototype.rtrim = function() {
     return this.replace(/\s*$/g, "");
 }
 
-
-var SVG_ARROW_POLYGON = '0,3 12,3 12,0 18,5 12,10 12,7 0,7';
-var SVG_ARROW_HEIGHT = 10; // must match height of SVG_ARROW_POLYGON
-
 var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer instance
 
 // domRootID is the string ID of the root element where to render this instance
@@ -88,7 +80,6 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 //   startingInstruction - the (zero-indexed) execution point to display upon rendering
 //                         if this is set, then it *overrides* jumpToEnd
 //   hideOutput - hide "Program output" display
-//   allowEditAnnotations - allow user to edit per-step annotations (default: false)
 //   disableHeapNesting   - if true, then render all heap objects at the top level (i.e., no nested objects)
 //   drawParentPointers   - if true, then draw environment diagram parent pointers for all frames
 //                          WARNING: there are hard-to-debug MEMORY LEAKS associated with activating this option
@@ -383,11 +374,6 @@ ExecutionVisualizer.prototype.render = function() {
             <span id="curInstr">Step ? of ?</span>\
         </div>\
         <div id="errorOutput" class="alert-container red-alert"/>\
-        <div id="stepAnnotationDiv">\
-            <textarea class="annotationText" id="stepAnnotationEditor" cols="60" rows="3"></textarea>\
-            <div class="annotationText" id="stepAnnotationViewer"></div>\
-        </div>\
-        <div id="annotateLinkDiv"><button id="annotateBtn" type="button">Annotate this step</button></div>\
         </div>';
 
     var outputsHTML =
@@ -416,23 +402,16 @@ ExecutionVisualizer.prototype.render = function() {
             </table>\
         </div>';
 
-    var vizHeaderHTML =
-        '<div id="vizHeader">\
-            <textarea class="vizTitleText" id="vizTitleEditor" cols="60" rows="1"></textarea>\
-            <div class="vizTitleText" id="vizTitleViewer"></div>\
-            <textarea class="vizDescriptionText" id="vizDescriptionEditor" cols="75" rows="2"></textarea>\
-            <div class="vizDescriptionText" id="vizDescriptionViewer"></div>\
-        </div>';
-
     if (this.params.verticalStack) {
-        this.domRoot.html(vizHeaderHTML + '<table border="0" class="visualizer"><tr><td class="vizLayoutTd" id="vizLayoutTdFirst"">' +
-                codeDisplayHTML + '</td></tr><tr><td class="vizLayoutTd" id="vizLayoutTdSecond">' +
-                codeVizHTML + '</td></tr></table>');
-    }
-    else {
-        this.domRoot.html(vizHeaderHTML + '<table border="0" class="visualizer"><tr><td class="vizLayoutTd" id="vizLayoutTdFirst">' +
-                codeDisplayHTML + '</td><td class="vizLayoutTd" id="vizLayoutTdSecond">' +
-                codeVizHTML + '</td></tr></table>');
+        this.domRoot.html('<table border="0" class="visualizer"><tr>' +
+            '<td class="vizLayoutTd" id="vizLayoutTdFirst"">' +
+            codeDisplayHTML + '</td></tr><tr><td class="vizLayoutTd" id="vizLayoutTdSecond">' +
+            codeVizHTML + '</td></tr></table>');
+    } else {
+        this.domRoot.html('<table border="0" class="visualizer"><tr>' +
+            '<td class="vizLayoutTd" id="vizLayoutTdFirst">' +
+            codeDisplayHTML + '</td><td class="vizLayoutTd" id="vizLayoutTdSecond">' +
+            codeVizHTML + '</td></tr></table>');
     }
 
     if (this.showOnlyOutputs) {
@@ -471,51 +450,15 @@ ExecutionVisualizer.prototype.render = function() {
 
     myViz.domRootD3.select('svg#prevLegendArrowSVG')
         .append('polygon')
-        .attr('points', SVG_ARROW_POLYGON)
+        .attr('points', EditorTabbedCodeMirror._arrowPolygon)
         .attr('fill', lightArrowColor);
 
     myViz.domRootD3.select('svg#curLegendArrowSVG')
         .append('polygon')
-        .attr('points', SVG_ARROW_POLYGON)
+        .attr('points', EditorTabbedCodeMirror._arrowPolygon)
         .attr('fill', darkArrowColor);
 
     this.domRoot.find('#langDisplayDiv').html('Java');
-
-    if (this.params.allowEditAnnotations !== undefined) {
-        this.allowEditAnnotations = this.params.allowEditAnnotations;
-    }
-    else {
-        this.allowEditAnnotations = false;
-    }
-
-    this.domRoot.find('#stepAnnotationEditor').hide();
-
-    myViz.editAnnotationMode = false;
-
-    if (this.allowEditAnnotations) {
-        var ab = this.domRoot.find('#annotateBtn');
-
-        ab.click(function() {
-            if (myViz.editAnnotationMode) {
-                myViz.enterViewAnnotationsMode();
-
-                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#stepAnnotationViewer").show();
-                myViz.domRoot.find('#stepAnnotationEditor').hide();
-                ab.html('Annotate this step');
-            }
-            else {
-                myViz.enterEditAnnotationsMode();
-
-                myViz.domRoot.find("#jmpFirstInstr,#jmpLastInstr,#jmpStepBack,#jmpStepFwd,#executionSlider,#stepAnnotationViewer").hide();
-                myViz.domRoot.find('#stepAnnotationEditor').show();
-                ab.html('Done annotating');
-            }
-        });
-    }
-    else {
-        this.domRoot.find('#annotateBtn').hide();
-    }
-
 
     // enable left-right draggable pane resizer (originally from David Pritchard)
     this.domRoot.find('#codeDisplayDiv').resizable({
@@ -719,194 +662,6 @@ ExecutionVisualizer.prototype._stepsMatchingFileAndLine =
     return steps;
 }
 
-ExecutionVisualizer.prototype.showVizHeaderViewMode = function() {
-    var titleVal = this.domRoot.find('#vizTitleEditor').val().trim();
-    var  descVal = this.domRoot.find('#vizDescriptionEditor').val().trim();
-
-    this.domRoot.find('#vizTitleEditor,#vizDescriptionEditor').hide();
-
-    if (!titleVal && !descVal) {
-        this.domRoot.find('#vizHeader').hide();
-    }
-    else {
-        this.domRoot.find('#vizHeader,#vizTitleViewer,#vizDescriptionViewer').show();
-        if (titleVal) {
-            this.domRoot.find('#vizTitleViewer').html(htmlsanitize(titleVal)); // help prevent HTML/JS injection attacks
-        }
-
-        if (descVal) {
-            this.domRoot.find('#vizDescriptionViewer').html(htmlsanitize(descVal)); // help prevent HTML/JS injection attacks
-        }
-    }
-}
-
-ExecutionVisualizer.prototype.showVizHeaderEditMode = function() {
-    this.domRoot.find('#vizHeader').show();
-
-    this.domRoot.find('#vizTitleViewer,#vizDescriptionViewer').hide();
-    this.domRoot.find('#vizTitleEditor,#vizDescriptionEditor').show();
-}
-
-
-ExecutionVisualizer.prototype.destroyAllAnnotationBubbles = function() {
-    var myViz = this;
-
-    // hopefully destroys all old bubbles and reclaims their memory
-    if (myViz.allAnnotationBubbles) {
-        $.each(myViz.allAnnotationBubbles, function(i, e) {
-            e.destroyQTip();
-        });
-    }
-
-    myViz.allAnnotationBubbles = null;
-}
-
-ExecutionVisualizer.prototype.initStepAnnotation = function() {
-    var curEntry = this.curTrace[this.curInstr];
-    if (curEntry.stepAnnotation) {
-        this.domRoot.find("#stepAnnotationViewer").html(htmlsanitize(curEntry.stepAnnotation)); // help prevent HTML/JS injection attacks
-        this.domRoot.find("#stepAnnotationEditor").val(curEntry.stepAnnotation);
-    }
-    else {
-        this.domRoot.find("#stepAnnotationViewer").html('');
-        this.domRoot.find("#stepAnnotationEditor").val('');
-    }
-}
-
-ExecutionVisualizer.prototype.initAllAnnotationBubbles = function() {
-    var myViz = this;
-
-    // TODO: check for memory leaks
-    //console.log('initAllAnnotationBubbles');
-
-    myViz.destroyAllAnnotationBubbles();
-
-    var heapObjectIDs = [];
-    $.each(this.domRoot.find('.heapObject'), function(i, e) {
-        heapObjectIDs.push($(e).attr('id'));
-    });
-
-    var variableIDs = [];
-    $.each(this.domRoot.find('.variableTr'), function(i, e) {
-        variableIDs.push($(e).attr('id'));
-    });
-
-    var frameIDs = [];
-    $.each(this.domRoot.find('.stackFrame'), function(i, e) {
-        frameIDs.push($(e).attr('id'));
-    });
-
-    myViz.allAnnotationBubbles = [];
-
-    $.each(codelineIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'codeline', e));});
-    $.each(heapObjectIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'object', e));});
-    $.each(variableIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'variable', e));});
-    $.each(frameIDs, function(i,e) {myViz.allAnnotationBubbles.push(new AnnotationBubble(myViz, 'frame', e));});
-
-    //console.log('initAllAnnotationBubbles', myViz.allAnnotationBubbles.length);
-}
-
-
-ExecutionVisualizer.prototype.enterViewAnnotationsMode = function() {
-    this.editAnnotationMode = false;
-    var curEntry = this.curTrace[this.curInstr];
-
-    // TODO: check for memory leaks!!!
-    var myViz = this;
-
-    if (!myViz.allAnnotationBubbles) {
-        if (curEntry.bubbleAnnotations) {
-            // If there is an existing annotations object, then initiate all annotations bubbles
-            // and display them in 'View' mode
-            myViz.initAllAnnotationBubbles();
-
-            $.each(myViz.allAnnotationBubbles, function(i, e) {
-                var txt = curEntry.bubbleAnnotations[e.domID];
-                if (txt) {
-                    e.preseedText(txt);
-                }
-            });
-        }
-    }
-
-
-    if (myViz.allAnnotationBubbles) {
-        var curAnnotations = {};
-
-        $.each(myViz.allAnnotationBubbles, function(i, e) {
-            e.enterViewMode();
-
-            if (e.text) {
-                curAnnotations[e.domID] = e.text;
-            }
-        });
-
-        // Save annotations directly into the current trace entry as an 'annotations' object
-        // directly mapping domID -> text.
-        //
-        // NB: This scheme can break if the functions for generating domIDs are altered.
-        curEntry.bubbleAnnotations = curAnnotations;
-    }
-
-    var stepAnnotationEditorVal = myViz.domRoot.find("#stepAnnotationEditor").val().trim();
-    if (stepAnnotationEditorVal) {
-        curEntry.stepAnnotation = stepAnnotationEditorVal;
-    }
-    else {
-        delete curEntry.stepAnnotation; // go as far as to DELETE this field entirely
-    }
-
-    myViz.initStepAnnotation();
-
-    myViz.showVizHeaderViewMode();
-
-    // redraw all connectors and bubbles in new vertical position ..
-    myViz.redrawConnectors();
-    myViz.redrawAllAnnotationBubbles();
-}
-
-ExecutionVisualizer.prototype.enterEditAnnotationsMode = function() {
-    this.editAnnotationMode = true;
-
-    // TODO: check for memory leaks!!!
-    var myViz = this;
-
-    var curEntry = this.curTrace[this.curInstr];
-
-    if (!myViz.allAnnotationBubbles) {
-        myViz.initAllAnnotationBubbles();
-    }
-
-    $.each(myViz.allAnnotationBubbles, function(i, e) {
-        e.enterEditMode();
-    });
-
-
-    if (curEntry.stepAnnotation) {
-        myViz.domRoot.find("#stepAnnotationEditor").val(curEntry.stepAnnotation);
-    }
-    else {
-        myViz.domRoot.find("#stepAnnotationEditor").val('');
-    }
-
-
-    myViz.showVizHeaderEditMode();
-
-    // redraw all connectors and bubbles in new vertical position ..
-    myViz.redrawConnectors();
-    myViz.redrawAllAnnotationBubbles();
-}
-
-
-ExecutionVisualizer.prototype.redrawAllAnnotationBubbles = function() {
-    if (this.allAnnotationBubbles) {
-        $.each(this.allAnnotationBubbles, function(i, e) {
-            e.redrawBubble();
-        });
-    }
-}
-
-
 // find the previous/next breakpoint to c or return -1 if it doesn't exist
 ExecutionVisualizer.prototype.findPrevBreakpoint = function() {
     var myViz = this;
@@ -968,9 +723,6 @@ ExecutionVisualizer.prototype.stepBackToBreakpoint = function() {
     if (index != -1) this.stepTo(index);
 }
 ExecutionVisualizer.prototype.stepTo = function(index) {
-    if (this.editAnnotationMode) {
-        return;
-    }
     if (index < 0 || index > this.curTrace.length - 1) {
         return;
     }
@@ -1058,172 +810,87 @@ ExecutionVisualizer.prototype.renderStdout = function() {
 }
 
 
-// update some fields corresponding to the current and previously
-// executed lines in the trace so that they can be highlighted
-// copied and pasted from highlightCodeLine, which is hacky :/
-ExecutionVisualizer.prototype.updateCurPrevLines = function() {
-    var myViz = this;
-    var totalInstrs = myViz.curTrace.length;
-    var isLastInstr = myViz.curInstr === (totalInstrs-1);
-
-    /* if instrLimitReached, then treat like a normal non-terminating line */
-    var isTerminated = (!myViz.instrLimitReached && isLastInstr);
-
-    var curLineNumber = null;
-    var prevLineNumber = null;
-
-    var curEntry = myViz.curTrace[myViz.curInstr];
-    var hasError = false;
-
-    var curIsReturn = (curEntry.event == 'return');
-    var prevIsReturn = false;
-
-    if (myViz.curInstr > 0) {
-        prevLineNumber = myViz.curTrace[myViz.curInstr - 1].line;
-        prevIsReturn = (myViz.curTrace[myViz.curInstr - 1].event == 'return');
-
-        /* kinda nutsy hack: if the previous line is a return line, don't
-           highlight it. instead, highlight the line in the enclosing
-           function that called this one (i.e., the call site). e.g.,:
-
-           1. def foo(lst):
-           2.   return len(lst)
-           3.
-           4. y = foo([1,2,3])
-           5. print y
-
-           If prevLineNumber is 2 and prevIsReturn, then curLineNumber is
-           5, since that's the line that executes right after line 2
-           finishes. However, this looks confusing to the user since what
-           actually happened here was that the return value of foo was
-           assigned to y on line 4. I want to have prevLineNumber be line
-           4 so that it gets highlighted. There's no ideal solution, but I
-           think that looks more sensible, since line 4 was the previous
-           line that executed *in this function's frame*.
-           */
-        if (prevIsReturn) {
-            var idx = myViz.curInstr - 1;
-            var retStack = myViz.curTrace[idx].stack_to_render;
-            assert(retStack.length > 0);
-            var retFrameId = retStack[retStack.length - 1].frame_id;
-
-            // now go backwards until we find a 'call' to this frame
-            while (idx >= 0) {
-                var entry = myViz.curTrace[idx];
-                if (entry.event == 'call' && entry.stack_to_render) {
-                    var topFrame = entry.stack_to_render[entry.stack_to_render.length - 1];
-                    if (topFrame.frame_id == retFrameId) {
-                        break; // DONE, we found the call that corresponds to this return
-                    }
-                }
-                idx--;
-            }
-
-            // now idx is the index of the 'call' entry. we need to find the
-            // entry before that, which is the instruction before the call.
-            // THAT's the line of the call site.
-            if (idx > 0) {
-                var callingEntry = myViz.curTrace[idx - 1];
-                prevLineNumber = callingEntry.line; // WOOHOO!!!
-                prevIsReturn = false; // this is now a call site, not a return
-            }
-        }
-    }
-
-    if (curEntry.event == 'exception' ||
-            curEntry.event == 'uncaught_exception') {
-        assert(curEntry.exception_msg);
-        hasError = true;
-        myViz.curLineExceptionMsg = curEntry.exception_msg;
-    }
-
-    curLineNumber = curEntry.line;
-
-    // edge case for the final instruction :0
-    if (isTerminated && !hasError) {
-        // don't show redundant arrows on the same line when terminated ...
-        if (prevLineNumber == curLineNumber) {
-            curLineNumber = null;
-        }
-    }
-
-    // add these fields to myViz, which is the point of this function!
-    myViz.curLineNumber = curLineNumber;
-    myViz.prevLineNumber = prevLineNumber;
-    myViz.curLineIsReturn = curIsReturn;
-    myViz.prevLineIsReturn = prevIsReturn;
-}
-
-
 // This function is called every time the display needs to be updated
-// smoothTransition is OPTIONAL!
-ExecutionVisualizer.prototype.updateOutput = function(smoothTransition) {
+ExecutionVisualizer.prototype.updateOutput = function() {
     if (this.params.hideCode) {
         this.updateOutputMini();
     }
     else {
-        this.updateOutputFull(smoothTransition);
+        this.updateOutputFull();
     }
     this.renderStdout();
     this.try_hook("end_updateOutput", {myViz:this});
 }
 
-ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
-    assert(this.curTrace);
-    assert(!this.params.hideCode);
 
-    var myViz = this; // to prevent confusion of 'this' inside of nested functions
+ExecutionVisualizer.prototype.updateOutputFull = function() {
+    assert(this.curTrace);
+    assert( ! this.params.hideCode);
 
     // there's no point in re-rendering if this pane isn't even visible in the first place!
-    if (!myViz.domRoot.is(':visible')) {
+    if ( ! this.domRoot.is(':visible')) {
         return;
     }
-
-    // reset
-    myViz.curLineNumber = undefined;
-    myViz.prevLineNumber = undefined;
-    myViz.curLineIsReturn = undefined;
-    myViz.prevLineIsReturn = undefined;
-    myViz.curLineExceptionMsg = undefined;
-
-    // TODO: don't do this since it screws with other stuff, and we're not
-    // activating annotation bubbles right now ...
-    // crucial resets for annotations (TODO: kludgy)
-    //myViz.destroyAllAnnotationBubbles();
-    //myViz.initStepAnnotation();
-
-
-    var prevDataVizHeight = myViz.domRoot.find('#dataViz').height();
-
-
-    var gutterSVG = myViz.domRoot.find('svg#leftCodeGutterSVG');
 
     // call the callback if necessary (BEFORE rendering)
     if (this.params.updateOutputCallback) {
         this.params.updateOutputCallback(this);
     }
 
-
     var curEntry = this.curTrace[this.curInstr];
-    var hasError = false;
-    // bnm  Render a question
-    if (curEntry.question) {
-        //alert(curEntry.question.text);
 
-        $('#'+curEntry.question.div).modal({position:["25%","50%"]});
-    }
-
-    if (myViz.params.debugMode) {
+    if (this.params.debugMode) {
         console.log('updateOutputFull', curEntry);
-        myViz.debugMode = true;
+        this.debugMode = true;
     }
 
-    // render VCR controls:
+    // PROGRAMMATICALLY change the value, so evt.originalEvent should be undefined
+    this.domRoot.find('#executionSlider').slider('value', this.curInstr);
+
+    // finally, render all of the data structures
+    var curToplevelLayout = this.curTraceLayouts[this.curInstr];
+    this.renderDataStructures(curEntry, curToplevelLayout);
+
+    var prevDataVizHeight = this.domRoot.find('#dataViz').height();
+    // call the callback if necessary (BEFORE rendering)
+    if (this.domRoot.find('#dataViz').height() != prevDataVizHeight) {
+        if (this.params.heightChangeCallback) {
+            this.params.heightChangeCallback(this);
+        }
+    }
+
+    this.renderVCRControls();
+    this.renderErrors();
+    this.renderTraceArrows();
+}
+
+ExecutionVisualizer.prototype.renderErrors = function() {
+    var curEntry = this.curTrace[this.curInstr];
+    if (curEntry.event == 'exception' ||
+            curEntry.event == 'uncaught_exception') {
+        assert(curEntry.exception_msg);
+
+        if (curEntry.exception_msg == "Unknown error") {
+            this.domRoot.find("#errorOutput").html('Unknown error: ' +
+                'Please email a bug report to philip@pgbovine.net');
+        } else {
+            this.domRoot.find("#errorOutput").html(
+                htmlspecialchars(curEntry.exception_msg));
+        }
+
+        this.domRoot.find("#errorOutput").show();
+        this.curLineExceptionMsg = curEntry.exception_msg;
+    } else {
+        if ( ! this.instrLimitReached) { // ugly, I know :/
+            this.domRoot.find("#errorOutput").hide();
+        }
+    }
+}
+
+ExecutionVisualizer.prototype.renderVCRControls = function() {
     var totalInstrs = this.curTrace.length;
-
-    var isLastInstr = (this.curInstr == (totalInstrs-1));
-
-    var vcrControls = myViz.domRoot.find("#vcrControls");
+    var isLastInstr = (this.curInstr == (totalInstrs - 1));
+    var vcrControls = this.domRoot.find("#vcrControls");
 
     if (isLastInstr) {
         if (this.instrLimitReached) {
@@ -1233,182 +900,35 @@ ExecutionVisualizer.prototype.updateOutputFull = function(smoothTransition) {
         }
     } else {
         vcrControls.find("#curInstr").html("Step " +
-                String(this.curInstr + 1) +
-                " of " + String(totalInstrs-1));
+                String(this.curInstr + 1) + " of " + String(totalInstrs - 1));
     }
+}
 
-    // PROGRAMMATICALLY change the value, so evt.originalEvent should be undefined
-    myViz.domRoot.find('#executionSlider').slider('value', this.curInstr);
-
-    // render error (if applicable):
-    if (curEntry.event == 'exception' ||
-            curEntry.event == 'uncaught_exception') {
-        assert(curEntry.exception_msg);
-
-        if (curEntry.exception_msg == "Unknown error") {
-            myViz.domRoot.find("#errorOutput").html('Unknown error: Please email a bug report to philip@pgbovine.net');
-        }
-        else {
-            myViz.domRoot.find("#errorOutput").html(htmlspecialchars(curEntry.exception_msg));
-        }
-
-        myViz.domRoot.find("#errorOutput").show();
-
-        hasError = true;
-        myViz.curLineExceptionMsg = curEntry.exception_msg;
-    }
-    else {
-        if (!this.instrLimitReached) { // ugly, I know :/
-            myViz.domRoot.find("#errorOutput").hide();
-        }
-    }
-
-    function highlightCodeLine() {
-        /* if instrLimitReached, then treat like a normal non-terminating line */
-        var isTerminated = (!myViz.instrLimitReached && isLastInstr);
-
-        var pcod = myViz.domRoot.find('#pyCodeOutputDiv');
-
-        var curLineNumber = null;
-        var prevLineNumber = null;
-
-        var curIsReturn = (curEntry.event == 'return');
-        var prevIsReturn = false;
-
-        if (myViz.curInstr > 0) {
-            prevLineNumber = myViz.curTrace[myViz.curInstr - 1].line;
-            prevIsReturn = (myViz.curTrace[myViz.curInstr - 1].event == 'return');
-
-            /* kinda nutsy hack: if the previous line is a return line, don't
-               highlight it. instead, highlight the line in the enclosing
-               function that called this one (i.e., the call site). e.g.,:
-
-               1. def foo(lst):
-               2.   return len(lst)
-               3.
-               4. y = foo([1,2,3])
-               5. print y
-
-               If prevLineNumber is 2 and prevIsReturn, then curLineNumber is
-               5, since that's the line that executes right after line 2
-               finishes. However, this looks confusing to the user since what
-               actually happened here was that the return value of foo was
-               assigned to y on line 4. I want to have prevLineNumber be line
-               4 so that it gets highlighted. There's no ideal solution, but I
-               think that looks more sensible, since line 4 was the previous
-               line that executed *in this function's frame*.
-               */
-            if (prevIsReturn) {
-                var idx = myViz.curInstr - 1;
-                var retStack = myViz.curTrace[idx].stack_to_render;
-                assert(retStack.length > 0);
-                var retFrameId = retStack[retStack.length - 1].frame_id;
-
-                // now go backwards until we find a 'call' to this frame
-                while (idx >= 0) {
-                    var entry = myViz.curTrace[idx];
-                    if (entry.event == 'call' && entry.stack_to_render) {
-                        var topFrame = entry.stack_to_render[entry.stack_to_render.length - 1];
-                        if (topFrame.frame_id == retFrameId) {
-                            break; // DONE, we found the call that corresponds to this return
-                        }
-                    }
-                    idx--;
-                }
-
-                // now idx is the index of the 'call' entry. we need to find the
-                // entry before that, which is the instruction before the call.
-                // THAT's the line of the call site.
-                if (idx > 0) {
-                    var callingEntry = myViz.curTrace[idx - 1];
-                    prevLineNumber = callingEntry.line; // WOOHOO!!!
-                    prevIsReturn = false; // this is now a call site, not a return
-                    smoothTransition = false;
-                }
-            }
-        }
-
-        curLineNumber = curEntry.line;
-
-        // on 'return' events, give a bit more of a vertical nudge to show that
-        // the arrow is aligned with the 'bottom' of the line ...
-        var prevVerticalNudge = prevIsReturn ? Math.floor(myViz.codeRowHeight / 3) : 0;
-        var curVerticalNudge  = curIsReturn  ? Math.floor(myViz.codeRowHeight / 3) : 0;
-
-        // edge case for the final instruction :0
-        if (isTerminated && ! hasError) {
-            // don't show redundant arrows on the same line when terminated ...
-            if (prevLineNumber == curLineNumber) {
-                curLineNumber = null;
-            }
-            // otherwise have a smaller vertical nudge (to fit at bottom of display table)
-            else {
-                curVerticalNudge = curVerticalNudge - 2;
-            }
-        }
-
-        // add these fields to myViz
-        myViz.curLineNumber = curLineNumber;
-        myViz.prevLineNumber = prevLineNumber;
-        myViz.curLineIsReturn = curIsReturn;
-        myViz.prevLineIsReturn = prevIsReturn;
-    } // end of highlightCodeLine
-
-    // render code output:
-    if (curEntry.line) {
-        highlightCodeLine();
-    }
-
-    // inject user-specified HTML/CSS/JS output:
-    // YIKES -- HUGE CODE INJECTION VULNERABILITIES :O
-    myViz.domRoot.find("#htmlOutputDiv").empty();
-    if (curEntry.html_output) {
-        if (curEntry.css_output) {
-            myViz.domRoot.find("#htmlOutputDiv").append('<style type="text/css">' + curEntry.css_output + '</style>');
-        }
-        myViz.domRoot.find("#htmlOutputDiv").append(curEntry.html_output);
-
-        // inject and run JS *after* injecting HTML and CSS
-        if (curEntry.js_output) {
-            // NB: when jQuery injects JS, it executes the code immediately
-            // and then removes the entire <script> block from the DOM
-            // http://stackoverflow.com/questions/610995/jquery-cant-append-script-element
-            myViz.domRoot.find("#htmlOutputDiv").append('<script type="text/javascript">' + curEntry.js_output + '</script>');
-        }
-    }
-
-
-    // finally, render all of the data structures
+ExecutionVisualizer.prototype.renderTraceArrows = function() {
     var curEntry = this.curTrace[this.curInstr];
-    var curToplevelLayout = this.curTraceLayouts[this.curInstr];
-    this.renderDataStructures(curEntry, curToplevelLayout);
 
-    this.enterViewAnnotationsMode(); // ... and render optional annotations (if any exist)
+    this.tcm.resetStepArrows();
 
-
-    // call the callback if necessary (BEFORE rendering)
-    if (myViz.domRoot.find('#dataViz').height() != prevDataVizHeight) {
-        if (this.params.heightChangeCallback) {
-            this.params.heightChangeCallback(this);
+    // Previous arrow
+    if (this.curInstr > 0) {
+        var prevEntry = this.curTrace[this.curInstr - 1];
+        if (prevEntry.file && prevEntry.line !== undefined) {
+            this.tcm.addArrowToLineAndFile(prevEntry.line - 1, prevEntry.file,
+                lightArrowColor);
         }
     }
 
     if (curEntry.file && curEntry.line !== undefined) {
-        // TODO set the previous line and file
-        this.tcm.setHighligtedLineAndFile(curEntry.line - 1, curEntry.file);
-    } else {
-        // Sometimes a line is not being executed in student code (e.g. on exit)
-        this.tcm.resetStepArrows();
+        this.tcm.addArrowToLineAndFile(curEntry.line - 1, curEntry.file,
+            darkArrowColor);
     }
-} // end of updateOutputFull
+}
 
 ExecutionVisualizer.prototype.updateOutputMini = function() {
     assert(this.params.hideCode);
     var curEntry = this.curTrace[this.curInstr];
     var curToplevelLayout = this.curTraceLayouts[this.curInstr];
     this.renderDataStructures(curEntry, curToplevelLayout);
-
-    this.enterViewAnnotationsMode(); // ... and render optional annotations (if any exist)
 }
 
 
@@ -3383,15 +2903,7 @@ ExecutionVisualizer.prototype.getRealLabel = function(label) {
 
 // Utilities
 
-
 /* colors - see pytutor.css for more colors */
-
-var highlightedLineColor = '#e4faeb';
-var highlightedLineBorderColor = '#005583';
-
-var highlightedLineLighterColor = '#e8fff0';
-
-var funcCallLineColor = '#a2eebd';
 
 var brightRed = '#e93f34';
 
@@ -3399,15 +2911,11 @@ var connectorBaseColor = '#005583';
 var connectorHighlightColor = brightRed;
 var connectorInactiveColor = '#cccccc';
 
-var errorColor = brightRed;
-
 var breakpointColor = brightRed;
-
 
 // Unicode arrow types: '\u21d2', '\u21f0', '\u2907'
 var darkArrowColor = brightRed;
 var lightArrowColor = '#c9e6ca';
-
 
 function assert(cond) {
     if (!cond) {
@@ -3578,359 +3086,6 @@ function getRefID(obj) {
         return obj[3]; // pointed-to address
     }
 }
-
-
-// Annotation bubbles
-
-var qtipShared = {
-    show: {
-        ready: true, // show on document.ready instead of on mouseenter
-        delay: 0,
-        event: null,
-        effect: function() {$(this).show();}, // don't do any fancy fading because it screws up with scrolling
-    },
-    hide: {
-        fixed: true,
-        event: null,
-        effect: function() {$(this).hide();}, // don't do any fancy fading because it screws up with scrolling
-    },
-    style: {
-        classes: 'ui-tooltip-pgbootstrap', // my own customized version of the bootstrap style
-    },
-};
-
-
-// a speech bubble annotation to attach to:
-//   'codeline' - a line of code
-//   'frame'    - a stack frame
-//   'variable' - a variable within a stack frame
-//   'object'   - an object on the heap
-// (as determined by the 'type' param)
-//
-// domID is the ID of the element to attach to (without the leading '#' sign)
-function AnnotationBubble(parentViz, type, domID) {
-    this.parentViz = parentViz;
-
-    this.domID = domID;
-    this.hashID = '#' + domID;
-
-    this.type = type;
-
-    if (type == 'codeline') {
-        this.my = 'left center';
-        this.at = 'right center';
-    }
-    else if (type == 'frame') {
-        this.my = 'right center';
-        this.at = 'left center';
-    }
-    else if (type == 'variable') {
-        this.my = 'right center';
-        this.at = 'left center';
-    }
-    else if (type == 'object') {
-        this.my = 'bottom left';
-        this.at = 'top center';
-    }
-    else {
-        assert(false);
-    }
-
-    // possible states:
-    //   'invisible'
-    //   'edit'
-    //   'view'
-    //   'minimized'
-    //   'stub'
-    this.state = 'invisible';
-
-    this.text = ''; // the actual contents of the annotation bubble
-
-    this.qtipHidden = false; // is there a qtip object present but hidden? (TODO: kinda confusing)
-}
-
-AnnotationBubble.prototype.showStub = function() {
-    assert(this.state == 'invisible' || this.state == 'edit');
-    assert(this.text == '');
-
-    var myBubble = this; // to avoid name clashes with 'this' in inner scopes
-
-    // destroy then create a new tip:
-    this.destroyQTip();
-    $(this.hashID).qtip($.extend({}, qtipShared, {
-        content: ' ',
-        id: this.domID,
-        position: {
-            my: this.my,
-            at: this.at,
-            adjust: {
-                x: (myBubble.type == 'codeline' ? -6 : 0), // shift codeline tips over a bit for aesthetics
-            },
-            effect: null, // disable all cutesy animations
-        },
-        style: {
-            classes: 'ui-tooltip-pgbootstrap ui-tooltip-pgbootstrap-stub'
-        }
-    }));
-
-
-    $(this.qTipID())
-        .unbind('click') // unbind all old handlers
-        .click(function() {
-            myBubble.showEditor();
-        });
-
-    this.state = 'stub';
-}
-
-AnnotationBubble.prototype.showEditor = function() {
-    assert(this.state == 'stub' || this.state == 'view' || this.state == 'minimized');
-
-    var myBubble = this; // to avoid name clashes with 'this' in inner scopes
-
-    var ta = '<textarea class="bubbleInputText">' + this.text + '</textarea>';
-
-    // destroy then create a new tip:
-    this.destroyQTip();
-    $(this.hashID).qtip($.extend({}, qtipShared, {
-        content: ta,
-        id: this.domID,
-        position: {
-            my: this.my,
-            at: this.at,
-            adjust: {
-                x: (myBubble.type == 'codeline' ? -6 : 0), // shift codeline tips over a bit for aesthetics
-            },
-            effect: null, // disable all cutesy animations
-        }
-    }));
-
-
-    $(this.qTipContentID()).find('textarea.bubbleInputText')
-        // set handler when the textarea loses focus
-        .blur(function() {
-            myBubble.text = $(this).val().trim(); // strip all leading and trailing spaces
-
-            if (myBubble.text) {
-                myBubble.showViewer();
-            }
-            else {
-                myBubble.showStub();
-            }
-        })
-    .focus(); // grab focus so that the user can start typing right away!
-
-    this.state = 'edit';
-}
-
-
-AnnotationBubble.prototype.bindViewerClickHandler = function() {
-    var myBubble = this;
-
-    $(this.qTipID())
-        .unbind('click') // unbind all old handlers
-        .click(function() {
-            if (myBubble.parentViz.editAnnotationMode) {
-                myBubble.showEditor();
-            }
-            else {
-                myBubble.minimizeViewer();
-            }
-        });
-}
-
-AnnotationBubble.prototype.showViewer = function() {
-    assert(this.state == 'edit' || this.state == 'invisible');
-    assert(this.text); // must be non-empty!
-
-    var myBubble = this;
-    // destroy then create a new tip:
-    this.destroyQTip();
-    $(this.hashID).qtip($.extend({}, qtipShared, {
-        content: htmlsanitize(this.text), // help prevent HTML/JS injection attacks
-        id: this.domID,
-        position: {
-            my: this.my,
-            at: this.at,
-            adjust: {
-                x: (myBubble.type == 'codeline' ? -6 : 0), // shift codeline tips over a bit for aesthetics
-            },
-            effect: null, // disable all cutesy animations
-        }
-    }));
-
-    this.bindViewerClickHandler();
-    this.state = 'view';
-}
-
-
-AnnotationBubble.prototype.minimizeViewer = function() {
-    assert(this.state == 'view');
-
-    var myBubble = this;
-
-    $(this.hashID).qtip('option', 'content.text', ' '); //hack to "minimize" its size
-
-    $(this.qTipID())
-        .unbind('click') // unbind all old handlers
-        .click(function() {
-            if (myBubble.parentViz.editAnnotationMode) {
-                myBubble.showEditor();
-            }
-            else {
-                myBubble.restoreViewer();
-            }
-        });
-
-    this.state = 'minimized';
-}
-
-AnnotationBubble.prototype.restoreViewer = function() {
-    assert(this.state == 'minimized');
-    $(this.hashID).qtip('option', 'content.text', htmlsanitize(this.text)); // help prevent HTML/JS injection attacks
-    this.bindViewerClickHandler();
-    this.state = 'view';
-}
-
-// NB: actually DESTROYS the QTip object
-AnnotationBubble.prototype.makeInvisible = function() {
-    assert(this.state == 'stub' || this.state == 'edit');
-    this.destroyQTip();
-    this.state = 'invisible';
-}
-
-
-AnnotationBubble.prototype.destroyQTip = function() {
-    $(this.hashID).qtip('destroy');
-}
-
-AnnotationBubble.prototype.qTipContentID = function() {
-    return '#ui-tooltip-' + this.domID + '-content';
-}
-
-AnnotationBubble.prototype.qTipID = function() {
-    return '#ui-tooltip-' + this.domID;
-}
-
-
-AnnotationBubble.prototype.enterEditMode = function() {
-    assert(this.parentViz.editAnnotationMode);
-    if (this.state == 'invisible') {
-        this.showStub();
-
-        if (this.type == 'codeline') {
-            this.redrawCodelineBubble();
-        }
-    }
-}
-
-AnnotationBubble.prototype.enterViewMode = function() {
-    assert(!this.parentViz.editAnnotationMode);
-    if (this.state == 'stub') {
-        this.makeInvisible();
-    }
-    else if (this.state == 'edit') {
-        this.text = $(this.qTipContentID()).find('textarea.bubbleInputText').val().trim(); // strip all leading and trailing spaces
-
-        if (this.text) {
-            this.showViewer();
-
-            if (this.type == 'codeline') {
-                this.redrawCodelineBubble();
-            }
-        }
-        else {
-            this.makeInvisible();
-        }
-    }
-    else if (this.state == 'invisible') {
-        // this happens when, say, you first enter View Mode
-        if (this.text) {
-            this.showViewer();
-
-            if (this.type == 'codeline') {
-                this.redrawCodelineBubble();
-            }
-        }
-    }
-}
-
-AnnotationBubble.prototype.preseedText = function(txt) {
-    assert(this.state == 'invisible');
-    this.text = txt;
-}
-
-AnnotationBubble.prototype.redrawCodelineBubble = function() {
-    assert(this.type == 'codeline');
-
-    if (isOutputLineVisibleForBubbles(this.domID)) {
-        if (this.qtipHidden) {
-            $(this.hashID).qtip('show');
-        }
-        else {
-            $(this.hashID).qtip('reposition');
-        }
-
-        this.qtipHidden = false;
-    }
-    else {
-        $(this.hashID).qtip('hide');
-        this.qtipHidden = true;
-    }
-}
-
-AnnotationBubble.prototype.redrawBubble = function() {
-    $(this.hashID).qtip('reposition');
-}
-
-
-function isOutputLineVisibleForBubbles(lineDivID) {
-    var pcod = $('#pyCodeOutputDiv');
-
-    var lineNoTd = $('#' + lineDivID);
-    var LO = lineNoTd.offset().top;
-
-    var PO = pcod.offset().top;
-    var ST = pcod.scrollTop();
-    var H = pcod.height();
-
-    // add a few pixels of fudge factor on the bottom end due to bottom scrollbar
-    return (PO <= LO) && (LO < (PO + H - 25));
-}
-
-
-// popup question dialog code from Brad Miller
-
-// inputId is the ID of the input element
-// divId is the div that containsthe visualizer
-// answer is a dotted form of an attribute that lives in the curEntry of the trace
-// So if we want to ask for the value of a global variable we would say 'globals.a'
-// this allows us do do curTrace[i].globals.a  But we do it in the loop below using the
-// [] operator.
-function traceQCheckMe(inputId, divId, answer) {
-    var vis = $("#"+divId).data("vis")
-        var i = vis.curInstr
-        var curEntry = vis.curTrace[i+1];
-    var ans = $('#'+inputId).val()
-        var attrs = answer.split(".")
-        var correctAns = curEntry;
-    for (var j in attrs) {
-        correctAns = correctAns[attrs[j]]
-    }
-    var feedbackElement = $("#" + divId + "_feedbacktext")
-        if (ans.length > 0 && ans == correctAns) {
-            feedbackElement.html('Correct')
-        } else {
-            feedbackElement.html(vis.curTrace[i].question.feedback)
-        }
-
-}
-
-function closeModal(divId) {
-    $.modal.close()
-        $("#"+divId).data("vis").stepForward();
-}
-
 
 // All of the Java frontend code in this function was written by David
 // Pritchard and Will Gwozdz, and integrated by Philip Guo

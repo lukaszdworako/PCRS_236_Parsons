@@ -9,6 +9,7 @@ function EditorTabbedCodeMirror() {
 EditorTabbedCodeMirror.prototype = Object.create(TabbedCodeMirror.prototype);
 EditorTabbedCodeMirror.prototype.constructor = EditorTabbedCodeMirror;
 
+//EditorTabbedCodeMirror._arrowPolygon = '12,3 12,0 18,5 12,10 12,7';
 EditorTabbedCodeMirror._arrowPolygon = '0,3 12,3 12,0 18,5 12,10 12,7 0,7';
 EditorTabbedCodeMirror._traceGutterId =
     'EditorTabbedCodeMirror-trace-gutter-id';
@@ -92,25 +93,24 @@ EditorTabbedCodeMirror.prototype._renderBreakpointMarkerDom = function() {
  * @param {string} fileName The file to highlight inside.
  *                          The TCM will automatically switch here.
  */
-EditorTabbedCodeMirror.prototype.setHighligtedLineAndFile = function(
-        lineNumber, fileName) {
+EditorTabbedCodeMirror.prototype.addArrowToLineAndFile = function(
+        line, file, arrowColor) {
     if (this.getFileCount() == 0) {
         // It hasn't been initialized yet
         return;
     }
-    var mirrorIndex = this.indexForTabWithName(fileName);
+    var mirrorIndex = this.indexForTabWithName(file);
     var mirror = this.mirrors[mirrorIndex];
 
     this.setActiveTabIndex(mirrorIndex);
     mirror.scrollIntoView({
         ch: 0,
-        line: lineNumber,
+        line: line,
     });
 
-    var marker = this._renderArrowWithColor(darkArrowColor);
+    var marker = this._renderArrowWithColor(arrowColor);
     var gutterId = EditorTabbedCodeMirror._traceGutterId;
-    this.clearGutter(gutterId);
-    mirror.setGutterMarker(lineNumber, gutterId, marker);
+    mirror.setGutterMarker(line, gutterId, marker);
 }
 
 EditorTabbedCodeMirror.prototype.resetStepArrows = function() {
