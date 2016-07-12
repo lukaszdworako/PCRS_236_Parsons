@@ -89,7 +89,7 @@ JavaVisualizer.prototype._createPyTutorVisualizer = function(data) {
         },
         disableHeapNesting: true,
         textualMemoryLabels: true,
-        //allowEditAnnotations: true,
+        lang: 'java',
     });
 
     $(document).keydown(function(k) {

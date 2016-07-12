@@ -447,6 +447,7 @@ div.ExecutionVisualizer div#stack {
 }
 
 div.ExecutionVisualizer div#globals_area {
+    float: left;
     padding-left: 30px;
 }
 
