@@ -107,32 +107,19 @@ var curVisualizerID = 1; // global to uniquely identify each ExecutionVisualizer
 function ExecutionVisualizer(domRootID, data, params) {
     this.files = data.files;
     this.curTrace = data.trace;
-
-    this.DEFAULT_EMBEDDED_CODE_DIV_WIDTH = 350;
-    this.DEFAULT_EMBEDDED_CODE_DIV_HEIGHT = 400;
-
     this.curInstr = 0;
 
-    this.params = params;
-    if (!this.params) {
-        this.params = {}; // make it an empty object by default
-    }
+    this.params = params ? params : {};
 
     this.compactFuncLabels = this.params.compactFuncLabels;
 
     if (this.params.visualizerIdOverride) {
         this.visualizerID = this.params.visualizerIdOverride;
-    }
-    else {
+    } else {
         // needs to be unique!
         this.visualizerID = curVisualizerID;
         curVisualizerID++;
     }
-
-
-    this.leftGutterSvgInitialized = false;
-    this.arrowOffsetY = undefined;
-    this.codeRowHeight = undefined;
 
     // avoid 'undefined' state
     this.disableHeapNesting = (this.params.disableHeapNesting == true);
@@ -158,7 +145,6 @@ function ExecutionVisualizer(domRootID, data, params) {
         HoverPaintStyle: {lineWidth: 1, strokeStyle: connectorHighlightColor},
     });
 
-
     // true iff trace ended prematurely since maximum instruction limit has
     // been reached
     var instrLimitReached = false;
@@ -167,7 +153,6 @@ function ExecutionVisualizer(domRootID, data, params) {
     // the root elements for jQuery and D3 selections, respectively.
     // ALWAYS use these and never use raw $(__) or d3.select(__)
     this.domRoot = $('#' + domRootID);
-    this.domRoot.data("vis",this);  // bnm store a reference to this as div data for use later.
     this.domRootD3 = d3.select('#' + domRootID);
 
     // stick a new div.ExecutionVisualizer within domRoot and make that
@@ -2284,16 +2269,14 @@ ExecutionVisualizer.prototype.renderPrimitiveObject = function(obj, d3DomElement
         }
     }
     else if (typ == "string") {
-        // escape using htmlspecialchars to prevent HTML/script injection
-        var literalStr = htmlspecialchars(obj);
+        // We have to manually find the max width since it is a floating object
+        // Use the heap offset since it is the furthest left this object can go
+        var heapTdOffset = $('#heap_td').offset().left;
+        var rootWidth = this.domRoot.width();
+        var maxWidth = parseInt(rootWidth - heapTdOffset);
 
-        // print as a double-quoted string literal
-        // with explicit newlines as <br/>
-        literalStr = literalStr.replace(new RegExp('\n', 'g'), '<br/>'); // replace ALL
-        literalStr = literalStr.replace(new RegExp('\"', 'g'), '\\"'); // replace ALL
-            literalStr = '"' + literalStr + '"';
-
-        d3DomElement.append('<span class="stringObj">' + literalStr + '</span>');
+        var $stringObj = this.generateStringObj(obj, maxWidth);
+        d3DomElement.append($stringObj);
     }
     else if (typ == "object") {
         if (obj[0] == 'C_DATA') {
@@ -2389,6 +2372,29 @@ ExecutionVisualizer.prototype.renderPrimitiveObject = function(obj, d3DomElement
     }
 }
 
+/**
+ * @param {string} str The string to generate the element from.
+ * @param {number} width The width of this object
+ * @return {jQuery} A nicely formatted string element.
+ */
+ExecutionVisualizer.prototype.generateStringObj = function(str, width) {
+    // Prevent HTML/script injection
+    var literalStr = htmlsanitize(obj);
+    literalStr = literalStr.replace(/"/g, '\\"');
+
+    literalStr = literalStr.replace(/\n/g, '\\n');
+    literalStr = literalStr.replace(/\t/g, '\\t');
+    literalStr = literalStr.replace(/\r/g, '\\r');
+    literalStr = literalStr.replace(/\\./g, function(match) {
+        // Highlight whitespace escape characters nicely
+        return '<span class="characterEscape">' + match + '</span>';
+    });
+
+    return $('<span class="stringObj"></span>')
+        .attr('style', 'width: ' + width + 'px;')
+        // print as a double-quoted string literal
+        .html('"' + literalStr + '"');
+}
 
 ExecutionVisualizer.prototype.renderNestedObject = function(obj, stepNum, d3DomElement) {
     if (this.isPrimitiveType(obj)) {

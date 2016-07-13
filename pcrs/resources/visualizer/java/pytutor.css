@@ -208,14 +208,22 @@ div.ExecutionVisualizer .vizFrame {
 /* Rendering of primitive types */
 
 div.ExecutionVisualizer .nullObj {
-    //  font-size: 8pt;
+    /* font-size: 8pt; */
 }
 
-div.ExecutionVisualizer .stringObj,
 div.ExecutionVisualizer .customObj,
 div.ExecutionVisualizer .funcObj {
     font-family: Andale mono, monospace;
     white-space: nowrap;
+}
+
+div.ExecutionVisualizer .stringObj {
+    font-family: Andale mono, monospace;
+    display: inline-block;
+}
+
+div.ExecutionVisualizer .stringObj .characterEscape {
+    color: #f00;
 }
 
 div.ExecutionVisualizer .funcCode {
