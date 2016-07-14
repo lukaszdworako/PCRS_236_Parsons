@@ -11,8 +11,8 @@ function TagManager() {
 TagManager.parseCodeIntoFiles = function(code) {
     var files = [];
     var match;
-    while (match = /[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n/.exec(code)) {
-        var endMatch = code.match(/\n[\t ]*\[\/file\][\t ]*/);
+    while (match = /^[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n/.exec(code)) {
+        var endMatch = code.match(/\n[\t ]*\[\/file\][\t ]*$/);
         var studentCodeStart = match.index + match[0].length;
         var studentCodeEnd = endMatch.index;
 
@@ -101,15 +101,16 @@ TagManager.findTagRanges = function(code) {
     // How many tags deep we are (assuming tags can be embedded)
     var tag_depth = 0;
 
+    // The line of the last closing tag
+    var lastTagLine = -1;
+
     var lines = code.split('\n');
     // Store all tags open and close lines
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
         var match;
 
-        var outsideTags = tag_depth == 0;
-
-        if (match = line.match(/[ \t]*\[(\w+)\][ \t]*/)) {
+        if (match = line.match(/^[ \t]*\[([\w_]+)\][ \t]*$/)) {
             tag_depth += 1;
             var tagList = tag_lists[match[1]];
 
@@ -117,22 +118,23 @@ TagManager.findTagRanges = function(code) {
                 start: i + 1,
                 end: null,
             });
-        } else if (match = line.match(/[ \t]*\[\/(\w+)\][ \t]*/)) {
+        } else if (match = line.match(/^[ \t]*\[\/([\w_]+)\][ \t]*$/)) {
+            lastTagLine = i;
             tag_depth -= 1;
             var tagList = tag_lists[match[1]];
             tagList[tagList.length - 1].end = i + 1;
         // If no tags are on this line and we aren't inside any tags
         } else if (tag_depth == 0) {
-            var tagList = tag_lists['no_tag'];
+            var noTagList = tag_lists['no_tag'];
 
-            // If !outsideTags, it means we just _left_ some tags.
-            if (tagList.length == 0 || ! outsideTags) {
-                tagList.push({
+            // Create a new no_tag entry if this is _right after_ a close tag
+            if (i == lastTagLine + 1) {
+                noTagList.push({
                     start: i,
                     end: i + 1,
                 });
             } else {
-                tagList[tagList.length - 1].end += 1;
+                noTagList[noTagList.length - 1].end += 1;
             }
         }
 
