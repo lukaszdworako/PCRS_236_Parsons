@@ -11,8 +11,8 @@ function TagManager() {
 TagManager.parseCodeIntoFiles = function(code) {
     var files = [];
     var match;
-    while (match = /^[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n/.exec(code)) {
-        var endMatch = code.match(/\n[\t ]*\[\/file\][\t ]*$/);
+    while (match = /[\t ]*\[file ([A-Za-z0-9_\.]+)\][\t ]*\n/.exec(code)) {
+        var endMatch = code.match(/\n[\t ]*\[\/file\][\t ]*/);
         var studentCodeStart = match.index + match[0].length;
         var studentCodeEnd = endMatch.index;
 
