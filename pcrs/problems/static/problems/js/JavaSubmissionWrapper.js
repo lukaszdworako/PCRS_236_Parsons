@@ -28,6 +28,7 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
             'mode': mode,
             'theme': user_theme,
         });
+        this.tcm.setForcedFileExtension('java');
         this.tcm.enableTabEditingWidgets();
     }
 

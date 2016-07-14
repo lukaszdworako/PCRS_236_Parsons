@@ -41,6 +41,7 @@ function setTabbedCodeMirrorAsEditable(tcm) {
         'mode': cmModeForLanguageAndVersion(language, language_version),
         'theme': user_theme,
     });
+    tcm.setForcedFileExtension('java');
 }
 
 $(function() {

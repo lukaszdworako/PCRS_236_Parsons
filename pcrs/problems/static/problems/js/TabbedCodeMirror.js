@@ -9,6 +9,7 @@ function TabbedCodeMirror() {
     // Used for the add-file-button widget
     this.newFileOptions = {};
     this._tabChangeCallback = function() {};
+    this._forcedFileExtension = '';
 }
 
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
@@ -88,6 +89,15 @@ TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
  */
 TabbedCodeMirror.prototype.setNewFileOptions = function(options) {
     this.newFileOptions = options;
+}
+
+/**
+ * Forces files to have the given extension when renaming.
+ *
+ * @param {string} ext The extension to force, or a blank string to unset.
+ */
+TabbedCodeMirror.prototype.setForcedFileExtension = function(ext) {
+    this._forcedFileExtension = ext;
 }
 
 // Adds edit widgets (the drop down menu)
@@ -189,10 +199,29 @@ TabbedCodeMirror.prototype._attemptRenamingTab = function(index) {
         var err = that._validateTabName(value);
         if (err) {
             AlertModal.alert('Invalid File Name', err);
-        } else {
-            that.renameFileAtIndex(index, value);
+            return;
         }
+        value = that._addFileExtensionForFileName(value);
+        that.renameFileAtIndex(index, value);
     });
+}
+
+/*
+ * Possibly adds a file extension to the given value.
+ *
+ * The extension is provided in the newFileOptions.
+ * If the extension is provided, this does nothing.
+ * @param {string} value The file name to add an extension to.
+ * @return The file name with an extension.
+ */
+TabbedCodeMirror.prototype._addFileExtensionForFileName = function(value) {
+    var extension = this._forcedFileExtension;
+    if ( ! extension) {
+        return value;
+    }
+    return value.endsWith('.' + extension)
+        ? value
+        : value + '.' + extension;
 }
 
 // Returns a string when a validation error occured. Otherwise null.
