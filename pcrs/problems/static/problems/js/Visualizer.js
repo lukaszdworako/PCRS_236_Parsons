@@ -41,12 +41,12 @@ Visualizer.prototype._loadVisualizerWithPostParams = function(postParams) {
     var url = root + '/problems/' + this.language + '/visualizer-details';
     var that = this;
     $.post(url, postParams, function(data) {
-            that._showVisualizerWithData(data);
             $('#waitingModal').modal('hide');
+            that._showVisualizerWithData(data);
         }, "json")
         .fail(function(jqXHR, textStatus, errorThrown) {
-            console.log(textStatus);
             $('#waitingModal').modal('hide');
+            console.log(textStatus);
         });
 }
 

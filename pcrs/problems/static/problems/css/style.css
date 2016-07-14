@@ -1,3 +1,8 @@
+body.modal-open {
+    /* Prevent scrolling behind Bootstrap modals */
+    overflow: hidden !important;
+};
+
 /* for numbered table rows */
 table.numbered {
     counter-reset: rowNumber;

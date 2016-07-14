@@ -17,14 +17,10 @@ class CompilationError(Exception):
 
 
 class JavaSpecifics(BaseLanguage):
-    ''' Representation of Java language:
+    ''' Representation of Java language (visualizer supported):
         * string encoding in visualizer format,
         * generation of execution trace for visualizer,
         * running tests
-
-        TODO: no visualizer support currently provided
-              see http://www.pythontutor.com/java.html#mode=edit
-              for a tool that could be used to provide support
     '''
 
     jail_execution_path = (PROJECT_ROOT +
@@ -37,12 +33,6 @@ class JavaSpecifics(BaseLanguage):
         self.compiled = False
         self.testSuiteClassName = None
         self.tempdir = None
-
-    def encode_str(self, target_value):
-        ''' Encode string target_value in visualizer format.
-        '''
-        # TODO
-        raise NotImplementedError("Visualization not yet supported")
 
     def get_exec_trace(self, user_script, add_params):
         ''' Get execution trace of string user_script providing additional parameters.
@@ -58,7 +48,7 @@ class JavaSpecifics(BaseLanguage):
         files = parseCodeIntoFiles(user_script)
         for f in files:
             # JavaJail expects no ".java" extensions
-            f['name'] = f['name'].replace('.java', '')
+            f['name'] = re.sub(r'\.java$', '', f['name'])
 
         data = {
             'files': files,

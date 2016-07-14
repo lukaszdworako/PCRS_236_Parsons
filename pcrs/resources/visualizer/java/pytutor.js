@@ -862,11 +862,15 @@ ExecutionVisualizer.prototype.renderTraceArrows = function() {
 
     this.tcm.resetStepArrows();
 
+    var shouldDisplayNextArrow = this.curInstr < this.curTrace.length - 1 &&
+        curEntry.file && curEntry.line !== undefined;
+
     // Previous arrow
     if (this.curInstr > 0) {
         var prevEntry = this.curTrace[this.curInstr - 1];
         if (prevEntry.file && prevEntry.line !== undefined) {
-            var overlap = curEntry.line == prevEntry.line &&
+            var overlap = shouldDisplayNextArrow &&
+                curEntry.line == prevEntry.line &&
                 curEntry.file == prevEntry.file;
             var arrow = {
                 color: prevArrowColor,
@@ -879,7 +883,7 @@ ExecutionVisualizer.prototype.renderTraceArrows = function() {
     }
 
     // Next arrow
-    if (curEntry.file && curEntry.line !== undefined) {
+    if (shouldDisplayNextArrow) {
         var arrow = {
             color: nextArrowColor,
             offset: 1,
@@ -2379,7 +2383,7 @@ ExecutionVisualizer.prototype.renderPrimitiveObject = function(obj, d3DomElement
  */
 ExecutionVisualizer.prototype.generateStringObj = function(str, width) {
     // Prevent HTML/script injection
-    var literalStr = htmlsanitize(obj);
+    var literalStr = htmlsanitize(str);
     literalStr = literalStr.replace(/"/g, '\\"');
 
     literalStr = literalStr.replace(/\n/g, '\\n');
