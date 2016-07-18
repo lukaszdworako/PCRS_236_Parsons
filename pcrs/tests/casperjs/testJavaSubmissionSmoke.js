@@ -8,48 +8,6 @@
  * It was designed as a smoke test. If it passes, PCRS isn't completely broken
  */
 
-require('helper');
-
-var rootUrl = 'http://localhost/dev_Java';
-
-function startAsPasswordlessAdmin(test) {
-    casper.start('http://localhost/dev_Java', function() {
-        this.fill('form#login-form', {
-          'username': 'admin',
-        }, true);
-    });
-}
-
-function deleteProblemWithName(name) {
-    casper.thenOpen(rootUrl + '/problems/java/list', function() {
-        // Wait since the button may or may _not_ appear.
-        this.wait(1000);
-        // The 'i' tag has the click listener, not the anchor. Gur.
-        var editButtonSelector = 'a[title="Edit ' + name + '"] i';
-
-        if ( ! casper.exists(editButtonSelector)) {
-            return;
-        }
-        this.click(editButtonSelector);
-        this.waitForUrlChange();
-
-        // Open the delete page
-        this.then(function() {
-            var deleteUrl = casper.getCurrentUrl() + '/delete';
-            this.thenOpen(deleteUrl);
-        });
-
-        this.then(function() {
-            this.waitForSelector('form');
-        });
-
-        this.then(function() {
-            // Actually delete the object!
-            this.fill('form', {}, true);
-        });
-    });
-}
-
 var testDescription = 'Test creating a Java problem and verifying ' +
                       'test case output.';
 casper.test.begin(testDescription, 4, function(test) {

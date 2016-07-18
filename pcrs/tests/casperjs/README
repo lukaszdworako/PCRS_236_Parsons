@@ -1,1 +1,4 @@
-To test, run `casperjs test java.js`. casperjs is available in npm
+casperjs is available in npm
+
+To run all the functional tests, run "./testAll.sh".
+To run a specific test, run "casperjs test --includes=helper.js <testname>"
