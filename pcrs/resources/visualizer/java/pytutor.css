@@ -220,6 +220,9 @@ div.ExecutionVisualizer .funcObj {
 div.ExecutionVisualizer .stringObj {
     font-family: Andale mono, monospace;
     display: inline-block;
+    background-color: #ffffc6;
+    padding: 3px;
+    border: 1px solid #555555;
 }
 
 div.ExecutionVisualizer .stringObj .characterEscape {
@@ -414,18 +417,13 @@ div.ExecutionVisualizer td.funcCod {
 
 div.ExecutionVisualizer table.classTbl td,
 div.ExecutionVisualizer table.instTbl td {
-    border-bottom: 1px #888 solid;
-}
-
-div.ExecutionVisualizer table.classTbl td.classVal,
-div.ExecutionVisualizer table.instTbl td.instVal {
-    border-left: 1px #888 solid;
+    border: 1px #555555 solid;
 }
 
 div.ExecutionVisualizer table.classTbl,
 div.ExecutionVisualizer table.funcTbl {
     border-collapse: collapse;
-    border: 1px #888 solid;
+    border: 1px #555555 solid;
 }
 
 /* only add a border to dicts if they're embedded within another object */
@@ -434,7 +432,7 @@ div.ExecutionVisualizer td.tupleElt table.dictTbl,
 div.ExecutionVisualizer td.dictVal table.dictTbl,
 div.ExecutionVisualizer td.instVal table.dictTbl,
 div.ExecutionVisualizer td.classVal table.dictTbl {
-    border: 1px #888 solid;
+    border: 1px #555555 solid;
 }
 
 div.ExecutionVisualizer .objectIdLabel {
@@ -459,10 +457,16 @@ div.ExecutionVisualizer div#globals_area {
     padding-left: 30px;
 }
 
+/* It's a bit of a hack for the globals area to be a stack frame... */
+div.ExecutionVisualizer div#globals_area .stackFrame {
+    background-color: #ffffc6 !important;
+    margin-bottom: 15px !important;
+}
+
 div.ExecutionVisualizer div.stackFrame,
 div.ExecutionVisualizer div.zombieStackFrame {
     background-color: #ffffff;
-    margin-bottom: 15px;
+    margin-bottom: -1px;
     padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
@@ -486,7 +490,8 @@ div.ExecutionVisualizer div.highlightedStackFrame {
 
 div.ExecutionVisualizer div.stackFrame,
 div.ExecutionVisualizer div.highlightedStackFrame {
-    border-left: 1px solid #a6b3b6;
+    border: 1px solid #555555;
+    margin-bottom: -1px;
 }
 
 
@@ -507,14 +512,11 @@ div.ExecutionVisualizer td.stackFrameVar {
 
 div.ExecutionVisualizer td.stackFrameValue {
     text-align: left;
-    border-bottom: 1px solid #aaaaaa;
-    border-left: 1px solid #aaaaaa;
+    border: 1px solid #aaaaaa;
 
     vertical-align: middle;
 
-    padding-top: 3px;
-    padding-left: 3px;
-    padding-bottom: 3px;
+    padding: 3px;
 }
 
 div.ExecutionVisualizer .stackFrameVarTable tr {
@@ -541,7 +543,7 @@ div.ExecutionVisualizer div#heap {
 
 div.ExecutionVisualizer td.toplevelHeapObject {
     /* needed for d3 to do transitions */
-    padding-left: 8px;
+    padding-left: 0px;
     padding-right: 8px;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -557,10 +559,6 @@ div.ExecutionVisualizer table.heapRow {
 
 div.ExecutionVisualizer div.heapObject {
     padding-left: 2px; /* leave a TINY amount of room for connector endpoints */
-}
-
-div.ExecutionVisualizer div.heapPrimitive {
-    padding-left: 4px; /* leave some more room for connector endpoints */
 }
 
 div.ExecutionVisualizer div#stackHeader {

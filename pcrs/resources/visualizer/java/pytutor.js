@@ -2395,7 +2395,7 @@ ExecutionVisualizer.prototype.generateStringObj = function(str, width) {
     });
 
     return $('<span class="stringObj"></span>')
-        .attr('style', 'width: ' + width + 'px;')
+        .attr('style', 'max-width: ' + width + 'px;')
         // print as a double-quoted string literal
         .html('"' + literalStr + '"');
 }
