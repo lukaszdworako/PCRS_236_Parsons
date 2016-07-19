@@ -11,6 +11,14 @@ class JavaEditorVisualizeView(EditorView):
         code = submission.fuseStudentCodeIntoStarterCode()
         code = submission.removeTags(code)
 
+        # Tack on the visualize file code.
+        code = (
+            '[file Visualize.java]\n'
+            + submission.problem.visualizer_code + '\n'
+            '[/file]\n'
+            + code
+        )
+
         kwargs = super().get_form_kwargs()
         kwargs['initial_code'] = code
         return kwargs
