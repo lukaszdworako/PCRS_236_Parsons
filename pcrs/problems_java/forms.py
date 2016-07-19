@@ -17,4 +17,6 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         BaseProblemForm.__init__(self)
 
         self.fields['starter_code'].initial = '[file NewFile.java]\n\n[/file]'
+        self.fields['solution'].label += ' (optional)'
+        self.fields['visualizer_code'].label += ' (optional)'
 
