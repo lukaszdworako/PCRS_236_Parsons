@@ -124,5 +124,6 @@ function setTabbedCodeMirrorFilesFromTagText(tcm, codeText, lock) {
     }
 
     tcm.setActiveTabIndex(0);
+    tcm.unsetCodeIsDirty();
 }
 

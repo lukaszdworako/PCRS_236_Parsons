@@ -2,7 +2,7 @@
  * A fancy tabbed code mirror widget.
  */
 function TabbedCodeMirror() {
-    this.isEditable = false;
+    this.isEditable = false; // Are tabs editable, that is.
     this.mirrors = [];
     this.$tabs = $('<ul class="nav nav-tabs tabbed-code-mirror"></ul>');
     this.$content = $('<div class="tab-content"></div>');
@@ -10,9 +10,26 @@ function TabbedCodeMirror() {
     this.newFileOptions = {};
     this._tabChangeCallback = function() {};
     this._forcedFileExtension = '';
+    this._codeIsDirty = false;
 }
 
 TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
+
+/**
+ * Checks if any file has been created, deleted, renamed, moved, or editted.
+ *
+ * @return {bool} True if any code has been changed, moved, etc.
+ */
+TabbedCodeMirror.prototype.codeIsDirty = function() {
+    return this._codeIsDirty;
+}
+
+/**
+ * Sets the 'dirty code' flag to false.
+ */
+TabbedCodeMirror.prototype.unsetCodeIsDirty = function() {
+    this._codeIsDirty = false;
+}
 
 /**
  * Set the callback for when a tab changes.
@@ -167,6 +184,7 @@ TabbedCodeMirror.prototype._createAddFileTab = function() {
             }
 
             that.addFile(options);
+            that._codeIsDirty = true;
             that.setActiveTabIndex(that.getFileCount() - 1);
             return false;
         });
@@ -304,6 +322,11 @@ TabbedCodeMirror.prototype.addFile = function(options) {
     var mirror = CodeMirror(function(elt) {
         that.$content.append(elt);
     }, codeMirrorOptions);
+
+    mirror.on('change', function() {
+        that._codeIsDirty = true;
+    });
+
     mirror.getWrapperElement().className += ' tab-pane';
     this.mirrors.push(mirror);
 
@@ -408,6 +431,7 @@ TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
     this.$content.find('.CodeMirror').eq(index).remove();
     this.mirrors.splice(index, 1);
     this._showOrHideTabs();
+    this._codeIsDirty = true;
 }
 
 /**
@@ -415,6 +439,7 @@ TabbedCodeMirror.prototype.removeFileAtIndex = function(index) {
  */
 TabbedCodeMirror.prototype.renameFileAtIndex = function(index, name) {
     this._tabTitleButtonAtIndex(index).text(name);
+    this._codeIsDirty = true;
 }
 
 /**
@@ -447,6 +472,7 @@ TabbedCodeMirror.prototype.moveTab = function(from, to) {
 
     var mirror = this.mirrors.splice(from, 1)[0];
     this.mirrors.splice(to, 0, mirror);
+    this._codeIsDirty = true;
 }
 
 /**

@@ -38,6 +38,16 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
     $codeDiv.remove();
 
     myCodeMirrors[this.wrapperDivId] = this.tcm;
+
+    if ( ! this.isEditor) {
+        var that = this;
+        // Prevent users from obliterating changes accidentally.
+        $(window).bind('beforeunload', function() {
+            if (that.tcm.codeIsDirty()) {
+                return 'You have unsubmitted changes.';
+            }
+        });
+    }
 }
 
 /**
@@ -111,6 +121,7 @@ JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         $gradingTable.find('.pcrs-table-head-row').show();
         this.wrapperDiv.find('#visualizeButton').show();
     }
+    this.tcm.unsetCodeIsDirty();
 }
 
 /**
