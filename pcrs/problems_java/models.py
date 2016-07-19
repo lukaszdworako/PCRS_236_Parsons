@@ -76,6 +76,11 @@ class Problem(AbstractProgrammingProblem):
         self.visualizer_code = re.sub(carriageReturnRegex, '',
             self.visualizer_code)
 
+        if self.starter_code == '':
+            raise ValidationError({'starter_code': [
+                'Invalid starter code',
+            ]})
+
         if self.pk:
             if self.submission_set.all() and self._testSuiteHasChanged():
                 raise ValidationError({'test_suite': [
@@ -88,7 +93,6 @@ class Problem(AbstractProgrammingProblem):
         if not self.is_editor_problem():
             # We need the problem to exist before generating test cases
             if not self.pk:
-                pass
                 super().save(force_insert, force_update, using, update_fields)
 
             '''

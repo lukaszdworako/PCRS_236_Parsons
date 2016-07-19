@@ -24,6 +24,7 @@ submitHidden = function() {
         return true;
     } catch (err) {
         alert('Error submitting code: ' + err.message);
+        // We must return false to avoid submitting and borking stuff
         return false;
     }
 }
