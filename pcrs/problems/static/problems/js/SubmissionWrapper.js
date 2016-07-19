@@ -195,7 +195,7 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         $gradingTable.append($('<th class="red-alert"></th>')
             .attr('style', 'width:100%;')
             .attr('colspan', '12')
-            .text(error_msg));
+            .html(error_msg));
         return;
     }
 

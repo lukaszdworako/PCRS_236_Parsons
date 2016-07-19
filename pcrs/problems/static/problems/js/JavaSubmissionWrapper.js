@@ -90,20 +90,43 @@ JavaSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  * @override
  */
 JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
+    /*
+     * In PCRS-Java, a single exception means a compile error occured,
+     * knocking down the entire test stack. So we want to hide the test table.
+     */
+    if (testData.testcases.length > 0 && testData.testcases[0].exception) {
+        testData.error_msg = testData.testcases[0].exception;
+    }
+
     SubmissionWrapper.prototype.prepareGradingTable.apply(this, arguments);
     var $gradingTable = this.wrapperDiv.find("#gradeMatrix");
 
     this.lastSubmissionPk = testData['sub_pk'];
+    this._injectVisualizationButton($gradingTable);
 
-    if (this.wrapperDiv.find('#visualizeButton').length == 0) {
-        var that = this;
-        $gradingTable.before(
-            $('<a id="visualizeButton" class="btn btn-info" role="button"></a>')
-                .text('Visualize')
-                .click(function() {
-                    that._visualizeHistoryEntryPk(that.lastSubmissionPk);
-                }));
+    if (testData.error_msg) {
+        $gradingTable.find('.pcrs-table-head-row').hide();
+        this.wrapperDiv.find('#visualizeButton').hide();
+    } else {
+        $gradingTable.find('.pcrs-table-head-row').show();
+        this.wrapperDiv.find('#visualizeButton').show();
     }
+}
+
+/**
+ * If it doesn't already exist, injects a visualizer button to the given table.
+ */
+JavaSubmissionWrapper.prototype._injectVisualizationButton = function($table) {
+    if (this.wrapperDiv.find('#visualizeButton').length > 0) {
+        return;
+    };
+    var that = this;
+    $table.before(
+        $('<a id="visualizeButton" class="btn btn-info" role="button"></a>')
+            .text('Visualize')
+            .click(function() {
+                that._visualizeHistoryEntryPk(that.lastSubmissionPk);
+            }));
 }
 
 /**

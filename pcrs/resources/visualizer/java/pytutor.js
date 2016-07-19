@@ -2273,7 +2273,7 @@ ExecutionVisualizer.prototype.renderPrimitiveObject = function(obj, d3DomElement
         }
     }
     else if (typ == "string") {
-        // We have to manually find the max width since it is a floating object
+        // We have to manually since some other objects overflow the modal
         // Use the heap offset since it is the furthest left this object can go
         var heapTdOffset = $('#heap_td').offset().left;
         var rootWidth = this.domRoot.width();
