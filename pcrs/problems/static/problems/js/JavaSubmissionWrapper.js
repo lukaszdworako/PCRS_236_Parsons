@@ -43,7 +43,7 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
         var that = this;
         // Prevent users from obliterating changes accidentally.
         $(window).bind('beforeunload', function() {
-            if (that.tcm.codeIsDirty()) {
+            if ( ! that.tcm.isClean()) {
                 return 'You have unsubmitted changes.';
             }
         });
@@ -121,7 +121,7 @@ JavaSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         $gradingTable.find('.pcrs-table-head-row').show();
         this.wrapperDiv.find('#visualizeButton').show();
     }
-    this.tcm.unsetCodeIsDirty();
+    this.tcm.markClean();
 }
 
 /**
