@@ -20,7 +20,6 @@
         var language_version = 'text/x-csrc';
         var id_starter_code_field = 'id_starter_code';
         var id_solution_field = 'id_solution';
-        var id_preview_code_field = 'id_preview_code';
 
         /**
          * Add [student_code] tag respecting [blocked] and
@@ -136,39 +135,42 @@
             }
         }
 
-        function showPreviewModal(title, source_code) {
-            var mirror = cmh_list[id_preview_code_field];
-            if (mirror != null) {
-                mirror.setValue(source_code);
-            } else {
-                mirror = to_code_mirror(language, language_version,
-                    $('#' + id_preview_code_field), source_code, true);
-                cmh_list[id_preview_code_field] = mirror;
-            }
+        function cleanFileCodeForPreview(code) {
+            var code = TagManager.addStudentCodeTags(code);
 
-            $('#previewModalLabel').text(title);
-            $('#previewModal').on('shown.bs.modal', function() {
-                mirror.refresh();
-            });
-            $('#previewModal').modal('show');
+            // The [\s\S] is another way to express "." with DOTALL enabled
+            // Remove hidden portions
+            code = code.replace(/\r?\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
+            // Hide student_code and blocked tags
+            code = code.replace(/\r?\n?\[\/?(student_code|blocked)\]/g, '');
+            // The tag at the top of the file will leave a stray newline
+            code = code.replace(/^[ \t]*\n/, '');
+
+            return code;
         }
 
         /**
          * Preview how code will look to the student
          */
         function previewCode() {
-            var tcm = cmh_list[id_starter_code_field];
-            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+            var tcm = new TabbedCodeMirror();
 
-            var code = TagManager.addStudentCodeTags(mirror.getValue());
+            var files = cmh_list[id_starter_code_field].getFiles();
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
 
-            // The [\s\S] is another way to express "." with DOTALL enabled
-            code = code.replace(/\r?\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
-            code = code.replace(/\r?\n?\[\/?(student_code|blocked)\]/g, '');
-            // The tag at the top of the file will leave a stray newline
-            code = code.replace(/^[ \t]*\n/, '');
-
-            showPreviewModal('Preview Code', code);
+                tcm.addFile({
+                    'name': file.name,
+                    'code': cleanFileCodeForPreview(file.code),
+                    'mode': cmModeForLanguageAndVersion(
+                        language, language_version),
+                    'theme': user_theme,
+                    'readOnly': true,
+                });
+            }
+            tcm.setActiveTabIndex(0);
+            AlertModal.alert('Code Preview', tcm.getJQueryObject());
+            tcm.refresh();
         }
 
         function addCodeMirrorToFieldWithId(id) {
