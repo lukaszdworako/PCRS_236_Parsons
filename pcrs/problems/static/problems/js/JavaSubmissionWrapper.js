@@ -193,7 +193,8 @@ JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
  * Jumps to the visualizer for the given submission history entry.
  */
 JavaSubmissionWrapper.prototype._visualizeHistoryEntryPk = function(entryPk) {
-    window.location.href = root + '/editor/java/visualize/' + entryPk;
+    // Open it in a new tab
+    window.open(root + '/editor/java/visualize/' + entryPk, '_blank');
 }
 
 /**

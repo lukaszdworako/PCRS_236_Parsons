@@ -15,13 +15,16 @@ casper.test.begin(testDescription, 1, function(test) {
         this.waitForSelector('.CodeMirror');
     });
 
+    // Open the visualizer dialog
     casper.then(function() {
         this.click('#submit-id-trace');
         this.waitForSelector('#jmpLastInstr');
     });
+    // Jump to the end of the visualization
     casper.then(function() {
         this.click('#jmpLastInstr');
     });
+    // Make sure nothing exploded during this process
     casper.then(function() {
         test.assertEval(function() {
             var curInstrText = $('#curInstr').text();

@@ -17,7 +17,7 @@ casper.test.begin(testDescription, 4, function(test) {
     var problemTag = 'casperjs_test';
 
     startAsPasswordlessAdmin();
-    deleteProblemWithName(problemName);
+    deleteProblem('java', problemName);
 
     casper.thenOpen(rootUrl + '/problems/java/create', function() {
         // Wait for all the DOM, code mirrors, and tag selectors to load
@@ -101,29 +101,24 @@ casper.test.begin(testDescription, 4, function(test) {
         );
     });
 
-    // Submit the problem
+    // Save the problem
     casper.then(function() {
         this.sendKeys('#id_name', problemName);
         this.sendKeys('#id_description', problemDescription);
         this.fill('form', {}, true);
-
-        this.wait(1000);
     });
 
+    // After saving the problem, run it
     casper.then(function() {
         this.waitForSelector('#submit-id-attempt');
-    });
-
-    casper.then(function() {
+    }).then(function() {
         this.click('#submit-id-attempt');
     });
 
-    casper.waitForUrlChange();
-
+    // Compile the student code
     casper.then(function() {
         this.waitForSelector('#submit-id-submit');
-    });
-    casper.then(function() {
+    }).then(function() {
         this.click('#submit-id-submit');
     });
 
@@ -151,7 +146,7 @@ casper.test.begin(testDescription, 4, function(test) {
         });
     });
 
-    deleteProblemWithName(problemName);
+    deleteProblem('java', problemName);
 
     casper.run(function() {
         test.done();
