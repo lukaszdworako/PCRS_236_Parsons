@@ -76,10 +76,10 @@
                     continue;
                 }
 
-                document.getElementById("tag-error-message").innerHTML =
-                    '<p>Check your code selection!</p>' +
-                    '<p>Cannot include any other tag inside a hidden section, or along the same line.</p>';
-                $('#tagModal').modal('show');
+                var title = 'Check your code selection!';
+                var message = 'You Cannot include any other tag inside ' +
+                    'a hidden section, or along the same line.';
+                AlertModal.alert(title, message);
                 return;
             }
 
