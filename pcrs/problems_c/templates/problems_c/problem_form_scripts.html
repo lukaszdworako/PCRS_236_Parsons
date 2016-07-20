@@ -87,17 +87,8 @@
             // Add tag after verifications
             var selected_area = mirror.getSelection();
             mirror.replaceSelection(tag_start + '\n' + selected_area + '\n' + tag_end);
-        }
-
-        /**
-         * Apply code highlight when a tag is open and closed
-         */
-        function updateCodeHighLight() {
-            var tcm = cmh_list[id_starter_code_field];
-            for (var i = 0; i < tcm.getFileCount(); i++) {
-                var mirror = tcm.getCodeMirror(i);
-                updateCodeHighLightOnMirror(mirror);
-            }
+            // 'unselect' the tag area
+            mirror.setCursor(mirror.getCursor());
         }
 
         function updateCodeHighLightOnMirror(mirror) {
@@ -107,26 +98,28 @@
 
             var code_highlights = [];
 
+            var openTagRegex = /^[ \t]*\[(hidden|blocked|student_code)\][ \t]*$/;
+            var closeTagRegex = /^[ \t]*\[\/(hidden|blocked|student_code)\][ \t]*$/;
             for (var i = line_begin; i <= line_end; i++) {
                 var line = mirror.getLine(i);
                 var match;
 
-                if (match = /\[(hidden|blocked|student_code)\]/.exec(line)) {
+                if (match = openTagRegex.exec(line)) {
                     var tagName = match[1];
                     code_highlights.push(tagName);
                 }
 
                 if (code_highlights.length == 1) {
-                    mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
+                    mirror.removeLineClass(i);
                 } else if (code_highlights.length > 1) {
                     // We shouldn't be more that 1 level deep.
                     mirror.removeLineClass(i, '', 'CodeMirror-activeline-background');
                     mirror.addLineClass(i, '', 'CodeMirror-error-background');
-                } else {
-                    mirror.removeLineClass(i);
+                } else if (code_highlights.length == 0) {
+                    mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
                 }
 
-                if (match = /\[\/(hidden|blocked|student_code)\]/.exec(line)) {
+                if (match = closeTagRegex.exec(line)) {
                     var tagName = match[1];
                     var matchedTag = code_highlights.pop();
 
@@ -223,10 +216,12 @@
         function setupCodeMirrors() {
             addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
             var tcm = cmh_list[id_starter_code_field];
-            updateCodeHighLight();
-            tcm.setTabChangeCallback(function(index) {
-                tcm.getCodeMirror(index).on('change', updateCodeHighLight);
-            });
+            for (var i = 0; i < tcm.getFileCount(); i++) {
+                var mirror = tcm.getCodeMirror(i);
+                mirror.on('change', updateCodeHighLightOnMirror);
+                updateCodeHighLightOnMirror(mirror);
+            }
+            tcm.setAddMirrorCallback(updateCodeHighLightOnMirror);
             tcm.setActiveTabIndex(0);
 
             addTabbedCodeMirrorToFieldWithId(id_solution_field);

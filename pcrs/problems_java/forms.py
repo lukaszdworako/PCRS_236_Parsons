@@ -10,11 +10,13 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
         fields = ('name', 'description', 'starter_code', 'solution',
-                  'test_suite', 'tags', 'visibility')
+                  'test_suite', 'visualizer_code', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
         BaseProblemForm.__init__(self)
 
         self.fields['starter_code'].initial = '[file NewFile.java]\n\n[/file]'
+        self.fields['solution'].label += ' (optional)'
+        self.fields['visualizer_code'].label += ' (optional)'
 

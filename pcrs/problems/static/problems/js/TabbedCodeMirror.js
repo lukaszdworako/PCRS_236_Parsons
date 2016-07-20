@@ -8,7 +8,7 @@ function TabbedCodeMirror() {
     this.$content = $('<div class="tab-content"></div>');
     // Used for the add-file-button widget
     this.newFileOptions = {};
-    this._tabChangeCallback = function() {};
+    this._addMirrorCallback = function() {};
     this._forcedFileExtension = '';
     this._codeIsClean = true;
 }
@@ -45,15 +45,15 @@ TabbedCodeMirror.prototype.markClean = function() {
 }
 
 /**
- * Set the callback for when a tab changes.
+ * Set the callback for when a file is added by the user.
  *
- * @param callback {function} A function with an index parameter.
+ * @param callback {function} A function with an mirror parameter.
  * Specifying "null" will unset the callback.
  */
-TabbedCodeMirror.prototype.setTabChangeCallback = function(callback) {
-    this._tabChangeCallback = callback
+TabbedCodeMirror.prototype.setAddMirrorCallback = function(callback) {
+    this._addMirrorCallback = callback
         ? callback
-        : function(index) {};
+        : function(mirror) {};
 }
 
 /**
@@ -199,6 +199,7 @@ TabbedCodeMirror.prototype._createAddFileTab = function() {
             that.addFile(options);
             that._codeIsClean = false;
             that.setActiveTabIndex(that.getFileCount() - 1);
+            that._addMirrorCallback(that.mirrors[that.mirrors.length - 1]);
             return false;
         });
     return $('<li></li>').append($addButton);
@@ -526,7 +527,6 @@ TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
     this.$content.find('.CodeMirror').eq(index).addClass('active');
 
     this.mirrors[index].refresh();
-    this._tabChangeCallback(index);
 }
 
 /**
