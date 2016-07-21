@@ -42,12 +42,13 @@ SubmissionTabbedCodeMirror.prototype._blockLinesInMirror =
                 j - 1, '', SubmissionTabbedCodeMirror._blockedLineClass);
         }
     }
+    var that = this;
     // Block the given ranges
     mirror.on('beforeChange', function(cm, change) {
         var start = Math.min(change.to.line, change.from.line);
         var end = Math.max(change.to.line, change.from.line);
 
-        if (this._rangeLiesInBlockedArea(mirror, start, end)) {
+        if (that._rangeLiesInBlockedArea(mirror, start, end)) {
             change.cancel();
         }
     });
