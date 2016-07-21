@@ -92,38 +92,3 @@ function jsDateTimeToPCRSDatetime(datetime) {
     return formated_datetime;
 }
 
-/**
- * Replaces a div with code inside with a TabbedCodeMirror
- *
- * @param $codeDiv The code div to replace.
- * @return The TabbedCodeMirror object.
- */
-function setTabbedCodeMirrorFilesFromTagText(tcm, codeText, lock) {
-    if (lock === undefined) {
-        lock = false;
-    }
-
-    while (tcm.getFileCount() > 0) {
-        tcm.removeFileAtIndex(0);
-    }
-
-    var files = TagManager.parseCodeIntoFiles(codeText);
-
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        var codeObj = TagManager.stripTagsForStudent(file.code);
-        tcm.addFile({
-            'name': file.name,
-            'code': codeObj.code,
-            'mode': 'text/x-java',
-            'readOnly': lock,
-            'theme': user_theme,
-            'block_ranges': codeObj.block_ranges,
-            'hash_ranges': codeObj.hash_ranges,
-        });
-    }
-
-    tcm.setActiveTabIndex(0);
-    tcm.markClean();
-}
-

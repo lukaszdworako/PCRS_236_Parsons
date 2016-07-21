@@ -13,8 +13,6 @@ function TabbedCodeMirror() {
     this._codeIsClean = true;
 }
 
-TabbedCodeMirror._blockedLineClass = 'CodeMirror-activeline-background';
-
 /**
  * Checks if any file has been created, deleted, renamed, moved, or editted.
  *
@@ -94,7 +92,7 @@ TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
     var that = this;
     this.$tabs.sortable({
         axis: 'x',
-        items: '> :not(:last)',
+        items: '> :not(:last)', // not the 'add' button
         start: function(event, ui) {
             var startPosition = ui.item.index();
             ui.item.data('startPosition', startPosition);
@@ -322,11 +320,11 @@ TabbedCodeMirror.prototype._tabTitleButtonAtIndex = function(index) {
  * @param {string} options.code The content of the file.
  * @param {string} options.mode The CodeMirror mode.
  * @param {string} [options.theme=undefined] CodeMirror theme name.
- * @param {string} [options.block_ranges=[]] Lines to block the user from editing.
- * @param {string} [options.hash_ranges=[]] Lines to hash. See getHashedCode
  * @param {string} [options.readOnly=false]] If this file is read only.
  */
 TabbedCodeMirror.prototype.addFile = function(options) {
+    options = $.extend({}, this.newFileOptions, options);
+
     var that = this;
     var $tabButton = $('<a data-toggle="tab" href="#"></a>')
         .append(options.name);
@@ -339,13 +337,6 @@ TabbedCodeMirror.prototype.addFile = function(options) {
 
     mirror.getWrapperElement().className += ' tab-pane';
     this.mirrors.push(mirror);
-
-    if ('block_ranges' in options) {
-        TabbedCodeMirror._blockLinesInMirror(mirror, options.block_ranges);
-    }
-    if ('hash_ranges' in options) {
-        TabbedCodeMirror._hashLinesInMirror(mirror, options.hash_ranges);
-    }
 
     // Refresh code mirrors when switching tabs to prevent UI glitches
     $tabButton.click(function(e) {
@@ -390,47 +381,6 @@ TabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
         codeMirrorOptions.theme = options.theme;
     }
     return codeMirrorOptions;
-}
-
-TabbedCodeMirror._blockLinesInMirror = function(mirror, ranges) {
-    // Highlight the given ranges
-    for (var i = 0; i < ranges.length; i++) {
-        for (var j = ranges[i].start; j <= ranges[i].end; j++) {
-            mirror.addLineClass(j - 1, '', TabbedCodeMirror._blockedLineClass);
-        }
-    }
-    // Block the given ranges
-    mirror.on('beforeChange', function(cm, change) {
-        var start = Math.min(change.to.line, change.from.line);
-        var end = Math.max(change.to.line, change.from.line);
-
-        if (TabbedCodeMirror._rangeLiesInBlockedArea(mirror, start, end)) {
-            change.cancel();
-        }
-    });
-}
-
-TabbedCodeMirror._hashLinesInMirror = function(mirror, ranges) {
-    for (var i = 0; i < ranges.length; i++) {
-        var start = ranges[i].start - 1;
-        var end = ranges[i].end - 1;
-        // We only care about the start index - the end is determined dynamically
-        mirror.addLineClass(start, '', 'hash-start');
-    }
-}
-
-/**
- * Determines if a range intersects the target ranges.
- */
-TabbedCodeMirror._rangeLiesInBlockedArea = function(mirror, start, end) {
-    for (var i = start; i <= end; i++) {
-        var wrapClass = mirror.lineInfo(i).wrapClass;
-        if (wrapClass &&
-                wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
-            return true;
-        }
-    }
-    return false;
 }
 
 /**
@@ -527,57 +477,5 @@ TabbedCodeMirror.prototype.setActiveTabIndex = function(index) {
     this.$content.find('.CodeMirror').eq(index).addClass('active');
 
     this.mirrors[index].refresh();
-}
-
-/**
- * Hashes all of the code mirrors in order.
- * Hashes surround specified code for the server to parse.
- */
-TabbedCodeMirror.prototype.getHashedCode = function(hash) {
-    var code = '';
-    for (var i = 0; i < this.mirrors.length; i++) {
-        var mirror = this.mirrors[i];
-        code += TabbedCodeMirror._getHashedCodeFromMirror(mirror, hash);
-
-        if (i < this.mirrors.length - 1) {
-            code += '\n';
-        }
-    }
-    return code;
-}
-
-/**
- * Insert hash keys where the modifiable code starts and ends.
- */
-TabbedCodeMirror._getHashedCodeFromMirror = function(mirror, hash) {
-    var code = '';
-    var inHash = false;
-
-    for (var i = 0; i < mirror.lineCount(); i++) {
-        var wrapClass = mirror.lineInfo(i).wrapClass;
-        // Blocked code
-        if (wrapClass && wrapClass.indexOf(TabbedCodeMirror._blockedLineClass) > -1) {
-            if (inHash) {
-                code += hash + '\n';
-                inHash = false;
-            }
-            continue;
-        }
-        // The start of a hash segment
-        if (wrapClass && wrapClass.indexOf('hash-start') > -1) {
-            if (inHash) {
-                // student_code tags back to back
-                code += hash + '\n';
-            }
-            code += hash + '\n';
-            inHash = true;
-        }
-
-        code += mirror.getLine(i) + '\n';
-    }
-    if (inHash) {
-        code += hash + '\n';
-    }
-    return code;
 }
 

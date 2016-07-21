@@ -2,10 +2,15 @@ function JavaSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "java";
     this.language_version = 'text/x-java';
-    this.tcm = new TabbedCodeMirror();
     this.lastSubmissionPk = 0;
     this.visualizer = new JavaVisualizer();
     this.visualizer.setProblemId(this.problemId);
+
+    this.tcm = new SubmissionTabbedCodeMirror();
+    this.tcm.setNewFileOptions({
+        'mode': 'text/x-java',
+        'theme': user_theme, // global... gur
+    });
 }
 JavaSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
@@ -32,7 +37,7 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
         this.tcm.enableTabEditingWidgets();
     }
 
-    setTabbedCodeMirrorFilesFromTagText(this.tcm, code);
+    this.tcm.addFilesFromTagText(code);
     // Replace the code div with the tabbed code mirror
     $codeDiv.before(this.tcm.getJQueryObject());
     $codeDiv.remove();
@@ -147,10 +152,14 @@ JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
         mirrorId) {
     var $codeDiv = $("#" + mirrorId);
     var codeText = $codeDiv.text();
-    var tcm = new TabbedCodeMirror();
+    var tcm = new SubmissionTabbedCodeMirror();
 
-    var readOnly = true;
-    setTabbedCodeMirrorFilesFromTagText(tcm, codeText, readOnly);
+    tcm.setNewFileOptions({
+        'readOnly': true,
+        'mode': 'text/x-java',
+        'theme': user_theme, // global... gur
+    });
+    tcm.addFilesFromTagText(codeText);
 
     var that = this;
     $codeDiv
@@ -181,7 +190,7 @@ JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
         return;
     }
 
-    setTabbedCodeMirrorFilesFromTagText(this.tcm, code);
+    this.tcm.addFilesFromTagText(code);
 
     var $historyDiv = $('#history_window_' + this.wrapperDivId);
     $historyDiv.modal('hide');
