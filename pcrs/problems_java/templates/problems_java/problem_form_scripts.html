@@ -48,6 +48,27 @@ function setTabbedCodeMirrorAsEditable(tcm) {
     tcm.setForcedFileExtension('java');
 }
 
+function addCodeMirrorToFieldWithId(id) {
+    var element = $('#' + id);
+    cmh_list[id] = to_code_mirror(
+        language, language_version, element, element.text(), false);
+}
+
+/**
+ * Add [student_code] tag respecting [blocked] and
+ * [hidden] tags to guarantee the exercise integrity.
+ */
+function addTagsToStarterCode() {
+    var files = cmh_list[id_starter_code_field].getFiles();
+
+    for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        f.code = TagManager.addStudentCodeTags(f.code);
+    }
+
+    return TagManager.concatFilesIntoCode(files);
+}
+
 $(function() {
     $('form')
         .append($('<input type="hidden" name="test_suite" value=""></input>')

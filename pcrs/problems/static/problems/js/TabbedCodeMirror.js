@@ -8,7 +8,6 @@ function TabbedCodeMirror() {
     this.$content = $('<div class="tab-content"></div>');
     // Used for the add-file-button widget
     this.newFileOptions = {};
-    this._addMirrorCallback = function() {};
     this._forcedFileExtension = '';
     this._codeIsClean = true;
 }
@@ -43,18 +42,6 @@ TabbedCodeMirror.prototype.markClean = function() {
 }
 
 /**
- * Set the callback for when a file is added by the user.
- *
- * @param callback {function} A function with an mirror parameter.
- * Specifying "null" will unset the callback.
- */
-TabbedCodeMirror.prototype.setAddMirrorCallback = function(callback) {
-    this._addMirrorCallback = callback
-        ? callback
-        : function(mirror) {};
-}
-
-/**
  * Get the jQuery representation of the TabbedCodeMirror
  */
 TabbedCodeMirror.prototype.getJQueryObject = function() {
@@ -73,8 +60,6 @@ TabbedCodeMirror.prototype.refresh = function() {
  *
  * After calling this, widgets for deleting, inserting, moving,
  * and renaming tabs will appear.
- *
- * @see setAddButtonCallback
  */
 TabbedCodeMirror.prototype.enableTabEditingWidgets = function() {
     if (this.isEditable) {
@@ -197,7 +182,6 @@ TabbedCodeMirror.prototype._createAddFileTab = function() {
             that.addFile(options);
             that._codeIsClean = false;
             that.setActiveTabIndex(that.getFileCount() - 1);
-            that._addMirrorCallback(that.mirrors[that.mirrors.length - 1]);
             return false;
         });
     return $('<li></li>').append($addButton);

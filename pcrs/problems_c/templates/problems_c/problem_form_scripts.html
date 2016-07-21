@@ -2,262 +2,90 @@
 
 {% load compress %}
 {% compress js %}
-    <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
-    <script src="{% static "codemirror-4.1/mode/clike/clike.js" %}"></script>
-    <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}" type="text/javascript"></script>
-    <script src="{% static "problems/js/TagManager.js" %}" type="text/javascript"></script>
-    <script src="{% static "problems/js/TabbedCodeMirror.js" %}" type="text/javascript"></script>
-{% endcompress %}
+<script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"
+    type="text/javascript"></script>
+<script src="{% static "codemirror-4.1/mode/clike/clike.js" %}"
+    type="text/javascript"></script>
+<script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
+    type="text/javascript"></script>
+<script src="{% static "problems/js/TagManager.js" %}"
+    type="text/javascript"></script>
+<script src="{% static "problems/js/TabbedCodeMirror.js" %}"
+    type="text/javascript"></script>
+<script src="{% static "problems/js/AdminTabbedCodeMirror.js" %}"
+    type="text/javascript"></script>
+{# When another language is added modify code_mirror.js #}
+<script src="{% static 'code_mirror.js' %}"
+    type="text/javascript"></script>
 
-{% load compress %}
-{% compress js %}
-    {# When another language is added modify code_mirror.js #}
-    <script src="{% static 'code_mirror.js' %}"></script>
+<script type="text/javascript">
+var cmh_list = {};
+var language = 'c';
+var language_version = 'text/x-csrc';
+var id_starter_code_field = 'id_starter_code';
+var id_solution_field = 'id_solution';
 
-    <script type="text/javascript">
-        var cmh_list = {};
-        var language = 'c';
-        var language_version = 'text/x-csrc';
-        var id_starter_code_field = 'id_starter_code';
-        var id_solution_field = 'id_solution';
+function submitHidden() {
+    try {
+        // NOTE: In the future, we may want to allow multiple files for C.
+        var tcm = cmh_list[id_starter_code_field];
+        var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
+        var solutionCode = cmh_list[id_solution_field].getFiles()[0].code;
 
-        /**
-         * Add [student_code] tag respecting [blocked] and
-         * [hidden] tags to guarantee the exercise integrity.
-         */
-        function addTagsToStarterCode() {
-            var files = cmh_list[id_starter_code_field].getFiles();
+        // Move values to temporary variables
+        document.getElementById("id_starter_code_tmp").value = code;
+        document.getElementById("id_solution_tmp").value = solutionCode;
+        return true;
+    } catch (err) {
+        alert('Error submitting code: ' + err.message);
+        return false;
+    }
+}
 
-            for (var i = 0; i < files.length; i++) {
-                var f = files[i];
-                f.code = TagManager.addStudentCodeTags(f.code);
-            }
+function addTabbedCodeMirrorToFieldWithId(id, tcm) {
+    var $element = $('#' + id);
+    var code = $element.text();
 
-            return TagManager.concatFilesIntoCode(files);
-        }
+    $element.replaceWith(tcm.getJQueryObject());
 
-        function submitHidden() {
-            try {
-                // NOTE: In the future, we may want to allow multiple files for C.
-                var tcm = cmh_list[id_starter_code_field];
-                var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
-                var solutionCode = cmh_list[id_solution_field].getFiles()[0].code;
+    tcm.setNewFileOptions({
+        'mode': cmModeForLanguageAndVersion(language, language_version),
+        'theme': user_theme,
+    });
 
-                // Move values to temporary variables
-                document.getElementById("id_starter_code_tmp").value = code;
-                document.getElementById("id_solution_tmp").value = solutionCode;
-                return true;
-            } catch (err) {
-                alert('Error submitting code: ' + err.message);
-                return false;
-            }
-        }
+    var files = TagManager.parseCodeIntoFiles(code);
+    for (var i = 0; i < files.length; i++) {
+        tcm.addFile(files[i]);
+    }
+    tcm.setActiveTabIndex(0);
 
-        /**
-         * Create a new tag following some constraints (tags inside tags)
-         */
-        function createTag(tag_start, tag_end) {
-            var tcm = cmh_list[id_starter_code_field];
-            var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+    cmh_list[id] = tcm;
+}
 
-            // Detect tags in the source code
-            var code = mirror.getValue();
-            var tagRanges = TagManager.findRangesWithTags(code);
+function setupCodeMirrors() {
+    addTabbedCodeMirrorToFieldWithId(id_starter_code_field,
+        new AdminTabbedCodeMirror());
+    addTabbedCodeMirrorToFieldWithId(id_solution_field,
+        new TabbedCodeMirror());
+}
 
-            // The tail starts from index 0
-            var start = mirror.getCursor(true).line + 1;
-            // The head starts from index 0
-            var end = mirror.getCursor(false).line + 1;
+$(function() {
+    // Add function to submit button to update hidden field data
+    $("#submit-id-clone").click(submitHidden);
+    $("#submit-id-submit").click(submitHidden);
+    $("#submit-id-attempt").click(submitHidden);
 
-            for (var i = 0; i < tagRanges.length; i++) {
-                if (start > tagRanges[i].end || end < tagRanges[i].start) {
-                    // The selection is outside of this tag.
-                    continue;
-                }
+    // Add hidden values to submit code
+    $('form').append('<input type="hidden" id="id_starter_code_tmp" ' +
+                        'name="starter_code" value=""></input>' +
+                    '<input type="hidden" id="id_solution_tmp" ' +
+                        'name="solution" value=""></input>');
 
-                var title = 'Check your code selection!';
-                var message = 'You Cannot include any other tag inside ' +
-                    'a hidden section, or along the same line.';
-                AlertModal.alert(title, message);
-                return;
-            }
-
-            extendMirrorSelectionAroundLines(mirror);
-            // Add tag after verifications
-            var selected_area = mirror.getSelection();
-            mirror.replaceSelection(tag_start + '\n' + selected_area + '\n' + tag_end);
-            // 'unselect' the tag area
-            mirror.setCursor(mirror.getCursor());
-        }
-
-        function updateCodeHighLightOnMirror(mirror) {
-            // Check for tags to apply code highlighting
-            var line_begin = mirror.firstLine();
-            var line_end = mirror.lastLine();
-
-            var code_highlights = [];
-
-            var openTagRegex = /^[ \t]*\[(hidden|blocked|student_code)\][ \t]*$/;
-            var closeTagRegex = /^[ \t]*\[\/(hidden|blocked|student_code)\][ \t]*$/;
-            for (var i = line_begin; i <= line_end; i++) {
-                var line = mirror.getLine(i);
-                var match;
-
-                if (match = openTagRegex.exec(line)) {
-                    var tagName = match[1];
-                    code_highlights.push(tagName);
-                }
-
-                if (code_highlights.length == 1) {
-                    mirror.removeLineClass(i);
-                } else if (code_highlights.length > 1) {
-                    // We shouldn't be more that 1 level deep.
-                    mirror.removeLineClass(i, '', 'CodeMirror-activeline-background');
-                    mirror.addLineClass(i, '', 'CodeMirror-error-background');
-                } else if (code_highlights.length == 0) {
-                    mirror.addLineClass(i, '', 'CodeMirror-activeline-background');
-                }
-
-                if (match = closeTagRegex.exec(line)) {
-                    var tagName = match[1];
-                    var matchedTag = code_highlights.pop();
-
-                    if (matchedTag != tagName) {
-                        mirror.removeLineClass(i, '', 'CodeMirror-activeline-background');
-                        mirror.addLineClass(i, '', 'CodeMirror-error-background');
-                    }
-                }
-            }
-
-            if (code_highlights.length != 0) {
-                mirror.removeLineClass(line_end, '', 'CodeMirror-activeline-background');
-                mirror.addLineClass(line_end, '', 'CodeMirror-error-background');
-            }
-        }
-
-        function cleanFileCodeForPreview(code) {
-            var code = TagManager.addStudentCodeTags(code);
-
-            // The [\s\S] is another way to express "." with DOTALL enabled
-            // Remove hidden portions
-            code = code.replace(/\r?\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
-            // Hide student_code and blocked tags
-            code = code.replace(/\r?\n?\[\/?(student_code|blocked)\]/g, '');
-            // The tag at the top of the file will leave a stray newline
-            code = code.replace(/^[ \t]*\n/, '');
-
-            return code;
-        }
-
-        /**
-         * Preview how code will look to the student
-         */
-        function previewCode() {
-            var tcm = new TabbedCodeMirror();
-
-            var files = cmh_list[id_starter_code_field].getFiles();
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
-
-                tcm.addFile({
-                    'name': file.name,
-                    'code': cleanFileCodeForPreview(file.code),
-                    'mode': cmModeForLanguageAndVersion(
-                        language, language_version),
-                    'theme': user_theme,
-                    'readOnly': true,
-                });
-            }
-            tcm.setActiveTabIndex(0);
-            AlertModal.alert('Code Preview', tcm.getJQueryObject());
-            tcm.refresh();
-        }
-
-        function addCodeMirrorToFieldWithId(id) {
-            var element = $('#' + id);
-            cmh_list[id] = to_code_mirror(
-                language, language_version, element, element.text(), false);
-        }
-
-        function addTabbedCodeMirrorToFieldWithId(id) {
-            var element = $('#' + id);
-            cmh_list[id] = to_tabbed_code_mirror(language, language_version,
-                element, element.text(), false);
-        }
-
-        function addTagInsertButtonsAfterStarterCodeField() {
-            var field = $('#div_' + id_starter_code_field + ' div.controls');
-            var btnTemplate = Handlebars.getTemplate('hb_icon_button');
-            field.after('<br />' +
-                btnTemplate({
-                    type: 'primary',
-                    onclick: 'previewCode()',
-                    glyph: 'eye-open',
-                    text: 'Preview Exercise',
-                }) +
-                btnTemplate({
-                    type: 'success',
-                    onclick: 'createTag(\'[student_code]\',\'[/student_code]\')',
-                    glyph: 'pencil',
-                    text: 'Student Code',
-                }) +
-                btnTemplate({
-                    type: 'danger',
-                    onclick: 'createTag(\'[blocked]\',\'[/blocked]\')',
-                    glyph: 'ban-circle',
-                    text: 'Blocked',
-                }) +
-                btnTemplate({
-                    type: 'danger',
-                    onclick: 'createTag(\'[hidden]\',\'[/hidden]\')',
-                    glyph: 'ban-eye-close',
-                    text: 'Hidden',
-                }));
-        }
-
-        function setupCodeMirrors() {
-            addTabbedCodeMirrorToFieldWithId(id_starter_code_field);
-            var tcm = cmh_list[id_starter_code_field];
-            for (var i = 0; i < tcm.getFileCount(); i++) {
-                var mirror = tcm.getCodeMirror(i);
-                mirror.on('change', updateCodeHighLightOnMirror);
-                updateCodeHighLightOnMirror(mirror);
-            }
-            tcm.setAddMirrorCallback(updateCodeHighLightOnMirror);
-            tcm.setActiveTabIndex(0);
-
-            addTabbedCodeMirrorToFieldWithId(id_solution_field);
-
-            $(window).bind("load", function() {
-                $('.CodeMirror').each(function(i, el) {
-                    el.CodeMirror.refresh();
-                });
-            });
-        }
-
-        $(function() {
-            // Add function to submit button to update hidden field data
-            $("#submit-id-clone").click(submitHidden);
-            $("#submit-id-submit").click(submitHidden);
-            $("#submit-id-attempt").click(submitHidden);
-
-            // Add hidden values to submit code
-            $('form').append('<input type="hidden" id="id_starter_code_tmp" ' +
-                                'name="starter_code" value=""></input>' +
-                            '<input type="hidden" id="id_solution_tmp" ' +
-                                'name="solution" value=""></input>');
-
-            addTagInsertButtonsAfterStarterCodeField();
-            setupCodeMirrors();
-        });
+    setupCodeMirrors();
+});
 </script>
 {% endcompress %}
 
-{% verbatim %}
-<script id="hb_icon_button" type="text/x-handlebars-template">
-<a class="btn btn-{{type}}" role="button" onclick="{{onclick}}">
-    <span class="glyphicon glyphicon-{{glyph}}"></span>   {{text}}
-</a>&nbsp;&nbsp;&nbsp;
-</script>
-{% endverbatim %}
+{# Needed for AdminTabbedCodeMirror #}
+{% include "problems/handlebars/icon_button.html" %}
 

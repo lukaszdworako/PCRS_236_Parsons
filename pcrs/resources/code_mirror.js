@@ -23,37 +23,6 @@ function cmModeForLanguageAndVersion(language, version) {
     }
 }
 
-/**
- * Replaced a div with a code mirror div.
- *
- * @param language The programming language to use.
- * @param version The programming language version
- * @param location A jQuery object to emplace on top of
- * @param value The code to initially set - file tags included
- * @param lock Should the code be locked, or modifiable?
- */
-function to_tabbed_code_mirror(language, version, location, value, lock) {
-    var tcm = new TabbedCodeMirror();
-
-    location.before(tcm.getJQueryObject());
-    location.remove();
-
-    var files = TagManager.parseCodeIntoFiles(value);
-
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        tcm.addFile({
-            'name': file.name,
-            'code': file.code,
-            'mode': cmModeForLanguageAndVersion(language, version),
-            'theme': user_theme,
-        });
-    }
-    tcm.setActiveTabIndex(0);
-
-    return tcm;
-}
-
 function to_code_mirror (language, version, location, value, lock) {
     historyCodeMirror = CodeMirror(
         function(elt) {
