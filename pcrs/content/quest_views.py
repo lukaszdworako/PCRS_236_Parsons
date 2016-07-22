@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, localtime
 from django.views.generic import CreateView, FormView, ListView, View, \
     TemplateView
-
+from django.views.generic.detail import SingleObjectMixin
 from content.forms import QuestForm, QuestSectionForm
 from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
     ContentPage, ContentSequenceItem
@@ -42,6 +42,97 @@ class QuestListView(CourseStaffViewMixin, GenericItemListView):
         context['challenges'] = Challenge.objects.filter(quest__isnull=True)
         return context
 
+
+class QuestAnalyticsView(View, CourseStaffViewMixin, UserViewMixin,
+        SingleObjectMixin):
+    model = Quest
+
+    '''
+    For each problem, we need:
+	- How many students have attempted?
+	- How many students have solved?
+	- What is the median amount of attempts?
+
+	- Rank order it by # of attempts
+		- Possibly a sort option - order that students see them also
+    '''
+
+    def get(self, request, *args, **kwargs):
+        users = self._getUsersInCurrentSection()
+
+        # TODO magja! Return the statz
+        quest = self.get_object()
+        problems = self._activeProblemsInQuest(quest)
+        data = {
+            'userCount': len(users),
+            'problems': [
+                {
+                    'pk': p.pk,
+                    'name': p.name,
+                    'language': p.language,
+                    'userAttemptInfo': self._attemptInfoForProblem(p, users),
+                } for p in problems
+            ],
+        }
+        return HttpResponse(json.dumps(data))
+
+    def _attemptInfoForProblem(self, problem, users):
+        submissionClass = self._modelForProblem(problem).Submission
+        usersAttemptInfo = []
+
+        for user in users:
+            submissions = submissionClass.objects.filter(
+                user=user,
+                problem=problem
+            )
+            info = {
+                'userPk': user.pk,
+                'attemptCount': submissions.count(),
+            }
+            if submissions.count() > 0:
+                info['hasAttempted'] = True
+                bestSubmission = submissionClass.objects.get(
+                    user=user,
+                    problem=problem,
+                    has_best_score=True
+                )
+                info['hasSolved'] = problem.max_score == bestSubmission.score
+            else:
+                info['hasAttempted'] = False
+                info['hasSolved'] = False # Of course, since they haven't tried
+            usersAttemptInfo.append(info)
+
+        return usersAttemptInfo
+
+    def _modelForProblem(self, problem):
+        import problems_java, problems_python
+        return {
+            'java': problems_java.models,
+            'python': problems_python.models,
+        }[str(problem.language)];
+
+    def _getUsersInCurrentSection(self):
+        from users.models import PCRSUser
+        return PCRSUser.objects.filter(
+            is_active=True,
+            section=self.get_section()
+        )
+
+    def _activeProblemsInQuest(self, quest):
+        import problems_java, problems_python
+        problemTypes = [
+            problems_java.models.Problem,
+            problems_python.models.Problem,
+        ]
+        problems = []
+        for problemType in problemTypes:
+            problems += problemType.objects.filter(
+                challenge=Challenge.objects.filter(
+                    quest=quest,
+                    is_graded=True
+                )
+            )
+        return problems
 
 class QuestCreateView(CourseStaffViewMixin, QuestView, GenericItemCreateView):
     """
@@ -219,3 +310,4 @@ class ReactiveQuestsDataView(ProtectedViewMixin, View, UserViewMixin):
             data['scores'][content_type.app_label.replace('problems_', '')] = best
 
         return HttpResponse(json.dumps(data))
+

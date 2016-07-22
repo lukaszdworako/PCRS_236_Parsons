@@ -13,7 +13,8 @@ from content.challenge_views import *
 from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView,
                                  QuestSaveChallengesView, QuestSectionListView,
                                  QuestsView, ReactiveQuestsView,
-                                 ReactiveQuestsDataView)
+                                 ReactiveQuestsDataView,
+                                 QuestAnalyticsView)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
@@ -107,6 +108,8 @@ urlpatterns = patterns('',
         name='quest_create'),
     url(r'^quests/(?P<pk>[0-9]+)$', QuestUpdateView.as_view(),
         name='quest_update'),
+    url(r'^quests/(?P<pk>[0-9]+)/analytics$', QuestAnalyticsView.as_view(),
+        name='quest_analytics'),
     url(r'^quests/(?P<pk>[0-9]+)/delete$',
         GenericCourseStaffDeleteView.as_view(model=Quest),
         name='quest_delete'),
