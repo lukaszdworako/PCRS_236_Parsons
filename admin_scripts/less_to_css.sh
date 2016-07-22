@@ -8,6 +8,7 @@ then
     challenge_page
     quest_list
     quest_page
+    quest_analytics
     submission
     base"
 else

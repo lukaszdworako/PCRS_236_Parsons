@@ -3,7 +3,7 @@ import json
 
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now, localtime
 from django.views.generic import CreateView, FormView, ListView, View, \
     TemplateView
@@ -50,6 +50,7 @@ class QuestAnalyticsView(View, CourseStaffViewMixin, UserViewMixin,
     Displays problem analytics for a given quest.
     """
     model = Quest
+    template_name = 'content/quest_analytics.html'
 
     # TODO handle anonymous users - self.get_user().is_authenticated()
     # Also, ensure students can't access this
@@ -59,11 +60,11 @@ class QuestAnalyticsView(View, CourseStaffViewMixin, UserViewMixin,
         quest = self.get_object()
 
         helper = QuestAnalyticsHelper(quest, users)
-        data = {
+        return render(request, self.template_name, {
+            'questName': quest.name,
             'userCount': len(users),
             'problems': helper.computeAllProblemInfo(),
-        }
-        return HttpResponse(json.dumps(data))
+        })
 
     def _getActiveUsersInCurrentSection(self):
         return PCRSUser.objects.filter(
