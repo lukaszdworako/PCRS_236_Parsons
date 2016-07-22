@@ -16,10 +16,11 @@ from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
 from pcrs.models import get_problem_content_types, get_problem_labels, \
     get_submission_content_types
 from pcrs.settings import INSTALLED_PROBLEM_APPS
-from users.models import Section
+from users.models import Section, PCRSUser
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
+from .analytics_helper import QuestAnalyticsHelper
 
 class QuestView:
     model = Quest
@@ -45,94 +46,31 @@ class QuestListView(CourseStaffViewMixin, GenericItemListView):
 
 class QuestAnalyticsView(View, CourseStaffViewMixin, UserViewMixin,
         SingleObjectMixin):
+    """
+    Displays problem analytics for a given quest.
+    """
     model = Quest
 
-    '''
-    For each problem, we need:
-	- How many students have attempted?
-	- How many students have solved?
-	- What is the median amount of attempts?
-
-	- Rank order it by # of attempts
-		- Possibly a sort option - order that students see them also
-    '''
+    # TODO handle anonymous users - self.get_user().is_authenticated()
+    # Also, ensure students can't access this
 
     def get(self, request, *args, **kwargs):
-        users = self._getUsersInCurrentSection()
-
-        # TODO magja! Return the statz
+        users = self._getActiveUsersInCurrentSection()
         quest = self.get_object()
-        problems = self._activeProblemsInQuest(quest)
+
+        helper = QuestAnalyticsHelper(quest, users)
         data = {
             'userCount': len(users),
-            'problems': [
-                {
-                    'pk': p.pk,
-                    'name': p.name,
-                    'language': p.language,
-                    'userAttemptInfo': self._attemptInfoForProblem(p, users),
-                } for p in problems
-            ],
+            'problems': helper.computeAllProblemInfo(),
         }
         return HttpResponse(json.dumps(data))
 
-    def _attemptInfoForProblem(self, problem, users):
-        submissionClass = self._modelForProblem(problem).Submission
-        usersAttemptInfo = []
-
-        for user in users:
-            submissions = submissionClass.objects.filter(
-                user=user,
-                problem=problem
-            )
-            info = {
-                'userPk': user.pk,
-                'attemptCount': submissions.count(),
-            }
-            if submissions.count() > 0:
-                info['hasAttempted'] = True
-                bestSubmission = submissionClass.objects.get(
-                    user=user,
-                    problem=problem,
-                    has_best_score=True
-                )
-                info['hasSolved'] = problem.max_score == bestSubmission.score
-            else:
-                info['hasAttempted'] = False
-                info['hasSolved'] = False # Of course, since they haven't tried
-            usersAttemptInfo.append(info)
-
-        return usersAttemptInfo
-
-    def _modelForProblem(self, problem):
-        import problems_java, problems_python
-        return {
-            'java': problems_java.models,
-            'python': problems_python.models,
-        }[str(problem.language)];
-
-    def _getUsersInCurrentSection(self):
-        from users.models import PCRSUser
+    def _getActiveUsersInCurrentSection(self):
         return PCRSUser.objects.filter(
             is_active=True,
             section=self.get_section()
         )
 
-    def _activeProblemsInQuest(self, quest):
-        import problems_java, problems_python
-        problemTypes = [
-            problems_java.models.Problem,
-            problems_python.models.Problem,
-        ]
-        problems = []
-        for problemType in problemTypes:
-            problems += problemType.objects.filter(
-                challenge=Challenge.objects.filter(
-                    quest=quest,
-                    is_graded=True
-                )
-            )
-        return problems
 
 class QuestCreateView(CourseStaffViewMixin, QuestView, GenericItemCreateView):
     """
