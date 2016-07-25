@@ -815,6 +815,7 @@ textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon
 @media (max-width:575px){.pcrs-fluid{left:20px;width:450px}}.pcrs-fluid .affix{top:20px}
 .at{position:absolute;clip:rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;display:block}
 .hidden{visibility:hidden}
+a.no-hover-underline:hover{text-decoration:none}
 .blue-tag{display:inline-block;min-width:10px;padding:3px 7px;font-size:12px;font-weight:bold;color:#fff;line-height:1;vertical-align:baseline;white-space:nowrap;text-align:center;background-color:#777;border-radius:10px;background-color:#002a5c}.blue-tag:empty{display:none}
 .btn .blue-tag{position:relative;top:-1px}
 .btn-xs .blue-tag{top:0;padding:1px 5px}

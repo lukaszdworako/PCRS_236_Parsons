@@ -27,8 +27,15 @@
 
                 {{ challenge.name }}
                 {% if challenge.get_first_page_url %}
-                    <a type="button" title="Attempt" href="{{ challenge.get_first_page_url }}">
+                    <a type="button" title="Attempt"
+                            href="{{ challenge.get_first_page_url }}">
                         <i class="attempt-btn"></i>
+                    </a>
+                {% endif %}
+                {% if user.is_instructor or user.is_ta %}
+                    <a type="button" title="Edit challenge.name"
+                            href="{{ challenge.get_absolute_url }}">
+                        <i class="pencil-icon"></i>
                     </a>
                 {% endif %}
 

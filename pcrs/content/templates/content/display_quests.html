@@ -26,6 +26,20 @@
                         {{ quest.due_on|default:'' }}
                 </div>
             </a>
+            {% if user.is_instructor or user.is_ta %}
+                <div class="pull-right">
+                    <a class="pull-right no-hover-underline" target="_blank"
+                            title="Edit {{ quest.quest.name }}"
+                            href="{{ quest.quest.get_absolute_url }}">
+                        &nbsp;<i class="pencil-icon"></i>
+                    </a>
+                    <a class="pull-right no-hover-underline" target="_blank"
+                            title="View Analytics for {{ quest.quest.name }}"
+                            href="{{ quest.quest.get_absolute_url }}/analytics">
+                        &nbsp;<i class="stats-icon"></i>
+                    </a>
+                </div>
+            {% endif %}
         </h4>
     </div>
 

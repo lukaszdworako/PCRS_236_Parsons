@@ -75,11 +75,18 @@
                                 </button>
                             </div>
                         </div>
-                            <div class="pull-right">
-                                <a class="pull-right" target="_blank" title="Edit {{ object.name }}"  href="{{ object.get_absolute_url }}">&nbsp;
-                                    <i class="pencil-icon"></i>
-                                </a>
-                            </div>
+                        <div class="pull-right">
+                            <a class="pull-right no-hover-underline" target="_blank"
+                                    title="Edit {{ object.name }}"
+                                    href="{{ object.get_absolute_url }}">
+                                &nbsp;<i class="pencil-icon"></i>
+                            </a>
+                            <a class="pull-right no-hover-underline" target="_blank"
+                                    title="View Analytics for {{ object.name }}"
+                                    href="{{ object.get_absolute_url }}/analytics">
+                                &nbsp;<i class="stats-icon"></i>
+                            </a>
+                        </div>
                         {% if not object.is_live %}
                             <div class="red-label pull-right">Under
                                 construction
