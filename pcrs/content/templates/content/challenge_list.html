@@ -1,10 +1,6 @@
 {% extends "pcrs/item_list.html" %}
 
 {% block item_title %}
-    <a href="{{ object.get_stats_page_url }}">
-        <i class="stats-icon"></i>
-        <span class="at">Statistics for {{ object.name }}</span>
-    </a>
     {% if object.get_first_page_url %}
         {% if object.pk in visible_challenges %}
             <a href="{{ object.get_first_page_url }}">
@@ -19,3 +15,13 @@
         <div class="red-label">No challenge pages.</div>
     {% endif %}
 {% endblock %}
+
+{% block item_controls %}
+    {{ block.super }}
+    <a class="pull-right no-hover-underline"
+            href="{{ object.get_stats_page_url }}">
+        <i class="stats-icon"></i>
+        <span class="at">Statistics for {{ object.name }}</span>
+    </a>
+{% endblock %}
+

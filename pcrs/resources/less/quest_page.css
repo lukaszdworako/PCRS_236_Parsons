@@ -1046,3 +1046,4 @@ a.list-group-item.active>.blue-tag,.nav-pills>.active>a>.blue-tag{color:#428bca;
 .quest-live:hover{background-color:#c5d3ff;cursor:pointer}
 input#searcher{padding-left:5px}
 .pcrs-panel-title .challenge-name{margin-right:10px}
+.pcrs-panel-title a i:hover{color:#777}
