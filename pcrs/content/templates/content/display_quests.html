@@ -2,45 +2,43 @@
 
 <div class="pcrs-panel-group" id="quest_accordion_{{ quest.quest.pk }}">
     <div class="pcrs-panel">
-        {% if quest.is_past_due %}
-            <div class="quest-expired"/>
-        {% else %}
-            <div class="quest-live"/>
-        {% endif %}
-        <h4 class="pcrs-panel-title">
-            <a href="#quest_collapse_{{ quest.quest.pk }}"
-               data-parent="quest_accordion_{{ quest.quest.pk }}"
-               class="collapsed"
-               data-toggle="collapse">
-                <i class="collapse-indicator"></i>
-                {{ quest.quest.name }}
-                <div class="info">
-                        {% if quest.is_past_due %}
-                            Submission closed :
-                        {% else %}
-                            {% if quest.due_on %}
-                                Due date :
-                            {% endif %}
+        <div
+                {% if quest.is_past_due %}
+                    class="pcrs-panel-title quest-expired collapsed"
+                {% else %}
+                    class="pcrs-panel-title quest-live collapsed"
+                {% endif %}
+                href="#quest_collapse_{{ quest.quest.pk }}"
+                data-parent="quest_accordion_{{ quest.quest.pk }}"
+                data-toggle="collapse">
+            <i class="collapse-indicator"></i>
+            {{ quest.quest.name }}
+            <div class="info">
+                    {% if quest.is_past_due %}
+                        Submission closed :
+                    {% else %}
+                        {% if quest.due_on %}
+                            Due date :
                         {% endif %}
-                        <br class="info-sm">
-                        {{ quest.due_on|default:'' }}
-                </div>
-            </a>
+                    {% endif %}
+                    <br class="info-sm">
+                    {{ quest.due_on|default:'' }}
+            </div>
             {% if user.is_instructor or user.is_ta %}
-                <div class="pull-right">
-                    <a class="pull-right no-hover-underline" target="_blank"
-                            title="Edit {{ quest.quest.name }}"
-                            href="{{ quest.quest.get_absolute_url }}">
-                        &nbsp;<i class="pencil-icon"></i>
-                    </a>
-                    <a class="pull-right no-hover-underline" target="_blank"
-                            title="View Analytics for {{ quest.quest.name }}"
-                            href="{{ quest.quest.get_absolute_url }}/analytics">
-                        &nbsp;<i class="stats-icon"></i>
-                    </a>
-                </div>
+                <a class="pull-right no-hover-underline" target="_blank"
+                        onclick="event.stopPropagation()"
+                        title="Edit {{ quest.quest.name }}"
+                        href="{{ quest.quest.get_absolute_url }}">
+                    &nbsp;<i class="pencil-icon"></i>
+                </a>
+                <a class="pull-right no-hover-underline" target="_blank"
+                        onclick="event.stopPropagation()"
+                        title="View Analytics for {{ quest.quest.name }}"
+                        href="{{ quest.quest.get_absolute_url }}/analytics">
+                    &nbsp;<i class="stats-icon"></i>
+                </a>
             {% endif %}
-        </h4>
+        </div>
     </div>
 
     {% if quest.quest.is_live %}

@@ -4,7 +4,6 @@
 @import "fontello";
 @import "pcrs_panel";
 
-
 .info{
   @media (max-width: @screen-sm-max) {
     margin-left: 25px;
@@ -90,55 +89,36 @@
   .challenge-icon-padding;
 }
 
-.attempt-btn{
-  position:relative;
-  top:-.5px;
-  padding:2px 20px;
-}
-
 .practice-challenge{
   .fontello;
   .fontello-library;
   .challenge-icon-padding;
 }
 
-.challenge-empty{
-  .quest_page_common;
-  background-color: white;
-  border-color: darken(white, 6.5%);
+.challenge-empty {
+    .quest_page_common(white);
 }
-
-.challenge-completed{
-  .quest_page_common;
-  background-color: @challenge-completed-bg;
-  border-color: darken(@challenge-completed-bg, 6.5%);
+.challenge-completed {
+    .quest_page_common(@challenge-completed-bg);
 }
-
 .challenge-attempted{
-  .quest_page_common;
-  background-color: @challenge-attempted-bg;
-  border-color: darken(@challenge-attempted-bg, 6.5%);
+    .quest_page_common(@challenge-attempted-bg);
 }
-
 .challenge-not-attempted{
-  .quest_page_common;
-  background-color: @challenge-not-attempted-bg;
-  border-color: darken(@challenge-not-attempted-bg, 6.5%);
+    .quest_page_common(@challenge-not-attempted-bg);
 }
-
-//quest level
-.quest-expired{
-  .quest_page_common;
-  background-color:@quest-expired-bg;
-  border-color: darken(@quest-expired-bg, 6.5%);
+.quest-expired {
+    .quest_page_common(@quest-expired-bg);
 }
-
-.quest-live{
-  .quest_page_common;
-  background-color:@quest-live-bg;
-  border-color: darken(@quest-live-bg, 6.5%);
+.quest-live {
+    .quest_page_common(@quest-live-bg);
 }
 
 input#searcher {
     padding-left: 5px;
 }
+
+.pcrs-panel-title .challenge-name {
+    margin-right: 10px;
+}
+

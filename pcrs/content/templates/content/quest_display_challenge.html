@@ -2,62 +2,66 @@
 
 <div class="pcrs-panel">
     {% with completed=challenge_to_completed|get_item:challenge.pk|default:0 total=challenge_to_total|get_item:challenge.pk|default:0 %}
-        {% if completed == 0 and total != 0 %}
-            <div class="challenge-not-attempted">
-        {% elif completed == total %}
-            <div class="challenge-completed">
-        {% else %}
-            <div class="challenge-attempted">
-        {% endif %}
-        <h3 class="pcrs-panel-title">
-            <a class="collapsed"
-               data-toggle="collapse"
-               href="#challenge_collapse_{{ challenge.pk }}">
-                <i class="collapse-indicator"></i>
-                {% if challenge.is_graded %}
-                    </span>
-                    <i class="credit-challenge"
-                       title="Graded Challenge"></i>
-                {% else %}
-                    </span>
-                    <i class="practice-challenge"
-                       title="Practice Challenge"></i>
-                {% endif %}
+        <div
+            {% if completed == 0 and total != 0 %}
+                class="pcrs-panel-title collapsed challenge-not-attempted"
+            {% elif completed == total %}
+                class="pcrs-panel-title collapsed challenge-completed"
+            {% else %}
+                class="pcrs-panel-title collapsed challenge-attempted"
+            {% endif %}
+           data-toggle="collapse"
+           href="#challenge_collapse_{{ challenge.pk }}"
+        >
+            <i class="collapse-indicator"></i>
+            {% if challenge.is_graded %}
                 </span>
+                <i class="credit-challenge"
+                   title="Graded Challenge"></i>
+            {% else %}
+                </span>
+                <i class="practice-challenge"
+                   title="Practice Challenge"></i>
+            {% endif %}
+            </span>
 
-                {{ challenge.name }}
-                {% if challenge.get_first_page_url %}
-                    <a type="button" title="Attempt"
-                            href="{{ challenge.get_first_page_url }}">
-                        <i class="attempt-btn"></i>
-                    </a>
-                {% endif %}
-                {% if user.is_instructor or user.is_ta %}
-                    <a type="button" title="Edit challenge.name"
-                            href="{{ challenge.get_absolute_url }}">
-                        <i class="pencil-icon"></i>
-                    </a>
-                {% endif %}
+            <span class="challenge-name">{{ challenge.name }}</span>
 
+            {% if challenge.get_first_page_url %}
+                <a class="no-hover-underline" type="button"
+                        title="Attempt"
+                        onclick="event.stopPropagation()"
+                        href="{{ challenge.get_first_page_url }}">
+                    <i class="attempt-btn"></i>
+                </a>
+            {% endif %}
+            {% if user.is_instructor or user.is_ta %}
+                <a class="no-hover-underline" type="button" target="_blank"
+                        title="Edit challenge.name"
+                        onclick="event.stopPropagation()"
+                        href="{{ challenge.get_absolute_url }}">
+                    <i class="pencil-icon"></i>
+                </a>
+            {% endif %}
+
+            <div
                 {% if completed == total %}
-                    <div class="challenge-mark-complete">
+                    class="challenge-mark-complete"
                 {% else %}
-                    <div class="challenge-mark-incomplete">
+                    class="challenge-mark-incomplete"
                 {% endif %}
-                    <br class="info-sm">
-                    {% if challenge.is_graded %}
-                        Credit &nbsp;
-                    {% else %}
-                        Practice &nbsp;
-                    {% endif %}
-                    <i class="complete-icon"></i>
-                    <span class="challenge-mark">
-                        {{ completed }}/{{ total }}
-                    </span>
-                </div>
-            </a>
-
-        </h3>
+            >
+                <br class="info-sm">
+                {% if challenge.is_graded %}
+                    Credit &nbsp;
+                {% else %}
+                    Practice &nbsp;
+                {% endif %}
+                <i class="complete-icon"></i>
+                <span class="challenge-mark">
+                    {{ completed }}/{{ total }}
+                </span>
+            </div>
         </div>
     <div id="challenge_collapse_{{ challenge.pk }}"
          class="pcrs-panel-body panel-collapse collapse">

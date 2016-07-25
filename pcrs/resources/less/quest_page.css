@@ -816,6 +816,7 @@ textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon
 .at{position:absolute;clip:rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;display:block}
 .hidden{visibility:hidden}
 a.no-hover-underline:hover{text-decoration:none}
+a.no-hover-underline:focus{text-decoration:none}
 .blue-tag{display:inline-block;min-width:10px;padding:3px 7px;font-size:12px;font-weight:bold;color:#fff;line-height:1;vertical-align:baseline;white-space:nowrap;text-align:center;background-color:#777;border-radius:10px;background-color:#002a5c}.blue-tag:empty{display:none}
 .btn .blue-tag{position:relative;top:-1px}
 .btn-xs .blue-tag{top:0;padding:1px 5px}
@@ -981,10 +982,9 @@ a.list-group-item.active>.blue-tag,.nav-pills>.active>a>.blue-tag{color:#428bca;
 .fontello-cinema:before{content:"\e803"}
 .fontello-library:before{content:"\e804"}
 .quest_border{border-style:solid !important;border-width:1px !important}
-.quest_page_common{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px}.quest_page_common>.dropdown .dropdown-toggle{color:inherit}
 .collapse-indicator{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-right:10px}.collapse-indicator:before{content:"\e080"}
-a.collapsed>.collapse-indicator{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-right:10px}a.collapsed>.collapse-indicator:before{content:"\e080"}
-a:not(.collapsed)>.collapse-indicator{transform:rotate(90deg)}
+.collapsed>.collapse-indicator{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-right:10px}.collapsed>.collapse-indicator:before{content:"\e080"}
+:not(.collapsed)>.collapse-indicator{transform:rotate(90deg)}
 .pcrs-panel-group{margin-bottom:20px}.pcrs-panel-group .panel{margin-bottom:0;border-radius:4px}.pcrs-panel-group .panel+.panel{margin-top:5px}
 .pcrs-panel-group .panel-heading{border-bottom:0}.pcrs-panel-group .panel-heading+.panel-collapse>.panel-body{border-top:1px solid #ddd}
 .pcrs-panel-group .panel-footer{border-top:0}.pcrs-panel-group .panel-footer+.panel-collapse .panel-body{border-bottom:1px solid #ddd}
@@ -1031,12 +1031,18 @@ a:not(.collapsed)>.collapse-indicator{transform:rotate(90deg)}
 .challenge-page{float:left;width:100%;position:relative;min-height:1px;padding-left:15px;padding-right:15px;padding-left:0;padding-top:15px}@media (min-width:768px){.challenge-page{float:left;width:50%}}@media (min-width:992px){.challenge-page{float:left;width:33.33333333333333%}}@media (min-width:1200px){.challenge-page{float:left;width:25%}}
 .challenge-icon-padding{margin-left:5px;margin-right:10px}
 .credit-challenge{position:relative;top:1px;font-size:1.25em;display:inline-block;font-family:'Fontello';font-style:normal;font-weight:normal;line-height:1;margin:2px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-left:5px;margin-right:10px}.credit-challenge:before{content:"\e800"}
-.attempt-btn{position:relative;top:-0.5px;padding:2px 20px}
 .practice-challenge{position:relative;top:1px;font-size:1.25em;display:inline-block;font-family:'Fontello';font-style:normal;font-weight:normal;line-height:1;margin:2px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-left:5px;margin-right:10px}.practice-challenge:before{content:"\e804"}
-.challenge-empty{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#fff;border-color:#eee}.challenge-empty>.dropdown .dropdown-toggle{color:inherit}
-.challenge-completed{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e8ffe6;border-color:#caffc5}.challenge-completed>.dropdown .dropdown-toggle{color:inherit}
-.challenge-attempted{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#feffe6;border-color:#fdffc5}.challenge-attempted>.dropdown .dropdown-toggle{color:inherit}
-.challenge-not-attempted{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#ffe6e6;border-color:#ffc5c5}.challenge-not-attempted>.dropdown .dropdown-toggle{color:inherit}
-.quest-expired{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6e6e6;border-color:#d5d5d5}.quest-expired>.dropdown .dropdown-toggle{color:inherit}
-.quest-live{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6ecff;border-color:#c5d3ff}.quest-live>.dropdown .dropdown-toggle{color:inherit}
+.challenge-empty{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#fff;border-color:#eee;padding:17px 22px}.challenge-empty>.dropdown .dropdown-toggle{color:inherit}
+.challenge-empty:hover{background-color:#eee;cursor:pointer}
+.challenge-completed{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e8ffe6;border-color:#caffc5;padding:17px 22px}.challenge-completed>.dropdown .dropdown-toggle{color:inherit}
+.challenge-completed:hover{background-color:#caffc5;cursor:pointer}
+.challenge-attempted{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#feffe6;border-color:#fdffc5;padding:17px 22px}.challenge-attempted>.dropdown .dropdown-toggle{color:inherit}
+.challenge-attempted:hover{background-color:#fdffc5;cursor:pointer}
+.challenge-not-attempted{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#ffe6e6;border-color:#ffc5c5;padding:17px 22px}.challenge-not-attempted>.dropdown .dropdown-toggle{color:inherit}
+.challenge-not-attempted:hover{background-color:#ffc5c5;cursor:pointer}
+.quest-expired{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6e6e6;border-color:#d5d5d5;padding:17px 22px}.quest-expired>.dropdown .dropdown-toggle{color:inherit}
+.quest-expired:hover{background-color:#d5d5d5;cursor:pointer}
+.quest-live{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6ecff;border-color:#c5d3ff;padding:17px 22px}.quest-live>.dropdown .dropdown-toggle{color:inherit}
+.quest-live:hover{background-color:#c5d3ff;cursor:pointer}
 input#searcher{padding-left:5px}
+.pcrs-panel-title .challenge-name{margin-right:10px}

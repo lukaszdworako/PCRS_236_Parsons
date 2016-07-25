@@ -1,29 +1,37 @@
 //common classes
-  .quest_border{
+.quest_border {
     border-style:solid !important;
     border-width:1px !important;
-  }
+}
 
-  .quest_page_common{
+.quest_page_common(@bg-color) {
     .quest_border;
     .panel-heading;
-  }
+
+    background-color:@bg-color;
+    border-color: darken(@bg-color, 6.5%);
+    padding: 17px 22px;
+
+    &:hover {
+        background-color: darken(@bg-color, 6.5%);
+        cursor: pointer;
+    }
+}
 
 //arrow indicating opened and closed panels
-  .collapse-indicator{
+.collapse-indicator {
     .glyphicon;
     .glyphicon-chevron-right;
     margin-right: 10px;
-  }
+}
 
-  a.collapsed > .collapse-indicator{
+.collapsed > .collapse-indicator {
     .collapse-indicator;
-  }
+}
 
-  a:not(.collapsed) > .collapse-indicator{
-      transform: rotate(90deg);
-  }
-
+:not(.collapsed) > .collapse-indicator {
+  transform: rotate(90deg);
+}
 
 .pcrs-panel-group{
   .panel-group;
