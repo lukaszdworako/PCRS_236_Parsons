@@ -44,16 +44,13 @@ class QuestListView(CourseStaffViewMixin, GenericItemListView):
         return context
 
 
-class QuestAnalyticsView(View, CourseStaffViewMixin, UserViewMixin,
-        SingleObjectMixin):
+class QuestAnalyticsView(CourseStaffViewMixin, UserViewMixin,
+        SingleObjectMixin, View):
     """
     Displays problem analytics for a given quest.
     """
     model = Quest
     template_name = 'content/quest_analytics.html'
-
-    # TODO handle anonymous users - self.get_user().is_authenticated()
-    # Also, ensure students can't access this
 
     def get(self, request, *args, **kwargs):
         users = self._getActiveUsersInCurrentSection()

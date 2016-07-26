@@ -2,7 +2,7 @@
  * @param {number} userCount The amount of users in this quest
  * @param {array} problems A list of problem analytics
  * @param {string} problems[].name
- * @param {string} problems[].language
+ * @param {string} problems[].type
  * @param {number} problems[].medianAttempts
  * @param {number} problems[].hasAttemptedCount
  * @param {number} problems[].hasSolvedCount
@@ -25,7 +25,7 @@ QuestAnalyticsRenderer.prototype._renderProblems = function(problems) {
 
         var $row = $('<tr></tr>').attr('class', 'analytics-problem-row')
             .append($('<td></td>').text(problem.name))
-            .append($('<td></td>').text(problem.language))
+            .append($('<td></td>').text(problem.type))
             .append($('<td></td>').text(problem.medianAttempts))
             .append($('<td></td>').text(problem.hasAttemptedCount))
             .append($('<td></td>').text(problem.hasSolvedCount))

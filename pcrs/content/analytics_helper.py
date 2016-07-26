@@ -1,4 +1,5 @@
 import problems_java, problems_python, problems_c, problems_sql, problems_ra
+import problems_multiple_choice, problems_short_answer
 from content.models import Challenge
 from statistics import median
 
@@ -7,25 +8,24 @@ class QuestAnalyticsHelper:
 
     # Unfortunately, we have to iterate each model to get every type of problem
     problemModels = {
-        'java': problems_java.models,
-        'python': problems_python.models,
-        'c': problems_c.models,
-        'sql': problems_sql.models,
-        'ra': problems_ra.models,
+        'Java': problems_java.models,
+        'Python': problems_python.models,
+        'C': problems_c.models,
+        'SQL': problems_sql.models,
+        'RA': problems_ra.models,
+        'Multiple Choice': problems_multiple_choice.models,
+        'Short Answer': problems_short_answer.models,
     }
 
     def __init__(self, quest, users):
         self.users = users
-        self.problems = self._getGradedProblemsInQuest(quest)
+        self.problems = self._getProblemsInQuest(quest)
 
-    def _getGradedProblemsInQuest(self, quest):
-        problems = []
-        for problemModel in self.problemModels.values():
-            problems += problemModel.Problem.objects.filter(
-                challenge=Challenge.objects.filter(
-                    quest=quest,
-                    is_graded=True
-                )
+    def _getProblemsInQuest(self, quest):
+        problems = {}
+        for problemType, problemModel in self.problemModels.items():
+            problems[problemType] = problemModel.Problem.objects.filter(
+                challenge=Challenge.objects.filter(quest=quest)
             )
         return problems
 
@@ -35,25 +35,29 @@ class QuestAnalyticsHelper:
         The quest is specified in the constructor of this object
 
         Returns:
-            A list of problem information. See _problemInfo for format
+            A list of problem information.
+            See _computeProblemInfoForProblem for format
         '''
-        return [ self._computeProblemInfoForProblem(p) for p in self.problems ]
+        problemInfo = []
+        for pType in self.problems.keys():
+            for p in self.problems[pType]:
+                problemInfo.append(self._computeProblemInfoForProblem(p, pType))
+        return problemInfo
 
-    def _computeProblemInfoForProblem(self, problem):
-        submissionClass = self.problemModels[problem.language].Submission
+    def _computeProblemInfoForProblem(self, problem, problemType):
+        submissionClass = self.problemModels[problemType].Submission
 
         userAttemptCounts = []
         hasSolvedCount = 0
         hasAttemptedCount = 0
 
         for user in self.users:
-            submissions = submissionClass.objects.filter(
+            submissionsCount = submissionClass.objects.filter(
                 user=user,
                 problem=problem
-            )
-
-            userAttemptCounts.append(submissions.count())
-            if submissions.count() == 0:
+            ).count()
+            userAttemptCounts.append(submissionsCount)
+            if submissionsCount == 0:
                 continue
 
             hasAttemptedCount += 1
@@ -72,7 +76,7 @@ class QuestAnalyticsHelper:
         return {
             'pk': problem.pk,
             'name': problem.name,
-            'language': problem.language,
+            'type': problemType,
             'medianAttempts': medianAttempts,
             'hasSolvedCount': hasSolvedCount,
             'hasAttemptedCount': hasAttemptedCount,
