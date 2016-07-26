@@ -29,7 +29,7 @@ urlpatterns = patterns('',
 
     url(r'^(?P<pk>[0-9]+)/?$',
         ProblemUpdateView.as_view(model=Problem, form_class=ProblemForm,
-        template_name='pcrs/item_form.html'),
+        template_name='problems_short_answer/problem_form.html'),
         name='short_answer_update'),
 
     url(r'^(?P<pk>[0-9]+)/clear$',
