@@ -75,6 +75,7 @@ class QuestAnalyticsHelper:
 
         return {
             'pk': problem.pk,
+            'url': problem.get_absolute_url(),
             'name': problem.name,
             'type': problemType,
             'medianAttempts': medianAttempts,

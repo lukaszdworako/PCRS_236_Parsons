@@ -23,13 +23,25 @@ QuestAnalyticsRenderer.prototype._renderProblems = function(problems) {
     for (var i = 0; i < problems.length; i++) {
         var problem = problems[i];
 
+        var $problemNameLink = $('<a></a>')
+            .text(problem.name)
+            .attr('href', problem.url + '/submit');
+        var hasAttemptedText = this._formatPercentage(
+            problem.hasAttemptedCount / this.userCount);
+        var hasSolvedText = this._formatPercentage(
+            problem.hasSolvedCount / this.userCount);
+
         var $row = $('<tr></tr>').attr('class', 'analytics-problem-row')
-            .append($('<td></td>').text(problem.name))
+            .append($('<td></td>').append($problemNameLink))
             .append($('<td></td>').text(problem.type))
             .append($('<td></td>').text(problem.medianAttempts))
-            .append($('<td></td>').text(problem.hasAttemptedCount))
-            .append($('<td></td>').text(problem.hasSolvedCount))
+            .append($('<td></td>').text(hasAttemptedText))
+            .append($('<td></td>').text(hasSolvedText))
         this.$analyticsTable.find('tbody').append($row);
     }
+}
+
+QuestAnalyticsRenderer.prototype._formatPercentage = function(num) {
+    return (100 * num).toFixed(2) + '%';
 }
 
