@@ -6,8 +6,8 @@ from django.db.models.signals import post_delete
 from problems.pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-                             AbstractTestCase, AbstractTestRun,
-                             testcase_delete, problem_delete)
+    SubmissionPreprocessorMixin, AbstractTestCase, AbstractTestRun,
+    testcase_delete, problem_delete)
 
 
 class Problem(AbstractProgrammingProblem):
@@ -23,7 +23,7 @@ class Problem(AbstractProgrammingProblem):
                                 default='python')
 
 
-class Submission(AbstractSubmission):
+class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     """
     A coding problem submission.
     """
@@ -36,8 +36,13 @@ class Submission(AbstractSubmission):
         """
         results = []
         error = None
+
+        submittedFiles = self.preprocessTags()
+        # We don't support multiple files yet
+        submittedCode = submittedFiles[0]['code']
+
         for testcase in self.problem.testcase_set.all():
-            run = testcase.run(self.submission)
+            run = testcase.run(submittedCode)
 
             try:
                 passed = run['passed_test']

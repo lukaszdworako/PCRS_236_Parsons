@@ -15,7 +15,7 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
                          get_submission_content_types)
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
-from problems.helper import parseCodeIntoFiles
+import problems.TagManager as TagManager
 
 
 def get_problem_labels():
@@ -447,16 +447,14 @@ class AbstractJobScheduler(models.Model):
 
 
 class SubmissionPreprocessorMixin:
-    def __init__(self, *args, **kwargs):
-        self.hidden_lines_list = []
-        super(SubmissionPreprocessorMixin, self).__init__(*args, **kwargs)
-
     '''
     Helpers for tag preprocessing in Submission classes.
     '''
-    def preprocessTags(self):
-        self.hidden_lines_list = []
 
+    class MissingDeliminatorException(Exception):
+        pass
+
+    def preprocessTags(self):
         # if code from editor, just return code -- there were no tags
         if self.problem.is_editor_problem():
             if len(self.submission) == 0:
@@ -466,23 +464,20 @@ class SubmissionPreprocessorMixin:
                 'code': self.submission,
             }]
 
-        #Code not from editor, process tags
+        # Code not from editor, process tags
         code = self.fuseStudentCodeIntoStarterCode()
         # Strip tags but leave their contents (for compiling)
         code = self.removeTags(code)
 
-        return parseCodeIntoFiles(code) or [{
-            # If there were no file tags
-            'name': None, # There should be a fallback for an empty file name
-            'code': code,
-        }]
+        return TagManager.parseCodeIntoFiles(code)
 
     def removeTags(self, code):
         '''Removes student_code, blocked, and hidden tags.
 
         The content inside each of these tags will _NOT_ be removed.
         '''
-        return re.sub(r'\[\/?(student_code|blocked|hidden)\]\r?\n?', '', code)
+        return re.sub(r'[\t ]*\[\/?(student_code|blocked|hidden)\][\t ]*\r?\n?',
+            '', code)
 
     def fuseStudentCodeIntoStarterCode(self):
         '''Processes the tags in this submission.
@@ -490,14 +485,16 @@ class SubmissionPreprocessorMixin:
         Returns:
             A string representation of the files (including [file] tags)
         '''
-        delim = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
-        studentCodeList = self._parseStudentCodeChunks(self.submission, delim)
 
-        # The fusion of student code with starter_code (from the database)
-        modSubmission = self._emplaceStudentCodeChunks(studentCodeList,
-            self.problem.starter_code)
-
-        return modSubmission
+        try:
+            delim = sha1(str(self.problem_id).encode('utf-8')).hexdigest()
+            studentCodeList = self._parseStudentCodeChunks(self.submission, delim)
+            # The fusion of student code with starter_code (from the database)
+            return self._emplaceStudentCodeChunks(studentCodeList,
+                self.problem.starter_code)
+        except self.MissingDeliminatorException:
+            # Fallback, if there are no student_code tags
+            return self.submission
 
     def _parseStudentCodeChunks(self, sub, delim):
         '''Extracts code chunks out of a given submission.
@@ -513,7 +510,7 @@ class SubmissionPreprocessorMixin:
 
         # Could not find student code
         if len(delim_list) == 0:
-            raise Exception("No student code found!")
+            raise self.MissingDeliminatorException("No student code given")
 
         chunks = []
         while len(delim_list) >= 2:
