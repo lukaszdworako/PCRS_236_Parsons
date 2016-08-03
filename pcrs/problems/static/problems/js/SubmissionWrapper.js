@@ -64,6 +64,40 @@ SubmissionWrapper.prototype.createCodeMirrors = function() {
         $submissionDiv, submissionText, false);
 }
 
+// TODO: Replace createCodeMirrors with this!
+// Eventually, every language should use a submission tabbed code mirror.
+// At that point, tcm should be a property of all SubmissionWrappers
+SubmissionWrapper.prototype.createSubmissionMirror = function() {
+    var tcm = new SubmissionTabbedCodeMirror();
+    tcm.setNewFileOptions({
+        'mode': cmModeForLanguageAndVersion(
+            this.language, this.language_version),
+        'theme': user_theme, // global... gur
+    });
+
+    var $submissionDiv = this.wrapperDiv.find(this.isEditor
+        ? '#div_id_code_box' : '#div_id_submission');
+
+    var code = $submissionDiv.find('textarea').text();
+    tcm.addFilesFromTagText(code);
+
+    // Replace the code div with the tabbed code mirror
+    $submissionDiv.before(tcm.getJQueryObject());
+    $submissionDiv.remove();
+
+    if ( ! this.isEditor) {
+        // Prevent users from obliterating changes accidentally.
+        $(window).bind('beforeunload', function() {
+            if ( ! tcm.isClean()) {
+                return 'You have unsubmitted changes.';
+            }
+        });
+    }
+
+    myCodeMirrors[this.wrapperDivId] = tcm;
+    return tcm;
+}
+
 SubmissionWrapper.prototype._showEditorTraceDialog = function() {
     var code = this.getAllCode();
     this.getTestcases(code);

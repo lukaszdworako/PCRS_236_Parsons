@@ -4,6 +4,7 @@ function PythonSubmissionWrapper(name) {
     this.language_version = 3;
     this.visualizer = new PythonVisualizer();
     this.visualizer.setProblemId(this.problemId);
+    this.tcm = null; // Set in createCodeMirrors (on page load)
 }
 PythonSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
@@ -13,8 +14,24 @@ PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
  */
 PythonSubmissionWrapper.prototype._showEditorTraceDialog = function(code) {
     var code = this.getAllCode();
+
     this.visualizer.setCode(code);
     this.visualizer.loadVisualizer();
+}
+
+/**
+ * @override
+ */
+PythonSubmissionWrapper.prototype.getAllCode = function() {
+    var hash = CryptoJS.SHA1(this.problemId);
+    return this.tcm.getHashedCode(hash);
+}
+
+/**
+ * @override
+ */
+PythonSubmissionWrapper.prototype.createCodeMirrors = function() {
+    this.tcm = this.createSubmissionMirror();
 }
 
 /**

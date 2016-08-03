@@ -5,12 +5,7 @@ function JavaSubmissionWrapper(name) {
     this.lastSubmissionPk = 0;
     this.visualizer = new JavaVisualizer();
     this.visualizer.setProblemId(this.problemId);
-
-    this.tcm = new SubmissionTabbedCodeMirror();
-    this.tcm.setNewFileOptions({
-        'mode': 'text/x-java',
-        'theme': user_theme, // global... gur
-    });
+    this.tcm = null; // Will be set in createCodeMirrors (page load)
 }
 JavaSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
@@ -19,10 +14,7 @@ JavaSubmissionWrapper.prototype.constructor = JavaSubmissionWrapper;
  * @override
  */
 JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
-    var $codeDiv = this.wrapperDiv.find(this.isEditor
-        ? '#div_id_code_box' : '#div_id_submission');
-
-    var code = $codeDiv.find('textarea').text();
+    this.tcm = this.createSubmissionMirror();
 
     if (this.isEditor) {
         var mode = cmModeForLanguageAndVersion(
@@ -35,23 +27,6 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
         });
         this.tcm.setForcedFileExtension('java');
         this.tcm.enableTabEditingWidgets();
-    }
-
-    this.tcm.addFilesFromTagText(code);
-    // Replace the code div with the tabbed code mirror
-    $codeDiv.before(this.tcm.getJQueryObject());
-    $codeDiv.remove();
-
-    myCodeMirrors[this.wrapperDivId] = this.tcm;
-
-    if ( ! this.isEditor) {
-        var that = this;
-        // Prevent users from obliterating changes accidentally.
-        $(window).bind('beforeunload', function() {
-            if ( ! that.tcm.isClean()) {
-                return 'You have unsubmitted changes.';
-            }
-        });
     }
 }
 
@@ -72,7 +47,7 @@ JavaSubmissionWrapper.prototype._showEditorTraceDialog = function() {
  */
 JavaSubmissionWrapper.prototype.getAllCode = function() {
     var hash = CryptoJS.SHA1(this.problemId);
-    return myCodeMirrors[this.wrapperDivId].getHashedCode(hash);
+    return this.tcm.getHashedCode(hash);
 }
 
 /**

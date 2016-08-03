@@ -10,7 +10,7 @@ from datetime import datetime
 from pcrs.settings import PROJECT_ROOT
 from problems.pcrs_languages import BaseLanguage
 
-from problems.helper import parseCodeIntoFiles
+import problems.TagManager as TagManager
 
 class CompilationError(Exception):
     pass
@@ -45,7 +45,7 @@ class JavaSpecifics(BaseLanguage):
                 cwd=self.jail_execution_path,
                 universal_newlines=True)
 
-        files = parseCodeIntoFiles(user_script)
+        files = TagManager.parseCodeIntoFiles(user_script)
         for f in files:
             # JavaJail expects no ".java" extensions
             f['name'] = re.sub(r'\.java$', '', f['name'])
