@@ -40,10 +40,14 @@ TagManager.parseCodeIntoFiles = function(code) {
  *
  * @see parseCodeIntoFiles
  * @param {Array} files An array of file objects with 'name' and 'code' params.
+ * @param {boolean} shouldInsertStudentTags Calls addStudentCodeTags on the
+ *                                          files. (optional)
  * @return {string} Raw code with [file <name>] tags included.
  *                  If a file name is null, there will be no file tags.
 */
-TagManager.concatFilesIntoCode = function(files) {
+TagManager.concatFilesIntoCode = function(files, shouldInsertStudentTags) {
+    shouldInsertStudentTags = shouldInsertStudentTags == true;
+
     // If there is only one file with no name (legacy support)
     if (files.length == 1 && files[0].name == null) {
         return files[0].code;
@@ -52,7 +56,12 @@ TagManager.concatFilesIntoCode = function(files) {
     var code = "";
     for (var i = 0; i < files.length; i++) {
         var f = files[i];
-        code += '[file ' + f.name + ']\n' + f.code + '\n[/file]';
+
+        var fileCode = shouldInsertStudentTags
+            ? TagManager.addStudentCodeTags(f.code)
+            : f.code;
+
+        code += '[file ' + f.name + ']\n' + fileCode + '\n[/file]';
         if (i < files.length - 1) {
             code += '\n';
         }

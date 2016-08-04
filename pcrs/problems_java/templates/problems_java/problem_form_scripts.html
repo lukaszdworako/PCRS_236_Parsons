@@ -1,106 +1,83 @@
 <script>
-var id_test_suite_field = 'id_test_suite';
-var id_visualizer_code_field = 'id_visualizer_code';
+// FIXME destroy these globals
 language = 'java';
 language_version = '7';
-
-/**
- * @override
- */
-submitHidden = function() {
-    try {
-        var starterCode = addTagsToStarterCode();
-        var testSuiteCode = cmh_list[id_test_suite_field].getValue();
-        var visCode = cmh_list[id_visualizer_code_field].getValue();
-
-        var solutionFiles = cmh_list[id_solution_field].getFiles();
-        var solutionCode = TagManager.concatFilesIntoCode(solutionFiles);
-
-        // Move values to temporary variables
-        document.getElementById("id_starter_code_tmp").value = starterCode;
-        document.getElementById("id_solution_tmp").value = solutionCode;
-        document.getElementById("id_test_suite_tmp").value = testSuiteCode;
-        document.getElementById("id_visualizer_code_tmp").value = visCode;
-        return true;
-    } catch (err) {
-        alert('Error submitting code: ' + err.message);
-        // We must return false to avoid submitting and borking stuff
-        return false;
-    }
-}
 
 /**
  * Show a help dialog including some sample code for the instructor.
  */
 function showJunitHelp() {
+    // FIXME this is broken
     var sampleCode = $('#sampleJUnitSuiteCode').text().trim();
     showPreviewModal('Sample Test Suite Code', sampleCode);
 }
 
-function setTabbedCodeMirrorAsEditable(tcm) {
-    tcm.enableTabEditingWidgets();
-    tcm.setNewFileOptions({
-        'name': 'NewFile.java',
-        'code': '',
-        'mode': cmModeForLanguageAndVersion(language, language_version),
-        'theme': user_theme,
-    });
-    tcm.setForcedFileExtension('java');
-}
-
-function addCodeMirrorToFieldWithId(id) {
-    var element = $('#' + id);
-    cmh_list[id] = to_code_mirror(
-        language, language_version, element, element.text(), false);
-}
-
-/**
- * Add [student_code] tag respecting [blocked] and
- * [hidden] tags to guarantee the exercise integrity.
- */
-function addTagsToStarterCode() {
-    var files = cmh_list[id_starter_code_field].getFiles();
-
-    for (var i = 0; i < files.length; i++) {
-        var f = files[i];
-        f.code = TagManager.addStudentCodeTags(f.code);
-    }
-
-    return TagManager.concatFilesIntoCode(files);
-}
-
 $(function() {
-    $('form')
-        .append($('<input type="hidden" name="test_suite" value=""></input>')
-            .attr('id', 'id_test_suite_tmp')
-            .attr('name', 'test_suite')
-        )
-        .append($('<input type="hidden" name="test_suite" value=""></input>')
-            .attr('id', 'id_visualizer_code_tmp')
-            .attr('name', 'visualizer_code')
-        );
-
-    addCodeMirrorToFieldWithId(id_test_suite_field);
-    addCodeMirrorToFieldWithId(id_visualizer_code_field);
+    new JavaProblemFormHandler($('form')).pageLoad();
 
     var btnTemplate = Handlebars.getTemplate('hb_icon_button');
-    var testSuiteField = $('#div_' + id_test_suite_field + ' div.controls');
-    testSuiteField.after('<br />' +
+    var $testSuiteField = $('#div_id_test_suite div.controls');
+    $testSuiteField.after('<br />' +
         btnTemplate({
             type: 'primary',
             onclick: 'showJunitHelp()',
             glyph: 'question-sign',
             text: 'Help',
         }));
-
-    var solutionTcm = cmh_list[id_solution_field];
-    if (solutionTcm.getFiles()[0].name == '') {
-        solutionTcm.renameFileAtIndex(0, 'NewFile.java');
-    }
-
-    setTabbedCodeMirrorAsEditable(cmh_list[id_starter_code_field]);
-    setTabbedCodeMirrorAsEditable(solutionTcm);
 });
+
+function JavaProblemFormHandler($form) {
+    var mode = cmModeForLanguageAndVersion('java', null);
+    ProgrammingProblemFormHandler.call(this, $form, mode);
+    this.enableTabsInStarterCode('java');
+
+    // These are created in _setupCodeMirrors
+    this.testSuiteCodeMirror = null;
+    this.visualizerCodeMirror = null;
+}
+JavaProblemFormHandler.prototype =
+    Object.create(ProgrammingProblemFormHandler.prototype);
+JavaProblemFormHandler.prototype.constructor = JavaProblemFormHandler;
+
+/**
+ * @override
+ */
+JavaProblemFormHandler.prototype._setupCodeMirrors = function() {
+    ProgrammingProblemFormHandler.prototype._setupCodeMirrors.call(this);
+    this.testSuiteCodeMirror = addCodeMirrorToFieldWithId('id_test_suite');
+    this.visualizerCodeMirror = addCodeMirrorToFieldWithId('id_visualizer_code');
+}
+
+function addCodeMirrorToFieldWithId(id) {
+    var element = $('#' + id);
+    return to_code_mirror('java', null, element, element.text(), false);
+}
+
+/**
+ * @override
+ */
+JavaProblemFormHandler.prototype._setHiddenFieldValues = function() {
+    var starterCode = TagManager.concatFilesIntoCode(
+        this.starterCodeTcm.getFiles(), true);
+    var solutionCode = TagManager.concatFilesIntoCode(
+        this.solutionTcm.getFiles(), true);
+    var testSuiteCode = this.testSuiteCodeMirror.getValue();
+    var visualizerCode = this.visualizerCodeMirror.getValue();
+
+    this.$form.find("#id_starter_code_tmp").val(starterCode);
+    this.$form.find("#id_solution_tmp").val(solutionCode);
+    this.$form.find("#id_test_suite_tmp").val(testSuiteCode);
+    this.$form.find("#id_visualizer_code_tmp").val(visualizerCode);
+}
+
+/**
+  * @override
+  */
+JavaProblemFormHandler.prototype._createHiddenFormFields = function() {
+    ProgrammingProblemFormHandler.prototype._createHiddenFormFields.call(this);
+    this.$form.append(this._createHiddenField('test_suite'));
+    this.$form.append(this._createHiddenField('visualizer_code'));
+}
 </script>
 
 <script id="sampleJUnitSuiteCode" type="text/plain">

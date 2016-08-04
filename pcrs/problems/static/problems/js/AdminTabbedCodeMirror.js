@@ -111,8 +111,7 @@ AdminTabbedCodeMirror.prototype._cleanFileCodeForPreview = function(code) {
  */
 AdminTabbedCodeMirror.prototype._createTagAtCurrentSelection =
         function(tagName) {
-    var tcm = cmh_list[id_starter_code_field];
-    var mirror = tcm.getCodeMirror(tcm.getActiveTabIndex());
+    var mirror = this.getCodeMirror(this.getActiveTabIndex());
 
     // Detect tags in the source code
     var code = mirror.getValue();

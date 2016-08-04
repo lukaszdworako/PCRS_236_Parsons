@@ -19,37 +19,68 @@
     type="text/javascript"></script>
 
 <script type="text/javascript">
-var cmh_list = {};
+
+// FIXME destroy these globals
 var language = 'c';
-var language_version = 'text/x-csrc';
-var id_starter_code_field = 'id_starter_code';
-var id_solution_field = 'id_solution';
+var language_version = null;
 
-function submitHidden() {
-    try {
-        // NOTE: In the future, we may want to allow multiple files for C.
-        var tcm = cmh_list[id_starter_code_field];
-        var code = TagManager.addStudentCodeTags(tcm.getFiles()[0].code);
-        var solutionCode = cmh_list[id_solution_field].getFiles()[0].code;
+$(function() {
+    // FIXME über hacky right now
+    if (language == 'c') {
+        var mode = cmModeForLanguageAndVersion(language, language_version);
+        new ProgrammingProblemFormHandler($('form'), mode).pageLoad();
+    }
+});
 
-        // Move values to temporary variables
-        document.getElementById("id_starter_code_tmp").value = code;
-        document.getElementById("id_solution_tmp").value = solutionCode;
-        return true;
-    } catch (err) {
-        alert('Error submitting code: ' + err.message);
-        return false;
+function ProgrammingProblemFormHandler($form, cmMode) {
+    this.$form = $form;
+    this.starterCodeTcm = new AdminTabbedCodeMirror();
+    this.solutionTcm = new TabbedCodeMirror();
+    this._codeMirrorMode = cmMode;
+}
+
+/**
+ * Should be called once the page loads.
+ */
+ProgrammingProblemFormHandler.prototype.pageLoad = function() {
+    this._setupFormCallbacks();
+    this._createHiddenFormFields();
+    this._setupCodeMirrors();
+}
+
+ProgrammingProblemFormHandler.prototype.enableTabsInStarterCode =
+        function(fileExtension) {
+    this._enableTabsOnTcm(this.starterCodeTcm, fileExtension);
+    this._enableTabsOnTcm(this.solutionTcm, fileExtension);
+}
+
+ProgrammingProblemFormHandler.prototype._enableTabsOnTcm =
+        function(tcm, extension) {
+    var newFileName = 'NewFile.' + extension;
+
+    tcm.enableTabEditingWidgets();
+    tcm.setNewFileOptions({
+        'name': newFileName,
+        'code': '',
+        'mode': this._codeMirrorMode,
+        'theme': user_theme,
+    });
+    tcm.setForcedFileExtension(extension);
+
+    // For legacy problems which didn't include tabs
+    var files = tcm.getFiles();
+    if (files.length > 0 && files[0].name == '') {
+        tcm.renameFileAtIndex(0, newFileName);
     }
 }
 
-function addTabbedCodeMirrorToFieldWithId(id, tcm) {
-    var $element = $('#' + id);
+ProgrammingProblemFormHandler.prototype._replaceElementWithTcm =
+        function($element, tcm) {
     var code = $element.text();
-
     $element.replaceWith(tcm.getJQueryObject());
 
     tcm.setNewFileOptions({
-        'mode': cmModeForLanguageAndVersion(language, language_version),
+        'mode': this._codeMirrorMode,
         'theme': user_theme,
     });
 
@@ -59,30 +90,58 @@ function addTabbedCodeMirrorToFieldWithId(id, tcm) {
     }
     tcm.setActiveTabIndex(0);
 
-    cmh_list[id] = tcm;
+    return tcm;
 }
 
-function setupCodeMirrors() {
-    addTabbedCodeMirrorToFieldWithId(id_starter_code_field,
-        new AdminTabbedCodeMirror());
-    addTabbedCodeMirrorToFieldWithId(id_solution_field,
-        new TabbedCodeMirror());
+ProgrammingProblemFormHandler.prototype._setupCodeMirrors = function() {
+    this._replaceElementWithTcm($('#id_starter_code'), this.starterCodeTcm);
+    this._replaceElementWithTcm($('#id_solution'), this.solutionTcm);
 }
 
-$(function() {
+ProgrammingProblemFormHandler.prototype._setupFormCallbacks = function() {
+    var that = this;
+    var callback = function() {
+        that._submitHidden();
+    };
     // Add function to submit button to update hidden field data
-    $("#submit-id-clone").click(submitHidden);
-    $("#submit-id-submit").click(submitHidden);
-    $("#submit-id-attempt").click(submitHidden);
+    this.$form.find("#submit-id-clone").click(callback);
+    this.$form.find("#submit-id-submit").click(callback);
+    this.$form.find("#submit-id-attempt").click(callback);
+}
 
-    // Add hidden values to submit code
-    $('form').append('<input type="hidden" id="id_starter_code_tmp" ' +
-                        'name="starter_code" value=""></input>' +
-                    '<input type="hidden" id="id_solution_tmp" ' +
-                        'name="solution" value=""></input>');
+ProgrammingProblemFormHandler.prototype._createHiddenField = function(name) {
+    var $field = $('<input type="hidden" value=""></input>')
+            .attr('id', 'id_' + name + '_tmp')
+            .attr('name', name);
+    this.$form.append($field);
+    return $field;
+}
 
-    setupCodeMirrors();
-});
+ProgrammingProblemFormHandler.prototype._submitHidden = function() {
+    try {
+        this._setHiddenFieldValues();
+        return true;
+    } catch (err) {
+        alert('Error submitting code: ' + err.message);
+        return false;
+    }
+}
+
+ProgrammingProblemFormHandler.prototype._setHiddenFieldValues = function() {
+    var starterCode = this.starterCodeTcm.getFiles()[0].code;
+    starterCode = TagManager.addStudentCodeTags(starterCode);
+    var solutionCode = this.solutionTcm.getFiles()[0].code;
+
+    // Move values to temporary variables
+    this.$form.find("#id_starter_code_tmp").val(starterCode);
+    this.$form.find("#id_solution_tmp").val(solutionCode);
+}
+
+// Add hidden values to submit code
+ProgrammingProblemFormHandler.prototype._createHiddenFormFields = function() {
+    this.$form.append(this._createHiddenField('starter_code'));
+    this.$form.append(this._createHiddenField('solution'));
+}
 </script>
 {% endcompress %}
 
