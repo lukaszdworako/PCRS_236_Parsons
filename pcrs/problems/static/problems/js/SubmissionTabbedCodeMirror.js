@@ -87,6 +87,7 @@ SubmissionTabbedCodeMirror.prototype._getHashedCodeFromMirror =
         function(mirror, hash) {
     var code = '';
     var inHash = false;
+    var outsideHashAndBlocked = false;
 
     var blockedClass = SubmissionTabbedCodeMirror._blockedLineClass;
     for (var i = 0; i < mirror.lineCount(); i++) {
@@ -97,16 +98,29 @@ SubmissionTabbedCodeMirror.prototype._getHashedCodeFromMirror =
                 code += hash + '\n';
                 inHash = false;
             }
+            outsideHashAndBlocked = false;
             continue;
-        }
         // The start of a hash segment
-        if (wrapClass && wrapClass.indexOf('hash-start') > -1) {
-            if (inHash) {
-                // student_code tags back to back
+        } else if (wrapClass && wrapClass.indexOf('hash-start') > -1) {
+            if ( ! outsideHashAndBlocked) {
+                if (inHash) {
+                    // student_code tags back to back
+                    code += hash + '\n';
+                }
                 code += hash + '\n';
             }
-            code += hash + '\n';
             inHash = true;
+            outsideHashAndBlocked = false;
+        } else if ( ! inHash && ! outsideHashAndBlocked) {
+            /*
+             * This is an ugly safeguard for area's that may not have a
+             * hash-start or blocked section above them. In certain
+             * circumstances such as pressing Shift+Enter at the top of a file,
+             * you are able to insert code above a hash, which will be ignored
+             * by the server. So we have to "extend" the hashed regions.
+             */
+            outsideHashAndBlocked = true;
+            code += hash + '\n';
         }
 
         code += mirror.getLine(i) + '\n';
