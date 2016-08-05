@@ -1,8 +1,6 @@
+{% load compress %}
+{% compress js %}
 <script>
-// FIXME destroy these globals
-language = 'java';
-language_version = '7';
-
 /**
  * Show a help dialog including some sample code for the instructor.
  */
@@ -44,13 +42,10 @@ JavaProblemFormHandler.prototype.constructor = JavaProblemFormHandler;
  */
 JavaProblemFormHandler.prototype._setupCodeMirrors = function() {
     ProgrammingProblemFormHandler.prototype._setupCodeMirrors.call(this);
-    this.testSuiteCodeMirror = addCodeMirrorToFieldWithId('id_test_suite');
-    this.visualizerCodeMirror = addCodeMirrorToFieldWithId('id_visualizer_code');
-}
-
-function addCodeMirrorToFieldWithId(id) {
-    var element = $('#' + id);
-    return to_code_mirror('java', null, element, element.text(), false);
+    this.testSuiteCodeMirror = to_code_mirror('java', null,
+        $('#id_test_suite'), $('#id_test_suite').text(), false);
+    this.visualizerCodeMirror = to_code_mirror('java', null,
+        $('#id_visualizer_code'), $('#id_visualizer_code').text(), false);
 }
 
 /**
@@ -79,6 +74,7 @@ JavaProblemFormHandler.prototype._createHiddenFormFields = function() {
     this.$form.append(this._createHiddenField('visualizer_code'));
 }
 </script>
+{% endcompress %}
 
 <script id="sampleJUnitSuiteCode" type="text/plain">
 import org.junit.*;

@@ -1,15 +1,6 @@
-{% extends "problems/problem_form.html" %}
-
-{% load staticfiles %}
+{% extends "problems/programming_problem_form.html" %}
 {% block scripts %}
     {{ block.super }}
-    {% load staticfiles %}
     {% include "problems_c/problem_form_scripts.html" %}
-{% endblock %}
-
-
-{% block stylesheets %}
-    {{ block.super }}
-    {% include "problems_c/problem_form_stylesheets.html" %}
 {% endblock %}
 
