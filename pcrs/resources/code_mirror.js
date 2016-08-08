@@ -1,10 +1,3 @@
-function create_to_code_mirror (language, version, location){
-    hcm = to_code_mirror(language, version, $('#'+location), $('#'+location).text(), true);
-    if (!(location in cmh_list)){
-        cmh_list[location] = hcm;
-    }
-}
-
 function cmModeForLanguageAndVersion(language, version) {
     if (language == 'python') {
         return {

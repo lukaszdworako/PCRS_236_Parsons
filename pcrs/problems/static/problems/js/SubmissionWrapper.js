@@ -10,6 +10,10 @@ function SubmissionWrapper(wrapperDivId) {
     this.language_version = null;
 }
 
+SubmissionWrapper.prototype.getCmMode = function() {
+    return cmModeForLanguageAndVersion(this.language, this.language_version);
+}
+
 /**
  * Factory method for creating language-specific submission wrappers.
  */
@@ -70,8 +74,7 @@ SubmissionWrapper.prototype.createCodeMirrors = function() {
 SubmissionWrapper.prototype.createSubmissionMirror = function() {
     var tcm = new SubmissionTabbedCodeMirror();
     tcm.setNewFileOptions({
-        'mode': cmModeForLanguageAndVersion(
-            this.language, this.language_version),
+        'mode': this.getCmMode(),
         'theme': user_theme, // global... gur
     });
 
@@ -432,15 +435,62 @@ SubmissionWrapper.prototype._addHistoryEntryToAccordion = function(entry,
         isBest:     entry['best'] && ! entry['past_dead_line'],
         testcases:  entry['tests'],
         mirrorId:   mirrorId,
-        submission: entry['submission'],
     };
 
-    $accordion.append(template(config));
-    this._createHistoryCodeMirror(entry, mirrorId);
+    var $row = $(template(config));
+    $accordion.append($row);
+
+    var tcm = this._createHistoryCodeMirror(entry);
+    $("#" + mirrorId).replaceWith(tcm.getJQueryObject());
+
+    $row.find('a.pcrs-panel-title').click(function() {
+        // Wait for the accordion to expand before rendering. Ugly, I know :(
+        setTimeout(function () {
+            tcm.refresh()
+        }, 1);
+    });
+
+    this._addHistoryEntryButtons($row, entry);
 }
 
-SubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
-        mirrorId) {
-    create_to_code_mirror(this.language, this.language_version, mirrorId);
+SubmissionWrapper.prototype._addHistoryEntryButtons = function($row, entry) {
+    var that = this;
+    $row.find('#buttonArea').append(
+        $('<a class="btn btn-danger" role="button"></a>')
+            .text('Revert')
+            .click(function() {
+                that._revertToCodeFromHistoryModal(entry.submission);
+            }));
+}
+
+SubmissionWrapper.prototype._createHistoryCodeMirror = function(entry) {
+    var tcm = new SubmissionTabbedCodeMirror();
+
+    tcm.setNewFileOptions({
+        'readOnly': true,
+        'mode': this.getCmMode(),
+        'theme': user_theme, // global... gur
+    });
+    tcm.addFilesFromTagText(entry.submission);
+
+    return tcm;
+}
+
+SubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
+    /*
+     * This can't be a modal confirmation since the history modal is
+     * already being shown. Bootstrap doesn't support multiple modals being
+     * open at the same time.
+     */
+    if ( ! confirm('Revert current code to this submission?')) {
+        return;
+    }
+
+    this.tcm.addFilesFromTagText(code);
+
+    var $historyDiv = $('#history_window_' + this.wrapperDivId);
+    $historyDiv.modal('hide');
+    this.wrapperDiv.find('#grade-code').hide();
+    this.wrapperDiv.find('#alert').hide();
 }
 

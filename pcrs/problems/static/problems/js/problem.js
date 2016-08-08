@@ -2,7 +2,6 @@
  * global variables
 */
 var myCodeMirrors = {};
-var cmh_list = {};
 //root is a global variable from base.html
 
 $(document).ready(function() {

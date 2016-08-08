@@ -17,12 +17,10 @@ JavaSubmissionWrapper.prototype.createCodeMirrors = function() {
     this.tcm = this.createSubmissionMirror();
 
     if (this.isEditor) {
-        var mode = cmModeForLanguageAndVersion(
-            this.language, this.language_version);
         this.tcm.setNewFileOptions({
             'name': 'NewFile.java',
             'code': '',
-            'mode': mode,
+            'mode': this.getCmMode(),
             'theme': user_theme,
         });
         this.tcm.setForcedFileExtension('java');
@@ -123,54 +121,17 @@ JavaSubmissionWrapper.prototype._injectVisualizationButton = function($table) {
 /**
  * @override
  */
-JavaSubmissionWrapper.prototype._createHistoryCodeMirror = function(entry,
-        mirrorId) {
-    var $codeDiv = $("#" + mirrorId);
-    var codeText = $codeDiv.text();
-    var tcm = new SubmissionTabbedCodeMirror();
-
-    tcm.setNewFileOptions({
-        'readOnly': true,
-        'mode': 'text/x-java',
-        'theme': user_theme, // global... gur
-    });
-    tcm.addFilesFromTagText(codeText);
+JavaSubmissionWrapper.prototype._addHistoryEntryButtons =
+        function($row, entry) {
+    SubmissionWrapper.prototype._addHistoryEntryButtons.apply(this, arguments);
 
     var that = this;
-    $codeDiv
-        .before($('<a class="btn btn-danger pull-right" role="button"></a>')
-            .text('Revert')
-            .click(function() {
-                that._revertToCodeFromHistoryModal(codeText);
-            }))
-        .before($('<a class="btn btn-info pull-right" role="button"></a>')
+    $row.find('#buttonArea').append(
+        $('<a class="btn btn-info" role="button"></a>')
             .text('Visualize')
             .click(function() {
                 that._visualizeHistoryEntryPk(entry['sub_pk']);
-            }))
-        // Replace the code div with the tabbed code mirror
-        .before(tcm.getJQueryObject())
-        .remove();
-
-    cmh_list[mirrorId] = tcm;
-}
-
-JavaSubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
-    /*
-     * This can't be a modal confirmation since the history modal is
-     * already being shown. Bootstrap doesn't support multiple modals being
-     * open at the same time.
-     */
-    if ( ! confirm('Revert current code to this submission?')) {
-        return;
-    }
-
-    this.tcm.addFilesFromTagText(code);
-
-    var $historyDiv = $('#history_window_' + this.wrapperDivId);
-    $historyDiv.modal('hide');
-    this.wrapperDiv.find('#grade-code').hide();
-    this.wrapperDiv.find('#alert').hide();
+            }));
 }
 
 /**

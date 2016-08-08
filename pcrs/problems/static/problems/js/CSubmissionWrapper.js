@@ -219,3 +219,14 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
     return code;
 }
 
+/**
+ * @override
+ */
+CSubmissionWrapper.prototype._addHistoryEntryButtons = function($row, entry) {
+    /*
+     * Do nothing.
+     * Since PCRS-C has it's own tag parsing code, the revert button
+     * causes issues.
+     */
+}
+

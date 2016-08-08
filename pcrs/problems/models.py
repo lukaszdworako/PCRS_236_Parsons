@@ -16,6 +16,7 @@ from pcrs.models import (AbstractNamedObject, AbstractGenericObjectForeignKey,
 from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
 import problems.TagManager as TagManager
+from problems.helper import remove_tag
 
 
 def get_problem_labels():
@@ -453,6 +454,13 @@ class SubmissionPreprocessorMixin:
 
     class MissingDeliminatorException(Exception):
         pass
+
+    def get_displayable_submission(self):
+        '''We want to return the tags for the history modal in PCRS-Java.
+        '''
+        code = self.fuseStudentCodeIntoStarterCode()
+        code = remove_tag('[hidden]', '[/hidden]', code)
+        return code
 
     def preprocessTags(self):
         # if code from editor, just return code -- there were no tags
