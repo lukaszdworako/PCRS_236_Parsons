@@ -3,7 +3,8 @@ from django.db import models
 from django.db.models.signals import post_delete
 
 from problems.models import (AbstractSubmission, AbstractTestRun,
-                             testcase_delete, problem_delete)
+    SubmissionPreprocessorMixin,
+    testcase_delete, problem_delete)
 from problems_rdb.db_wrapper import StudentWrapper
 from problems_rdb.models import RDBProblem, RDBTestCase
 
@@ -30,16 +31,21 @@ class Problem(RDBProblem):
         self._run_solution(self.solution)
 
 
-class Submission(AbstractSubmission):
+class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
     def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
 
+        submittedFiles = self.preprocessTags()
+        # We don't support multiple files yet
+        submittedCode = submittedFiles[0]['code']
+
         if self.problem.pk == 9999999:                # Editor
             save = False
-            self.problem.solution = self.submission   # Allows get_results to run with the same results on both sides
+            # Allows get_results to run with the same results on both sides
+            self.problem.solution = submittedCode
             # TODO: Setting a specific dataset that matches the schema
             testcases = [TestCase.objects.get(pk=11)]
 
@@ -47,7 +53,7 @@ class Submission(AbstractSubmission):
                             user=request.user.username) as db:
             for testcase in testcases:
                 dataset = testcase.dataset
-                result = db.run_testcase(self.problem.solution, self.submission,
+                result = db.run_testcase(self.problem.solution, submittedCode,
                                          dataset.namespace,
                                          self.problem.order_matters)
                 if save:

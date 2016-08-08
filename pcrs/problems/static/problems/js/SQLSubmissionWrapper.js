@@ -2,6 +2,7 @@ function SQLSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "sql";
     this.language_version = "text/x-sql";
+    this.tcm = null; // Set in createCodeMirrors (on page load)
 }
 SQLSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 SQLSubmissionWrapper.prototype.constructor = SQLSubmissionWrapper;
@@ -10,10 +11,10 @@ SQLSubmissionWrapper.prototype.constructor = SQLSubmissionWrapper;
  * @override
  */
 SQLSubmissionWrapper.prototype.createCodeMirrors = function() {
-    SubmissionWrapper.prototype.createCodeMirrors.apply(this, arguments);
+    this.tcm = this.createSubmissionMirror();
 
     if (this.isEditor) {
-        var mirror = myCodeMirrors[this.wrapperDivId];
+        var mirror = this.tcm.getCodeMirror(0);
         mirror.getDoc().setValue("select eid from sales;");
     }
 }
@@ -23,6 +24,14 @@ SQLSubmissionWrapper.prototype.createCodeMirrors = function() {
  */
 SQLSubmissionWrapper.prototype._shouldUseGradeTable = function() {
     return true;
+}
+
+/**
+ * @override
+ */
+SQLSubmissionWrapper.prototype.getAllCode = function() {
+    var hash = CryptoJS.SHA1(this.problemId);
+    return this.tcm.getHashedCode(hash);
 }
 
 /**
@@ -173,7 +182,8 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         }
     }
     var data = {'sub_time':new Date(),
-            'submission':myCodeMirrors[div_id].getValue(),
+            // FIXME history is broken
+            //'submission':myCodeMirrors[div_id].getValue(),
             'score':score,
             'best':best,
             'past_dead_line':past_dead_line,

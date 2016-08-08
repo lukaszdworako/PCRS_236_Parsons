@@ -13,7 +13,8 @@ from rapt.rapt import Rapt
 from rapt.treebrd.grammars import GRAMMARS as RAPT_GRAMMARS
 
 from problems.models import (AbstractTestRun, AbstractSubmission,
-                             testcase_delete, problem_delete)
+    SubmissionPreprocessorMixin,
+    testcase_delete, problem_delete)
 from problems_rdb.models import RDBProblem, RDBTestCase, Schema
 
 
@@ -75,16 +76,20 @@ class TestCase(RDBTestCase):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
 
-class Submission(AbstractSubmission):
+class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 
     def run_testcases(self, request, save=True):
         results = []
         testcases = self.problem.testcase_set.all()
 
+        # We don't support multiple files yet
+        submittedCode = self.preprocessTags()[0]['code']
+
         if self.problem.pk == 9999999:                # Editor
             save = False
-            self.problem.solution = self.submission   # Allows get_results to run with the same results on both sides
+            # Allows get_results to run with the same results on both sides
+            self.problem.solution = submittedCode
             # TODO: Setting a specific dataset that matches the schema
             testcases = [TestCase.objects.get(pk=9)]
 
@@ -134,7 +139,9 @@ class Submission(AbstractSubmission):
         submission, solution, error = [], [], None
 
         try:
-            submission = translator.to_sql(instring=self.submission,
+            submittedCode = self.preprocessTags()[0]['code']
+
+            submission = translator.to_sql(instring=submittedCode,
                                            schema=schema,
                                            use_bag_semantics=use_bag)
             solution = translator.to_sql(instring=self.problem.solution,
