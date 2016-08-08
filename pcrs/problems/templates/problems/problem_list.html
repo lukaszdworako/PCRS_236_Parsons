@@ -4,34 +4,38 @@
 {% block object_info %}
 {% if object.id != 9999999 %}
 <div class="pcrs-panel-group" id="quest_accordion_{{ object.pk }}">
-    <div class="pcrs-panel pcrs-panel-title">
-        <h4 class="pcrs-panel-title problem-panel">
-            <a href="#quest_collapse_{{ object.pk }}"
-               data-parent="quest_accordion_{{ object.pk }}"
-               class="collapsed"
-               data-toggle="collapse">
-                <i class="collapse-indicator"></i>
-                <span title="{{ object.name|striptags }}">
-                    {{ object.name|striptags }}
-                    {% if object.challenge %}
-                        ({{ object.challenge|striptags }})
-                    {% endif %}
-                </span>
+    <div class="pcrs-panel pcrs-panel-title problem-panel collapsed"
+            href="#quest_collapse_{{ object.pk }}"
+            data-parent="quest_accordion_{{ object.pk }}"
+            data-toggle="collapse">
+        <i class="collapse-indicator"></i>
+        <span title="{{ object.name|striptags }}">
+            {{ object.name|striptags }}
+            {% if object.challenge %}
+                ({{ object.challenge|striptags }})
+            {% endif %}
+        </span>
 
-                <fieldset class="pull-right">
-                    {% if user.is_instructor or user.is_ta %}
-                        {% block item_controls %}
-                            <a style="color:black" class="pull-right" title="Edit {{ object.name }}"  href="{{ object.get_absolute_url }}">&nbsp;
-                                <i class="pencil-icon"></i>
-                            </a>
-                        {% endblock %}
-                    {% endif %}
-                    <a style="color:black" class="pull-right" type="button" title="Attempt" href="{{ object.get_absolute_url }}/submit">
-                        <i class="attempt-btn"></i>
-                    </a>
-                </fieldset>
+        <div class="pull-right">
+            <a class="no-hover-underline" style="color:black"
+                    type="button"
+                    title="Attempt"
+                    onclick="event.stopPropagation()"
+                    href="{{ object.get_absolute_url }}/submit">
+                <i class="attempt-btn"></i>
             </a>
-        </h4>
+            {% if user.is_instructor or user.is_ta %}
+                {% block item_controls %}
+                    <a class="no-hover-underline" style="color:black"
+                            type="button"
+                            title="Edit {{ object.name }}"
+                            onclick="event.stopPropagation()"
+                            href="{{ object.get_absolute_url }}">
+                        <i class="pencil-icon"></i>
+                    </a>
+                {% endblock %}
+            {% endif %}
+        </div>
     </div>
 
     {% if object.visibity == open %}

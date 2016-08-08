@@ -4,7 +4,7 @@
     border-width:1px !important;
 }
 
-.quest_page_common(@bg-color) {
+.pcrs-panel-fully-clickable(@bg-color) {
     .quest_border;
     .panel-heading;
 
@@ -16,6 +16,10 @@
         background-color: darken(@bg-color, 6.5%);
         cursor: pointer;
     }
+}
+
+.problem-panel {
+    .pcrs-panel-fully-clickable(white);
 }
 
 //arrow indicating opened and closed panels

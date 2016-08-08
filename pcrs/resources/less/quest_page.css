@@ -982,6 +982,8 @@ a.list-group-item.active>.blue-tag,.nav-pills>.active>a>.blue-tag{color:#428bca;
 .fontello-cinema:before{content:"\e803"}
 .fontello-library:before{content:"\e804"}
 .quest_border{border-style:solid !important;border-width:1px !important}
+.problem-panel{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#fff;border-color:#eee;padding:17px 22px}.problem-panel>.dropdown .dropdown-toggle{color:inherit}
+.problem-panel:hover{background-color:#eee;cursor:pointer}
 .collapse-indicator{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-right:10px}.collapse-indicator:before{content:"\e080"}
 .collapsed>.collapse-indicator{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;margin-right:10px}.collapsed>.collapse-indicator:before{content:"\e080"}
 :not(.collapsed)>.collapse-indicator{transform:rotate(90deg)}
