@@ -1,6 +1,14 @@
 {% extends "problems/programming_problem_form.html" %}
 {% block scripts %}
     {{ block.super }}
-    {% include "problems_c/problem_form_scripts.html" %}
+    {% load compress %}
+    {% compress js %}
+    <script type="text/javascript">
+        $(function() {
+            var mode = cmModeForLanguageAndVersion('c', null);
+            new ProgrammingProblemFormHandler($('form'), mode).pageLoad();
+        });
+    </script>
+    {% endcompress %}
 {% endblock %}
 

@@ -1,13 +1,15 @@
-{% extends "problems/programming_problem_form.html" %}
+{% extends "problems_rdb/rdb_problem_form.html" %}
 {% block scripts %}
     {{ block.super }}
     {% load compress %}
     {% compress js %}
     <script type="text/javascript">
+        /* TODO add tag support before doing this
         $(function() {
-            var mode = cmModeForLanguageAndVersion('python', 3);
+            var mode = cmModeForLanguageAndVersion('ra', null);
             new ProgrammingProblemFormHandler($('form'), mode).pageLoad();
         });
+        */
     </script>
     {% endcompress %}
 {% endblock %}
