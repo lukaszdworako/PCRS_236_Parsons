@@ -4,10 +4,10 @@
     {% load compress %}
     {% compress js %}
     <script type="text/javascript">
-        $(function() {
+        problemFormPageLoadCallback = function() {
             var mode = cmModeForLanguageAndVersion('ra', null);
             new ProgrammingProblemFormHandler($('form'), mode).pageLoad();
-        });
+        }
     </script>
     {% endcompress %}
 {% endblock %}

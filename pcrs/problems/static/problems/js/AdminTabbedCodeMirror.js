@@ -42,7 +42,7 @@ AdminTabbedCodeMirror.prototype._createTagButtons = function() {
         .add($(btnTemplate({
             type: 'primary',
             glyph: 'eye-open',
-            text: 'Preview Exercise',
+            text: 'Code Preview',
         })).click(function () {
             that._previewCode();
         }))
@@ -86,7 +86,6 @@ AdminTabbedCodeMirror.prototype._previewCode = function() {
             'code': this._cleanFileCodeForPreview(file.code),
         });
     }
-    previewTcm.setActiveTabIndex(0);
     AlertModal.alert('Code Preview', previewTcm.getJQueryObject());
     previewTcm.refresh();
 }

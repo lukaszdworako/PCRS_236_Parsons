@@ -174,7 +174,6 @@ SubmissionTabbedCodeMirror.prototype.addFilesFromTagText = function(code) {
         });
     }
 
-    this.setActiveTabIndex(0);
     this.markClean();
 }
 

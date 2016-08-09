@@ -337,6 +337,23 @@ TabbedCodeMirror.prototype.addFile = function(options) {
         this.$tabs.append($listButton);
     }
     this._showOrHideTabs();
+
+    // Ensure at least one tab is selected
+    if (this.getActiveTabIndex() == -1) {
+        this.setActiveTabIndex(0);
+    }
+}
+
+/**
+ * Adds a collection of files to this tcm.
+ *
+ * @param {array} files The files to add.
+ * @see addFile
+ */
+TabbedCodeMirror.prototype.addFiles = function(files) {
+    for (var i = 0; i < files.length; i++) {
+        this.addFile(files[i]);
+    }
 }
 
 /**

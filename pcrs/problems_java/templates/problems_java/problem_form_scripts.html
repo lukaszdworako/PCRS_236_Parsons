@@ -5,24 +5,34 @@
  * Show a help dialog including some sample code for the instructor.
  */
 function showJunitHelp() {
-    // FIXME this is broken
+    var previewTcm = new TabbedCodeMirror();
+    previewTcm.setNewFileOptions({
+        'readOnly': true,
+        'mode': cmModeForLanguageAndVersion('java', null),
+        'theme': user_theme, // global
+    });
+
     var sampleCode = $('#sampleJUnitSuiteCode').text().trim();
-    showPreviewModal('Sample Test Suite Code', sampleCode);
+    previewTcm.addFile({
+        'name': 'SampleSuite.java',
+        'code': sampleCode,
+    });
+    AlertModal.alert('Sample Test Suite', previewTcm.getJQueryObject());
+    previewTcm.refresh();
 }
 
-$(function() {
-    new JavaProblemFormHandler($('form')).pageLoad();
+problemFormPageLoadCallback = function() {
+    var handler = new JavaProblemFormHandler($('form'));
+    handler.pageLoad();
 
-    var btnTemplate = Handlebars.getTemplate('hb_icon_button');
-    var $testSuiteField = $('#div_id_test_suite div.controls');
-    $testSuiteField.after('<br />' +
-        btnTemplate({
-            type: 'primary',
-            onclick: 'showJunitHelp()',
-            glyph: 'question-sign',
-            text: 'Help',
-        }));
-});
+    var $testSuiteLabel = $('#div_id_test_suite label');
+    $testSuiteLabel.append(
+        $('<a type="button"></a>')
+            .attr('title', 'Test Suite Help')
+            .attr('class', 'label-icon-button')
+            .click(showJunitHelp)
+            .append('<i class="question-sign-icon"></i>'));
+}
 
 function JavaProblemFormHandler($form) {
     var mode = cmModeForLanguageAndVersion('java', null);

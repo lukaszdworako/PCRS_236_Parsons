@@ -10,6 +10,7 @@ then
     quest_page
     quest_analytics
     submission
+    problem_form
     base"
 else
     FILES="$1"

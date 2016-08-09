@@ -575,7 +575,6 @@ ExecutionVisualizer.prototype._renderInitialTabbedCodeMirrorOver =
         that._toggleStepBreakpoints(steps);
         that.renderSliderBreakpoints();
     });
-    this.tcm.setActiveTabIndex(0);
 }
 
 /**

@@ -35,16 +35,21 @@
  * @param {Object} cmMode The CodeMirror mode to use
  */
 function ProgrammingProblemFormHandler($form, cmMode) {
-    this.$form = $form;
+    ProblemFormHandler.call(this, $form);
     this.starterCodeTcm = new AdminTabbedCodeMirror();
     this.solutionTcm = new TabbedCodeMirror();
     this._codeMirrorMode = cmMode;
 }
+ProgrammingProblemFormHandler.prototype =
+    Object.create(ProblemFormHandler.prototype);
+ProgrammingProblemFormHandler.prototype.constructor =
+    ProgrammingProblemFormHandler;
 
 /**
- * Should be called once the page loads.
+ * @override
  */
 ProgrammingProblemFormHandler.prototype.pageLoad = function() {
+    ProblemFormHandler.prototype.pageLoad.apply(this, arguments);
     this._setupFormCallbacks();
     this._createHiddenFormFields();
     this._setupCodeMirrors();
@@ -100,7 +105,6 @@ ProgrammingProblemFormHandler.prototype._replaceElementWithTcm =
     for (var i = 0; i < files.length; i++) {
         tcm.addFile(files[i]);
     }
-    tcm.setActiveTabIndex(0);
 
     return tcm;
 }

@@ -1,17 +1,31 @@
-// The 'root' variable is defined in base.html
+function ProblemFormHandler($form) {
+    this.$form = $form;
+}
+
+/**
+ * Should be called once the page loads.
+ */
+ProblemFormHandler.prototype.pageLoad = function() {
+    this._setUpMultipleSelectFields();
+}
 
 // Make the tags section nice 'n' fancy
-function setUpMultipleSelectFields() {
-    var tagsSelectField = $('.select-multiple-field');
+ProblemFormHandler.prototype._setUpMultipleSelectFields = function() {
+    var that = this;
 
-    tagsSelectField.after('<a class="btn btn btn-success" role="button" onclick="showAddTagDialog()">' +
-        '<span class="glyphicon glyphicon-plus"></span>   Add</a>');
-    tagsSelectField.after('<br />');
+    $('#div_id_tags label').append(
+        $('<a type="button"></a>')
+            .attr('title', 'Test Suite Help')
+            .attr('class', 'label-icon-button')
+            .click(function() {
+                that._showAddTagDialog();
+            })
+            .append('<i class="plus-sign-icon"></i>'));
 
     var searchBoxHtml = '<input type="text"' +
         'class="textInput textinput form-control" placeholder="Search" />';
 
-    tagsSelectField.multiSelect({
+    this.$form.find('.select-multiple-field').multiSelect({
         selectableHeader: searchBoxHtml,
         selectionHeader: '<h5>Selected</h5>',
         afterInit: function(ms) {
@@ -38,16 +52,17 @@ function setUpMultipleSelectFields() {
     });
 }
 
-function showAddTagDialog() {
+ProblemFormHandler.prototype._showAddTagDialog = function() {
     AlertModal.prompt('Create New Tag', function(value) {
         if (value) {
-            createProblemTag(value);
+            this.createProblemTag(value);
         }
     });
 }
 
-function createProblemTag(name) {
+ProblemFormHandler.prototype.createProblemTag = function() {
     $.ajax({
+        // The 'root' variable is a global defined in base.html
         url:    root + "/content/tags/create",
         method: "POST",
         data: {
@@ -69,12 +84,26 @@ function createProblemTag(name) {
     });
 }
 
+/**
+ * Override this if you want to call a custom ProblemFormHandler.
+ *
+ * This function exists so it can be overridden by various PCRS versions.
+ */
+var problemFormPageLoadCallback = function() {
+    new ProblemFormHandler().pageLoad();
+}
+
+$(function() {
+    problemFormPageLoadCallback();
+});
+
 function showClearSubmissionsDialog(clearUrl) {
     AlertModal
         .clear()
         .setTitle('Clear submissions to this problem?')
         .setBody('All submissions to this problem will be removed.')
-        .addFooterElement($('<button class="btn btn-danger pull-left"></button>')
+        .addFooterElement($('<button></button>')
+            .attr('class', 'btn btn-danger pull-left')
             .attr('type', 'button')
             .text('Clear')
             .click(function() {
@@ -102,9 +131,4 @@ function clearSubmissionsForCurrentProblem(clearUrl) {
         AlertModal.hide();
     });
 }
-
-$(function() {
-    // Must load after all the other JS, so we run at the end of the call stack
-    setTimeout(setUpMultipleSelectFields, 0);
-});
 
