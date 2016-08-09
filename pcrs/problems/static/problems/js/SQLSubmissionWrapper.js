@@ -10,6 +10,14 @@ SQLSubmissionWrapper.prototype.constructor = SQLSubmissionWrapper;
 /**
  * @override
  */
+SQLSubmissionWrapper.prototype._showEditorTraceDialog = function() {
+    var code = this.tcm.getCodeMirror(0).getDoc().getValue();
+    this.getTestcases(code);
+}
+
+/**
+ * @override
+ */
 SQLSubmissionWrapper.prototype.createCodeMirrors = function() {
     this.tcm = this.createSubmissionMirror();
 

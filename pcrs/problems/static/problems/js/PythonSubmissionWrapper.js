@@ -13,10 +13,13 @@ PythonSubmissionWrapper.prototype.constructor = PythonSubmissionWrapper;
  * @override
  */
 PythonSubmissionWrapper.prototype._showEditorTraceDialog = function(code) {
-    var code = this.getAllCode();
-
-    this.visualizer.setCode(code);
-    this.visualizer.loadVisualizer();
+    var code = this.tcm.getCodeMirror(0).getDoc().getValue();
+    if (code) {
+        this.visualizer.setCode(code);
+        this.visualizer.loadVisualizer();
+    } else {
+        alert('Please enter some code before visualizing');
+    }
 }
 
 /**
