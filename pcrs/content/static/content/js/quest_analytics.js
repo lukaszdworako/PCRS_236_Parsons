@@ -16,6 +16,15 @@ function QuestAnalyticsRenderer(userCount, problems, $analyticsTable) {
 QuestAnalyticsRenderer.prototype.render = function() {
     this._renderProblems(this.problems);
     this.$analyticsTable.tablesort(); // jQuery plugin
+
+    var percentSortFunction = function(th, td, tablesort) {
+        // Convert the float percentage to an integer for sorting
+        return parseFloat(td.text()) * 100;
+    };
+    this.$analyticsTable.find('th#problemAttemptPercent').data('sortBy',
+        percentSortFunction);
+    this.$analyticsTable.find('th#problemSolvedPercent').data('sortBy',
+        percentSortFunction);
 }
 
 QuestAnalyticsRenderer.prototype._renderProblems = function(problems) {

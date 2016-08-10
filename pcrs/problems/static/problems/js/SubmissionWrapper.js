@@ -301,8 +301,13 @@ SubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  * Adds a status smiley/frowney face to a test row.
  */
 SubmissionWrapper.prototype._addFaceColumnToTestRow = function($row, passed) {
-    var smFace = passed ? happyFace : sadFace;
-    $row.append($('<td class="passed"></td>').html(smFace.clone()));
+    var $face = $('<img>').attr({
+        src: passed ? happyFaceURL : sadFaceURL, // Globals :|
+        alt: passed ? 'Smiley Face' : 'Sad Face',
+        height: '36',
+        width: '36',
+    });
+    $row.append($('<td class="passed"></td>').append($face));
 }
 
 /**

@@ -20,28 +20,10 @@
 <script src="{% static 'code_mirror.js' %}"></script>
 
 <script type="text/javascript">
-    var language = "{{ problem.language }}";
-    var problem_id = "{{ problem.pk }}";
     var use_simpleui = "{{ request.user.use_simpleui }}";
     var visualizer = null;
-
-    var happyFace = $('<img id="dynamic">').attr({
-        src: "{% static 'problems/img/yellow-happy-face.png' %}",
-        alt: 'Smiley Face',
-        height: "36",
-        width: "36"
-    });
-    var sadFace = $('<img id="dynamic">').attr({
-        src: "{% static 'problems/img/red-sad-face.jpg' %}",
-        alt: 'Sad Face',
-        height: "36",
-        width: "36"
-    });
-
     var happyFaceURL = "{% static 'problems/img/yellow-happy-face.png' %}";
     var sadFaceURL = "{% static 'problems/img/red-sad-face.jpg' %}";
-
-    var dURL = "{% static 'problems/img/download-icon.png' %}";
 </script>
 
 {% load compress %}
