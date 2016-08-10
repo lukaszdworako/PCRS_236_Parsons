@@ -53,14 +53,16 @@ ProblemFormHandler.prototype._setUpMultipleSelectFields = function() {
 }
 
 ProblemFormHandler.prototype._showAddTagDialog = function() {
+    var that = this;
     AlertModal.prompt('Create New Tag', function(value) {
         if (value) {
-            this.createProblemTag(value);
+            that.createProblemTag(value);
         }
     });
 }
 
-ProblemFormHandler.prototype.createProblemTag = function() {
+ProblemFormHandler.prototype.createProblemTag = function(name) {
+    var $selectMultipleField = this.$form.find('.select-multiple-field');
     $.ajax({
         // The 'root' variable is a global defined in base.html
         url:    root + "/content/tags/create",
@@ -68,6 +70,7 @@ ProblemFormHandler.prototype.createProblemTag = function() {
         data: {
             'name': name,
         },
+        dataType: 'json',
     }).success(function(data) {
         if ('validation_error' in data) {
             AlertModal.alert(
@@ -76,7 +79,7 @@ ProblemFormHandler.prototype.createProblemTag = function() {
             return;
         }
 
-        $('.select-multiple-field').multiSelect('addOption', {
+        $selectMultipleField.multiSelect('addOption', {
             value: data['pk'],
             text: data['name'],
             index: 0,
@@ -90,13 +93,16 @@ ProblemFormHandler.prototype.createProblemTag = function() {
  * This function exists so it can be overridden by various PCRS versions.
  */
 var problemFormPageLoadCallback = function() {
-    new ProblemFormHandler().pageLoad();
+    new ProblemFormHandler($('form')).pageLoad();
 }
 
 $(function() {
     problemFormPageLoadCallback();
 });
 
+/**
+ * A callback for HTML generated in form.py.
+ */
 function showClearSubmissionsDialog(clearUrl) {
     AlertModal
         .clear()

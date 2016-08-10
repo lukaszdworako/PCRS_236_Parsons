@@ -99,6 +99,7 @@ var AlertModal = {
             .clear()
             .setTitle(title)
             .setBody($input)
+            .addCancelButtonToFooter()
             .addFooterElement($('<button class="btn btn-success"></button>')
                 .attr('type', 'button')
                 .text('OK')
@@ -106,9 +107,10 @@ var AlertModal = {
                     AlertModal.hide();
                     callback($input.val());
                 }))
-            .addCancelButtonToFooter()
             .show();
-        $input.focus();
+        setTimeout(function() {
+            $input.focus();
+        }, 0);
         return AlertModal;
     },
 };
