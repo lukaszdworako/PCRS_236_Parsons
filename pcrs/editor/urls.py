@@ -29,6 +29,6 @@ urlpatterns = patterns('',
         template_name='editor/editor.html',
         model=java_models.Submission, pType='java')),
     url(r'^java/visualize/(?P<pk>[0-9]+)$', JavaEditorVisualizeView.as_view(
-        template_name='editor/editor.html',
+        template_name='editor/editor_visualize_on_load.html',
         model=java_models.Submission, pType='java')),
 )

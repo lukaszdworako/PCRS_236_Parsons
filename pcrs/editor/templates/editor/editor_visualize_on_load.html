@@ -1,0 +1,13 @@
+{% extends "editor/editor.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        // Visualize the code when the opens this page
+        $(function() {
+            $('#submit-id-trace').click();
+        });
+    </script>
+{% endblock %}
+
