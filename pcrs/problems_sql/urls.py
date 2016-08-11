@@ -1,7 +1,8 @@
 from django.conf.urls import patterns, url
 
 from problems.views import *
-from problems_rdb.views import RDBTestCaseCreateView, RDBTestCaseCreateManyView
+from problems_rdb.views import (RDBTestCaseCreateView,
+    RDBTestCaseCreateManyView, RDBTestCaseEditRedirectView)
 from problems_sql.models import Problem, TestCase, Submission
 from problems_sql.forms import ProblemForm, TestCaseForm
 
@@ -42,6 +43,9 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)/delete$',
         TestCaseDeleteView.as_view(model=TestCase),
         name='sql_problem_delete_testcase'),
+    url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)$',
+        RDBTestCaseEditRedirectView.as_view(model=TestCase),
+        name='sql_problem_edit_redirect'),
 
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(model=Submission,

@@ -36,7 +36,7 @@ class BaseProblemForm(CrispyFormMixin):
         cloneUrl = '{}/clone'.format(absUrl)
         clearUrl = '{}/clear'.format(absUrl)
 
-        clear_button = HTML('<a class="red-button" role="button" '
+        self.clear_button = HTML('<a class="red-button" role="button" '
             'onclick="showClearSubmissionsDialog(\'' + clearUrl + '\')">'
             'Clear submissions</a>')
         clone_button = Submit('clone', 'Clone',
@@ -52,7 +52,7 @@ class BaseProblemForm(CrispyFormMixin):
         # Existing problem
         if self.instance.pk:
             return (
-                Div(CrispyFormMixin.delete_button, clear_button,
+                Div(CrispyFormMixin.delete_button, self.clear_button,
                     css_class='button-group'),
                 Div(clone_button, save_button, attempt_button,
                     css_class='button-group-right'),

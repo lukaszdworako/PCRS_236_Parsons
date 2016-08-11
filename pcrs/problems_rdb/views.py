@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.views.generic import (CreateView, DeleteView, DetailView,
                                   TemplateView)
+from django.views.generic.base import RedirectView
 
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView
 from problems.views import TestCaseView
@@ -132,6 +133,12 @@ class RDBTestCaseCreateManyView(RDBTestCaseView):
     """
     def get_success_url(self):
         return '{}/testcase'.format(self.get_problem().get_absolute_url())
+
+
+class RDBTestCaseEditRedirectView(RedirectView, RDBTestCaseView):
+    def get_redirect_url(self, *args, **kwargs):
+        testcase = get_object_or_404(self.model, pk=kwargs['pk'])
+        return testcase.dataset.get_absolute_url()
 
 
 class DocumentationView(CourseStaffViewMixin, TemplateView):

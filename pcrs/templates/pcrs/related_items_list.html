@@ -11,6 +11,10 @@
         <span class="col-sm-1">
             {% block item_controls %}
                 {% include "pcrs/buttons/edit.html" %}
+                <a href="{{ object.get_absolute_url }}/delete"
+                        title="Edit {{ object.name }}">
+                    <i class="trash-icon-right"></i>
+                </a>
             {% endblock %}
         </span>
     </div>

@@ -4,8 +4,8 @@ from problems.views import *
 from problems_ra.forms import ProblemForm, TestCaseForm
 from problems_ra.models import Problem, TestCase, Submission
 from problems_ra.views import RASyntaxReferenceView
-from problems_rdb.views import (RDBTestCaseCreateManyView,
-                                RDBTestCaseCreateView)
+from problems_rdb.views import (RDBTestCaseCreateView,
+    RDBTestCaseCreateManyView, RDBTestCaseEditRedirectView)
 
 from editor.views import EditorAsyncView
 
@@ -46,6 +46,9 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)/delete$',
         TestCaseDeleteView.as_view(model=TestCase),
         name='ra_problem_delete_testcase'),
+    url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)$',
+        RDBTestCaseEditRedirectView.as_view(model=TestCase),
+        name='sql_problem_edit_redirect'),
 
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(model=Submission,
