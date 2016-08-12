@@ -107,13 +107,32 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
 
-        # Remove hidden code from the student
-        code = remove_tag('[hidden]', '[/hidden]', problem.starter_code)
+        shouldLoadSolution = kwargs.pop('loadSolution', False)
+        isInstructor = kwargs.pop('isInstructor', False)
+
+        # Only instuctors should be able to auto-load the solution
+        code = problem.solution if shouldLoadSolution else problem.starter_code
+        code = remove_tag('[hidden]', '[/hidden]', code)
 
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = code
-        layout_fields = (Fieldset('', 'submission'), Div(self.history_button, self.submit_button))
+
+        buttonDiv = self._generateButtonDiv(problem, isInstructor)
+        layout_fields = (Fieldset('', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
+
+    def _generateButtonDiv(self, problem, isInstructor):
+        if not isInstructor:
+            return Div(self.history_button, self.submit_button)
+
+        # If it is an instructor, add a link to auto-load the solution
+        url = problem.get_absolute_url() + '/submit?loadSolution'
+        loadSolutionButton = StrictButton('Load Solution',
+            name='load_solution',
+            onclick='window.location.href = "' + url + '"',
+            css_class='btn reg-button')
+        return Div(self.history_button,
+            loadSolutionButton, self.submit_button)
 
 
 class MonitoringForm(CrispyFormMixin, forms.Form):

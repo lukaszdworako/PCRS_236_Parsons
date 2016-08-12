@@ -257,6 +257,17 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     form_class = ProgrammingSubmissionForm
     object = None
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user = self.request.user
+
+        if user.is_instructor:
+            kwargs['isInstructor'] = True
+            if 'loadSolution' in self.request.GET:
+                kwargs['loadSolution'] = True
+
+        return kwargs
+
 
 class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                           SectionViewMixin, View):

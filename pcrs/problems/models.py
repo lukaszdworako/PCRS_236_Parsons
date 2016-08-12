@@ -411,6 +411,10 @@ class AbstractTestCase(AbstractSelfAwareModel):
 class AbstractTestCaseWithDescription(AbstractTestCase):
     description = models.TextField(null=False, blank=True)
 
+    class Meta:
+        abstract = True
+        ordering = ['pk']
+
     def display(self):
         return str(self) if self.is_visible else \
             self.description or 'Hidden Test'
