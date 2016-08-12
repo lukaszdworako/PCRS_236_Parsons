@@ -1,3 +1,10 @@
+/*
+ * Global variable - legacy
+ * The CSubmissionWrapper and CVisualizer have strong ties with this global.
+ * Eventually, it would be nice to destroy it.
+ */
+var myCodeMirrors = {};
+
 function CSubmissionWrapper(name) {
     SubmissionWrapper.call(this, name);
     this.language = "c";

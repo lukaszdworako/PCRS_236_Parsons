@@ -189,17 +189,8 @@ SQLSubmissionWrapper.prototype.prepareGradingTable = function(testData) {
             tests.push(test);
         }
     }
-    var data = {'sub_time':new Date(),
-            // FIXME history is broken
-            //'submission':myCodeMirrors[div_id].getValue(),
-            'score':score,
-            'best':best,
-            'past_dead_line':past_dead_line,
-            'problem_pk':div_id.split("-")[1],
-            'sub_pk':sub_pk,
-            'out_of':max_score,
-            'tests': tests};
-    if (best && !data['past_dead_line']){
+
+    if (best && ! past_dead_line) {
         update_marks(div_id, score, max_score);
     }
 }

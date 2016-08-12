@@ -86,8 +86,7 @@ PythonSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
  */
 PythonSubmissionWrapper.prototype._prepareVisualizer = function(row) {
     var testcaseCode = row.find(".expression_div").text();
-    var code = myCodeMirrors[this.wrapperDivId].getValue() +
-        '\n' + testcaseCode;
+    var code = this.tcm.getValue() + '\n' + testcaseCode;
 
     this.visualizer.setCode(code);
     this.visualizer.loadTestCaseVisualizer(testcaseCode);

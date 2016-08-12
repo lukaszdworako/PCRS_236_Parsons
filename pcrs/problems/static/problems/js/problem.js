@@ -1,9 +1,3 @@
-/**
- * global variables
-*/
-var myCodeMirrors = {};
-//root is a global variable from base.html
-
 $(document).ready(function() {
     var all_wrappers = $('.code-mirror-wrapper');
 

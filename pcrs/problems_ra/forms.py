@@ -30,4 +30,4 @@ class TestCaseForm(RDBTestCaseForm):
     class Meta:
         model = TestCase
         widgets = {'problem': forms.HiddenInput()}
-        fields = ('problem', 'dataset', 'description', 'is_visible')
+        fields = ('problem', 'dataset', 'is_visible')

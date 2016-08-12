@@ -382,7 +382,6 @@ class AbstractTestCase(AbstractSelfAwareModel):
     problem semantics, as well as define what it means for a testcase to pass.
     """
 
-    description = models.TextField(null=False, blank=True)
     is_visible = models.BooleanField(null=False, default=False,
         verbose_name='Testcase visible to students')
 
@@ -395,8 +394,7 @@ class AbstractTestCase(AbstractSelfAwareModel):
             pk=self.pk, problem=self.problem)
 
     def display(self):
-        return self.description or 'Hidden Test' \
-               if not self.is_visible else str(self)
+        return str(self) if self.is_visible else 'Hidden Test'
 
     def get_absolute_url(self):
         return '{problem}/testcase/{pk}'.format(
@@ -408,6 +406,14 @@ class AbstractTestCase(AbstractSelfAwareModel):
             self.problem.max_score += 1
             self.problem.save()
         super().save(force_insert, force_update, using, update_fields)
+
+
+class AbstractTestCaseWithDescription(AbstractTestCase):
+    description = models.TextField(null=False, blank=True)
+
+    def display(self):
+        return str(self) if self.is_visible else \
+            self.description or 'Hidden Test'
 
 
 class AbstractTestRun(models.Model):

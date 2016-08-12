@@ -15,7 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from pcrs.model_helpers import has_changed
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
                              AbstractJobScheduler,
-                             AbstractTestCase, AbstractTestRun,
+                             AbstractTestCaseWithDescription, AbstractTestRun,
                              testcase_delete, problem_delete)
 from .c_language import CSpecifics
 from .c_utilities import *
@@ -315,7 +315,7 @@ def raw_string(s):
     return s
 
 
-class TestCase(AbstractTestCase):
+class TestCase(AbstractTestCaseWithDescription):
     """
     A coding problem testcase.
 

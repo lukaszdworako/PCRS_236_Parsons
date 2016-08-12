@@ -7,8 +7,8 @@ from django.db.models.signals import post_delete
 
 from problems.pcrs_languages import GenericLanguage
 from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
-    SubmissionPreprocessorMixin, AbstractSelfAwareModel, AbstractTestCase,
-    AbstractTestRun, problem_delete)
+    SubmissionPreprocessorMixin, AbstractSelfAwareModel,
+    AbstractTestCaseWithDescription, AbstractTestRun, problem_delete)
 from .java_language import CompilationError
 
 test_suite_template = """import org.junit.*;
@@ -247,7 +247,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                   'test_val': error}], None
 
 
-class TestCase(AbstractTestCase):
+class TestCase(AbstractTestCaseWithDescription):
     """
     A coding problem testcase.
 

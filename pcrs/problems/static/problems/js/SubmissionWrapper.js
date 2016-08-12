@@ -60,12 +60,7 @@ SubmissionWrapper.prototype.pageLoad = function() {
 }
 
 SubmissionWrapper.prototype.createCodeMirrors = function() {
-    var $submissionDiv = this.wrapperDiv.find(this.isEditor
-        ? '#div_id_code_box' : '#div_id_submission');
-    var submissionText = $submissionDiv.find('textarea').text();
-    myCodeMirrors[this.wrapperDivId] = to_code_mirror(
-        this.language, this.language_version,
-        $submissionDiv, submissionText, false);
+    throw new Error('This method must be overridden');
 }
 
 // TODO: Replace createCodeMirrors with this!
@@ -97,7 +92,6 @@ SubmissionWrapper.prototype.createSubmissionMirror = function() {
         });
     }
 
-    myCodeMirrors[this.wrapperDivId] = tcm;
     return tcm;
 }
 
@@ -276,7 +270,7 @@ SubmissionWrapper.prototype._formatTestCaseObject = function(testcase) {
  * If your code wrapper has tags, include them here.
  */
 SubmissionWrapper.prototype.getAllCode = function() {
-    return myCodeMirrors[this.wrapperDivId].getValue();
+    throw new Error('This method must be overridden');
 }
 
 /**
