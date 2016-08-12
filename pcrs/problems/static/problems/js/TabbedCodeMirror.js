@@ -170,18 +170,14 @@ TabbedCodeMirror.prototype._createAddFileTab = function() {
     var $addButton = $('<a href="#" class="add-file-button"></a>')
         .append($('<span class="glyphicon glyphicon-plus"></span>'))
         .click(function() {
-            var options = $.extend({}, that.newFileOptions); // copy
+            that._showFileNamePrompt(function(value) {
+                var options = $.extend({}, that.newFileOptions); // copy
+                options.name = value;
 
-            // Ensure the name is unique
-            var i = 1;
-            while (that.indexForTabWithName(options.name) != -1) {
-                options.name = i + '_' + that.newFileOptions.name;
-                i++;
-            }
-
-            that.addFile(options);
-            that._codeIsClean = false;
-            that.setActiveTabIndex(that.getFileCount() - 1);
+                that.addFile(options);
+                that._codeIsClean = false;
+                that.setActiveTabIndex(that.getFileCount() - 1);
+            });
             return false;
         });
     return $('<li></li>').append($addButton);
@@ -206,17 +202,30 @@ TabbedCodeMirror.prototype.indexForTabWithName = function(name) {
 // Event callback to rename a tab
 TabbedCodeMirror.prototype._attemptRenamingTab = function(index) {
     var that = this;
+    this._showFileNamePrompt(function(value) {
+        that.renameFileAtIndex(index, value);
+    });
+}
+
+/**
+ * Prompts the user for a file name input.
+ * This will handle validation etc.
+ * @param callback A callback with a single "value" parameter.
+ *                 This is only called on success.
+ */
+TabbedCodeMirror.prototype._showFileNamePrompt = function(callback) {
+    var that = this;
     AlertModal.prompt('File Name:', function(value) {
         if ( ! value) {
             return;
         }
+        value = that._addFileExtensionForFileName(value);
         var err = that._validateTabName(value);
         if (err) {
             AlertModal.alert('Invalid File Name', err);
             return;
         }
-        value = that._addFileExtensionForFileName(value);
-        that.renameFileAtIndex(index, value);
+        callback(value);
     });
 }
 
@@ -365,7 +374,7 @@ TabbedCodeMirror.prototype.addFiles = function(files) {
 TabbedCodeMirror.prototype._createCodeMirrorOptions = function(options) {
     var codeMirrorOptions = {
         mode: options.mode,
-        value: options.code,
+        value: options.code || '',
         lineNumbers: 'True',
         indentUnit: 4,
         lineWrapping: 'True',

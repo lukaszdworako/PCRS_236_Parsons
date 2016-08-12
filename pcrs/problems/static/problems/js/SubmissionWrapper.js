@@ -69,6 +69,8 @@ SubmissionWrapper.prototype.createCodeMirrors = function() {
 SubmissionWrapper.prototype.createSubmissionMirror = function() {
     var tcm = new SubmissionTabbedCodeMirror();
     tcm.setNewFileOptions({
+				'name': 'NewFile.' + this.language,
+				'code': '',
         'mode': this.getCmMode(),
         'theme': user_theme, // global... gur
     });
