@@ -1,0 +1,50 @@
+{# A quest list item on the quest page #}
+<div class="quest" id="{{ quest.pk }}">
+    <div class="quest-controls">
+        <div class="vertical-button-position">
+            <button class="up-button"><i
+                    class="up-icon"></i>
+                <span class="at"> Move quest Up</span>
+            </button>
+            <button class="down-button"><i
+                    class="down-icon"></i>
+                <span class="at"> Move quest Down</span>
+            </button>
+        </div>
+    </div>
+    <div class="pull-right">
+        <a class="pull-right no-hover-underline" target="_blank"
+                title="Edit {{ quest.name }}"
+                href="{{ quest.get_absolute_url }}">
+            &nbsp;<i class="pencil-icon"></i>
+        </a>
+        <a class="pull-right no-hover-underline" target="_blank"
+                title="View Analytics for {{ quest.name }}"
+                href="{{ quest.get_absolute_url }}/analytics">
+            &nbsp;<i class="stats-icon"></i>
+        </a>
+    </div>
+    {% if not quest.is_live %}
+        <div class="red-label pull-right">Under
+            construction
+        </div>
+    {% else %}
+            <div class="green-label pull-right">LIVE</div>
+    {% endif %}
+
+    <div class="quest-detail">
+        <h3 class="name">
+            {{ quest.name }}
+        </h3>
+        {% autoescape off %}
+        <h5 class="description">{{ quest.description }}</h5>
+        {% endautoescape %}
+    </div>
+    <div class="quest-box">
+        {% with challenges=quest.challenge_set.all quest=quest %}
+            {% include "content/quest_list_challenge_list.html" %}
+        {% endwith %}
+    </div>
+    <hr>
+</div>
+

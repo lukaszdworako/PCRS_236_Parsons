@@ -1,0 +1,23 @@
+{% for challenge in challenges %}
+    <div id="{{ challenge.pk }}" class="challenge">
+        {# If there is an associated quest #}
+        {% if quest %}
+            <i class="close challenge-row-button"
+                title="Remove {{ challenge.name }} from {{ quest.name }}"></i>
+        {% endif %}
+        {{ challenge.name }}
+        <a class="pull-right challenge-row-button" target="_blank"
+                href="{% url 'challenge_update' challenge.pk %}">
+            &nbsp;<i class="pencil-icon"></i>
+            <span class="at">Edit {{ challenge.name }}</span>
+        </a>
+        <a class="pull-right challenge-row-button" target="_blank"
+                href="{% url 'challenge_update' challenge.pk %}">
+            &nbsp;<i class="stats-icon"></i>
+            <span class="at">Statistics for {{ challenge.name }}</span>
+        </a>
+        <button onclick="select_quest({{ challenge.pk }})"
+                class="at">Move {{ challenge.name }}</button>
+    </div>
+{% endfor %}
+

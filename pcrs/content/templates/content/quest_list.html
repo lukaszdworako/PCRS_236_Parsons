@@ -1,11 +1,5 @@
 {% extends "pcrs/item_list.html" %}
-
-    {% load static %}
-
-{#    {% block less %}#}
-{#        <link rel="stylesheet/less" type="text/css" href="{% static "less/quest_list.less" %}" />#}
-{#        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>#}
-{#    {% endblock %}#}
+{% load static %}
 
 {% block scripts %}
     {{ block.super }}
@@ -34,7 +28,6 @@
 
 
 {% block content %}
-
 {#    <div class="row-fluid row-height">#}
         <span class="top-save">
             <button id="save_top" class="green-button disabled pull-right">
@@ -43,83 +36,25 @@
         </span>
         <div class="available_challenges">
             <h3 class="challenge_title">Challenges</h3>
+            <a class="small-button" type="button"
+                    href="{% url 'challenge_create' %}">
+                <i class="plus-icon"></i>
+                <span class="at">Add Challenge</span>
+            </a>
 
             <div id="challenges" class="tab-content">
-                {% for challenge in challenges %}
-                    <div id="{{ challenge.pk }}" class="challenge">
-                        {{challenge.name}}
-                        <a class="pull-right" href="{% url 'challenge_update' challenge.pk %}" target="_blank" title="Edit {{ challenge.name }}">
-                            <i style="color:white" class="pencil-icon"></i>
-                        </a>
-                        <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
-                    </div>
-
-                {% endfor %}
+                {% with challenges=challenges %}
+                    {% include "content/quest_list_challenge_list.html" %}
+                {% endwith %}
             </div>
         </div>
         <div class="set_challenges">
-            <h3>Quest list</h3>
-
+            <h3>Quests</h3>
             <div id="all-quests">
                 {% for object in object_list %}
-                    <div class="quest" id="{{ object.pk }}">
-                        <div class="quest-controls">
-                            <div class="vertical-button-position">
-                                <button class="up-button"><i
-                                        class="up-icon"></i>
-                                    <span class="at"> Move quest Up</span>
-                                </button>
-                                <button class="down-button"><i
-                                        class="down-icon"></i>
-                                    <span class="at"> Move quest Down</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="pull-right">
-                            <a class="pull-right no-hover-underline" target="_blank"
-                                    title="Edit {{ object.name }}"
-                                    href="{{ object.get_absolute_url }}">
-                                &nbsp;<i class="pencil-icon"></i>
-                            </a>
-                            <a class="pull-right no-hover-underline" target="_blank"
-                                    title="View Analytics for {{ object.name }}"
-                                    href="{{ object.get_absolute_url }}/analytics">
-                                &nbsp;<i class="stats-icon"></i>
-                            </a>
-                        </div>
-                        {% if not object.is_live %}
-                            <div class="red-label pull-right">Under
-                                construction
-                            </div>
-                        {% else %}
-                                <div class="green-label pull-right">LIVE</div>
-                        {% endif %}
-
-                        <div class="quest-detail">
-                            <h3 class="name">
-                                {{ object.name }}
-                            </h3>
-                            {% autoescape off %}
-                            <h5 class="description">{{ object.description }}</h5>
-                            {% endautoescape %}
-                        </div>
-                        <div class="quest-box">
-                            {% for challenge in object.challenge_set.all %}
-                                <div id="{{ challenge.pk }}"
-                                     class="challenge">
-                                    <i class="close"
-                                       title="Remove {{ challenge.name }} from {{ object.name }}">
-                                    </i>
-                                    {{challenge.name}}
-                                    <a class="pull-right" target="_blank" title="Edit {{ challenge.name }}"  href="{{ challenge.get_absolute_url }}">&nbsp;
-                                        <i style="color: white" class="pencil-icon"></i>
-                                    </a>
-                                    <button class="at" onclick="select_quest({{ challenge.pk }})">Move {{ challenge.name }}</button>
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <hr>
-                    </div>
+                    {% with quest=object %}
+                        {% include "content/quest_list_quest_item.html" %}
+                    {% endwith %}
                 {% endfor %}
             </div>
         </div>
@@ -128,7 +63,7 @@
         Save
     </button>
     <div class="modal fade" id="page-entry-modal" tabindex="-1" role="dialog"
-         aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
+            aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -145,7 +80,8 @@
                             data-dismiss="modal">Close
                     </button>
                     <button type="button" data-dismiss="modal"
-                            class="green-button" id="save-page-num" onclick="move_challenge()">Ok
+                            class="green-button" id="save-page-num"
+                            onclick="move_challenge()">Ok
                     </button>
                 </div>
             </div>
