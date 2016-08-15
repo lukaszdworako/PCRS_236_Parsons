@@ -17,6 +17,9 @@ QuestAnalyticsRenderer.prototype.render = function() {
     this._renderProblems(this.problems);
     this.$analyticsTable.tablesort(); // jQuery plugin
 
+    var integerSortFunction = function(th, td, tablesort) {
+        return parseInt(td.text());
+    };
     var percentSortFunction = function(th, td, tablesort) {
         // Convert the float percentage to an integer for sorting
         return parseFloat(td.text()) * 100;
@@ -25,6 +28,10 @@ QuestAnalyticsRenderer.prototype.render = function() {
         percentSortFunction);
     this.$analyticsTable.find('th#problemSolvedPercent').data('sortBy',
         percentSortFunction);
+    this.$analyticsTable.find('th#problemName').data('sortBy',
+        integerSortFunction);
+    this.$analyticsTable.find('th#problemAttemptMedian').data('sortBy',
+        integerSortFunction);
 }
 
 QuestAnalyticsRenderer.prototype._renderProblems = function(problems) {
@@ -33,7 +40,7 @@ QuestAnalyticsRenderer.prototype._renderProblems = function(problems) {
         var problem = problems[i];
 
         var $problemNameLink = $('<a></a>')
-            .text(problem.name)
+            .text((i + 1) + ': ' + problem.name)
             .attr('href', problem.url + '/submit');
         var hasAttemptedText = this._formatPercentage(
             problem.hasAttemptedCount / this.userCount);
