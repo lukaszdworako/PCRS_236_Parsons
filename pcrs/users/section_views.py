@@ -83,60 +83,107 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         # return a csv file
         response = HttpResponse(mimetype='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={0}-{1}-{2}.csv'.\
-                format(str(section).split("@")[0].strip().replace(" ", "_"), quest.name.replace(" ", "_"), time.strftime("%m%d%y"))
+        response['Content-Disposition'] = 'attachment; '\
+            'filename={0}-{1}-{2}.csv'.format(
+                str(section).split("@")[0].strip().replace(" ", "_"),
+                quest.name.replace(" ", "_"),
+                time.strftime("%m%d%y"))
         writer = csv.writer(response)
 
-        # query database for this section's problems
-        problem_types = get_problem_content_types()
-        section_problems = []
-        problem_ids = []
-        for ctype in problem_types:
-            for problem in ctype.model_class().objects\
-                    .select_related('challenge')\
-                    .filter(challenge__quest=quest, visibility='open'):
-                section_problems.append(problem)
-                problem_ids.append(problem.pk)
-
-        #sort problems according to their display order
-        challenges = quest.challenge_set.all()
-        pages = [page for page_list in [challenge.contentpage_set.all() for challenge in challenges]
-                      for page in page_list]
-        sorted_section_problems = [seq_item.content_object for item_list in [page.contentsequenceitem_set.all() for page in pages] \
-                                                           for seq_item in item_list if "problem" in seq_item.content_object.get_pretty_name() and seq_item.content_object.pk in problem_ids]
-
         # collect the problem ids, names, and max_scores, and for_credit
-        problems, names, max_scores, for_credit_row = [], ['problem name (url)'], ['max scores'], ['for credit?']
-        for problem in sorted_section_problems:
-                # include for_credit and/or not for_credit problems
-                is_graded = problem.challenge.is_graded
-                if ('fc' in for_credit and is_graded) or ('nfc' in for_credit and not is_graded):
-                    problems.append(("problems_" + problem.get_problem_type_name(), problem.pk))
-                    names.append("{0} ({1})".format(problem.name or "[{0}]".format(problem.get_pretty_name().title()), problem.get_base_url() + '/' + str(problem.pk)))
-                    max_scores.append(problem.max_score)
-                    for_credit_row.append(is_graded)
+        problems = []
+        problemTypes = set()
+        names = ['problem name (url)']
+        max_scores = ['max_scores']
+        for_credit_row = ['for credit?']
+        for problem in self._getSortedSectionProblems(quest):
+            # include for_credit and/or not for_credit problems
+            is_graded = problem.challenge.is_graded
+            if ('fc' in for_credit and is_graded) or \
+                    ('nfc' in for_credit and not is_graded):
+                typeName = problem.get_problem_type_name()
+                problemTypes.add(typeName)
+                problems.append(("problems_" + typeName, problem.pk))
+                names.append(self._formatProblemTitle(problem))
+                max_scores.append(problem.max_score)
+                for_credit_row.append(is_graded)
+
+        studentGrades = self._getBestStudentSubmissions(
+            section, quest, active_only)
+        studentRows = self._generateStudentRows(
+            section, studentGrades, problems, active_only)
+
+        # Write all the data to the CSV file
         writer.writerow(names)
         writer.writerow(max_scores)
         writer.writerow(for_credit_row)
+        for row in studentRows:
+            writer.writerow(row)
 
-        # collect grades for each student
-        results = defaultdict(dict)
-        for ctype in get_submission_content_types():
-            grades = ctype.model_class().grade(quest=quest, section=section,
-                                               active_only=active_only)
-            for record in grades:
-                problem = (ctype.app_label,
-                           record['problem'])
-                results[record['user']][problem] = record['best']
-
-        for student_id, score_dict in results.items():
-            writer.writerow(([student_id] +
-                            [score_dict.get(problem, '') for problem in problems]))
-
-        # collect students in the section who have not submitted anything
-
-        for student in PCRSUser.objects.get_students(active_only=active_only)\
-                                       .filter(section=section)\
-                                       .exclude(username__in=results.keys()):
-            writer.writerow([student.username] + ['' for problem in problems])
         return response
+
+    def _generateStudentRows(self, section, grades, problems, active_only):
+        rows = []
+
+        for studentId, scoreDict in grades.items():
+            scores = [scoreDict.get(problem, '') for problem in problems]
+            rows.append([studentId] + scores)
+
+        # Collect students in the section who have not submitted anything
+
+        students = PCRSUser.objects.get_students(active_only=active_only)\
+            .filter(section=section)\
+            .exclude(username__in=grades.keys())
+        for student in students:
+            rows.append([student.username] + ['' for problem in problems])
+        return rows
+
+    def _getSortedSectionProblems(self, quest):
+        '''Retrieves the given problems in sorted (displayed) order.
+        '''
+        problemIds = self._getProblemIdsInQuest(quest)
+        pages = [page
+            for page_list in [
+                challenge.contentpage_set.all()
+                    for challenge in quest.challenge_set.all()
+            ] for page in page_list
+        ]
+        return [seq_item.content_object
+            for item_list in [
+                page.contentsequenceitem_set.all()
+                    for page in pages
+            ] for seq_item in item_list
+                if "problem" in seq_item.content_object.get_pretty_name() and \
+                    seq_item.content_object.pk in problemIds
+        ]
+
+    def _formatProblemTitle(self, problem):
+        name = problem.name or "[{0}]".format(problem.get_pretty_name().title())
+        url = problem.get_base_url() + '/' + str(problem.pk)
+        return "{0} ({1})".format(name, url)
+
+    def _getProblemIdsInQuest(self, quest):
+        '''Retrieves problem IDs in the given quest.
+        '''
+        problemIds = []
+        for contentType in get_problem_content_types():
+            problems = contentType.model_class().objects\
+                .select_related('challenge')\
+                .filter(challenge__quest=quest, visibility='open')
+            for problem in problems:
+                problemIds.append(problem.pk)
+        return problemIds
+
+    def _getBestStudentSubmissions(self, section, quest, active_only):
+        '''Collect best submissions grades for each student.
+        '''
+        studentGrades = defaultdict(dict)
+        for contentType in get_submission_content_types():
+            grades = contentType.model_class().grade(
+                quest=quest, section=section, active_only=active_only)
+            for record in grades:
+                problem = (contentType.app_label,
+                           record['problem'])
+                studentGrades[record['user']][problem] = record['best']
+        return studentGrades
+
