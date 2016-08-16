@@ -25,12 +25,24 @@ problemFormPageLoadCallback = function() {
     var handler = new JavaProblemFormHandler($('form'));
     handler.pageLoad();
 
-    var $testSuiteLabel = $('#div_id_test_suite label');
-    $testSuiteLabel.append(
+    $('#div_id_test_suite label').append(
         $('<a type="button"></a>')
             .attr('title', 'Test Suite Help')
             .attr('class', 'label-icon-button')
             .click(showJunitHelp)
+            .append('<i class="question-sign-icon"></i>'));
+    $('#div_id_solution label').append(
+        $('<a type="button"></a>')
+            .attr('title', 'Solution Help')
+            .attr('class', 'label-icon-button')
+            .click(function() {
+                AlertModal.alert('Solution Help',
+                    'Your solution student_code tags and file names must '
+                    + 'match the starter code to use the "Load Solution" '
+                    + 'button on the instructor submission test page.'
+                    + 'In general, the solution code is used for instructor '
+                    + 'reference, so it is completely optional.');
+            })
             .append('<i class="question-sign-icon"></i>'));
 }
 
