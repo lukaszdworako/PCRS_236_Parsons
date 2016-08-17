@@ -92,7 +92,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         # collect the problem ids, names, and max_scores, and for_credit
         problems = []
-        problemTypes = set()
+        problemTypes = dict()
         names = ['problem name (url)']
         max_scores = ['max_scores']
         for_credit_row = ['for credit?']
@@ -101,17 +101,24 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             is_graded = problem.challenge.is_graded
             if ('fc' in for_credit and is_graded) or \
                     ('nfc' in for_credit and not is_graded):
-                typeName = problem.get_problem_type_name()
-                problemTypes.add(typeName)
-                problems.append(("problems_" + typeName, problem.pk))
+                typeName = 'problems_' + problem.get_problem_type_name()
+                problemTypes[typeName] = problemTypes.get(typeName, 0) + 1
+                problems.append((typeName, problem.pk))
                 names.append(self._formatProblemTitle(problem))
                 max_scores.append(problem.max_score)
                 for_credit_row.append(is_graded)
+        problemTypeNames = problemTypes.keys()
 
         studentGrades = self._getBestStudentSubmissions(
             section, quest, active_only)
         studentRows = self._generateStudentRows(
-            section, studentGrades, problems, active_only)
+            section, studentGrades, problems, max_scores, problemTypes, active_only)
+
+        # The attempted and solved summary columns
+        for t in problemTypeNames:
+            names += [t + '_attempted', t + '_solved']
+            max_scores += [problemTypes[t]] * 2 # The same max for each
+        for_credit_row += [False] * len(problemTypeNames) * 2
 
         # Write all the data to the CSV file
         writer.writerow(names)
@@ -122,11 +129,35 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         return response
 
-    def _generateStudentRows(self, section, grades, problems, active_only):
+    def _generateStudentRows(self, section, grades,
+            problems, maxScores, problemTypes, active_only):
         rows = []
 
         for studentId, scoreDict in grades.items():
-            scores = [scoreDict.get(problem, '') for problem in problems]
+            scores = []
+            problemsAttempted = dict()
+            problemsSolved = dict()
+
+            for index, problem in enumerate(problems):
+                score = scoreDict.get(problem, '')
+                scores.append(score)
+                problemType, problemName = problem
+                maxScore = maxScores[index]
+
+                if problemType not in problemsAttempted:
+                    # If it isn't in one, it isn't in the other.
+                    problemsAttempted[problemType] = 0
+                    problemsSolved[problemType] = 0
+                if not score == '':
+                    problemsAttempted[problemType] += 1
+                if score == maxScore:
+                    problemsSolved[problemType] += 1
+
+            for t in problemTypes.keys():
+                problemTypeCount = problemTypes[t]
+                scores.append(problemsAttempted[t])
+                scores.append(problemsSolved[t])
+
             rows.append([studentId] + scores)
 
         # Collect students in the section who have not submitted anything
@@ -135,7 +166,8 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             .filter(section=section)\
             .exclude(username__in=grades.keys())
         for student in students:
-            rows.append([student.username] + ['' for problem in problems])
+            rows.append([student.username] +
+                [''] * len(problems) + [0] * len(problemTypes) * 2)
         return rows
 
     def _getSortedSectionProblems(self, quest):
