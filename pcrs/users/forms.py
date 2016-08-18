@@ -51,21 +51,23 @@ class QuestGradeForm(CrispyFormMixin, forms.Form):
 
     section = forms.ModelChoiceField(Section.objects.all(),
                                      widget=forms.HiddenInput())
-    quest = forms.ModelChoiceField(Quest.objects.all())
+    quests = forms.ModelMultipleChoiceField(
+        required=True, queryset=Quest.objects.all())
     active = forms.BooleanField(required=False,
                                 label='Include only active users')
     for_credit = forms.MultipleChoiceField(required=True,
                                    label='For Credit',
                                    choices=OPTIONS)
     class Meta:
-        fields = ('section', 'quest', 'active', 'for_credit')
+        fields = ('section', 'quests', 'active', 'for_credit')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         export_button = Submit('submit', 'Export grade file',
                                css_class='btn-success pull-right')
         self.helper.layout = Layout(
-            Fieldset('Get grade report for this section', 'section', 'quest', 'for_credit', 'active'),
+            Fieldset('Get grade report for this section',
+                'section', 'quests', 'for_credit', 'active'),
             ButtonHolder(export_button)
         )
 

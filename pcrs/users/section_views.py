@@ -1,5 +1,5 @@
 from collections import defaultdict
-import csv
+import csv, zipfile, io
 import time
 
 from django.http import HttpResponse
@@ -74,21 +74,62 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         initial['section'] = self.get_object()
         return initial
 
-
     def form_valid(self, form):
-        section = form.cleaned_data['section']
-        quest = form.cleaned_data['quest']
-        active_only = bool(form.cleaned_data['active'])
-        for_credit = form.cleaned_data['for_credit']
+        quests = form.cleaned_data['quests']
+
+        if len(quests) == 1:
+            return self.singleQuestResponse(form.cleaned_data)
+        return self.multipleQuestResponse(form.cleaned_data)
+
+    def multipleQuestResponse(self, data):
+        quests = data['quests']
+        section = data['section']
+
+        response = HttpResponse(mimetype='application/zip')
+        response['Content-Disposition'] = 'attachment; filename='\
+            + self._generateZipName(section)
+
+        # Generate a zip file with all the quest data
+
+        with zipfile.ZipFile(response, 'w') as zippy:
+            for quest in quests:
+                fileName = self._generateCsvName(section, quest)
+                csvOut = io.StringIO()
+                self.writeQuestCsvDataToBuffer(csvOut, quest, data)
+                zippy.writestr(fileName, csvOut.getvalue())
+
+        return response
+
+    def singleQuestResponse(self, data):
+        quest = data['quests'][0]
+        section = data['section']
+
+        response = HttpResponse(mimetype='text/csv')
+        response['Content-Disposition'] = 'attachment; filename='\
+            + self._generateCsvName(section, quest)
+
+        self.writeQuestCsvDataToBuffer(response, quest, data)
+
+        return response
+
+    def _generateCsvName(self, section, quest):
+        return '{0}-{1}-{2}.csv'.format(
+            str(section).split("@")[0].strip().replace(" ", "_"),
+            quest.name.replace(" ", "_"),
+            time.strftime("%m%d%y"))
+
+    def _generateZipName(self, section):
+        return '{0}-{1}.zip'.format(
+            str(section).split("@")[0].strip().replace(" ", "_"),
+            time.strftime("%m%d%y"))
+
+    def writeQuestCsvDataToBuffer(self, buf, quest, data):
+        section = data['section']
+        active_only = data['active']
+        for_credit = data['for_credit']
 
         # return a csv file
-        response = HttpResponse(mimetype='text/csv')
-        response['Content-Disposition'] = 'attachment; '\
-            'filename={0}-{1}-{2}.csv'.format(
-                str(section).split("@")[0].strip().replace(" ", "_"),
-                quest.name.replace(" ", "_"),
-                time.strftime("%m%d%y"))
-        writer = csv.writer(response)
+        writer = csv.writer(buf)
 
         # collect the problem ids, names, and max_scores, and for_credit
         problems = []
@@ -126,8 +167,6 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         writer.writerow(for_credit_row)
         for row in studentRows:
             writer.writerow(row)
-
-        return response
 
     def _generateStudentRows(self, section, grades,
             problems, maxScores, problemTypes, active_only):
