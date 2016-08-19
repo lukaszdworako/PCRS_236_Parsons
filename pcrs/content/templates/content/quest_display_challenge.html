@@ -42,6 +42,12 @@
                         href="{{ challenge.get_absolute_url }}">
                     <i class="pencil-icon"></i>
                 </a>
+                <a class="no-hover-underline" type="button" target="_blank"
+                        title="Stats for {{ challenge.name }}"
+                        onclick="event.stopPropagation()"
+                        href="{{ challenge.get_absolute_url }}/stats">
+                    <i class="stats-icon"></i>
+                </a>
             {% endif %}
 
             <div
