@@ -5,7 +5,7 @@ This file is the README for PCRS.
 For more information about the project and to access installation instructions 
 and guides, please visit:
 
-[https://c-programming.onlinelearning.utoronto.ca/pcrs-c.shtml](https://c-programming.onlinelearning.utoronto.ca/pcrs-c.shtml)
+[https://mcs.utm.utoronto.ca/~pcrs/pcrs/](https://mcs.utm.utoronto.ca/~pcrs/pcrs/)
 
 # LICENSING #
 
