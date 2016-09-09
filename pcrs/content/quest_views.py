@@ -136,7 +136,8 @@ class QuestSectionListView(CourseStaffViewMixin, FormView):
     def post(self, request, *args, **kwargs):
         formset = self.form_class(request.POST, instance=self.get_section())
         if formset.is_valid():
-            formset.save()
+            for form in formset:
+                form.save()
             return self.form_valid(formset)
         else:
             return self.form_invalid(formset)
