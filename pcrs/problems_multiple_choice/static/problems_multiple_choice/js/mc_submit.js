@@ -27,17 +27,16 @@ $( document ).ready(function() {
                 .parents('div[id^="multiple_choice-"]')[0].id);
         });
 
-        $(all_mc[x]).find("[name='history']").one("click", (function(){
+        $(all_mc[x]).find("[name='history']").click(function(){
             var mc_id = $(this).parents('div[id^="multiple_choice-"]')[0].id;
             getMCHistory(mc_id);
-        }));
+        });
     }
 });
 
 function getMCHistory(mc_id){
     /**
-     * Get all the previous Multiple choice submission for
-     * the problem give it's main div id field "mc_id"
+     * get all previous submissions for the problem given its main div id field "mc_id"
      */
 
     var postParams = { csrftoken: csrftoken };
@@ -47,6 +46,7 @@ function getMCHistory(mc_id){
     function(data){
         $('#'+mc_id).find('#history_accordion').html("");
         show_mc_history(data, mc_id);
+        $('#history_window_' + mc_id).modal('show');
     },
     'json')
     .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
