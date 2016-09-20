@@ -29,7 +29,8 @@ function to_code_mirror (language, version, location, value, lock) {
             indentUnit: 4,
             readOnly: lock,
             lineWrapping: 'True',
-            flattenSpans: 'False'
+            flattenSpans: 'False',
+
         });
     return historyCodeMirror;
 }
@@ -144,7 +145,7 @@ function blockInput(mirror) {
     if (wrapClass == 'CodeMirror-activeline-background') {
         line_count = mirror.lineCount();
         for (var i = 0; i < line_count; i++){
-            wrapClass = mirorr.lineInfo(i).wrapClass;
+            wrapClass = mirror.lineInfo(i).wrapClass;
             if (wrapClass != 'CodeMirror-activeline-background'){
                 mirror.setCursor(i, 0);
                 return true;

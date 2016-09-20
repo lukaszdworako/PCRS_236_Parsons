@@ -118,6 +118,13 @@ table.numbered tr.numbered td:first-child::before {
     background-color: #f5f5f5 !important;
 }
 
+.problem-description-container ul {
+    font-size: 0px;
+}
+
+.problem-description-container li {
+    font-size: 14px;
+}
 /*
  * CodeMirror style extensions
  *

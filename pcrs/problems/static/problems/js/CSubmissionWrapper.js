@@ -52,8 +52,18 @@ CSubmissionWrapper.prototype.createCodeMirrors = function() {
         $("#id_preview_code_debugger"), codeObj.code, true);
 
     var mirror = myCodeMirrors[this.wrapperDivId];
+    // Add CodeMirror-activeline-background and hash-start wrapClasses
+    this.addWrapClass(mirror, codeObj);
     highlightCodeMirrorWithTags(mirror, codeObj.block_ranges);
     preventDeleteLastLine(mirror);
+}
+
+CSubmissionWrapper.prototype.addWrapClass = function(mirror, codeObj) {
+    var hash_ranges = codeObj.hash_ranges;
+    
+    for (i in hash_ranges) {
+        mirror.addLineClass(hash_ranges[i].start-1, "wrap", "hash-start");
+    }
 }
 
 /**
@@ -199,32 +209,83 @@ CSubmissionWrapper.prototype._prepareVisualizer = function(row) {
  * Generate a Hashkey based on the problem_id to identify
  * where the student code starts and ends.
  */
+
+
 CSubmissionWrapper.prototype._addHashkey = function(mirror) {
     var hashCode = CryptoJS.SHA1(this.problemId);
     var code = '';
+    var inside_blocked_code = false;
     var inside_student_code = false;
-
-    for (var i = 0; i < mirror.lineCount(); i++){
+    
+    for (i = 0; i < mirror.lineCount(); i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
 
-        if (wrapClass == 'CodeMirror-activeline-background') {
-            if (inside_student_code) {
-                code += hashCode + '\n';
+        if (inside_blocked_code) {
+            // If line starts [student_code][/student_code] block
+            // or an untagged block
+            if (wrapClass == "hash-start") {
+                // End [blocked][/blocked] block
+                code += hashCode;
+                code += '\n';
+                // Start [student_code][/student_code] or untagged block
+                code += hashCode;
+                code += '\n';
+                inside_blocked_code = false;
+                inside_student_code = true;
+            }
+        }
+        else if (inside_student_code) {
+            // If line starts another
+            // [student_code][/student_code] block
+            if (wrapClass == "hash-start") {
+                // End old block
+                code += hashCode;
+                code += '\n';
+                // Start new block
+                code += hashCode;
+                code += '\n';
+            }
+            // If line starts [blocked][/blocked] block
+            if (wrapClass == "CodeMirror-activeline-background") {
+                // End [student_code][/student_code] block
+                code += hashCode;
+                code += '\n';
+                // Start [blocked][/blocked] block
+                code += hashCode;
+                code += '\n';
+                inside_blocked_code = true;
                 inside_student_code = false;
             }
-        } else {
-            if ( ! inside_student_code) {
-                code += hashCode + '\n';
+        } 
+        // If not already in [blocked][/blocked]
+        // or [student_code][/student_code] tags
+        else {
+            // If this is a new [blocked][/blocked] block
+            if (wrapClass == "CodeMirror-activeline-background") {
+                code += hashCode;
+                code += '\n';
+                inside_blocked_code = true;
+                inside_student_code = false;
+            } 
+            // If this is a new [student_code][/student_code] block
+            else if (wrapClass == "hash-start") {
+                code += hashCode;
+                code += '\n';
                 inside_student_code = true;
+                inside_blocked_code = false;
             }
         }
 
         code += mirror.getLine(i);
         code += '\n';
     }
+    
     code += hashCode;
+
+    console.log(code);
     return code;
 }
+
 
 /**
  * @override
