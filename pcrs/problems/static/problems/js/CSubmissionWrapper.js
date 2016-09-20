@@ -282,7 +282,6 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
     
     code += hashCode;
 
-    console.log(code);
     return code;
 }
 
