@@ -8,10 +8,35 @@
 {% endautoescape  %}
 <br />
 
-{% if "youtube.com" in item.url %}      
+{% if "youtube.com" in item.url %}
 <div class="iframe-video-wrapper">
     <div class="iframe-video-container">
-        <iframe width="560" height="315" src="{{ item.url }}?modestbranding=1" frameborder="0" allowfullscreen></iframe>
+        <iframe id = "yt-video-{{ item.pk }}" width="560" height="315" src="{{ item.url }}?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+
+        <!-- Use YouTube iFrame API to flag watched videos -->
+        <script type="text/javascript">
+          var tag = document.createElement('script');
+          tag.src = 'https://www.youtube.com/iframe_api';
+          var firstScriptTag = document.getElementsByTagName('script')[0];
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+          var player;
+
+          function onYouTubeIframeAPIReady() {
+            player = new YT.Player("yt-video-{{ item.pk }}", {
+                events: {
+                  'onStateChange': onPlayerStateChange
+                }
+            });
+          }
+          var watched = false;
+          function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING && !watched) {
+              video_watched({{ item.pk }});
+              watched = true;
+            }
+          }
+        </script>
+
     </div> <!-- iframe-video-container -->
 </div> <!-- iframe-video-wrapper -->
 {% else %}
