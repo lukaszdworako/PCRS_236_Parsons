@@ -172,6 +172,10 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
             problems, maxScores, problemTypes, active_only):
         rows = []
 
+        print(problems)
+        print(maxScores)
+        maxScores.pop(0)
+
         for studentId, scoreDict in grades.items():
             scores = []
             problemsAttempted = dict()
