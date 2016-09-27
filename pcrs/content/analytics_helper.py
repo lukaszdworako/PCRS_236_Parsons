@@ -87,11 +87,11 @@ class QuestAnalyticsHelper:
                 continue
 
             hasAttemptedCount += 1
-            bestSubmission = submissionClass.objects.get(
+            bestSubmission = submissionClass.objects.filter(
                 user=user,
                 problem=problem,
                 has_best_score=True
-            )
+            )[0]
             if problem.max_score == bestSubmission.score:
                 hasSolvedCount += 1
 
