@@ -21,7 +21,6 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 
 
-
 # Helper class to encode datetime and decimal objects
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
