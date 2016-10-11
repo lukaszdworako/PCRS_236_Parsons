@@ -70,6 +70,25 @@
 {% block content %}
     {{ block.super }}
 
+    <!--
+    1. Load the YouTube API
+    2. YT_Videos contain iframe information to create YT.Players
+    3. YT_Players is an array of YT.Players 
+    (We keep these arrays because the onYouTubeIframeAPIReady
+    can be called only once, so we need to store each iframe
+    and create YT.Players for all of them when
+    onYouTubeIframeAPIReady is invoked.)
+    -->
+    <script>
+        var YT_Videos = new Array();
+        var YT_Players = new Array();
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    </script>
+
+
     {% for object in object_list %}
         {% with item=object.content_object %}
             {% if item|classname|lower == "textblock" %}
@@ -90,12 +109,29 @@
                     {% endif %}
                     {% with problem=item form=forms|get_item:problem_type|get_item:item.pk %}
                     {% include item.get_module_name|add:"/submission_widget.html" %}
-                    {% endwith %}
+                
+    {% endwith %}
                 {% endwith %}
             </div>
             {% endif %}
         {% endwith %}
     {% endfor %}
+    
+
+    <!-- Create YT.Players when YouTube API is ready -->
+    <script>
+        function onYouTubeIframeAPIReady() {
+            for (i = 0; i < YT_Videos.length; i++) {
+                var player = new YT.Player(YT_Videos[i].id, 
+                    {
+                    events: {
+                        'onStateChange': YT_Videos[i].onPlayerStateChange }
+                    });
+                YT_Players.push(player);
+            }
+        }
+    </script>
+
 
 {% if content_page.order > 1 %}
     <a class="green-button" role="button"

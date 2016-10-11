@@ -225,8 +225,8 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
             // or an untagged block
             if (wrapClass == "hash-start") {
                 // End [blocked][/blocked] block
-                code += hashCode;
-                code += '\n';
+                // code += hashCode;
+                // code += '\n';
                 // Start [student_code][/student_code] or untagged block
                 code += hashCode;
                 code += '\n';
@@ -251,8 +251,8 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
                 code += hashCode;
                 code += '\n';
                 // Start [blocked][/blocked] block
-                code += hashCode;
-                code += '\n';
+                // code += hashCode;
+                // code += '\n';
                 inside_blocked_code = true;
                 inside_student_code = false;
             }
@@ -262,8 +262,8 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
         else {
             // If this is a new [blocked][/blocked] block
             if (wrapClass == "CodeMirror-activeline-background") {
-                code += hashCode;
-                code += '\n';
+                // code += hashCode;
+                // code += '\n';
                 inside_blocked_code = true;
                 inside_student_code = false;
             } 
@@ -281,7 +281,6 @@ CSubmissionWrapper.prototype._addHashkey = function(mirror) {
     }
     
     code += hashCode;
-
     return code;
 }
 

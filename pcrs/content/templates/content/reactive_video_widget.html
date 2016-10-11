@@ -13,26 +13,16 @@
     <div class="iframe-video-container">
         <iframe id = "yt-video-{{ item.pk }}" width="560" height="315" src="{{ item.url }}?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
 
-        <!-- Use YouTube iFrame API to flag watched videos -->
+        <!--Add the new iframe id and onPlayerStateChange function
+        to YT_Videos-->
         <script type="text/javascript">
-          var tag = document.createElement('script');
-          tag.src = 'https://www.youtube.com/iframe_api';
-          var firstScriptTag = document.getElementsByTagName('script')[0];
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-          var player;
+          var video{{ item.pk }} = {"id": "yt-video-{{ item.pk }}", "onPlayerStateChange": onPlayerStateChange{{ item.pk }}};
 
-          function onYouTubeIframeAPIReady() {
-            player = new YT.Player("yt-video-{{ item.pk }}", {
-                events: {
-                  'onStateChange': onPlayerStateChange
-                }
-            });
-          }
-          var watched = false;
-          function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING && !watched) {
+          YT_Videos.push(video{{ item.pk }});
+
+          function onPlayerStateChange{{ item.pk }}(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
               video_watched({{ item.pk }});
-              watched = true;
             }
           }
         </script>
