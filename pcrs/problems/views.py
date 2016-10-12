@@ -9,7 +9,7 @@ from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, now
 
 from pcrs.settings import DEBUG
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
@@ -196,17 +196,22 @@ class SubmissionViewMixin:
         if not self.request.user.is_authenticated():
             # AnonymousUser
             raise Http404("Sorry! Your authentication has probably expired: the system cannot identify you.")
+
+        problem_class = self.model.get_problem_class()
+        pk = self.kwargs.get('problem')
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(now()) + " | " +
+                    str(self.request.user) + " | View " +
+                    str(problem_class.get_problem_type_name()) + " " + str(pk))
+
         if self.request.user.is_student:
-            return get_object_or_404(self.model.get_problem_class(),
-                                     pk=self.kwargs.get('problem'),
-                                     visibility='open')
+            return get_object_or_404(problem_class, pk=pk, visibility='open')
+
         if self.request.user.is_ta:
-            return get_object_or_404(self.model.get_problem_class(),
-                                     pk=self.kwargs.get('problem'),
-                                     visibility__in=['open'])
+            return get_object_or_404(problem_class, pk=pk, visibility__in=['open'])
         else:
-            return get_object_or_404(self.model.get_problem_class(),
-                                     pk=self.kwargs.get('problem'))
+            return get_object_or_404(problem_class, pk=pk)
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['problem'] = self.get_problem()
