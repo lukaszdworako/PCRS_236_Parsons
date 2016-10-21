@@ -139,11 +139,13 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
     time = forms.DateTimeField(initial=now(), label='Start time', help_text='Submissions before this time will not be shown.')
     section = forms.ModelChoiceField(queryset=Section.objects.all())
     final = forms.BooleanField(required=False, label='Static result', help_text='Leave unchecked if you want results updated live.')
-
+    firstSubmissionsOnly = forms.BooleanField(required=False, label='Count first submissions only',\
+                                              help_text='Check to see only results of all first submissions per student after start time')
+                                              
     def __init__(self, *args, **kwargs):
         go = Button('Go', value='Go', css_class='green-button')
         super().__init__(*args, **kwargs)
-        self.helper.layout = Layout(Fieldset('', 'time', 'section', 'final',
+        self.helper.layout = Layout(Fieldset('', 'time', 'section', 'final','firstSubmissionsOnly',\
                                     ButtonHolder(go)))
 
 

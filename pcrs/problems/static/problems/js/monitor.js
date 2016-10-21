@@ -12,10 +12,19 @@ $(function () {
 
 function update() {
     // get the most recent data from db for this problem after this time
+
+    // If only first submissions are requested for analysis,
+    // firstSubmissionsOnly is true.
+    if ($('#id_firstSubmissionsOnly').is(':checked')) {
+        firstSubmissionsOnly = true;
+    } else {
+        firstSubmissionsOnly = false;
+    }
     $.post(document.URL + '_data',
         {
             time: $("#id_time").val(),
-            section: $("#id_section").val()
+            section: $("#id_section").val(),
+            firstSubmissionsOnly: firstSubmissionsOnly
         }
     ).success(function (data) {
             // update the graphs
