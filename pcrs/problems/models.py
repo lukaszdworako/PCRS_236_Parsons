@@ -131,12 +131,51 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_best_submission_per_student_after_time(self, section, time):
         """
         Return the list of best submissions made after time in the section.
+        
         """
         return self.submission_set.all().filter(section=section,
                                                 timestamp__gt=time,
-                                                has_best_score=True)
+                                                has_best_score=True
+                                                )
 
-    def get_monitoring_data(self, section, time):
+    def get_students_who_submitted_after_time(self, section, time):
+        """
+        Return list of students who made a submission after <time>.
+        """
+        users = []
+        for submission in self.get_submissions_after_time(section,time):
+            users += submission.user
+
+    def get_first_submission_per_student_after_time(self, section, time):
+        """
+        Return QuerySet of first submissions after <time>.
+        """
+        firstSubmissions = []
+        
+        def get_submissions_after_time():
+            """
+            Return QuerySet of all submissions after <time>.
+            """
+            return self.submission_set.all().filter(section=section,
+                                                    timestamp__gt=time)
+
+        def get_students_who_submitted_after_time():
+            """
+            Return list of students who made a submission after <time>.
+            """
+            users = []
+            for submission in get_submissions_after_time():
+                if submission.user not in users:
+                    users += [submission.user]
+            return users
+
+        submissions = get_submissions_after_time().order_by('timestamp')
+        for user in get_students_who_submitted_after_time():
+            firstSubmissions += [submissions.filter(user=user)[0]]
+
+        return firstSubmissions
+
+    def get_monitoring_data(self, section, time, first_submissions_results=False):
         """
         Return data for real-time monitoring.
         """
@@ -144,13 +183,23 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         s_ids = set()
         max_score = self.max_score
 
-        for submission in self.get_best_submission_per_student_after_time(
+        if first_submissions_results:
+            # Include only the first submission per student after <time>
+            for submission in self.get_first_submission_per_student_after_time(
                 section, time):
-            s_ids.add(submission.pk)
-            if submission.score == max_score:
-                correct += 1
-            else:
-                incorrect += 1
+                s_ids.add(submission.pk)
+                if submission.score == max_score:
+                    correct += 1
+                else:
+                    incorrect += 1
+        else:
+            for submission in self.get_best_submission_per_student_after_time(
+                    section, time):
+                s_ids.add(submission.pk)
+                if submission.score == max_score:
+                    correct += 1
+                else:
+                    incorrect += 1
 
         data = self.get_testitem_data_for_submissions(s_ids)
         return {

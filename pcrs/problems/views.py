@@ -354,7 +354,13 @@ class MonitoringAsyncView(MonitoringView):
         except KeyError:
             start_time = time.strftime('%Y-%m-%d %H:%M:%S%z')
         problem = get_object_or_404(self.model, pk=self.kwargs.get('pk'))
-        results = problem.get_monitoring_data(section, start_time)
+        # Only first submissions are counted if firstSubmissionsOnly is 'true'
+        # See MonitoringForm and monitor.js
+        firstSubmissionsOnly = request.POST['firstSubmissionsOnly']
+        if firstSubmissionsOnly == 'true':
+            results = problem.get_monitoring_data(section, start_time, first_submissions_results=True)
+        else:
+            results = problem.get_monitoring_data(section, start_time)
         return HttpResponse(json.dumps(results), mimetype='application/json')
 
 
