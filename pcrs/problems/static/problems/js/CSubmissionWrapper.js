@@ -295,4 +295,3 @@ CSubmissionWrapper.prototype._addHistoryEntryButtons = function($row, entry) {
      * causes issues.
      */
 }
-

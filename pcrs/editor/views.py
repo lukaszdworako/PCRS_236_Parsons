@@ -14,6 +14,7 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin
 
 from problems.forms import EditorForm
+from problems.views import DateEncoder
 from problems_rdb.forms import EditorForm as RDBEditorForm
 
 import problems_c.models as c_models
@@ -21,14 +22,6 @@ import problems_python.models as python_models
 import problems_ra.models as ra_models
 import problems_sql.models as sql_models
 import problems_java.models as java_models
-
-
-# Helper class to encode datetime objects
-class DateEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.date):
-            return obj.isoformat()
-        return json.JSONEncoder.default(self, obj)
 
 
 class EditorViewMixin:
