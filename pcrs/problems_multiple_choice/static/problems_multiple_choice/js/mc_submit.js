@@ -119,8 +119,7 @@ function add_mc_history_entry(data, div_id, flag){
     }
 
     var entry = $('<div/>',{class:panel_class});
-    var header1 = $('<div/>',{class:"pcrs-panel-heading"});
-    var header2 = $('<h4/>', {class:"pcrs-panel-title"});
+    var header2 = $('<h4/>', {class:"pcrs-panel-title", 'style':"padding:0"});
     var header4 = $('<td/>', {html:"<span style='float:right;'> " + star_text + " "
                                       + "<sup style='font-size:0.9em'>" + data['score'] + "</sup>"
                                       + " / "
@@ -129,6 +128,8 @@ function add_mc_history_entry(data, div_id, flag){
 
     var header3 = $('<a/>', {'data-toggle':"collapse",
                              'data-parent':"#history_accordion",
+                             'style':"display: block; border-radius: 4px; min-height: 40px",
+                             'class':"pcrs-panel-heading pcrs-panel-title collapsed",
                               href:"#collapse_"+data['sub_pk'],
                               html:sub_time + header4.html()});
 
@@ -160,9 +161,8 @@ function add_mc_history_entry(data, div_id, flag){
     }
 
     header2.append(header3);
-    header1.append(header2);
 
-    entry.append(header1);
+    entry.append(header2);
     cont1.append(cont2);
     cont1.append(cont3);
     entry.append(cont1);
