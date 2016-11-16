@@ -369,7 +369,7 @@ class AbstractSubmission(AbstractSelfAwareModel):
             .filter(cls.deadline_constraint(),
                     problem__visibility='open',
                     user=user, score=F('problem__max_score'),
-                    problem__challenge__quest__sectionquest__section=section)\
+                    section=section)\
             .values('problem__challenge')\
             .annotate(solved=Count('problem', distinct=True))\
             .order_by()
@@ -384,7 +384,7 @@ class AbstractSubmission(AbstractSelfAwareModel):
         section = section or user.section
         subs = cls.objects\
             .filter(cls.deadline_constraint(), user=user,
-                    problem__challenge__quest__sectionquest__section=section)\
+                    section=section)\
             .values('problem_id')\
             .annotate(best=Max('score'), max_score=Max('problem__max_score'))\
             .order_by()
