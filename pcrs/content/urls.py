@@ -18,6 +18,7 @@ from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
+from content.import_views import *
 
 
 challenge_page_view = ReactiveContentPageView
@@ -26,6 +27,8 @@ if settings.QUESTS_LIVE:
     quests_page_view = ReactiveQuestsView
 
 urlpatterns = patterns('',
+    url(r'^import$', ImportView.as_view(),
+        name='import'),
     url(r'^tags/list$', TagListView.as_view(),
         name='tag_list'),
     url(r'^tags/create$', TagCreateView.as_view(),

@@ -317,7 +317,6 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
             problems_completed[content_type.app_label] = submission_class\
                 .get_best_attempts_before_deadlines(user, section)
 
-
         data['best'] = best
         data['problems_completed'] = problems_completed
         # number of problems completed by a student in this challenge

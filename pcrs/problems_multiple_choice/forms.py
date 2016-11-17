@@ -7,9 +7,10 @@ from problems_multiple_choice.models import Problem, Option
 
 
 class ProblemForm(forms.ModelForm, BaseProblemForm):
+    no_correct_response = forms.BooleanField(label="<b>Survey purposes only</b>", help_text="Click here if this problem will have no correct answer.")
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'tags', 'visibility')
+        fields = ('name', 'description', 'tags', 'visibility', 'no_correct_response')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

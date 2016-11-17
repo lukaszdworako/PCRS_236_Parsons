@@ -4,7 +4,8 @@ import datetime
 import decimal
 import logging
 
-from django.http import HttpResponse, Http404
+from django.core import serializers
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
@@ -57,7 +58,6 @@ class ProblemListView(ProtectedViewMixin, ProblemView, GenericItemListView):
     """
     template_name = 'problems/problem_list.html'
 
-
 class ProblemCreateView(CourseStaffViewMixin, ProblemView,
                         GenericItemCreateView):
     """
@@ -84,7 +84,46 @@ class ProblemCloneView(ProblemCreateView):
             testcase.save(force_insert=True)
         return redirect(new_problem.get_absolute_url())
 
+class ProgrammingProblemExportView(DetailView):
+    """
+    Export an existing problem and its testcases into JSON file.
+    """
+    def post(self, request, pk):
+        problem = self.get_object()
+        serialized = serializers.serialize('json',
+                                           [problem] + list(problem.testcase_set.all())
+                                           )
+        with open('../{}.json'.format(problem.name), 'w') as json_file:
+            json_file.write(serialized)
+        return redirect(self.get_object().get_absolute_url())
 
+class ProblemImportView(ProblemCreateView):
+    """
+    Import PCRS problems and testcases from JSON file.
+    """
+    def post(self, request):
+        json_file = request.FILES['import']
+        
+        with json_file as jf:
+            json_data = json.loads(r'{}'.format(jf.read()))
+
+        pk_to_problems = {}
+        
+        for pcrs_obj in json_data:
+            model_field = pcrs_obj['model'].split('.')
+            model = ContentType.objects.get(app_label=model_field[0], model=model_field[1]).model_class()
+            for field in pcrs_obj['fields'].keys():
+                    if field not in [f.name for f in model._meta.fields]:
+                        pcrs_obj['fields'].pop(field)
+            if model_field[1] == "testcase":
+                pcrs_obj['fields']['problem'] = pk_to_problems[pcrs_obj['fields']['problem']]
+            obj = model.objects.create(**pcrs_obj['fields'])
+            obj.save()
+            if model_field[1] == "problem":
+                pk_to_problems[pcrs_obj['pk']] = obj
+                
+        return HttpResponseRedirect('/')
+    
 class ProblemCreateAndAddTCView(ProblemCreateView):
     """
     Create a new problem and add testcases.

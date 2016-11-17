@@ -1,13 +1,31 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML, \
-    Submit
+    Submit, Button
+from crispy_forms.bootstrap import FieldWithButtons
 from django import forms
 
 from content.models import Challenge, Video, Quest, SectionQuest
 from content.tags import Tag
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
 
+class ContentImportForm(CrispyFormMixin, forms.Form):
+    json_file = forms.FileField(label="",
+                help_text="<br/>Must be a .json file exported from PCRS instance<br/>")
 
+    class Meta:
+        fields = ('json_file',)
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        import_url = '/content/import'
+        import_button = Submit('import', 'Import', css_class='green-button',
+                               formaction=import_url)
+        self.fields['json_file'].label = "JSON file"
+        self.helper.layout = Layout('json_file',
+                                    ButtonHolder(import_button)
+                                    )
+    
+    
 class TagForm(BaseCrispyForm, forms.ModelForm):
     class Meta:
         model = Tag

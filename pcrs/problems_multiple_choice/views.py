@@ -1,8 +1,9 @@
 import json
+from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.views.generic import CreateView, UpdateView, DeleteView, FormView, \
+from django.views.generic import DetailView, CreateView, UpdateView, DeleteView, FormView, \
     View
 from django.views.generic.detail import SingleObjectMixin
 from pcrs.generic_views import GenericItemCreateView
@@ -16,10 +17,9 @@ from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
-#
 import logging
 from django.utils.timezone import localtime
-#
+
 
 
 class ProblemCloneView(problems.views.ProblemCloneView):
@@ -37,6 +37,18 @@ class ProblemCloneView(problems.views.ProblemCloneView):
             option.save(force_insert=True)
         return redirect(new_problem.get_absolute_url())
 
+class MCProblemExportView(DetailView):
+    """
+    Export an existing problem and its testcases into JSON file.
+    """
+    def post(self, request, pk):
+        problem = self.get_object()
+        serialized = serializers.serialize('json',
+                                           [problem] + list(problem.option_set.all())
+                                           )
+        with open('../{}.json'.format(problem.name), 'w') as json_file:
+            json_file.write(serialized)
+        return redirect(self.get_object().get_absolute_url())
 
 class ProblemCreateAndAddOptView(CourseStaffViewMixin, CreateView):
     model = Problem
@@ -112,10 +124,13 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
 
         for option in all_options:
             selected = option in selected_options
-            correct = (option in correct_options and
-                       option in selected_options) or \
-                      (not option in correct_options and
-                       not option in selected_options)
+            if problem.no_correct_response:
+                correct = True
+            else:
+                correct = (option in correct_options and
+                           option in selected_options) or \
+                          (not option in correct_options and
+                           not option in selected_options)
             OptionSelection(submission=self.submission, option=option,
                             is_correct=correct, was_selected=selected).save()
         self.submission.set_score()

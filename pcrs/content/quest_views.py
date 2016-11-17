@@ -181,7 +181,7 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
             item.pk: item.content_object
             for item in ContentSequenceItem.objects.prefetch_related('content_object').all()
         }
-
+        
         return context
 
     def get_queryset(self):

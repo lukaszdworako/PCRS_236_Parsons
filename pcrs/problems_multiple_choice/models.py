@@ -16,6 +16,7 @@ class Problem(AbstractProblem):
     """
     name = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
+    no_correct_response = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['name', 'description']
@@ -69,6 +70,7 @@ class Submission(AbstractSubmission):
         Set the score of this submission to the number of option that
         were correctly selected and correctly not select.
         """
+
         self.score = self.optionselection_set.filter(is_correct=True).count()
         self.save()
         self.set_best_submission()
