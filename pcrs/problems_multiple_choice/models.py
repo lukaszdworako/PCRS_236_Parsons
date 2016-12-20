@@ -58,6 +58,12 @@ class Problem(AbstractProblem):
                                         for option in self.option_set.all()]
         return serialized
 
+    def prepareJSON(self):
+        """
+        Returns serializatin of MC problem and its options set in JSON format.
+        """
+        content = [self]+[o for o in self.option_set.all()]
+        return content
 
 class Submission(AbstractSubmission):
     """

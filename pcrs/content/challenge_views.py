@@ -1,10 +1,8 @@
 from collections import defaultdict
 import json
 import os
-
 from django.http import HttpResponse
-from django.views.generic import ListView, DetailView, View, TemplateView
-
+from django.views.generic import ListView, FormView, DetailView, View, TemplateView
 from content.forms import ChallengeForm
 from content.models import *
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
@@ -18,7 +16,9 @@ from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm as MCSubmissionForm
 from problems_rating.forms import SubmissionForm as RatingSubmissionForm
 from problems_short_answer.forms import SubmissionForm as ShortAnswerSubmissionForm
-
+from django.core import serializers
+from django.shortcuts import redirect
+from django.core.urlresolvers import reverse
 
 class ChallengeView():
     model = Challenge
@@ -67,7 +67,6 @@ class ChallengeUpdateView(CourseStaffViewMixin, ChallengeView,
     """
     Update a new Challenge, its ContentPages and ContentObjects.
     """
-
 
 class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
     """
@@ -305,3 +304,14 @@ class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
                            'resources/challenge_graph/ui/graph_gen_vertical.svg')
         return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
                             mimetype='text')
+
+
+class ChallengeExportView(DetailView):
+    template_name = 'content/challenge_list.html'
+
+    def post(self, request, pk):
+        package = self.get_object().prepareJSON()
+        json = serializers.serialize('json', package)
+        with open('../{}.json'.format(self.get_object().name), 'w') as f:
+            f.write(json)
+        return redirect(reverse('challenge_update', args=(self.get_object().pk,)))

@@ -13,8 +13,7 @@ from problems_multiple_choice.views import (OptionCreateView,
                                             ProblemCloneView,
                                             SubmissionView, OptionsCreateView,
                                             SubmissionAsyncView,
-                                            SubmissionMCHistoryAsyncView,
-                                            MCProblemExportView)
+                                            SubmissionMCHistoryAsyncView)
 
 
 urlpatterns = patterns('',
@@ -26,8 +25,6 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/clone$',
         ProblemCloneView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_clone'),
-    url(r'^(?P<pk>[0-9]+)/export$',
-        MCProblemExportView.as_view(model=Problem), name='mc_problem_export'),
     url(r'^create_and_add_option$',
         ProblemCreateAndAddOptView.as_view(model=Problem, form_class=ProblemForm),
         name='mc_problem_create_and_add_option'),

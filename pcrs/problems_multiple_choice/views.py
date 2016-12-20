@@ -1,5 +1,4 @@
 import json
-from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -36,19 +35,6 @@ class ProblemCloneView(problems.views.ProblemCloneView):
             option.problem = new_problem
             option.save(force_insert=True)
         return redirect(new_problem.get_absolute_url())
-
-class MCProblemExportView(DetailView):
-    """
-    Export an existing problem and its testcases into JSON file.
-    """
-    def post(self, request, pk):
-        problem = self.get_object()
-        serialized = serializers.serialize('json',
-                                           [problem] + list(problem.option_set.all())
-                                           )
-        with open('../{}.json'.format(problem.name), 'w') as json_file:
-            json_file.write(serialized)
-        return redirect(self.get_object().get_absolute_url())
 
 class ProblemCreateAndAddOptView(CourseStaffViewMixin, CreateView):
     model = Problem

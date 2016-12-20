@@ -14,12 +14,10 @@ from content.quest_views import (QuestCreateView, QuestUpdateView, QuestListView
                                  QuestSaveChallengesView, QuestSectionListView,
                                  QuestsView, ReactiveQuestsView,
                                  ReactiveQuestsDataView,
-                                 QuestAnalyticsView)
+                                 QuestAnalyticsView, QuestImportView, QuestExportView)
 from content.tag_views import *
 from content.video_views import *
 from pcrs.generic_views import GenericCourseStaffDeleteView
-from content.import_views import *
-
 
 challenge_page_view = ReactiveContentPageView
 quests_page_view = QuestsView
@@ -27,7 +25,7 @@ if settings.QUESTS_LIVE:
     quests_page_view = ReactiveQuestsView
 
 urlpatterns = patterns('',
-    url(r'^import$', ImportView.as_view(),
+    url(r'^import$', QuestImportView.as_view(),
         name='import'),
     url(r'^tags/list$', TagListView.as_view(),
         name='tag_list'),
@@ -55,6 +53,8 @@ urlpatterns = patterns('',
         name='challenge_create'),
     url(r'^challenges/(?P<pk>[0-9]+)$', ChallengeUpdateView.as_view(),
         name='challenge_update'),
+    url(r'^challenges/(?P<pk>[0-9]+)/export$', ChallengeExportView.as_view(model=Challenge),
+        name='challenge_export'),
     url(r'^challenges/list$', ChallengeListView.as_view(),
         name='challenge_list'),
     url(r'^challenges/(?P<challenge>[0-9]+)/(?P<page>[0-9]+)$',
@@ -111,6 +111,8 @@ urlpatterns = patterns('',
         name='quest_create'),
     url(r'^quests/(?P<pk>[0-9]+)$', QuestUpdateView.as_view(),
         name='quest_update'),
+    url(r'^quests/(?P<pk>[0-9]+)/export$', QuestExportView.as_view(model=Quest),
+        name='quest_export'),
     url(r'^quests/(?P<pk>[0-9]+)/analytics$', QuestAnalyticsView.as_view(),
         name='quest_analytics'),
     url(r'^quests/(?P<pk>[0-9]+)/delete$',

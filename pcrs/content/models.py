@@ -3,6 +3,7 @@ import datetime
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 from django.db import models
 from django.db.models import F
 from django.db.models.signals import pre_delete, post_delete
@@ -98,6 +99,9 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
+    
+    def prepareJSON(self):
+        return [self]
 
 
 class WatchedVideo(models.Model):
@@ -156,6 +160,9 @@ class TextBlock(AbstractSelfAwareModel):
     def get_content_type_name(cls):
         return 'textblock'
 
+    def prepareJSON(self):
+        return [self]
+
 
 class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
     """
@@ -187,6 +194,13 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
             .format(self.content_page.challenge.pk,
                     self.content_type, self.object_id)
 
+    def prepareJSON(self):
+        """
+        Return JSON serialization list of ContentSequenceItem
+        """
+        content = [self.content_type]+self.content_object.prepareJSON()+[self]
+        return content
+        
 
 class ContentPage(AbstractSelfAwareModel):
     """
@@ -260,7 +274,15 @@ class ContentPage(AbstractSelfAwareModel):
         else:
             return ContentPage.objects.get(challenge=self.challenge,
                                            order=self.order-1)
-
+    def prepareJSON(self):
+        """
+        Returns list of JSON-formatted serializations of ContentPage and its ContentSequenceItems
+        """
+        content = [self]
+        for item in self.contentsequenceitem_set.all():
+            content += item.prepareJSON()
+        return content
+        
 
 class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 AbstractLimitedVisibilityObject):
@@ -372,6 +394,12 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     def get_stats_page_url(self):
         return '{}/stats'.format(self.get_absolute_url())
 
+    def prepareJSON(self):
+        content = [self]
+        for page in self.contentpage_set.all():
+            content += page.prepareJSON()
+        return content              
+
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
     """
@@ -409,6 +437,12 @@ class Quest(AbstractNamedObject, AbstractSelfAwareModel):
         serialized['order'] = self.order
         serialized['mode'] = self.mode
         return serialized
+
+    def prepareJSON(self):
+        content = [self]
+        for challenge in self.challenge_set.all():
+            content += challenge.prepareJSON()
+        return content
 
 
 class SectionQuest(AbstractLimitedVisibilityObject):

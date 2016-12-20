@@ -278,6 +278,9 @@ class AbstractProgrammingProblem(AbstractProblem, AbstractNamedObject):
             serialized.update(base.serialize(self))
         return serialized
 
+    def prepareJSON(self):
+        content = [self]+[tc for tc in self.testcase_set.all()]
+        return content
 
 class AbstractSubmission(AbstractSelfAwareModel):
     """

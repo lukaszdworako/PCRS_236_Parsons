@@ -1,14 +1,18 @@
 from collections import defaultdict
 import json
-
+from io import TextIOWrapper
+from django.core import serializers
+from django.core.urlresolvers import reverse
+from django.db import models, IntegrityError, DatabaseError, transaction
+from django.contrib.contenttypes.models import ContentType
 from django.forms.models import inlineformset_factory
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now, localtime
-from django.views.generic import CreateView, FormView, ListView, View, \
+from django.views.generic import CreateView, FormView, ListView, View, DetailView, \
     TemplateView
 from django.views.generic.detail import SingleObjectMixin
-from content.forms import QuestForm, QuestSectionForm
+from content.forms import QuestForm, QuestSectionForm, QuestImportForm
 from content.models import Quest, SectionQuest, Challenge, WatchedVideo, \
     ContentPage, ContentSequenceItem
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
@@ -248,3 +252,110 @@ class ReactiveQuestsDataView(ProtectedViewMixin, View, UserViewMixin):
 
         return HttpResponse(json.dumps(data))
 
+class QuestExportView(DetailView):
+    template_name = 'content/quest_list.html'
+
+    def post(self, request, pk):
+        package = self.get_object().prepareJSON()
+        json = serializers.serialize('json', package)
+        with open('../{}.json'.format(self.get_object().name), 'w') as f:
+            f.write(json)
+        return redirect(reverse('quest_update', args=(self.get_object().pk,)))
+
+class QuestImportView(FormView):
+    form_class = QuestImportForm
+    template_name = "content/import.html"
+
+    def post(self, request):
+        f = TextIOWrapper(request.FILES["json_file"].file, encoding='utf-8')
+        with f as json_str:
+            json_data = json.loads(r'{}'.format(json_str.read()))
+
+        # Store foreign key field objects by pk
+        pk_to_quest = {}
+        pk_to_challenge = {}
+        pk_to_contentpage = {}
+        pk_to_contenttype = {}
+        pk_to_problem = {}
+        pk_to_video = {}
+        pk_to_textblock = {}
+        new_pk = {} # Store {old_pk:new_pk} pairs by content type id
+
+        for item in json_data:
+            model_field = item['model'].split('.')
+            model = ContentType.objects.get(app_label=model_field[0], model=model_field[1]).model_class()
+            # Replace foreign key integers in JSON with actual objects
+            # and parse JSON according to model type
+            old_fields = item["fields"].copy()
+            for field in old_fields:
+                if field not in [f.name for f in model._meta.fields]:
+                    item["fields"].pop(field)
+            if model_field[1]=="challenge":
+                if len(pk_to_quest)==0: # If the challenge belongs to a quest
+                    item["fields"].pop("prerequisites", None)
+                    item["fields"].pop("quest", None)
+                else:
+                    item["fields"]["quest"] = pk_to_quest[item["fields"]["quest"]]
+            if model_field[1]=="contentpage":
+                item["fields"]["challenge"] = pk_to_challenge[item["fields"]["challenge"]]
+            if model_field[1]=="problem":
+                item["fields"]["challenge"] = pk_to_challenge[item["fields"]["challenge"]]
+                if "max_score" in item["fields"]:
+                    item["fields"].pop("max_score")
+            if model_field[1]=="contentsequenceitem":
+                item["fields"]["object_id"] = new_pk[item["fields"]["content_type"]][item["fields"]["object_id"]]
+                item["fields"]["content_page"] = pk_to_contentpage[item["fields"]["content_page"]]
+                item["fields"]["content_type"] = pk_to_contenttype[item["fields"]["content_type"]]
+            if model_field[1] in ("testcase", "option"):
+                item["fields"]["problem"] = pk_to_problem[item["fields"]["problem"]]
+            # Get/create object from prepared JSON
+            if model_field[1]=="contenttype":
+                obj = model.objects.get(pk=item["pk"])
+                pk_to_contenttype[item["pk"]] = obj
+                if obj.pk not in new_pk:
+                    new_pk[obj.pk] = {}
+            else:
+                try:
+                    obj = model.objects.get_or_create(**item["fields"])[0]
+                except IntegrityError as e:
+                    # There may be existing problems that are not in any challenge,
+                    # or existing challenges that are not in any quest
+                    # If so, modify existing objects.
+                    if model_field[1]=="problem":
+                        fields_without_challenge = item["fields"].copy()
+                        fields_without_challenge.pop("challenge", None)
+                        obj = model.objects.get(**fields_without_challenge)
+                        obj.challenge = pk_to_challenge[old_fields["challenge"]]
+                        obj.save()
+                    if model_field[1]=="challenge":
+                        fields_without_quest = item["fields"].copy()
+                        fields_without_quest.pop("quest", None)
+                        obj = model.objects.get(**fields_without_quest)
+                        obj.quest = pk_to_quest[old_fields["quest"]]
+                        obj.save()
+                except DatabaseError as e:
+                    transaction.rollback_unless_managed()
+                    try:
+                        obj = model.objects.get_or_create(**item["fields"])[0]
+                    except IntegrityError as e:
+                        # There may already be identical problems that are not in any challenge
+                        # If so, add the problem to the challenge.
+                        if model_field[1]=="problem":
+                            fields_without_challenge = item["fields"].copy()
+                            fields_without_challenge.pop("challenge", None)
+                            obj = model.objects.get(**fields_without_challenge)
+                            obj.challenge = pk_to_challenge[old_fields["challenge"]]
+                            obj.save()
+
+            if model_field[1] in ("problem","video","textblock"):
+                new_pk[obj.get_content_type_id()][item["pk"]] = obj.pk
+            if model_field[1] == "problem":
+                pk_to_problem[item["pk"]] = obj
+            if model_field[1] == "challenge":
+                pk_to_challenge[item["pk"]] = obj
+            if model_field[1] == "contentpage":
+                pk_to_contentpage[item["pk"]] = obj
+            if model_field[1] == "quest":
+                pk_to_quest[item["pk"]] = obj
+
+        return HttpResponseRedirect('/')
