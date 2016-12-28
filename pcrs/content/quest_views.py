@@ -258,9 +258,9 @@ class QuestExportView(DetailView):
     def post(self, request, pk):
         package = self.get_object().prepareJSON()
         json = serializers.serialize('json', package)
-        with open('../{}.json'.format(self.get_object().name), 'w') as f:
-            f.write(json)
-        return redirect(reverse('quest_update', args=(self.get_object().pk,)))
+        response = HttpResponse(json, content_type="application/json")
+        response["Content-Disposition"] = "attachment; filename={}.json".format(self.get_object().name)
+        return response
 
 class QuestImportView(FormView):
     form_class = QuestImportForm
