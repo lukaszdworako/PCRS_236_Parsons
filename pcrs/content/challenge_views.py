@@ -1,6 +1,8 @@
 from collections import defaultdict
 import json
 import os
+import logging
+
 from django.http import HttpResponse
 from django.views.generic import ListView, FormView, DetailView, View, TemplateView
 from content.forms import ChallengeForm
@@ -93,6 +95,7 @@ class ContentPageView(ProtectedViewMixin, UserViewMixin, ListView):
             self.page = page_set.get(
                 order=self.kwargs.get('page', None),
                 challenge_id=self.kwargs.get('challenge', None))
+
         return self.page
 
     def get_queryset(self):
@@ -174,6 +177,11 @@ class ReactiveContentPageData(ContentPageView, View):
     def get(self, request, *args, **kwargs):
         user, section = self.get_user(), self.get_section()
         page = self.get_page()
+
+        logger = logging.getLogger('activity.logging')
+        logger.info(str(now()) + " | " + str(self.request.user) + \
+                    " | View challenge " + str(self.kwargs.get('challenge', None)) + \
+                    " page " + str(self.kwargs.get('page', None)))
 
         items = [
             item.content_object.serialize()

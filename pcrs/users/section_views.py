@@ -112,16 +112,25 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         return response
 
+    def _cleanName(self, name):
+        newname = []
+        for ch in name:
+            if ch.isspace():
+                newname.append('_')
+            elif ch.isalpha() or ch.isdigit():
+                newname.append(ch)
+        if not newname:
+            newname = ["anon"]
+        return "".join(newname)
+
     def _generateCsvName(self, section, quest):
-        return '{0}-{1}-{2}.csv'.format(
-            str(section).split("@")[0].strip().replace(" ", "_"),
-            quest.name.replace(" ", "_"),
-            time.strftime("%m%d%y"))
+        section_name = self._cleanName(str(section).split("@")[0].strip())
+        quest_name = self._cleanName(quest.name)
+        return '{0}-{1}-{2}.csv'.format(section_name, quest_name, time.strftime("%m%d%y"))
 
     def _generateZipName(self, section):
-        return '{0}-{1}.zip'.format(
-            str(section).split("@")[0].strip().replace(" ", "_"),
-            time.strftime("%m%d%y"))
+        section_name = self._cleanName(str(section).split("@")[0].strip())
+        return '{0}-{1}.zip'.format(section_name, time.strftime("%m%d%y"))
 
     def writeQuestCsvDataToBuffer(self, buf, quest, data):
         section = data['section']
@@ -171,6 +180,9 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
     def _generateStudentRows(self, section, grades,
             problems, maxScores, problemTypes, active_only):
         rows = []
+
+        # Removing "maxScores" from the front of the list to make it parallel with problems
+        maxScores = maxScores[1:]
 
         for studentId, scoreDict in grades.items():
             scores = []
