@@ -104,7 +104,7 @@ class AbstractNamedObject(models.Model):
     """
     An object that has a name, and an optional description.
     """
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     description = models.TextField()
 
     class Meta:
