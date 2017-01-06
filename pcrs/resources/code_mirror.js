@@ -88,7 +88,7 @@ function guardBackspace(editor) {
 
     var isSelection = editor.somethingSelected();
     var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
-        return line.wrapClass == 'CodeMirror-activeline-background';
+        return line.wrapClass && line.wrapClass.indexOf('CodeMirror-activeline-background') > -1;
     }).length > 0;
 
     var curLineEmpty = editor.lineInfo(curLine).text.length == 0;
@@ -98,7 +98,7 @@ function guardBackspace(editor) {
     // Allow deleting selections, characters on the same line and previous unblocked lines
     if ((!blockedCodeSelected)
         && ((!curLineEmpty && !curLineFirstChar)
-            || (prevLineWrapClass != 'CodeMirror-activeline-background'))) {
+            || (!prevLineWrapClass || prevLineWrapClass.indexOf('CodeMirror-activeline-background') == -1))) {
 
         // Resume default behaviour
         return CodeMirror.Pass;
@@ -115,7 +115,7 @@ function guardDelete(editor) {
 
     var isSelection = editor.somethingSelected();
     var blockedCodeSelected = isSelection && editor.getSelectedLines().filter(function(line) {
-        return line.wrapClass == 'CodeMirror-activeline-background';
+        return line.wrapClass && line.wrapClass.indexOf('CodeMirror-activeline-background') > -1;
     }).length > 0;
 
     var curLineEmpty = curLineLen == 0;
@@ -125,7 +125,7 @@ function guardDelete(editor) {
     // Allow deleting selections, characters on the same line and following unblocked lines
     if ((!blockedCodeSelected)
         && ((!curLineEmpty && !curLineLastChar)
-            || (nextLineWrapClass != 'CodeMirror-activeline-background'))) {
+            || (!nextLineWrapClass || nextLineWrapClass.indexOf('CodeMirror-activeline-background') == -1))) {
 
         // Resume default behaviour
         return CodeMirror.Pass;
@@ -141,11 +141,11 @@ function blockInput(mirror) {
     var line_count;
     var wrapClass = mirror.lineInfo(line_num).wrapClass;
 
-    if (wrapClass == 'CodeMirror-activeline-background') {
+    if (wrapClass && wrapClass.indexOf('CodeMirror-activeline-background') > -1) {
         line_count = mirror.lineCount();
         for (var i = 0; i < line_count; i++){
             wrapClass = mirror.lineInfo(i).wrapClass;
-            if (wrapClass != 'CodeMirror-activeline-background'){
+            if (!wrapClass || wrapClass.indexOf('CodeMirror-activeline-background') == -1){
                 mirror.setCursor(i, 0);
                 return true;
             }

@@ -39,6 +39,12 @@ CSubmissionWrapper.prototype.createCodeMirrors = function() {
     var codeDiv = this.wrapperDiv.find(this.isEditor
         ? '#div_id_code_box' : '#div_id_submission');
     var code = codeDiv.find('textarea').text();
+
+    // Adding blocked code at the beginning: no student code only blocks
+    var lines = code.split('\n');
+    if (lines[0].indexOf('[student_code]') > -1) {
+        code = '[blocked]\n// Please insert your code below\n[/blocked]\n' + code;
+    }
     var codeObj = TagManager.stripTagsForStudent(code);
 
     myCodeMirrors[this.wrapperDivId] = to_code_mirror(
@@ -62,7 +68,7 @@ CSubmissionWrapper.prototype.addWrapClass = function(mirror, codeObj) {
     var hash_ranges = codeObj.hash_ranges;
     
     for (i in hash_ranges) {
-        mirror.addLineClass(hash_ranges[i].start-1, "wrap", "hash-start");
+        mirror.addLineClass(hash_ranges[i].start-2, "wrap", "hash-start");
     }
 }
 
@@ -214,70 +220,24 @@ CSubmissionWrapper.prototype._prepareVisualizer = function(row) {
 CSubmissionWrapper.prototype._addHashkey = function(mirror) {
     var hashCode = CryptoJS.SHA1(this.problemId);
     var code = '';
-    var inside_blocked_code = false;
     var inside_student_code = false;
     
     for (i = 0; i < mirror.lineCount(); i++) {
         var wrapClass = mirror.lineInfo(i).wrapClass;
 
-        if (inside_blocked_code) {
-            // If line starts [student_code][/student_code] block
-            // or an untagged block
-            if (wrapClass == "hash-start") {
-                // End [blocked][/blocked] block
-                // code += hashCode;
-                // code += '\n';
-                // Start [student_code][/student_code] or untagged block
-                code += hashCode;
-                code += '\n';
-                inside_blocked_code = false;
-                inside_student_code = true;
-            }
-        }
-        else if (inside_student_code) {
-            // If line starts another
-            // [student_code][/student_code] block
-            if (wrapClass == "hash-start") {
-                // End old block
-                code += hashCode;
-                code += '\n';
-                // Start new block
-                code += hashCode;
-                code += '\n';
-            }
-            // If line starts [blocked][/blocked] block
-            if (wrapClass == "CodeMirror-activeline-background") {
-                // End [student_code][/student_code] block
-                code += hashCode;
-                code += '\n';
-                // Start [blocked][/blocked] block
-                // code += hashCode;
-                // code += '\n';
-                inside_blocked_code = true;
-                inside_student_code = false;
-            }
-        } 
-        // If not already in [blocked][/blocked]
-        // or [student_code][/student_code] tags
-        else {
-            // If this is a new [blocked][/blocked] block
-            if (wrapClass == "CodeMirror-activeline-background") {
-                // code += hashCode;
-                // code += '\n';
-                inside_blocked_code = true;
-                inside_student_code = false;
-            } 
-            // If this is a new [student_code][/student_code] block
-            else if (wrapClass == "hash-start") {
-                code += hashCode;
-                code += '\n';
-                inside_student_code = true;
-                inside_blocked_code = false;
-            }
+        if (inside_student_code && wrapClass && wrapClass.indexOf("CodeMirror-activeline-background") > -1) {
+            // Were in student code but no longer.
+            inside_student_code = false;
+            code += hashCode + '\n';
         }
 
-        code += mirror.getLine(i);
-        code += '\n';
+        code += mirror.getLine(i) + '\n';
+
+        if (wrapClass && wrapClass.indexOf("hash-start") > -1) {
+            // Next line starts student code
+            code += hashCode + '\n';
+            inside_student_code = true;
+        }
     }
     
     code += hashCode;
