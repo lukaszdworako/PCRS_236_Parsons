@@ -13,7 +13,7 @@ from problems_python.python_language import PythonSpecifics
 class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
-    solution = models.TextField(help_text='The solution should be valid Python code. It may import libraries, such as <i>re</i>. The submission to be graded will be in a variable named <i>submission</i>, and the score to be assigned should be placed in a variable <i>score</i>.')
+    solution = models.TextField(help_text='The solution should be valid Python code. It may import libraries, such as <i>re</i>. The submission to be graded will be in a variable named <i>submission</i>, and the score to be assigned should be placed in a variable <i>score</i>. An optional error message to be displayed to the student can be placed in variable <i>message</i>.')
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
