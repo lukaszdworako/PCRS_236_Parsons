@@ -18,9 +18,6 @@ class Problem(AbstractProblem):
     description = models.TextField()
     no_correct_response = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ['name', 'description']
-
     def __str__(self):
         if self.name:
             return '{name}: {description}'.format(

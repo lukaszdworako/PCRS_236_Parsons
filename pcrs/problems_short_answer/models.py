@@ -43,10 +43,12 @@ class Submission(AbstractSubmission):
                   "import os",
                   "import resource",
                   "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
-                  "resource.setrlimit(resource.RLIMIT_CPU, (3, 3))"] +\
+                  "resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",
+                  "message = None"] +\
                  code_lines +\
                  test_params +\
                  ["print(score)",
+                  "print(message)",
                   "exit()"]
 
         try:
@@ -60,17 +62,22 @@ class Submission(AbstractSubmission):
                 logger.info("{0} | Error within short answer evaluation ({1}, submitted: {2})\nException:\n{3}".format(
                              localtime(datetime.datetime.utcnow().replace(tzinfo=utc)), self.problem.pk, repr(self.submission), stderr_output))
                 result = 0
+                message = ""
             else:
-                result = int(stdout_output[-1])
+                result = int(stdout_output[-2])
+                message = stdout_output[-1].decode("utf-8") 
         except TimeoutExpired as ex:
             result = 0
+            message = ""
         except Exception as ex:     # Probably a value error.
             logger = logging.getLogger('activity.logging')
             logger.error("{0} | Exception while evaluating short answer ({1}, submitted: {2})\nException:\n{3}".format(
                          localtime(datetime.datetime.utcnow().replace(tzinfo=utc)), self.problem.pk, self.submission, ex))
             result = 0
+            message = ""
 
         self.score = result
+        self.message = message
         self.save()
         self.set_best_submission()
 

@@ -63,7 +63,7 @@ function submit_short_answer(submission, problem_pk, div_id) {
                     var alert_msg = 'Your solution is complete.';
                 }
                 else{
-                    var alert_msg = 'Your solution has not earned full credit.';
+                    var alert_msg = 'Your solution has not earned full credit. '+data['message'];
                     if (data['error_msg']){
                         alert_msg = data['error_msg'];
                     }

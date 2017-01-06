@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 from io import TextIOWrapper
+from datetime import date
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError, DatabaseError, transaction
@@ -279,7 +280,7 @@ class QuestImportView(FormView):
         pk_to_problem = {}
         pk_to_video = {}
         pk_to_textblock = {}
-        new_pk = {} # Store {old_pk:new_pk} pairs by content type id
+        new_pk = {} # Store {old_pk:new_pk} by content_type_id
 
         for item in json_data:
             model_field = item['model'].split('.')
@@ -291,7 +292,7 @@ class QuestImportView(FormView):
                 if field not in [f.name for f in model._meta.fields]:
                     item["fields"].pop(field)
             if model_field[1]=="challenge":
-                if len(pk_to_quest)==0: # If the challenge belongs to a quest
+                if len(pk_to_quest)==0: # If we are importing only a challenge, delete its quest field
                     item["fields"].pop("prerequisites", None)
                     item["fields"].pop("quest", None)
                 else:
@@ -308,7 +309,7 @@ class QuestImportView(FormView):
                 item["fields"]["content_type"] = pk_to_contenttype[item["fields"]["content_type"]]
             if model_field[1] in ("testcase", "option"):
                 item["fields"]["problem"] = pk_to_problem[item["fields"]["problem"]]
-            # Get/create object from prepared JSON
+            # Get/create object
             if model_field[1]=="contenttype":
                 obj = model.objects.get(pk=item["pk"])
                 pk_to_contenttype[item["pk"]] = obj
@@ -316,36 +317,10 @@ class QuestImportView(FormView):
                     new_pk[obj.pk] = {}
             else:
                 try:
-                    obj = model.objects.get_or_create(**item["fields"])[0]
-                except IntegrityError as e:
-                    # There may be existing problems that are not in any challenge,
-                    # or existing challenges that are not in any quest
-                    # If so, modify existing objects.
-                    if model_field[1]=="problem":
-                        fields_without_challenge = item["fields"].copy()
-                        fields_without_challenge.pop("challenge", None)
-                        obj = model.objects.get(**fields_without_challenge)
-                        obj.challenge = pk_to_challenge[old_fields["challenge"]]
-                        obj.save()
-                    if model_field[1]=="challenge":
-                        fields_without_quest = item["fields"].copy()
-                        fields_without_quest.pop("quest", None)
-                        obj = model.objects.get(**fields_without_quest)
-                        obj.quest = pk_to_quest[old_fields["quest"]]
-                        obj.save()
-                except DatabaseError as e:
+                    obj = model.objects.create(**item["fields"])
+                except:
                     transaction.rollback_unless_managed()
-                    try:
-                        obj = model.objects.get_or_create(**item["fields"])[0]
-                    except IntegrityError as e:
-                        # There may already be identical problems that are not in any challenge
-                        # If so, add the problem to the challenge.
-                        if model_field[1]=="problem":
-                            fields_without_challenge = item["fields"].copy()
-                            fields_without_challenge.pop("challenge", None)
-                            obj = model.objects.get(**fields_without_challenge)
-                            obj.challenge = pk_to_challenge[old_fields["challenge"]]
-                            obj.save()
+                    obj = model.objects.get_or_create(**item["fields"])[0]
 
             if model_field[1] in ("problem","video","textblock"):
                 new_pk[obj.get_content_type_id()][item["pk"]] = obj.pk
