@@ -20,7 +20,7 @@ from pcrs.generic_views import (GenericItemListView, GenericItemCreateView,
                                 GenericItemUpdateView)
 from pcrs.models import get_problem_content_types, get_problem_labels, \
     get_submission_content_types
-from pcrs.settings import INSTALLED_PROBLEM_APPS
+from pcrs.settings import SITE_PREFIX
 from users.models import Section, PCRSUser
 from users.views import UserViewMixin
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
@@ -333,4 +333,4 @@ class QuestImportView(FormView):
             if model_field[1] == "quest":
                 pk_to_quest[item["pk"]] = obj
 
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(SITE_PREFIX)

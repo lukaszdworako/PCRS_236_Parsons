@@ -3,6 +3,7 @@ from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML, \
     Submit, Button
 from django import forms
 
+from settings import SITE_PREFIX
 from content.models import Challenge, Video, Quest, SectionQuest
 from content.tags import Tag
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
@@ -16,7 +17,7 @@ class QuestImportForm(CrispyFormMixin, forms.Form):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        import_url = '/content/import'
+        import_url = SITE_PREFIX + '/content/import'
         import_button = Submit('import', 'Import', css_class='green-button',
                                formaction=import_url)
         self.fields['json_file'].label = "JSON file"
