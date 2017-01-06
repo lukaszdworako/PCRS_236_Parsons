@@ -3,7 +3,7 @@ from crispy_forms.layout import Fieldset, Layout, ButtonHolder, Div, HTML, \
     Submit, Button
 from django import forms
 
-from settings import SITE_PREFIX
+from pcrs.settings import SITE_PREFIX
 from content.models import Challenge, Video, Quest, SectionQuest
 from content.tags import Tag
 from pcrs.form_mixins import CrispyFormMixin, BaseCrispyForm
