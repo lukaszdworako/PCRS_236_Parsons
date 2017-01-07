@@ -300,7 +300,10 @@ class QuestImportView(FormView):
             if model_field[1]=="contentpage":
                 item["fields"]["challenge"] = pk_to_challenge[item["fields"]["challenge"]]
             if model_field[1]=="problem":
-                item["fields"]["challenge"] = pk_to_challenge[item["fields"]["challenge"]]
+                if item["fields"]["challenge"] in pk_to_challenge:
+                    item["fields"]["challenge"] = pk_to_challenge[item["fields"]["challenge"]]
+                else:
+                    item["fields"].pop("challenge", None)
                 if "max_score" in item["fields"]:
                     item["fields"].pop("max_score")
             if model_field[1]=="contentsequenceitem":
