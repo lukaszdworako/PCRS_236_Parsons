@@ -304,14 +304,14 @@ class QuestImportView(FormView):
                 if "max_score" in item["fields"]:
                     item["fields"].pop("max_score")
             if model_field[1]=="contentsequenceitem":
-                item["fields"]["object_id"] = new_pk[item["fields"]["content_type"]][item["fields"]["object_id"]]
+                item["fields"]["object_id"] = new_pk[pk_to_contenttype[item["fields"]["content_type"]].pk][item["fields"]["object_id"]]
                 item["fields"]["content_page"] = pk_to_contentpage[item["fields"]["content_page"]]
                 item["fields"]["content_type"] = pk_to_contenttype[item["fields"]["content_type"]]
             if model_field[1] in ("testcase", "option"):
                 item["fields"]["problem"] = pk_to_problem[item["fields"]["problem"]]
             # Get/create object
             if model_field[1]=="contenttype":
-                obj = model.objects.get(pk=item["pk"])
+                obj = model.objects.get(**item["fields"])
                 pk_to_contenttype[item["pk"]] = obj
                 if obj.pk not in new_pk:
                     new_pk[obj.pk] = {}
