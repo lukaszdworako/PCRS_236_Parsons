@@ -20,6 +20,13 @@ class Problem(AbstractProblem):
     def __str__(self):
         return self.name
 
+    def prepareJSON(self):
+        """
+        Returns serializatin of problem and its pages set in JSON format.
+        """
+        content = [self]+[p for p in self.page_set.all()]
+        return content
+
 class Page(AbstractSelfAwareModel):
     """
     A timed problem page.

@@ -25,6 +25,13 @@ class Problem(AbstractProblem):
     def __str__(self):
         return self.name
 
+    def prepareJSON(self):
+        """
+        Returns serializatin of short answer problem in JSON format.
+        """
+        content = [self]
+        return content
+
 Problem._meta.get_field('max_score').default = 1
 Problem._meta.get_field('max_score').blank = False
 

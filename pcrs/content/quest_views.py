@@ -272,7 +272,9 @@ class QuestImportView(FormView):
         with f as json_str:
             json_data = json.loads(r'{}'.format(json_str.read()))
 
-        # Store foreign key field objects by pk
+        # Store foreign key field objects by old pk
+        # By old pk, we mean the pk assigned by PCRS instance from which the object was exported
+        # We cannot keep old pk's since they may conflict with existing table rows in this PCRS instance
         pk_to_quest = {}
         pk_to_challenge = {}
         pk_to_contentpage = {}
@@ -280,7 +282,7 @@ class QuestImportView(FormView):
         pk_to_problem = {}
         pk_to_video = {}
         pk_to_textblock = {}
-        new_pk = {} # Store {old_pk:new_pk} by content_type_id
+        new_pk = {} # Store new pk's {content_type_id: {old_pk: new_pk}}
 
         for item in json_data:
             model_field = item['model'].split('.')
@@ -306,6 +308,7 @@ class QuestImportView(FormView):
                     item["fields"].pop("challenge", None)
                 if "max_score" in item["fields"]:
                     item["fields"].pop("max_score")
+                print(item["fields"])
             if model_field[1]=="contentsequenceitem":
                 item["fields"]["object_id"] = new_pk[pk_to_contenttype[item["fields"]["content_type"]].pk][item["fields"]["object_id"]]
                 item["fields"]["content_page"] = pk_to_contentpage[item["fields"]["content_page"]]

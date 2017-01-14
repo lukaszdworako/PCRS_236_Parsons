@@ -29,6 +29,13 @@ class Problem(AbstractProblem):
             opts.append(opt.strip())
         return opts
 
+    def prepareJSON(self):
+        """
+        Returns serializatin of problem in JSON format.
+        """
+        content = [self]
+        return content
+
 class Submission(AbstractSubmission):
     
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
