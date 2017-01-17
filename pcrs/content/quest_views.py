@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import re
 from io import TextIOWrapper
 from datetime import date
 from django.core import serializers
@@ -260,7 +261,8 @@ class QuestExportView(DetailView):
         package = self.get_object().prepareJSON()
         json = serializers.serialize('json', package)
         response = HttpResponse(json, content_type="application/json")
-        response["Content-Disposition"] = "attachment; filename={}.json".format(self.get_object().name)
+        name = re.sub(r'\s+', r'_', self.get_object().name.strip())
+        response["Content-Disposition"] = "attachment; filename={}.json".format(name)
         return response
 
 class QuestImportView(FormView):

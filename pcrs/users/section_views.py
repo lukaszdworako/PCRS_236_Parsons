@@ -1,6 +1,7 @@
 from collections import defaultdict
 import csv, zipfile, io
 import time
+import re
 
 from django.http import HttpResponse
 from django.views.generic import FormView
@@ -112,24 +113,13 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
 
         return response
 
-    def _cleanName(self, name):
-        newname = []
-        for ch in name:
-            if ch.isspace():
-                newname.append('_')
-            elif ch.isalpha() or ch.isdigit():
-                newname.append(ch)
-        if not newname:
-            newname = ["anon"]
-        return "".join(newname)
-
     def _generateCsvName(self, section, quest):
-        section_name = self._cleanName(str(section).split("@")[0].strip())
-        quest_name = self._cleanName(quest.name)
+        section_name = re.sub(r'\s+', r'_', str(section).split("@")[0].strip())
+        quest_name = re.sub(r'\s+', r'_', quest.name)
         return '{0}-{1}-{2}.csv'.format(section_name, quest_name, time.strftime("%m%d%y"))
 
     def _generateZipName(self, section):
-        section_name = self._cleanName(str(section).split("@")[0].strip())
+        section_name = re.sub(r'\s+', r'_', str(section).split("@")[0].strip())
         return '{0}-{1}.zip'.format(section_name, time.strftime("%m%d%y"))
 
     def writeQuestCsvDataToBuffer(self, buf, quest, data):
