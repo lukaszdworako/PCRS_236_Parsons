@@ -15,7 +15,6 @@ from pcrs.settings import PROJECT_ROOT, USE_SAFEEXEC, SAFEEXEC_USERID, SAFEEXEC_
 from languages.c.visualizer.cg_stacktrace import CVisualizer
 from languages.c.visualizer.cg_stacktrace_refactor import CVisualizerRefactor
 
-
 class CompilationError(Exception):
     pass
 
@@ -68,7 +67,9 @@ class CSpecifics():
         ret = {}
         user = str(self.username)
         user_script = str(self.submission)
-        test_input = test_input.strip('\r\n')
+        # Escape potential shell injections
+        test_input = re.escape(test_input.strip('\r\n'))
+        test_input = test_input.replace("\\ ", " ")
 
         # Compile C source code
         if not self.compiled:
