@@ -229,12 +229,11 @@ function addText() {
 }
 
 function updateText(pk) {
-    var text = $('#textblock-' + pk + ' p').html();
+    var text = $('#textblock-' + pk + ' .html').text();
     /*
      * ui-selectee is needed for dragging to look nice.
      * We don't want it to show up in the edit box, though!
      */
-    text = text.replace(/\s+class="ui-selectee"/g, '');
     $('#text-entry-modal').attr('textblock-pk', pk);
     $('#text-entry').val(text);
     $('#text-entry-modal').modal();
