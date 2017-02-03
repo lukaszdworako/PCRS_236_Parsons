@@ -199,7 +199,6 @@ function deletePage() {
     /**
      * remove selected page form the window
      */
-
     if (confirm('Are you sure you would like to delete this page?')) {
         $item = $(this).parent('.page');
         $.post(document.URL + '/' + $item.attr('id') + '/delete')
@@ -229,11 +228,15 @@ function addText() {
 }
 
 function updateText(pk) {
-    var text = $('#textblock-' + pk + ' .html').text();
+    var text = $('#textblock-' + pk + ' p.textdiv').html();
+    if (!text) {
+        text = $('#textblock-' + pk + ' .html').text()
+    }
     /*
      * ui-selectee is needed for dragging to look nice.
      * We don't want it to show up in the edit box, though!
      */
+    text = text.replace(/\s+class="ui-selectee"/g, '');
     $('#text-entry-modal').attr('textblock-pk', pk);
     $('#text-entry').val(text);
     $('#text-entry-modal').modal();
@@ -259,6 +262,8 @@ function saveText(event) {
         $.post(document.URL + '/textblock-' + pk + '/update', {
             'text': text,
         }).success(function (data) {
+            $('#textblock-' + pk + ' a').nextAll().remove();
+            $('#textblock-' + pk).append("<p class='textdiv'></p>")
             $('#textblock-' + pk + ' p').html(text);
 
             $('#save_top').prop('disabled', false);
@@ -270,16 +275,17 @@ function saveText(event) {
             text: text,
             csrftoken: csrftoken
         }).success(function (data) {
+            var $text = $("<p/>", {
+                html: $("#text-entry").val(),
+                class: "ui-selectee textdiv",
+            });
+            $page.append($text);
             var $new_item = $("<div/>", {
-                html: "<div><p class='ui-selectee'>" + $('#text-entry').val() + "</p></div>",
-                class: "textblock item ui-selectee",
+                class: "textblock item",
                 id: "textblock-" + data['pk']
             });
-            $new_item.prepend($("<button/>",{
-                class: "remove_item ui-selectee xs-x-button-right",
-                title: "Delete Item",
-                html:"<span class='at'>Delete Text Block "+$('#text-entry').val()+"</span>"
-            }));
+            $text.wrapAll($new_item);
+            $new_item = $page.children("#textblock-"+data['pk']);
             var edit_button = $("<a/>", {
                 class: 'pull-right',
                 href: 'javascript:void(0)',
@@ -291,8 +297,12 @@ function saveText(event) {
                 'class': 'pencil-icon',
             }));
             $new_item.prepend(edit_button);
+            $new_item.prepend($("<button/>",{
+                class: "remove_item ui-selectee xs-x-button-right",
+                title: "Delete Item",
+                html:"<span class='at'>Delete Text Block "+$('#text-entry').val()+"</span>"
+            }));
 
-            $page.append($new_item);
             $('#save_top').prop('disabled', false);
             $('#save_bot').prop('disabled', false);
         });
