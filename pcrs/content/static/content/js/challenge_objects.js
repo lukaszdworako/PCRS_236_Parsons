@@ -228,9 +228,11 @@ function addText() {
 }
 
 function updateText(pk) {
+    // Recently created text after page load
     var text = $('#textblock-' + pk + ' p.textdiv').html();
     if (!text) {
-        text = $('#textblock-' + pk + ' .html').text()
+        // Django rendered text blocks on page load
+        text = $('#textblock-' + pk + ' .html').html()
     }
     /*
      * ui-selectee is needed for dragging to look nice.
