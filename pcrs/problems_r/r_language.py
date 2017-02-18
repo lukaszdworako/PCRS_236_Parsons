@@ -5,6 +5,7 @@
 <<<<<<< HEAD
 import os
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import subprocess
 import sys
@@ -32,6 +33,10 @@ import re
 >>>>>>> pcrs-r RSpecifics prototype
 =======
 >>>>>>> Just execute entire script and redirect output to temporary file
+=======
+import subprocess
+import sys
+>>>>>>> pcrs-r: implemented rpy2
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime

@@ -5,7 +5,8 @@ from problems.models import (AbstractProgrammingProblem,
 							 AbstractSubmission,
 							 AbstractTestCase,
 							 AbstractTestRun,
-							 testcase_delete, problem_delete)
+							 testcase_delete, problem_delete,
+							 FileUpload)
 from django.db.models.signals import post_delete
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
@@ -163,6 +164,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	"""
 	problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
 	passed = models.BooleanField()
+	data = models.ForeignKey(Filepload, on_delete=models.CASCADE)
 
 	def run_testcases(self, request):
 		results = None
