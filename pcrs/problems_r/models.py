@@ -18,8 +18,6 @@ from hashlib import sha1
 import logging
 import datetime
 from django.utils.timezone import localtime, utc
-=======
->>>>>>> Reverted changes to forms and added a default seed unique to current user
 
 import logging
 import datetime
@@ -276,3 +274,8 @@ def delete_graph(graph):
 		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", graph) + ".png"
 		if os.path.isfile(path):
 			os.remove(path)
+=======
+from django.db import models
+
+# Create your models here.
+>>>>>>> pcrs-r: implemented rpy2
