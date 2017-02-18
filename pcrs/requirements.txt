@@ -8,3 +8,4 @@ pycparser==2.17
 rapt==0.0.2
 djangorestframework==3.6.2
 requests==2.13.0
+rpy2==2.8.5
