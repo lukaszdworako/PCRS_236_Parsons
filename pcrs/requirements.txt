@@ -8,3 +8,4 @@ pycparser
 rapt==0.0.2
 djangorestframework
 requests
+rpy2==2.8.5
