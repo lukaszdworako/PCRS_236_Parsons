@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
