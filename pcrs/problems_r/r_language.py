@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 import os
 <<<<<<< HEAD
 =======
 import subprocess
 import sys
 >>>>>>> pcrs-r: implemented rpy2
+=======
+>>>>>>> updated requirements.txt
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
