@@ -535,11 +535,11 @@ class RSpecifics(languages.BaseLanguage):
 >>>>>>> pcrs-r RSpecifics prototype
 		"""
 		@param str user_script
-		@param list[str] expected_val: list of expected outputs
+		@param str expected_val: expected output
 
 		Return dictionary <ret> containing results of a test run.
 		<ret> has the following mapping:
-		'test_val' -> list of <user_script> shell outputs (if successful),
+		'test_val' -> <user_script> output (if successful),
 		'graphics' -> path to graphics (if any),
 		'passed_test' -> True if <user_script> outputs <expected_val>
 		'exception' -> exception message (if any)
@@ -565,9 +565,11 @@ class RSpecifics(languages.BaseLanguage):
 
 	def run(self, script):
 		"""
+		@param str script
+
 		Returns dictionary <ret> containing output of <script>.
 		<ret> has the following mapping:
-		'test_val' -> a list of outputs, if successful
+		'test_val' -> <script> output, if successful
 		'exception' -> exception message (if any)
 		"""
 		# Just a hash we'll use as a unique name
