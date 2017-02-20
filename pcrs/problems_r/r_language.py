@@ -8,6 +8,7 @@
 import os
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import subprocess
 import sys
@@ -45,12 +46,13 @@ import sys
 import os
 import re
 >>>>>>> pcrs-r RSpecifics prototype
+=======
+>>>>>>> Just execute entire script and redirect output to temporary file
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
 
 import problems.pcrs_languages as languages
-from pcrs.settings import PROJECT_ROOT
 
 <<<<<<< HEAD
 <<<<<<< HEAD
