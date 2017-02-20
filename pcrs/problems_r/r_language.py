@@ -9,6 +9,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import os
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -73,11 +74,16 @@ import sys
 >>>>>>> pcrs-r: implemented rpy2
 =======
 >>>>>>> updated requirements.txt
+=======
+import os
+import re
+>>>>>>> pcrs-r RSpecifics prototype
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
 
 import problems.pcrs_languages as languages
+from pcrs.settings import PROJECT_ROOT
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -592,7 +598,6 @@ class RSpecifics(languages.BaseLanguage):
 			ret["passed_test"] = False
 
 		return ret
-
 
 	def run(self, script):
 		"""
