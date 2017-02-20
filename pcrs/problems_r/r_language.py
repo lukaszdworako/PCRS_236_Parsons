@@ -12,6 +12,7 @@ import os
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import subprocess
 import sys
@@ -62,12 +63,13 @@ import sys
 import os
 import re
 >>>>>>> pcrs-r RSpecifics prototype
+=======
+>>>>>>> Just execute entire script and redirect output to temporary file
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
 
 import problems.pcrs_languages as languages
-from pcrs.settings import PROJECT_ROOT
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -553,13 +555,7 @@ class RSpecifics(languages.BaseLanguage):
 				ret["exception"] = test_val["exception"]
 				return ret
 			ret["test_val"] = test_val["test_val"]
-			# If graphics are created, save it into a temporary file.
-			# View should render the .png file, then delete it.
-			if not ("try-error" in exec_r("try(dev.copy(png, filename=\"{}.png\"), TRUE)".format(os.path.join(R_TEMPPATH, f_sha))).r_repr()):
-				ret["graphics"] = f_sha
-			exec_r("graphics.off()")
 			ret["passed_test"] = (ret["test_val"] == expected_val)
-
 		except Exception as e:
 			ret["exception"] = str(e)
 			ret["passed_test"] = False
@@ -579,27 +575,20 @@ class RSpecifics(languages.BaseLanguage):
 		ret = {}
 		try:
 			exec_r = robjects.r
-			# Clear R global environment
+			# Clear R global environment and redirect stdout to temporary .txt file
 			exec_r("rm(list = ls(all.names=TRUE))")
-			# Split user script by each command
-			# We do this because running the entire script on exec_r saves only the last output
-			script = self.join_commands(script)
-			script = [self.remove_comments(line) for line in script.split('\n') if line]
-			ret["test_val"] = []
-			for line in script:
-				try:
-					# Suppress automatic shell messages
-					exec_r("STDOUT_RET_VAR<-capture.output({})".format(line))
-					stdout = exec_r("{}".format("STDOUT_RET_VAR")).r_repr()
-					if stdout != "character(0)":
-						ret["test_val"].append(stdout[1:-1])
-				except:
-					# capture.output will raise its own exception for some non-problematic expressions (e.g. "1")
-					# Execute the line to check if it's really problematic
-					exec_r(line)
-					continue
-			# Close graphics
+			exec_r("sink(\"{}.txt\")".format(os.path.join(R_TEMPPATH, f_sha)))
+			# Execute script
+			exec_r(script)
+			# If graphics exist, save it into a temporary file.
+			# View should render the .png file, then delete it.
+			if not ("try-error" in exec_r("try(dev.copy(png, filename=\"{}.png\"), TRUE)".format(os.path.join(R_TEMPPATH, f_sha))).r_repr()):
+				ret["graphics"] = f_sha
 			exec_r("graphics.off()")
+			# Read and remove temporary .txt
+			with open("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)), "r") as f:
+				ret["test_val"] = f.read()
+			os.remove("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)))
 		except Exception as e:
 <<<<<<< HEAD
 			ret['test_val'] = str(e)
@@ -610,6 +599,7 @@ class RSpecifics(languages.BaseLanguage):
 			ret["test_val"] = None
 			ret["exception"] = str(e)
 
+<<<<<<< HEAD
 		return ret
 
 	def join_commands(self, script):
@@ -626,3 +616,6 @@ class RSpecifics(languages.BaseLanguage):
 		"""
 		return line[:line.index('#')].strip() if '#' in line else line
 >>>>>>> pcrs-r RSpecifics prototype
+=======
+		return ret
+>>>>>>> Just execute entire script and redirect output to temporary file
