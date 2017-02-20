@@ -1,8 +1,11 @@
+import os
+import re
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
 
 import problems.pcrs_languages as languages
+from pcrs.settings import PROJECT_ROOT
 
 R_TEMPPATH = os.path.join("languages/r/CACHE/")
 
@@ -44,7 +47,6 @@ class RSpecifics(languages.BaseLanguage):
 			ret["passed_test"] = False
 
 		return ret
-
 
 	def run(self, script):
 		"""
