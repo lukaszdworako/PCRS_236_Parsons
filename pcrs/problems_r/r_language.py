@@ -45,6 +45,7 @@ import problems.pcrs_languages as languages
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 R_TEMPPATH = os.path.join("languages/r/CACHE/")
 =======
 R_STATICFILES = "" ### PATH TO PLOTS
@@ -67,6 +68,9 @@ R_STATICFILES = "" ### PATH TO PLOTS
 =======
 R_TEMPPATH = os.path.join(os.path.dirname(__file__), "temporary/")
 >>>>>>> pcrs-r RSpecifics prototype
+=======
+R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
+>>>>>>> added models
 
 class RSpecifics(languages.BaseLanguage):
 	"""
@@ -333,15 +337,14 @@ class RSpecifics(languages.BaseLanguage):
 		"""
 		# Just a hash we'll use as a unique name
 		f_sha = sha1(str.encode("{}".format(user_script+str(datetime.now())))).hexdigest()
-		ret = {}
 		try:
 			exec_r = robjects.r
-			test_val = self.run(user_script)
-			if "exception" in test_val:
+			ret = self.run(user_script)
+			
+			if "exception" in ret:
 				ret["passed_test"] = False
-				ret["exception"] = test_val["exception"]
 				return ret
-			ret["test_val"] = test_val["test_val"]
+
 			ret["passed_test"] = (ret["test_val"] == expected_val)
 		except Exception as e:
 			ret["exception"] = str(e)
@@ -356,7 +359,8 @@ class RSpecifics(languages.BaseLanguage):
 
 		Returns dictionary <ret> containing output of <script>.
 		<ret> has the following mapping:
-		'test_val' -> <script> output, if successful
+		'test_val' -> <script> output, if successful,
+		'graphics' -> path to graphics (if any),
 		'exception' -> exception message (if any)
 		"""
 		# Just a hash we'll use as a unique name
@@ -380,12 +384,16 @@ class RSpecifics(languages.BaseLanguage):
 			os.remove("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)))
 		except Exception as e:
 <<<<<<< HEAD
+<<<<<<< HEAD
 			ret['test_val'] = str(e)
 			ret['passed_test'] = False
 			ret['exception'] = str(e)
 >>>>>>> pcrs-r: implemented rpy2
 =======
 			ret["test_val"] = None
+=======
+			ret.pop("test_val", None)
+>>>>>>> added models
 			ret["exception"] = str(e)
 
 <<<<<<< HEAD
