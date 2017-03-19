@@ -5,7 +5,7 @@ from datetime import datetime
 
 import problems.pcrs_languages as languages
 
-R_TEMPPATH = os.path.join(os.path.dirname(__file__), "temporary/")
+R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
 
 class RSpecifics(languages.BaseLanguage):
 	"""
@@ -25,15 +25,14 @@ class RSpecifics(languages.BaseLanguage):
 		"""
 		# Just a hash we'll use as a unique name
 		f_sha = sha1(str.encode("{}".format(user_script+str(datetime.now())))).hexdigest()
-		ret = {}
 		try:
 			exec_r = robjects.r
-			test_val = self.run(user_script)
-			if "exception" in test_val:
+			ret = self.run(user_script)
+			
+			if "exception" in ret:
 				ret["passed_test"] = False
-				ret["exception"] = test_val["exception"]
 				return ret
-			ret["test_val"] = test_val["test_val"]
+
 			ret["passed_test"] = (ret["test_val"] == expected_val)
 		except Exception as e:
 			ret["exception"] = str(e)
@@ -48,7 +47,8 @@ class RSpecifics(languages.BaseLanguage):
 
 		Returns dictionary <ret> containing output of <script>.
 		<ret> has the following mapping:
-		'test_val' -> <script> output, if successful
+		'test_val' -> <script> output, if successful,
+		'graphics' -> path to graphics (if any),
 		'exception' -> exception message (if any)
 		"""
 		# Just a hash we'll use as a unique name
@@ -71,7 +71,7 @@ class RSpecifics(languages.BaseLanguage):
 				ret["test_val"] = f.read()
 			os.remove("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)))
 		except Exception as e:
-			ret["test_val"] = None
+			ret.pop("test_val", None)
 			ret["exception"] = str(e)
 
 		return ret
