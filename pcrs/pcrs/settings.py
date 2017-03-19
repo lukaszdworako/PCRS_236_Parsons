@@ -10,7 +10,7 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
     # 'problems_ra': 'Relational Algebra',
-    'problems_multiple_choice': '',
+    # 'problems_multiple_choice': '',
     # 'problems_timed': '',
     # 'problems_rating': '',
     'problems_short_answer': '',
