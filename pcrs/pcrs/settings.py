@@ -3,13 +3,14 @@ import os
 # Select the types of problems visible in the UI.
 # app_name : language name
 INSTALLED_PROBLEM_APPS = {
-    #'problems_python': 'Python',
-    #'problems_c': 'C',
-    'problems_java': 'Java',
+    'problems_r': 'R',
+    # 'problems_python': 'Python',
+    # 'problems_c': 'C',
+    # 'problems_java': 'Java',
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
     # 'problems_ra': 'Relational Algebra',
-    'problems_multiple_choice': '',
+    # 'problems_multiple_choice': '',
     # 'problems_timed': '',
     # 'problems_rating': '',
     'problems_short_answer': '',
@@ -44,9 +45,9 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'pcrsdev',
-        'USER': 'pcrsdev',
-        'PASSWORD': 'apJIRu4',
+        'NAME': 'pcrsadmin',
+        'USER': 'pcrsadmin',
+        'PASSWORD': '',
         'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '',                               # Set to empty string for default.
     }
@@ -222,6 +223,7 @@ PROBLEM_APPS = (
     'problems_c',
     'problems_java',
     'problems_sql',
+    'problems_r',
     'problems_rdb',
     'problems_ra',
     'problems_multiple_choice',
