@@ -13,6 +13,8 @@ function cmModeForLanguageAndVersion(language, version) {
         return 'text/x-csrc';
     } else if (language == 'java'){
         return 'text/x-java';
+    } else if (language == 'r') {
+        return 'text/x-rsrc';
     }
 }
 
