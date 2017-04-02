@@ -71,6 +71,11 @@
                                 <a href="{{ site_prefix }}/problems/ra/list">RA</a>
                             </li>
                         {% endif %}
+                        {% if 'problems_r' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/problems/r/list">R</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </li>
             </ul>
@@ -94,6 +99,11 @@
                         <li>
                             <a href="{{ site_prefix }}/content/import">Import</a>
                         </li>
+                        {% if 'problems_r' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/r/script/list">R Scripts</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </li>
             </ul>
