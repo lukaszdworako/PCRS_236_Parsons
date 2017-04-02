@@ -420,7 +420,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		r = RSpecifics()
 		ret = r.run_test(code, sol_code)
-
 		return ret
 
 	def set_score(self):
