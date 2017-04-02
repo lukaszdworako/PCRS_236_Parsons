@@ -378,6 +378,7 @@ class RSpecifics(languages.BaseLanguage):
 			if not ("try-error" in exec_r("try(dev.copy(png, filename=\"{}.png\"), TRUE)".format(os.path.join(R_TEMPPATH, f_sha))).r_repr()):
 				ret["graphics"] = f_sha
 			exec_r("graphics.off()")
+			exec_r("sink()") # prevent sink stack from getting full
 			# Read and remove temporary .txt
 			with open("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)), "r") as f:
 				ret["test_val"] = f.read()
