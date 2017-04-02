@@ -28,6 +28,8 @@ SubmissionWrapper.createWrapperFromDivId = function(wrapperDivId) {
         return new SQLSubmissionWrapper(wrapperDivId);
     } else if (wrapperDivId.indexOf("ra-") > -1) {
         return new RASubmissionWrapper(wrapperDivId);
+    } else if (wrapperDivId.indexOf("r-") > -1) {
+        return new RSubmissionWrapper(wrapperDivId);
     }
 }
 
