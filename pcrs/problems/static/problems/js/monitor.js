@@ -57,7 +57,7 @@ function createSubmissionGraph(data, firstIter=false) {
     graph.Set('chart.title', "Overall Performance");
     graph.Set('chart.labels.above', true);
     graph.Set('chart.background.grid', false);
-    graph.Set('chart.colors', ['rgba(0,128,0,0.85)', 'rgba(128,0,0,0.85)']);
+    graph.Set('chart.colors', ['rgba(0,0,128,0.85)', 'rgba(128,0,0,0.85)']);
     if (firstIter) {
         RGraph.Effects.Bar.Grow(graph);
     } else {
@@ -73,7 +73,7 @@ function createSubmissionDetailsGraph(data, firstIter=false) {
     graph.Set('chart.labels', Array.from(new Array(data.length), (val,index)=>"#"+(index+1)));
     graph.Set('chart.background.grid', false);
     graph.Set('chart.labels.above', true);
-    graph.Set('chart.colors', ['rgba(0,128,0,0.45)', 'rgba(128,0,0,0.45)']);
+    graph.Set('chart.colors', ['rgba(0,0,128,0.45)', 'rgba(128,0,0,0.45)']);
     if (firstIter) {
         RGraph.Effects.Bar.Grow(graph);
     } else {
