@@ -24,7 +24,6 @@ RSubmissionWrapper.prototype.createCodeMirrors = function() {
 
 RSubmissionWrapper.prototype.renderGraph = function(graph) {
 	imurl = root+'/problems/'+this.language+'/graph/'+graph;
-	console.log(imurl);
 	window.open(imurl, "R Graph", "width=500,height=500,resizable,scrollbars=yes");
 }
 
