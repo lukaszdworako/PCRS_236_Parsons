@@ -84,7 +84,7 @@ $ pip3 install -r requirements.txt
 
 <h3 id="markdown-header-settings">Settings</h3>
 <p>Next, you'll need to edit pcrs/settings_local.py for your server. settings_local overrides options that are given default values
-in settings.py and settings_pcrs.py. At a minimum, you need to perform steps 1, 5, and 11 below, but you should review all of the 
+in settings.py and settings_pcrs.py. At a minimum, you need to perform steps 1, 5, and 11 below, but you should review all of the
 settings, as several more could apply to your setup.</p>
 
 <ol>
@@ -212,4 +212,3 @@ $ popd
 
 <h3 id="markdown-header-done">Done!</h3>
 <p>At this point, the software should be ready to view in a web browser.</p>
-
