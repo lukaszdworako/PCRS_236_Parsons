@@ -24,6 +24,7 @@ import problems.pcrs_languages as languages
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 R_TEMPPATH = os.path.join("languages/r/CACHE/")
 =======
 R_STATICFILES = "" ### PATH TO PLOTS
@@ -34,6 +35,9 @@ R_TEMPPATH = os.path.join(os.path.dirname(__file__), "temporary/")
 =======
 R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
 >>>>>>> added models
+=======
+R_TEMPPATH = os.path.join("../languages/r/CACHE/")
+>>>>>>> Installation instructions
 
 class RSpecifics(languages.BaseLanguage):
 	"""
@@ -226,6 +230,7 @@ class RSpecifics(languages.BaseLanguage):
 			ret["exception"] = str(e)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 		return ret
 
 	def join_commands(self, script):
@@ -245,3 +250,6 @@ class RSpecifics(languages.BaseLanguage):
 =======
 		return ret
 >>>>>>> Just execute entire script and redirect output to temporary file
+=======
+		return ret
+>>>>>>> Installation instructions
