@@ -5,7 +5,7 @@ from datetime import datetime
 
 import problems.pcrs_languages as languages
 
-R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
+R_TEMPPATH = os.path.join("../languages/r/CACHE/")
 
 class RSpecifics(languages.BaseLanguage):
 	"""
