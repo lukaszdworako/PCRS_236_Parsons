@@ -8,3 +8,6 @@ CACHE
 node_modules
 venv
 pcrs*.c
+.pylintrc
+.python-version
+static/
