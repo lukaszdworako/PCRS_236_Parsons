@@ -2,6 +2,7 @@
 
 from django.forms import widgets
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 try:
     from django.forms.utils import flatatt
@@ -33,10 +34,9 @@ class SelectMultipleField(widgets.SelectMultiple):
         output = [format_html('<select multiple="multiple"{0}>',
                               flatatt(final_attrs))]
 
-        # Seems to be deprecated.. what does this do?
-        # options = self.render_options(choices, value)
-        # if options:
-        #    output.append(options)
+        # Hacky, re-work this later (not sure about options API, was changed in 1.11)
+        for option in self.options(choices, value):
+            output.append("<option value={}>{}</option>".format(escape(option['value']), escape(option['label'])))
 
         output.append('</select>')
         return mark_safe('\n'.join(output))

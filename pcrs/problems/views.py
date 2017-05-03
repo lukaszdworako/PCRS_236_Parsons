@@ -191,7 +191,7 @@ class SubmissionViewMixin:
         """
         Return the Problem object for the submission.
         """
-        if not self.request.user.is_authenticated():
+        if not self.request.user.is_authenticated:
             # AnonymousUser
             raise Http404("Sorry! Your authentication has probably expired: the system cannot identify you.")
 

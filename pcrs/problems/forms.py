@@ -27,8 +27,6 @@ class BaseProblemForm(CrispyFormMixin):
                 choices=self.fields['tags'].choices
             )
 
-        exclude = ()
-
     def _createButtons(self):
         '''Generate the buttons for the problem form.
 
