@@ -1,10 +1,10 @@
-Django==1.5.1
-django-crispy-forms==1.4.0
-django_compressor==1.4
-pep8==1.4.6
-psycopg2==2.4.5
-pyparsing==2.0.1
+Django
+django-crispy-forms
+django_compressor
+pep8
+psycopg2
+pyparsing
 pycparser
-rapt==0.0.2
+rapt
 djangorestframework
 requests
