@@ -60,4 +60,4 @@ class VideoRecordWatchView(ProtectedViewMixin, CreateView):
             except IntegrityError:      # duplicate watched object
                 pass
         return HttpResponse(json.dumps({'status': 'ok'}),
-                            mimetype='application/json')
+                            content_type='application/json')

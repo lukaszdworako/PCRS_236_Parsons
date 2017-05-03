@@ -86,7 +86,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         quests = data['quests']
         section = data['section']
 
-        response = HttpResponse(mimetype='application/zip')
+        response = HttpResponse(content_type='application/zip')
         response['Content-Disposition'] = 'attachment; filename='\
             + self._generateZipName(section)
 
@@ -105,7 +105,7 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
         quest = data['quests'][0]
         section = data['section']
 
-        response = HttpResponse(mimetype='text/csv')
+        response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename='\
             + self._generateCsvName(section, quest)
 
@@ -259,4 +259,3 @@ class SectionReportsView(CourseStaffViewMixin, SingleObjectMixin, FormView):
                            record['problem'])
                 studentGrades[record['user']][problem] = record['best']
         return studentGrades
-

@@ -95,4 +95,4 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
         }
-        ), mimetype='application/json')
+        ), content_type='application/json')

@@ -32,9 +32,11 @@ class SelectMultipleField(widgets.SelectMultiple):
         final_attrs = self.build_attrs(rendered_attrs)
         output = [format_html('<select multiple="multiple"{0}>',
                               flatatt(final_attrs))]
-        options = self.render_options(choices, value)
-        if options:
-            output.append(options)
+
+        # Seems to be deprecated.. what does this do?
+        # options = self.render_options(choices, value)
+        # if options:
+        #    output.append(options)
 
         output.append('</select>')
         return mark_safe('\n'.join(output))

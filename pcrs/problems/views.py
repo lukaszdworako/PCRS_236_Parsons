@@ -81,7 +81,7 @@ class ProblemCloneView(ProblemCreateView):
             testcase.problem = new_problem
             testcase.save(force_insert=True)
         return redirect(new_problem.get_absolute_url())
-    
+
 class ProblemCreateAndAddTCView(ProblemCreateView):
     """
     Create a new problem and add testcases.
@@ -289,7 +289,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                                 'best': False,
                                 'past_dead_line': False,
                                 'max_score': 1}, cls=DateEncoder),
-                                mimetype='application/json')
+                                content_type='application/json')
 
         problem = self.get_problem()
         user, section = self.request.user, self.get_section()
@@ -312,7 +312,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
             'best': self.object.has_best_score,
             'past_dead_line': deadline and self.object.timestamp > deadline,
             'max_score': self.object.problem.max_score}, cls=DateEncoder),
-        mimetype='application/json')
+        content_type='application/json')
 
 
 class MonitoringView(CourseStaffViewMixin, SectionViewMixin, SingleObjectMixin,
@@ -359,7 +359,7 @@ class MonitoringAsyncView(MonitoringView):
             results = problem.get_monitoring_data(section, start_time, first_submissions_results=True)
         else:
             results = problem.get_monitoring_data(section, start_time)
-        return HttpResponse(json.dumps(results), mimetype='application/json')
+        return HttpResponse(json.dumps(results), content_type='application/json')
 
 
 class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
@@ -401,7 +401,7 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, UserViewMixin,
                           for testrun in sub.testrun_set.all()]
             })
 
-        return HttpResponse(json.dumps(returnable), mimetype='application/json')
+        return HttpResponse(json.dumps(returnable), content_type='application/json')
 
 
 class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
