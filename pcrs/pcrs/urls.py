@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -7,7 +7,7 @@ from users.views import UserSettingsView
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', login.login_view, name='login'),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
@@ -21,4 +21,4 @@ urlpatterns = patterns('',
     url(r'^problems/', include('problems.urls')),
     url(r'^content/', include('content.urls')),
     url(r'^editor/', include('editor.urls')),
-)
+]

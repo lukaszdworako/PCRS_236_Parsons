@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from pcrs.settings import INSTALLED_PROBLEM_APPS
 
 
@@ -14,7 +14,7 @@ pattern_options = {'problems_python': (r'^python/', 'problems_python.urls'),
                    'problems_short_answer': (r'^short_answer/', 'problems_short_answer.urls'),
 }
 
-pattern_list = [''] + [url(pattern_options[pt][0], include(pattern_options[pt][1])) for pt in INSTALLED_PROBLEM_APPS.keys()]
+# pattern_list = [''] + [url(pattern_options[pt][0], include(pattern_options[pt][1])) for pt in INSTALLED_PROBLEM_APPS.keys()]
+pattern_list = [url(pattern_options[pt][0], include(pattern_options[pt][1])) for pt in INSTALLED_PROBLEM_APPS.keys()]
 
-urlpatterns = patterns(*pattern_list)
-
+urlpatterns = [*pattern_list]

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from content.challenge_content_views import (TextCreateView,
                                              TextUpdateView,
@@ -24,7 +24,7 @@ quests_page_view = QuestsView
 if settings.QUESTS_LIVE:
     quests_page_view = ReactiveQuestsView
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^import$', QuestImportView.as_view(),
         name='import'),
     url(r'^tags/list$', TagListView.as_view(),
@@ -126,4 +126,4 @@ urlpatterns = patterns('',
         name='live_quest_list'),
 
     url(r'$', quests_page_view.as_view(), name='quests'),
-)
+]

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import *
 from problems_ra.forms import ProblemForm, TestCaseForm
@@ -10,7 +10,7 @@ from problems_rdb.views import (RDBTestCaseCreateView,
 from editor.views import EditorAsyncView
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^ra_syntax$', RASyntaxReferenceView.as_view(),
         name='ra_syntax'),
     url(r'^list$', ProblemListView.as_view(model=Problem),
@@ -76,4 +76,4 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/browse_submissions$',
         BrowseSubmissionsView.as_view(model=Problem),
         name='ra_problem_browse_submissions'),
-)
+]

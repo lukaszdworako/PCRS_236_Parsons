@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems_rdb.views import *
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^schema/create$', SchemaCreateView.as_view(),
         name='schema_create'),
     url(r'^schema/create_and_add_dataset$',
@@ -26,4 +26,4 @@ urlpatterns = patterns('',
         name='dataset_delete'),
     url(r'^documentation', DocumentationView.as_view(),
         name='rdb_documentation')
-)
+]

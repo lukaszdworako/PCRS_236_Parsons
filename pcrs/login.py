@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import logout_then_login
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 
 import content.models
 import users.models
@@ -64,7 +64,7 @@ def login_django(request, username):
     elif not user.is_active:
         NOTIFICATION = "user inactive"
     else:
-        request.session['section'] = user.section
+        # request.session['section'] = user.section
         redirect_link = settings.SITE_PREFIX + '/content/quests'
 
         login(request, user)
@@ -88,7 +88,7 @@ def login_view(request):
     NEXT = ""
     if 'next' in request.GET:
         NEXT = request.GET['next']
-    if request.user and request.user.is_authenticated():
+    if request.user and request.user.is_authenticated:
         return HttpResponseRedirect(NEXT or settings.SITE_PREFIX + '/content/quests')
 
     # AUTH_TYPE 'shibboleth' uses an environment variable instead of check_authorization

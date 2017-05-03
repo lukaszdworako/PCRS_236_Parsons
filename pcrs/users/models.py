@@ -10,7 +10,7 @@ import content.models
 from pcrs.models import AbstractSelfAwareModel
 from django.contrib.auth.hashers import check_password, is_password_usable, make_password
 
-from django.db.models.signals import post_syncdb
+from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 import django.contrib.auth.models
 
@@ -32,6 +32,9 @@ class CustomAbstractBaseUser(models.Model):
         password = models.CharField(_('password'), max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(_('last login'), default=timezone.now)
 
+    is_authenticated = True
+    is_anonymous = False
+
     is_active = True
 
     REQUIRED_FIELDS = []
@@ -49,19 +52,21 @@ class CustomAbstractBaseUser(models.Model):
     def natural_key(self):
         return (self.get_username(),)
 
-    def is_anonymous(self):
-        """
-        Always returns False. This is a way of comparing User objects to
-        anonymous users.
-        """
-        return False
-
-    def is_authenticated(self):
-        """
-        Always return True. This is a way to tell if the user has been
-        authenticated in templates.
-        """
-        return True
+    # Deprecated in Django 1.10, use as attributes instead
+    # ----------------------------
+    # def is_anonymous(self):
+    #     """
+    #     Always returns False. This is a way of comparing User objects to
+    #     anonymous users.
+    #     """
+    #     return False
+    #
+    # def is_authenticated(self):
+    #     """
+    #     Always return True. This is a way to tell if the user has been
+    #     authenticated in templates.
+    #     """
+    #     return True
 
     if settings.AUTH_TYPE == 'pass':
         def set_password(self, raw_password):
@@ -236,7 +241,9 @@ class Section(AbstractSelfAwareModel):
 
 # This should ordinarily be in pcrs/management/__init__.py but it wasn't working that way
 # The post_syncdb receiver is also deprecated in Django 1.9, in favor of post_migrate
-@receiver(post_syncdb, sender=django.contrib.auth.models)
+# --------------------
+# Changed to post_migrate for Django 1.11
+@receiver(post_migrate, sender=django.contrib.auth.models)
 def insert_master_section(sender, **kwargs):
     # Required for the superuser creation and must happen first
     Section(pk='master', description='master', location='master', lecture_time='master').save()
@@ -282,5 +289,3 @@ class AbstractLimitedVisibilityObject(models.Model):
     def closed(self):
         self.visibility = "closed"
         self.save()
-
-

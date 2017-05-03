@@ -1,7 +1,11 @@
 import datetime
 
 from django.conf import settings
-from django.contrib.contenttypes import generic
+# ------------------
+# Removed in >1.5, replaced with below
+# from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+# ------------------
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.db import models
@@ -26,7 +30,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     thumbnail = models.URLField(blank=True)
     download = models.URLField(blank=True)
     resources = models.TextField(blank=True)
-    content_videos = generic.GenericRelation('ContentSequenceItem',
+    content_videos = GenericRelation('ContentSequenceItem',
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
@@ -37,7 +41,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return 'rtmps://stream.library.utoronto.ca:1935/MyMedia/play/&mp4:1/{0}.mp4'.format(code)
             # The code below would work for an iframe -- if we didn't have shibboleth problems
             #return 'https://play.library.utoronto.ca/embed/{0}'.format(code)
-            
+
         elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
             tag = self.link.find("?v=")
             return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
@@ -51,7 +55,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return 'https://play.library.utoronto.ca/download/{0}'.format(code)
         else:
             return self.download
-            
+
     @property
     def format(self):
         if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
@@ -99,7 +103,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
-    
+
     def prepareJSON(self):
         return [self]
 
@@ -143,7 +147,7 @@ class TextBlock(AbstractSelfAwareModel):
     """
     text = models.TextField()
 
-    content_text = generic.GenericRelation('ContentSequenceItem',
+    content_text = GenericRelation('ContentSequenceItem',
                                             content_type_field='content_type',
                                             object_id_field='object_id')
 
@@ -200,7 +204,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
         """
         content = [self.content_type]+self.content_object.prepareJSON()+[self]
         return content
-        
+
 
 class ContentPage(AbstractSelfAwareModel):
     """
@@ -282,7 +286,7 @@ class ContentPage(AbstractSelfAwareModel):
         for item in self.contentsequenceitem_set.all():
             content += item.prepareJSON()
         return content
-        
+
 
 class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 AbstractLimitedVisibilityObject):
@@ -398,7 +402,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         content = [self]
         for page in self.contentpage_set.all():
             content += page.prepareJSON()
-        return content              
+        return content
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):

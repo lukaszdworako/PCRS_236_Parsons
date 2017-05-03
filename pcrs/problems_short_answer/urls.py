@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
@@ -9,7 +9,7 @@ from problems_short_answer.views import (SubmissionView, SubmissionAsyncView,
                                          ProblemCreateRedirectView, ProblemCloneView,
                                          SubmissionHistoryAsyncView)
 
-urlpatterns = patterns('',
+urlpatterns = [
 
     url(r'^list$',
         ProblemListView.as_view(model=Problem),
@@ -51,4 +51,4 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/history$',
         SubmissionHistoryAsyncView.as_view(model=Submission),
         name='short_answer_async_history'),
-)
+]
