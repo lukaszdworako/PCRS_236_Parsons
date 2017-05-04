@@ -15,6 +15,8 @@ except ImportError:
     def format_html(format_string, *args, **kwargs):
         return format_string.format(*args, **kwargs)
 
+from traceback import print_tb
+
 
 HTML_ATTR_CLASS = 'select-multiple-field'
 
@@ -30,13 +32,24 @@ class SelectMultipleField(widgets.SelectMultiple):
         if value is None:
             value = []
 
-        final_attrs = self.build_attrs(rendered_attrs)
+
+
+        additional_attr = {'name': name}
+
+        final_attrs = self.build_attrs(rendered_attrs, additional_attr)
         output = [format_html('<select multiple="multiple"{0}>',
                               flatatt(final_attrs))]
 
         # Hacky, re-work this later (not sure about options API, was changed in 1.11)
         for option in self.options(choices, value):
-            output.append("<option value={}>{}</option>".format(escape(option['value']), escape(option['label'])))
+            for selected_option in value:
+                if selected_option == option['value']:
+                    output.append("<option selected='selected' value={}>{}</option>"
+                        .format(escape(option['value']), escape(option['label'])))
+                    break
+            else:
+                output.append("<option value={}>{}</option>"
+                    .format(escape(option['value']), escape(option['label'])))
 
         output.append('</select>')
         return mark_safe('\n'.join(output))
