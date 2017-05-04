@@ -37,13 +37,13 @@ class AbstractSelfAwareModel(models.Model):
 
     def get_uri_id(self):
         return '{content_type}-{pk}'\
-            .format(content_type=self.__class__.__name__, pk=self.pk)
+            .format(content_type=self.get_content_type_name(), pk=self.pk)
 
     def serialize(self):
         return {
             'id': self.get_uri_id(),
             'pk': self.pk,
-            'content_type': self.__class__.__name__
+            'content_type': self.get_content_type_name()
         }
 
     @classmethod

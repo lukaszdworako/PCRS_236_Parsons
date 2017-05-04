@@ -15,8 +15,6 @@ except ImportError:
     def format_html(format_string, *args, **kwargs):
         return format_string.format(*args, **kwargs)
 
-from traceback import print_tb
-
 
 HTML_ATTR_CLASS = 'select-multiple-field'
 
