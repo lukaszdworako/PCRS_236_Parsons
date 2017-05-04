@@ -21,13 +21,10 @@ $( document ).ready(function() {
 
             var submission = [];
             for (var x = 0; x < checkboxes.length; x++){
-                console.log(checkboxes[x]);
                 if ($(checkboxes[x]).is(':checked')){
-                    console.log("SA");
                     submission.push($(checkboxes[x]).val());
                 }
             }
-            console.log(submission);
             submit_mc(submission, problem_pk, $(this)
                 .parents('div[id^="multiple_choice-"]')[0].id);
         });
@@ -186,8 +183,6 @@ function submit_mc(submission, problem_pk, div_id) {
      */
 
     var postParams = { csrftoken: csrftoken, submission : submission  };
-
-    // console.log(postParams);
 
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,
