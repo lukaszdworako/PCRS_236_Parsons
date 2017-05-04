@@ -69,7 +69,7 @@ class SubmissionViewMixinTimed(SubmissionViewMixin, FormView):
         self.submission = Submission.objects.filter(user=user, section=section, problem=problem).order_by('-pk')[:1][0]
         if self.submission.timestamp_complete:
             return HttpResponseForbidden()
-        self.submission.set_score(request.REQUEST['submission'])
+        self.submission.set_score(request.POST['submission'])
         return []
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
@@ -107,6 +107,6 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixinTimed,
         if submission.timestamp_complete:
             return HttpResponseForbidden()
         
-        submission.set_score(request.REQUEST['submission'])
+        submission.set_score(request.POST['submission'])
         
         return HttpResponseRedirect('/content/quests')

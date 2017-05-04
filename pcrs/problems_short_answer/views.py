@@ -43,7 +43,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         problem = self.get_problem()
         self.submission = self.model.objects.create(problem=problem,
                               user=request.user, section=self.get_section())
-        self.submission.set_score(request.REQUEST['submission'])
+        self.submission.set_score(request.POST['submission'])
         return []
 
 
