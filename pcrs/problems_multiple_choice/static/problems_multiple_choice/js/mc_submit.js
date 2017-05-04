@@ -15,14 +15,19 @@ $( document ).ready(function() {
             var checkboxes = $(this)
                 .parents('#multiple_choice-'+problem_pk)
                 .find('.controls')
+                .find('.checkbox')
+                .find('label')
                 .children();
 
             var submission = [];
             for (var x = 0; x < checkboxes.length; x++){
-                if ($(checkboxes[x]).children('input').is(':checked')){
-                    submission.push($(checkboxes[x]).children('input').val());
+                console.log(checkboxes[x]);
+                if ($(checkboxes[x]).is(':checked')){
+                    console.log("SA");
+                    submission.push($(checkboxes[x]).val());
                 }
             }
+            console.log(submission);
             submit_mc(submission, problem_pk, $(this)
                 .parents('div[id^="multiple_choice-"]')[0].id);
         });
@@ -181,6 +186,8 @@ function submit_mc(submission, problem_pk, div_id) {
      */
 
     var postParams = { csrftoken: csrftoken, submission : submission  };
+
+    // console.log(postParams);
 
     $.post(root+'/problems/multiple_choice/'+problem_pk+'/run',
             postParams,
