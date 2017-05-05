@@ -7,6 +7,13 @@ import secrets
 PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["rdb", "'problems_rdb': '',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Timed", "'problems_timed': '',"], ["Rating", "'problems_rating': '',"], ["Short Answer", "'problems_short_answer': '',"]]
 if (sys.path[0] != ''):
     os.chdir(sys.path[0])
+else:
+    pathing = input("Enter the path for the source files: ")
+    try:
+        os.chdir(pathing)
+    except FileNotFoundError:
+        print("An invalid folder was given. Halting.")
+        sys.exit(1)
 
 print("System Information\n")
 #Print some general info, if they don't have lsb_release
