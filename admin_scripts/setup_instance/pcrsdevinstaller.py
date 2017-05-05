@@ -58,10 +58,11 @@ except FileNotFoundError:
 
 #A touch of java
 try:
-    result = subprocess.Popen(["javac", "-version"], stdout=subprocess.PIPE)
+    #Because java prints this to stderr.....
+    result = subprocess.Popen(["javac", "-version"], stderr=subprocess.PIPE)
     out, err = result.communicate()
-    out = bytes.decode(out, "UTF-8")
-    JavaVer = out.split(" ")[1].split(".")
+    err = bytes.decode(err, "UTF-8")
+    JavaVer = err.split(" ")[1].split(".")
     if JavaVer[0] == "1" and JavaVer[1] == "7":
         print("Java JDK Ver:\t" + ".".join(JavaVer).rstrip("\n"))
     else:
