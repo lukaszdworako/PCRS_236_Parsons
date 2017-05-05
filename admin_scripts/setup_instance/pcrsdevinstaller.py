@@ -3,15 +3,9 @@ import subprocess
 import sys
 import os
 import pwd
-import sectrets
+import secrets
 PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["rdb", "'problems_rdb': '',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Timed", "'problems_timed': '',"], ["Rating", "'problems_rating': '',"], ["Short Answer", "'problems_short_answer': '',"]]
 os.chdir(sys.path[0])
-
-def promptForPath(msg, checkExist = False):
-    while True:
-        path = input(msg + ": ")
-        if os.path.exists(path):
-            return path
 
 print("System Information\n")
 #Print some general info, if they don't have lsb_release
@@ -133,7 +127,8 @@ from django.core.wsgi import get_wsgi_application
 clone = input("Clone git repo? (Y/n)")
 if clone.lower() == "y" or clone == "":
     try:
-        result = subprocess.Popen(["git clone https://bitbucket.org/utmandrew/pcrs.git && cd pcrs && git checkout updated-python-django"], shell=True)
+        #TODO: Change me when merging into master
+        result = subprocess.Popen(["git clone https://bitbucket.org/utmandrew/pcrs.git && cd pcrs && git checkout iss172"], shell=True)
         result.wait()
         os.chdir("pcrs/pcrs")
     except FileNotFoundError:
@@ -142,7 +137,7 @@ if clone.lower() == "y" or clone == "":
 else:
     print("This might not work (Needs a definitive home first)")
     os.chdir("../../pcrs")
-virt = input("Setup virtual env? (Y/n)")
+virt = input("Setup virtual env? (Y/n): ")
 if virt.lower() == "y" or virt=="":
     virtPath = input("Enter a path for the virtual enviroment: ")
     tryAgain = True
@@ -300,9 +295,14 @@ ALLOWED_HOSTS = """ + repr(allowedHosts)
 secretToken = secrets.token_urlsafe(37)
 userConfig += """
 SECRET_KEY = '""" + secretToken + """'
+
 """
 
-print("Dumping???")
-file = open("config", "w")
+print("Writing Config...")
+templateFile = open("pcrs/settings.py.template", "r")
+file = open("pcrs/settings.py", "w")
 file.write(userConfig)
+file.write(templateFile.read())
 file.close()
+templateFile.close()
+print("Config Generated!")
