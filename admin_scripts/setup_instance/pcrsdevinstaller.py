@@ -11,6 +11,7 @@ else:
     pathing = input("Enter the path for the source files: ")
     try:
         os.chdir(pathing.replace("~", os.environ['HOME']))
+        print(os.getcwd())
     except FileNotFoundError:
         print("An invalid folder was given. Halting.")
         sys.exit(1)
@@ -149,6 +150,7 @@ else:
 virt = input("Setup virtual env? (Y/n): ")
 if virt.lower() == "y" or virt=="":
     virtPath = input("Enter a path for the virtual enviroment: ")
+    virtPath = virtPath.replace("~", os.environ['HOME'])
     tryAgain = True
     continueVirt = True
     while tryAgain:
