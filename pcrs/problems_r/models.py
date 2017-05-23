@@ -22,6 +22,7 @@ class Script(AbstractSelfAwareModel):
 	name = models.SlugField(max_length=30, unique=True)
 	code = models.TextField(blank=False, null=False)
 	expected_output = models.TextField(blank=True, null=True)
+	graphics = models.TextField(blank=True, null=True)
 
 	def __str__(self):
 		return self.name
@@ -41,14 +42,28 @@ class Script(AbstractSelfAwareModel):
 				("R code is invalid. ")+ret["exception"])
 		else:
 			self.expected_output = ret["test_val"]
+			self.graphics = ret["graphics"]
+			self.save()
+		return ret
+
+	def generate_graphics(self):
+		r = RSpecifics()
+		self.code = self.code.replace("\r", "")
+		ret = r.run(self.code)
+		if "exception" in ret:
+			raise ValidationError(
+				("R code is invalid. ")+ret["exception"])
+		else:
+			#disregard expected_output and save new graphics path
+			self.graphics = ret["graphics"]
 			self.save()
 		return ret
 
 class Problem(AbstractProgrammingProblem):
 	"""
 	An R problem is organized slightly differently
-	from other languages like C, Python, Java, etc 
-	(it is more like an RDB problem in the way testing is done). 
+	from other languages like C, Python, Java, etc
+	(it is more like an RDB problem in the way testing is done).
 	Rather than having multiple testcases, a problem has:
 		1.) a contextual pre-written Script, and
 		2.) solution code
@@ -58,7 +73,7 @@ class Problem(AbstractProgrammingProblem):
 	language = models.CharField(max_length=50,
 								choices=(("r", "R 3.3.2"),),
 								default="r")
-	script = models.ForeignKey(Script, null=True, 
+	script = models.ForeignKey(Script, null=True,
 							   on_delete=models.CASCADE)
 	expected_output = models.TextField(blank=True, null=True)
 

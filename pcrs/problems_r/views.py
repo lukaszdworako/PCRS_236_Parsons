@@ -53,7 +53,14 @@ def render_graph(request, image):
 	"""
 	Render R graph image and delete it.
 	"""
-	path = os.path.join(PROJECT_ROOT, "problems_r/CACHE/", image) + ".png"
+	targ_script = Script.objects.get(pk=image)
+	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", targ_script.graphics) + ".png"
+	# Check whether the graph already exists and generates it if not
+	if not os.path.isfile(path):
+		ret = targ_script.generate_graphics()
+		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", targ_script.graphics) + ".png"
+
+	# Display the graph on the browser then delete
 	graph = open(path, "rb").read()
 	os.remove(path)
 	return HttpResponse(graph, content_type="image/png")

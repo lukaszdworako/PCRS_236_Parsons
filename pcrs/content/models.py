@@ -37,7 +37,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return 'rtmps://stream.library.utoronto.ca:1935/MyMedia/play/&mp4:1/{0}.mp4'.format(code)
             # The code below would work for an iframe -- if we didn't have shibboleth problems
             #return 'https://play.library.utoronto.ca/embed/{0}'.format(code)
-            
+
         elif "youtube.com" in self.link:     # To embed YOUTUBE.COM
             tag = self.link.find("?v=")
             return 'https://www.youtube.com/embed/{0}'.format(self.link[tag+3:tag+14])
@@ -51,7 +51,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
             return 'https://play.library.utoronto.ca/download/{0}'.format(code)
         else:
             return self.download
-            
+
     @property
     def format(self):
         if "media" in self.link and ("public" in self.link or "uoft" in self.link):      # Hack for MYMEDIA
@@ -99,7 +99,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
         serialized['record_watched'] = '{}/watched'\
             .format(self.get_absolute_url())
         return serialized
-    
+
     def prepareJSON(self):
         return [self]
 
@@ -200,7 +200,7 @@ class ContentSequenceItem(AbstractOrderedGenericObjectSequence):
         """
         content = [self.content_type]+self.content_object.prepareJSON()+[self]
         return content
-        
+
 
 class ContentPage(AbstractSelfAwareModel):
     """
@@ -282,7 +282,7 @@ class ContentPage(AbstractSelfAwareModel):
         for item in self.contentsequenceitem_set.all():
             content += item.prepareJSON()
         return content
-        
+
 
 class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
                 AbstractLimitedVisibilityObject):
@@ -398,7 +398,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
         content = [self]
         for page in self.contentpage_set.all():
             content += page.prepareJSON()
-        return content              
+        return content
 
 
 class Quest(AbstractNamedObject, AbstractSelfAwareModel):
