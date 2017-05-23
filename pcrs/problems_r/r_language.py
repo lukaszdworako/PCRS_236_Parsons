@@ -25,6 +25,7 @@ import problems.pcrs_languages as languages
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 R_TEMPPATH = os.path.join("languages/r/CACHE/")
 =======
 R_STATICFILES = "" ### PATH TO PLOTS
@@ -38,6 +39,9 @@ R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
 =======
 R_TEMPPATH = os.path.join("../languages/r/CACHE/")
 >>>>>>> Installation instructions
+=======
+R_TEMPPATH = os.path.join("languages/r/CACHE/")
+>>>>>>> Implemented graphics in browser
 
 class RSpecifics(languages.BaseLanguage):
 	"""
@@ -172,7 +176,7 @@ class RSpecifics(languages.BaseLanguage):
 		try:
 			exec_r = robjects.r
 			ret = self.run(user_script)
-			
+
 			if "exception" in ret:
 				ret["passed_test"] = False
 				return ret
@@ -183,7 +187,7 @@ class RSpecifics(languages.BaseLanguage):
 			ret["passed_test"] = False
 
 		return ret
-			
+
 
 	def run(self, script):
 		"""
@@ -199,22 +203,37 @@ class RSpecifics(languages.BaseLanguage):
 		f_sha = sha1(str.encode("{}".format(script+str(datetime.now())))).hexdigest()
 		ret = {}
 		try:
+			# Path to temporary .txt file for output of script
+			path = os.path.join(R_TEMPPATH, f_sha) + ".txt"
+			# Path to temporary .png file for graphics of script
+			g_path = path[:-4] + ".png"
+
 			exec_r = robjects.r
 			# Clear R global environment and redirect stdout to temporary .txt file
 			exec_r("rm(list = ls(all.names=TRUE))")
-			exec_r("sink(\"{}.txt\")".format(os.path.join(R_TEMPPATH, f_sha)))
+			exec_r("sink(\"{}\")".format(path))
+
+			# Sets the graphical output to a temporary file
+			exec_r("png(\"{}\")".format(g_path)) # output to pdf for multiple graphs
+
 			# Execute script
 			exec_r(script)
-			# If graphics exist, save it into a temporary file.
-			# View should render the .png file, then delete it.
-			if not ("try-error" in exec_r("try(dev.copy(png, filename=\"{}.png\"), TRUE)".format(os.path.join(R_TEMPPATH, f_sha))).r_repr()):
-				ret["graphics"] = f_sha
-			exec_r("graphics.off()")
+
+			# Shutdown current device
+			exec_r("dev.off()")
+
 			exec_r("sink()") # prevent sink stack from getting full
 			# Read and remove temporary .txt
-			with open("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)), "r") as f:
+			with open(path, "r") as f:
 				ret["test_val"] = f.read()
-			os.remove("{}.txt".format(os.path.join(R_TEMPPATH, f_sha)))
+			os.remove(path)
+
+			# If graphics exist, return the path
+			if os.path.isfile(g_path):
+				ret["graphics"] = f_sha
+			else:
+				ret["graphics"] = None
+
 		except Exception as e:
 <<<<<<< HEAD
 <<<<<<< HEAD
