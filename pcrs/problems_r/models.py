@@ -157,6 +157,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	passed = models.BooleanField()
 
 	def run_testcases(self, request):
+		print("RUNNING THE TESTS")
 		results = None
 		error = None
 		try:
