@@ -167,7 +167,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	data = models.ForeignKey(Filepload, on_delete=models.CASCADE)
 
 	def run_testcases(self, request):
-		print("RUNNING THE TESTS")
 		results = None
 		error = None
 		try:
