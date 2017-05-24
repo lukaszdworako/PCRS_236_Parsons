@@ -405,8 +405,9 @@ class RSpecifics(languages.BaseLanguage):
 				ret["graphics"] = f_sha
 			else:
 				ret["graphics"] = None
-
+			print("GENERATING {}".format(ret["graphics"]))
 		except Exception as e:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 			ret['test_val'] = str(e)
@@ -416,6 +417,9 @@ class RSpecifics(languages.BaseLanguage):
 =======
 			ret["test_val"] = None
 =======
+=======
+			os.remove(path)
+>>>>>>> Fixed rendering of graphs
 			ret.pop("test_val", None)
 >>>>>>> added models
 			ret["exception"] = str(e)
