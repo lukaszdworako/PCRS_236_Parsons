@@ -233,7 +233,6 @@ class RSpecifics(languages.BaseLanguage):
 				ret["graphics"] = f_sha
 			else:
 				ret["graphics"] = None
-			print("GENERATING {}".format(ret["graphics"]))
 		except Exception as e:
 <<<<<<< HEAD
 <<<<<<< HEAD
