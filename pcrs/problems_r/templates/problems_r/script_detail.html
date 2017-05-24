@@ -9,6 +9,7 @@
         {% endautoescape %}
     </div>
 
+<<<<<<< a51ae1378375be2a3bd6cc98de597c2059900f04
     <h3>Output</h3>
     <div class="well">
         {% autoescape off %}
@@ -19,6 +20,15 @@
               <img src="../../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
             {% else %}
               <img src="../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
+=======
+        <h3>Output</h3>
+        <div class="well">
+            {% autoescape off %}
+                {{ object.expected_output | nbsp | linebreaks }}
+            {% endautoescape %}
+            {% if object.graphics %}
+                <img src="../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
+>>>>>>> Fixed rendering of graphs
             {% endif %}
         {% endif %}
     </div>
