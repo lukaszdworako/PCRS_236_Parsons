@@ -44,7 +44,6 @@ class Script(AbstractSelfAwareModel):
 		else:
 			self.expected_output = ret["test_val"]
 			self.graphics = ret["graphics"]
-			print("MY GRAPHICS: {}".format(self.graphics))
 			self.save()
 		return ret
 
@@ -58,7 +57,6 @@ class Script(AbstractSelfAwareModel):
 		else:
 			#disregard expected_output and save new graphics path
 			self.graphics = ret["graphics"]
-			print("GenMY GRAPHICS: {}".format(self.graphics))
 			self.save()
 		return ret
 
@@ -99,7 +97,6 @@ class Problem(AbstractProgrammingProblem):
 			if ret["graphics"]:
 				path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
 				if os.path.isfile(path):
-					print("REMOVING {}".format(path))
 					os.remove(path)
 			self.expected_output = ret["test_val"]
 			self.max_score = 1
@@ -113,7 +110,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	passed = models.BooleanField()
 
 	def run_testcases(self, request):
-		print("RUNNING THE TESTS")
 		results = None
 		error = None
 		try:
@@ -129,7 +125,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		"""
 		Run the submission against the solution and return results.
 		"""
-		print("AGAINST THE SOLUTION")
 		# Preprocess tags in submission and append to Script
 		if self.problem.script:
 			code = self.problem.script.code+'\n'+\
@@ -155,7 +150,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		if ret["graphics"]:
 			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
 			if os.path.isfile(path):
-				print("REMOVING {}".format(path))
 				os.remove(path)
 
 		self.save()
