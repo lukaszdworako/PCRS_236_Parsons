@@ -43,6 +43,15 @@ class ScriptDetailView(ScriptView, DetailView):
 	"""
 	template_name = "problems_r/script_detail.html"
 
+	def get_context_data(self, **kwargs):
+		context = super(ScriptView, self).get_context_data(**kwargs)
+		# Check whether the temporary graph image still exists, if not generate it
+		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.object.graphics) + ".png"
+		if not os.path.isfile(path):
+			print("IT DONT EXIST {}".format(path))
+			ret = self.object.generate_graphics()
+		return context
+
 class ScriptDeleteView(ScriptView, DeleteView):
 	"""
 	Delete an existing R Script.
@@ -53,14 +62,9 @@ def render_graph(request, image):
 	"""
 	Render R graph image and delete it.
 	"""
-	targ_script = Script.objects.get(pk=image)
-	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", targ_script.graphics) + ".png"
-	# Check whether the graph already exists and generates it if not
-	if not os.path.isfile(path):
-		ret = targ_script.generate_graphics()
-		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", targ_script.graphics) + ".png"
-
+	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", image) + ".png"
 	# Display the graph on the browser then delete
 	graph = open(path, "rb").read()
+	print("REMOVING {}".format(path))
 	os.remove(path)
 	return HttpResponse(graph, content_type="image/png")

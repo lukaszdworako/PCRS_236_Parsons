@@ -15,10 +15,7 @@
                 {{ object.expected_output | nbsp | linebreaks }}
             {% endautoescape %}
             {% if object.graphics %}
-                <img src="../graph/{{ object.pk }}" class="img-responsive" alt="graph image">
-                <!-- <div class="embed-responsive embed-responsive-16by9">
-                    <iframe class="embed-responsive-item" src="../graph/{{ object.pk }}"></iframe>
-                </div> -->
+                <img src="../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
             {% endif %}
         </div>
 
