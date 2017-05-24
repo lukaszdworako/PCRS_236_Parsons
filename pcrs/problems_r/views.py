@@ -48,7 +48,6 @@ class ScriptDetailView(ScriptView, DetailView):
 		# Check whether the temporary graph image still exists, if not generate it
 		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.object.graphics) + ".png"
 		if not os.path.isfile(path):
-			print("IT DONT EXIST {}".format(path))
 			ret = self.object.generate_graphics()
 		return context
 
@@ -65,6 +64,5 @@ def render_graph(request, image):
 	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", image) + ".png"
 	# Display the graph on the browser then delete
 	graph = open(path, "rb").read()
-	print("REMOVING {}".format(path))
 	os.remove(path)
 	return HttpResponse(graph, content_type="image/png")
