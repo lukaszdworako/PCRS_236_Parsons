@@ -34,6 +34,10 @@ import logging
 import datetime
 from django.utils.timezone import localtime, utc
 
+import logging
+import datetime
+from django.utils.timezone import localtime, utc
+
 class Script(AbstractSelfAwareModel):
 	"""
 	Prepared R code that serves as context for R problems.
