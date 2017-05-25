@@ -1,6 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from problems_r.models import Script
+from problems_r.models import Script, delete_graph
 from problems_r.forms import ScriptForm
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView)
 from django.views.generic import (DetailView, DeleteView)
@@ -64,5 +64,5 @@ def render_graph(request, image):
 	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", image) + ".png"
 	# Display the graph on the browser then delete
 	graph = open(path, "rb").read()
-	os.remove(path)
+	delete_graph(image)
 	return HttpResponse(graph, content_type="image/png")
