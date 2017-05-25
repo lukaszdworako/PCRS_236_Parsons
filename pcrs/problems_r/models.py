@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, DatabaseError
 from django.core.exceptions import ValidationError
 from problems.models import (AbstractProgrammingProblem,
 							 SubmissionPreprocessorMixin,
@@ -11,6 +11,10 @@ from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
 from pcrs.settings import PROJECT_ROOT
+
+import logging
+import datetime
+from django.utils.timezone import localtime, utc
 
 class Script(AbstractSelfAwareModel):
 	"""
@@ -44,7 +48,15 @@ class Script(AbstractSelfAwareModel):
 		else:
 			self.expected_output = ret["test_val"]
 			self.graphics = ret["graphics"]
-			self.save()
+			# Handle the case where the new script already exists in the db
+			try:
+				self.save()
+			except DatabaseError:
+				logger = logging.getLogger('activity.logging')
+				logger.error(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+					str(self.name) + " db entry exists")
+				delete_graph(self.graphics)
+				self.graphics = ""
 		return ret
 
 	def generate_graphics(self):
@@ -55,9 +67,17 @@ class Script(AbstractSelfAwareModel):
 			raise ValidationError(
 				("R code is invalid. ")+ret["exception"])
 		else:
-			#disregard expected_output and save new graphics path
+			# Disregard expected_output and save new graphics path
 			self.graphics = ret["graphics"]
-			self.save()
+			# Handle the case where the new script already exists in the db
+			try:
+				self.save()
+			except DatabaseError:
+				logger = logging.getLogger('activity.logging')
+				logger.error(str(localtime(datetime.datetime.utcnow().replace(tzinfo=utc))) + " | " +
+					str(self.name) + " db entry exists")
+				delete_graph(self.graphics)
+				self.graphics = ""
 		return ret
 
 class Problem(AbstractProgrammingProblem):
@@ -95,9 +115,7 @@ class Problem(AbstractProgrammingProblem):
 		else:
 			# Delete generated graph
 			if ret["graphics"]:
-				path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
-				if os.path.isfile(path):
-					os.remove(path)
+				delete_graph(ret["graphics"])
 			self.expected_output = ret["test_val"]
 			self.max_score = 1
 			self.save()
@@ -148,9 +166,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		# Delete generated graph
 		if ret["graphics"]:
-			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
-			if os.path.isfile(path):
-				os.remove(path)
+			delete_graph(ret["graphics"])
 
 		self.save()
 		self.set_best_submission()
@@ -179,3 +195,13 @@ class TestRun(AbstractTestRun):
 post_delete.connect(testcase_delete, sender=TestCase)
 
 post_delete.connect(problem_delete, sender=Problem)
+
+def delete_graph(graph):
+	"""
+	Deletes the given image from the CACHE of images.
+	@param str graph
+	"""
+	if graph:
+		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", graph) + ".png"
+		if os.path.isfile(path):
+			os.remove(path)
