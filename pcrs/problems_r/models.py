@@ -30,6 +30,10 @@ import logging
 import datetime
 from django.utils.timezone import localtime, utc
 
+import logging
+import datetime
+from django.utils.timezone import localtime, utc
+
 class Script(AbstractSelfAwareModel):
 	"""
 	Prepared R code that serves as context for R problems.
@@ -338,9 +342,7 @@ class Problem(AbstractProgrammingProblem):
 		else:
 			# Delete generated graph
 			if ret["graphics"]:
-				path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
-				if os.path.isfile(path):
-					os.remove(path)
+				delete_graph(ret["graphics"])
 			self.expected_output = ret["test_val"]
 			self.max_score = 1
 			self.save()
@@ -391,9 +393,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		# Delete generated graph
 		if ret["graphics"]:
-			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", ret["graphics"]) + ".png"
-			if os.path.isfile(path):
-				os.remove(path)
+			delete_graph(ret["graphics"])
 
 		self.save()
 		self.set_best_submission()
@@ -422,3 +422,13 @@ class TestRun(AbstractTestRun):
 post_delete.connect(testcase_delete, sender=TestCase)
 
 post_delete.connect(problem_delete, sender=Problem)
+
+def delete_graph(graph):
+	"""
+	Deletes the given image from the CACHE of images.
+	@param str graph
+	"""
+	if graph:
+		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", graph) + ".png"
+		if os.path.isfile(path):
+			os.remove(path)
