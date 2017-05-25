@@ -6,8 +6,6 @@
         <i style="color:navy" class="pencil-icon"></i>
     </a>
     &nbsp;
-    {% autoescape off %}
-        <p>{{ item.text }}</p>
-    {% endautoescape %}
+    <div class="html">{% autoescape off %}{{ item.text }}{% endautoescape %}</div>
 </div>
 

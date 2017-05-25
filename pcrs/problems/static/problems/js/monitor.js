@@ -2,7 +2,8 @@ var interval;
 
 $(function () {
     $('#button-id-go').click(function () {
-        update();
+        var firstIter = true;
+        update(firstIter);
         if (!$('#id_final').is(':checked')) {
             // poll for new data every 2 seconds
             interval = setInterval(update, 2000);
@@ -10,7 +11,7 @@ $(function () {
     });
 });
 
-function update() {
+function update(firstIter=false) {
     // get the most recent data from db for this problem after this time
 
     // If only first submissions are requested for analysis,
@@ -30,11 +31,12 @@ function update() {
             // update the graphs
             clearCanvases();
             if (data['submissions'].length > 0) {
-                createSubmissionGraph([data['submissions']]);
+                createSubmissionGraph([data['submissions']], firstIter);
             }
             if (data['data'].length > 0) {
-                createSubmissionDetailsGraph(data['data']);
+                createSubmissionDetailsGraph(data['data'], firstIter);
             }
+            firstIter = false;
         });
 }
 
@@ -48,23 +50,33 @@ function clearCanvases() {
     ctx2.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function createSubmissionGraph(data) {
+function createSubmissionGraph(data, firstIter=false) {
     // Create the submission data graph for live monitoring
     var graph = new RGraph.Bar('submissions-graph', data);
     graph.Set('chart.labels', ['Correct', 'Incorrect']);
+    graph.Set('chart.title', "Overall Performance");
     graph.Set('chart.labels.above', true);
     graph.Set('chart.background.grid', false);
-    graph.Set('chart.colors', ['#3C9A45', '#E31837']);
-    graph.Draw();
+    graph.Set('chart.colors', ['rgba(0,0,128,0.85)', 'rgba(128,0,0,0.85)']);
+    if (firstIter) {
+        RGraph.Effects.Bar.Grow(graph);
+    } else {
+        graph.Draw();
+    }
 }
 
-function createSubmissionDetailsGraph(data) {
+function createSubmissionDetailsGraph(data, firstIter=false) {
     var canvas = $("#details-graph");
     // set width of graph depending on the number of items that will be displayed
-    canvas.attr("width", data.length * 150);
-    var graph = new RGraph.Bar('details-graph', data);
+    var graph = new RGraph.HBar('details-graph', data);
+    graph.Set('chart.title', "Performance Per Testcase/Option");
+    graph.Set('chart.labels', Array.from(new Array(data.length), (val,index)=>"#"+(index+1)));
     graph.Set('chart.background.grid', false);
     graph.Set('chart.labels.above', true);
-    graph.Set('chart.colors', ['#3C9A45', '#E31837']);
-    graph.Draw();
+    graph.Set('chart.colors', ['rgba(0,0,128,0.45)', 'rgba(128,0,0,0.45)']);
+    if (firstIter) {
+        RGraph.Effects.Bar.Grow(graph);
+    } else {
+        graph.Draw();
+    }
 }
