@@ -250,6 +250,7 @@ class RSpecifics(languages.BaseLanguage):
 			ret.pop("test_val", None)
 >>>>>>> added models
 			ret["exception"] = str(e)
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -273,5 +274,7 @@ class RSpecifics(languages.BaseLanguage):
 		return ret
 >>>>>>> Just execute entire script and redirect output to temporary file
 =======
+=======
+>>>>>>> Added embed functionality in templates and urls. Also implemneted side-by-side graph comparison in problem submission
 		return ret
 >>>>>>> Installation instructions
