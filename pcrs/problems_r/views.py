@@ -46,9 +46,10 @@ class ScriptDetailView(ScriptView, DetailView):
 	def get_context_data(self, **kwargs):
 		context = super(ScriptView, self).get_context_data(**kwargs)
 		# Check whether the temporary graph image still exists, if not generate it
-		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.object.graphics) + ".png"
-		if not os.path.isfile(path):
-			ret = self.object.generate_graphics()
+		if self.object.graphics:
+			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.object.graphics) + ".png"
+			if not os.path.isfile(path):
+				ret = self.object.generate_graphics()
 		return context
 
 class ScriptDeleteView(ScriptView, DeleteView):

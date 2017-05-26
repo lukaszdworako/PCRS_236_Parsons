@@ -89,5 +89,4 @@ class RSpecifics(languages.BaseLanguage):
 			os.remove(path)
 			ret.pop("test_val", None)
 			ret["exception"] = str(e)
-
 		return ret
