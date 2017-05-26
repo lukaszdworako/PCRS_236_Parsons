@@ -60,10 +60,12 @@
 </head>
 
 <body class="body-bg">
-{% if user.is_instructor or user.is_ta %}
-    {% include "pcrs/instructor_navigation.html" %}
-{% else %}
-    {% include "pcrs/student_navigation.html" %}
+{% if not "embed" in request.path %}
+    {% if user.is_instructor or user.is_ta %}
+        {% include "pcrs/instructor_navigation.html" %}
+    {% else %}
+        {% include "pcrs/student_navigation.html" %}
+    {% endif %}
 {% endif %}
 
 <div class="pcrs-fluid">
