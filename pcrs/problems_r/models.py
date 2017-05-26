@@ -97,6 +97,7 @@ class Problem(AbstractProgrammingProblem):
 	script = models.ForeignKey(Script, null=True,
 							   on_delete=models.CASCADE)
 	expected_output = models.TextField(blank=True, null=True)
+	sol_graphics = models.TextField(blank=True, null=True)
 
 	def clean(self):
 		self.solution = self.solution.replace("\r", "")
@@ -119,6 +120,33 @@ class Problem(AbstractProgrammingProblem):
 			self.expected_output = ret["test_val"]
 			self.max_score = 1
 			self.save()
+
+	def generate_sol_graphics(self):
+		# Checking whether there already is a graph in the cache
+		if self.sol_graphics:
+			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.sol_graphics) + ".png"
+			if os.path.isfile(path):
+				return None
+
+		self.solution = self.solution.replace("\r", "")
+
+		if self.script:
+			code = self.script.code+'\n'+self.solution
+		else:
+			code = self.solution
+
+		r = RSpecifics()
+		code = code.replace("\r", "")
+		ret = r.run(code)
+		if "exception" in ret:
+			raise ValidationError(
+				("R code is invalid. ")+ret["exception"])
+		else:
+			# Disregard expected_output and save new graphics path
+			self.sol_graphics = ret["graphics"]
+			# Handle the case where the new script already exists in the db
+			self.save()
+		return ret
 
 class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	"""
@@ -152,6 +180,11 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		r = RSpecifics()
 		ret = r.run_test(code, self.problem.expected_output)
+		sol_graphics = self.problem.generate_sol_graphics()
+		if sol_graphics:
+			ret["sol_graphics"] = sol_graphics["graphics"]
+		else:
+			ret["sol_graphics"] = self.problem.sol_graphics
 		return ret
 
 	def set_score(self):
@@ -165,7 +198,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			self.score = 0
 
 		# Delete generated graph
-		if ret["graphics"]:
+		if "graphics" in ret.keys() and ret["graphics"]:
 			delete_graph(ret["graphics"])
 
 		self.save()

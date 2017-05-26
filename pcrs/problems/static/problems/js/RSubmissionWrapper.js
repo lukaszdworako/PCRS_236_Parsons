@@ -1,8 +1,8 @@
 function RSubmissionWrapper(name) {
-	SubmissionWrapper.call(this, name);
-	this.language = "r";
-	this.language_version = "3.3.2";
-	this.tcm = null;
+		SubmissionWrapper.call(this, name);
+		this.language = "r";
+		this.language_version = "3.3.2";
+		this.tcm = null;
 }
 RSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
 RSubmissionWrapper.prototype.constructor = RSubmissionWrapper;
@@ -11,27 +11,33 @@ RSubmissionWrapper.prototype.constructor = RSubmissionWrapper;
  * @override
  */
 RSubmissionWrapper.prototype.getAllCode = function() {
-	var hash = CryptoJS.SHA1(this.problemId);
-	return this.tcm.getHashedCode(hash);
+		var hash = CryptoJS.SHA1(this.problemId);
+		return this.tcm.getHashedCode(hash);
 }
 
 /**
  * @override
  */
 RSubmissionWrapper.prototype.createCodeMirrors = function() {
- 	this.tcm = this.createSubmissionMirror();
+ 		this.tcm = this.createSubmissionMirror();
  }
 
-RSubmissionWrapper.prototype.renderGraph = function(graph) {
-	imurl = root+'/problems/'+this.language+'/graph/'+graph;
-	window.open(imurl, "R Graph", "width=500,height=500,resizable,scrollbars=yes");
+RSubmissionWrapper.prototype.renderGraph = function(graph, sol) {
+		imurl = root+'/problems/'+this.language+'/graph/'+graph;
+		if (sol){
+				$('#sol-graph').replaceWith('<div id="sol-graph" class="col-md-6"> \
+						<h3 style="text-align: center;">Our Graph</h3><img alt ="Our graph" src="' + imurl + '"></div>');
+		} else{
+				$('#user-graph').replaceWith('<div id="user-graph" class="col-md-6"> \
+						<h3 style="text-align: center;">Your Graph</h3><img alt ="Your graph" src="' + imurl + '"></div>');
+		}
 }
 
  /**
   * @override
   */
 RSubmissionWrapper.prototype.getTestcases = function(code) {
-	var call_path = "";
+		var call_path = "";
     if (this.isEditor) {
         call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
@@ -49,13 +55,15 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
             postParams,
             function(data) {
             	var res = data["results"][0];
-            	if ("graphics" in res) {
-            		var graph = res["graphics"];
-            		that.renderGraph(graph);
+            	if ("graphics" in res && res["graphics"] != null) {
+            		that.renderGraph(res["graphics"], false);
             	}
-                that._getTestcasesCallback(data);
-                // Deactivate loading pop-up
-                $('#waitingModal').modal('hide');
+							if ("sol_graphics" in res && res["sol_graphics"] != null) {
+            		that.renderGraph(res["sol_graphics"], true);
+            	}
+              that._getTestcasesCallback(data);
+              // Deactivate loading pop-up
+              $('#waitingModal').modal('hide');
             },
         "json")
      .fail(

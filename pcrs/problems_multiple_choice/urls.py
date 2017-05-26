@@ -50,11 +50,11 @@ urlpatterns = patterns('',
         name='mc_problem_delete_option'),
     url(r'^(?P<problem>[0-9]+)/submit$', SubmissionView.as_view(),
         name='mc_problem_submit'),
-
+    url(r'^embed/(?P<problem>[0-9]+)/submit$', SubmissionView.as_view(),
+        name='embedded_mc_problem_submit'),
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='mc_problem_async_submit'),
-
     url(r'^(?P<problem>[0-9]+)/history$',
         SubmissionMCHistoryAsyncView.as_view(model=Submission),
         name='mc_problem_async_history'),

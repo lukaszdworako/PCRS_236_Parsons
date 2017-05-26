@@ -81,7 +81,7 @@ class ProblemCloneView(ProblemCreateView):
             testcase.problem = new_problem
             testcase.save(force_insert=True)
         return redirect(new_problem.get_absolute_url())
-    
+
 class ProblemCreateAndAddTCView(ProblemCreateView):
     """
     Create a new problem and add testcases.

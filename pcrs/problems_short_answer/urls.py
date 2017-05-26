@@ -44,6 +44,10 @@ urlpatterns = patterns('',
         SubmissionView.as_view(),
         name='short_answer_submit'),
 
+    url(r'^embed/(?P<problem>[0-9]+)/submit$',
+        SubmissionView.as_view(),
+        name='embedded_short_answer_submit'),
+
     url(r'^(?P<problem>[0-9]+)/run$',
         SubmissionAsyncView.as_view(model=Submission),
         name='short_answer_async_submit'),
