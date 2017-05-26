@@ -68,6 +68,9 @@ class RSpecifics(languages.BaseLanguage):
 			# Sets the graphical output to a temporary file
 			exec_r("png(\"{}\")".format(g_path)) # output to pdf for multiple graphs
 
+			# Remove empty lines from R code
+			script = self.strip_empty_lines(script)
+
 			# Execute script
 			exec_r(script)
 
@@ -90,3 +93,21 @@ class RSpecifics(languages.BaseLanguage):
 			ret.pop("test_val", None)
 			ret["exception"] = str(e)
 		return ret
+
+
+	def strip_empty_lines(self, script):
+		"""
+		@param str script
+
+		Returns script with all empty lines stripped from it so R code is correct.
+		"""
+		all_elements = script.split("\n")
+		split_elements = [element for element in all_elements if element != ""]
+
+		ret_str = ""
+		for i in range(len(split_elements)):
+			ret_str += split_elements[i].strip()
+			if i != (len(split_elements) - 1):
+				ret_str += "\n"
+
+		return ret_str
