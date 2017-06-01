@@ -104,6 +104,7 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
+    upload_file = forms.FileField()
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
@@ -119,7 +120,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
         self.fields['submission'].initial = code
 
         buttonDiv = self._generateButtonDiv(problem, isInstructor)
-        layout_fields = (Fieldset('', 'submission'), buttonDiv)
+        layout_fields = (Fieldset('', 'upload_file', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
 
     def _generateButtonDiv(self, problem, isInstructor):
