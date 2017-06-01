@@ -31,6 +31,23 @@ class DateEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class FileUploadMixin:
+    def save_file(self, request):
+        """
+        Record the uploaded file.
+        """
+        form = self.get_form(self.get_form_class())
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'])
+            return HttpResponseRedirect("/success/url/")
+
+    def handle_uploaded_file(f):
+        path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/1.csv")
+        with open(path, 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+
+
 class ProblemView:
     """
     Base class for Problem views.
