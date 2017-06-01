@@ -12,7 +12,7 @@ from problems.widgets.select_multiple_field import SelectMultipleField
 from problems.helper import remove_tag
 
 class BaseProblemForm(CrispyFormMixin):
-    
+
     def __init__(self, *args, **kwargs):
         self.buttons = self._createButtons()
 
@@ -104,6 +104,7 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
+    upload_file = forms.FileField()
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
@@ -119,7 +120,7 @@ class ProgrammingSubmissionForm(BaseSubmissionForm):
         self.fields['submission'].initial = code
 
         buttonDiv = self._generateButtonDiv(problem, isInstructor)
-        layout_fields = (Fieldset('', 'submission'), buttonDiv)
+        layout_fields = (Fieldset('', 'upload_file', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
 
     def _generateButtonDiv(self, problem, isInstructor):
@@ -142,7 +143,7 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
     final = forms.BooleanField(required=False, label='Static result', help_text='Leave unchecked if you want results updated live.')
     firstSubmissionsOnly = forms.BooleanField(required=False, label='Count first submissions only',\
                                               help_text='Check to see only results of all first submissions per student after start time')
-                                              
+
     def __init__(self, *args, **kwargs):
         go = Button('Go', value='Go', css_class='green-button')
         super().__init__(*args, **kwargs)
