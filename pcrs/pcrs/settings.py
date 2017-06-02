@@ -12,7 +12,7 @@ INSTALLED_PROBLEM_APPS = {
     'problems_multiple_choice': '',
     # 'problems_timed': '',
     # 'problems_rating': '',
-    # 'problems_short_answer': '',
+    'problems_short_answer': '',
 }
 
 USE_SAFEEXEC = False              # For C only, for now

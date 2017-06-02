@@ -1,4 +1,4 @@
-from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Div, Button
+from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Div, Button, Field
 from django import forms
 
 from pcrs.form_mixins import CrispyFormMixin
@@ -9,7 +9,7 @@ from problems_short_answer.models import Problem, Submission
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'max_score', 'solution', 'tags', 'visibility')
+        fields = ('name', 'description', 'max_score', 'solution', 'max_chars', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
@@ -25,7 +25,8 @@ class SubmissionForm(BaseSubmissionForm):
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
         super().__init__(*args, **kwargs)
+
         self.helper.layout = Layout(
-            Fieldset('', 'submission'),
+            Fieldset('', Field('submission', maxlength=problem.max_chars)),
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right'))
