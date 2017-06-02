@@ -11,6 +11,7 @@ from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
 from pcrs.settings import PROJECT_ROOT
+from hashlib import sha1
 
 import logging
 import datetime
@@ -67,7 +68,7 @@ class Script(AbstractSelfAwareModel):
 			raise ValidationError(
 				("R code is invalid. ")+ret["exception"])
 		else:
-			# Disregard expected_output and save new graphics path
+			# Save new graphics path
 			self.graphics = ret["graphics"]
 			# Handle the case where the new script already exists in the db
 			try:
@@ -88,15 +89,14 @@ class Problem(AbstractProgrammingProblem):
 	Rather than having multiple testcases, a problem has:
 		1.) a contextual pre-written Script, and
 		2.) solution code
-	Its expected_output is updated by executing
-	the solution code, which is appended after the Script (if one exists).
+	Problems are checked by running the solution code which
+	is appended after the Script (if one exists) and comparin outputs.
 	"""
 	language = models.CharField(max_length=50,
 								choices=(("r", "R 3.3.2"),),
 								default="r")
 	script = models.ForeignKey(Script, null=True,
 							   on_delete=models.CASCADE)
-	expected_output = models.TextField(blank=True, null=True)
 	sol_graphics = models.TextField(blank=True, null=True)
 
 	def clean(self):
@@ -117,11 +117,10 @@ class Problem(AbstractProgrammingProblem):
 			# Delete generated graph
 			if ret["graphics"]:
 				delete_graph(ret["graphics"])
-			self.expected_output = ret["test_val"]
 			self.max_score = 1
 			self.save()
 
-	def generate_sol_graphics(self):
+	def generate_sol_graphics(self, seed):
 		# Checking whether there already is a graph in the cache
 		if self.sol_graphics:
 			path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", self.sol_graphics) + ".png"
@@ -130,10 +129,11 @@ class Problem(AbstractProgrammingProblem):
 
 		self.solution = self.solution.replace("\r", "")
 
+		code = "set.seed({})".format(seed)
 		if self.script:
-			code = self.script.code+'\n'+self.solution
+			code += '\n'+self.script.code+'\n'+self.solution
 		else:
-			code = self.solution
+			code += '\n'+self.solution
 
 		r = RSpecifics()
 		code = code.replace("\r", "")
@@ -142,7 +142,7 @@ class Problem(AbstractProgrammingProblem):
 			raise ValidationError(
 				("R code is invalid. ")+ret["exception"])
 		else:
-			# Disregard expected_output and save new graphics path
+			# Save new graphics path
 			self.sol_graphics = ret["graphics"]
 			# Handle the case where the new script already exists in the db
 			self.save()
@@ -162,6 +162,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			results = self.run_against_solution()
 			if "exception" in results:
 				error = results["exception"]
+
 			return results, error
 		except Exception:
 			error = "Submission could not be run."
@@ -171,20 +172,24 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		"""
 		Run the submission against the solution and return results.
 		"""
-		# Preprocess tags in submission and append to Script
+		# Set common seed of solution and user based on hash of user id
+		seed = self.get_seed()
+		code = "set.seed({})".format(seed)
+		sol_code = "set.seed({})".format(seed)
+
+		# Preprocess tags in submission and append submission and solution to Script
 		if self.problem.script:
-			code = self.problem.script.code+'\n'+\
+			code = code+'\n'+self.problem.script.code+'\n'+\
 				   self.preprocessTags()[0]['code']
+			sol_code = sol_code+'\n'+self.problem.script.code+'\n'+\
+					   self.problem.solution
 		else:
-			code = self.preprocessTags()[0]['code']
+			code = code+'\n'+self.preprocessTags()[0]['code']
+			sol_code = sol_code+'\n'+self.problem.solution
 
 		r = RSpecifics()
-		ret = r.run_test(code, self.problem.expected_output)
-		sol_graphics = self.problem.generate_sol_graphics()
-		if sol_graphics:
-			ret["sol_graphics"] = sol_graphics["graphics"]
-		else:
-			ret["sol_graphics"] = self.problem.sol_graphics
+		ret = r.run_test(code, sol_code)
+
 		return ret
 
 	def set_score(self):
@@ -201,8 +206,19 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		if "graphics" in ret.keys() and ret["graphics"]:
 			delete_graph(ret["graphics"])
 
+		if "sol_graphics" in ret.keys() and ret["sol_graphics"]:
+			delete_graph(ret["sol_graphics"])
+
 		self.save()
 		self.set_best_submission()
+
+	def get_seed(self):
+		"""
+		Returns a seed based on the current user.
+		"""
+		hex_int = int(sha1(str.encode("{}".format(self.user))).hexdigest(), 16)
+		user_int = hex_int + 0x200
+		return user_int % 100000 # Make sure user_int is within R's int size limit
 
 class TestCase(AbstractTestCase):
 	"""
