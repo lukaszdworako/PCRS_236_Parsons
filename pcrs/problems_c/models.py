@@ -276,9 +276,10 @@ class Submission(AbstractSubmission):
 
             # Replace hashed key with text (Implementation start/end)
             x = 0
+            msg = ["// Submitted code below", "// Submitted code above"]
             while x < student_code_key_list_len:
                 m = re.search(student_code_key, self.submission)
-                self.submission = self.submission[: m.start()] + self.submission[m.end():]
+                self.submission = self.submission[: m.start()] + msg[x % 2] + self.submission[m.end():]
                 x += 1
 
             # Remove blocked tags from the source code
