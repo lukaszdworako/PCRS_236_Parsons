@@ -49,6 +49,9 @@ class RSpecifics(languages.BaseLanguage):
 	"""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Reverted changes to forms and added a default seed unique to current user
 	def run_test(self, user_script, sol_script):
 		"""
 		@param str user_script
@@ -74,7 +77,10 @@ class RSpecifics(languages.BaseLanguage):
 				return ret
 
 			ret["passed_test"] = (ret["test_val"] == solution["test_val"])
+<<<<<<< HEAD
 			ret["sol_val"] = solution["test_val"]
+=======
+>>>>>>> Reverted changes to forms and added a default seed unique to current user
 
 			if "graphics" in solution.keys():
 				ret["sol_graphics"] = solution["graphics"]
