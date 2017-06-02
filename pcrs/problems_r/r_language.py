@@ -89,6 +89,7 @@ class RSpecifics(languages.BaseLanguage):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Reverted changes to forms and added a default seed unique to current user
 	def run_test(self, user_script, sol_script):
@@ -209,28 +210,35 @@ class RSpecifics(languages.BaseLanguage):
 =======
 	def run_test(self, user_script, expected_val):
 >>>>>>> pcrs-r RSpecifics prototype
+=======
+	def run_test(self, user_script, sol_script):
+>>>>>>> Reverted changes to forms and added a default seed unique to current user
 		"""
 		@param str user_script
-		@param str expected_val: expected output
+		@param str sol_script
 
 		Return dictionary <ret> containing results of a test run.
 		<ret> has the following mapping:
 		'test_val' -> <user_script> output (if successful),
 		'graphics' -> path to graphics (if any),
-		'passed_test' -> True if <user_script> outputs <expected_val>
+		'sol_graphics' -> path to solution's graphics (if any),
+		'passed_test' -> True if <user_script> outputs <expected_val>,
 		'exception' -> exception message (if any)
 		"""
 		# Just a hash we'll use as a unique name
 		f_sha = sha1(str.encode("{}".format(user_script+str(datetime.now())))).hexdigest()
 		try:
-			exec_r = robjects.r
 			ret = self.run(user_script)
+			solution = self.run(sol_script)
 
-			if "exception" in ret:
+			if "exception" in solution or "exception" in ret:
 				ret["passed_test"] = False
 				return ret
 
-			ret["passed_test"] = (ret["test_val"] == expected_val)
+			ret["passed_test"] = (ret["test_val"] == solution["test_val"])
+
+			if "graphics" in solution.keys():
+				ret["sol_graphics"] = solution["graphics"]
 		except Exception as e:
 			ret["exception"] = str(e)
 			ret["passed_test"] = False
