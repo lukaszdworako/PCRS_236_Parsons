@@ -68,13 +68,12 @@ def login_django(request, username):
         redirect_link = settings.SITE_PREFIX + '/content/quests'
 
         # Using meta data from request get next parameter
-        previous_url = request.META.get('HTTP_REFERER')
+        previous_url = request.META.get('QUERY_STRING')
         if previous_url:
             index = previous_url.find("next=")
             # Build new redirect_link
             if index >= 0:
-                previous_url = previous_url[index + 5:]
-                redirect_link = settings.SITE_PREFIX + previous_url
+                redirect_link = previous_url[index + 5:]
 
         login(request, user)
         return HttpResponseRedirect(redirect_link)
