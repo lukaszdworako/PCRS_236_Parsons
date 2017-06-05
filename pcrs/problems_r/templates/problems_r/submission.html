@@ -21,10 +21,16 @@
         {% include "problems_r/submission_widget.html" %}
     </div>
 
-    <!-- Empty div for graphs generated and displayed in the future-->
-    <div id="graphs">
-        <div id="user-graph" class="col-md-6"></div>
-        <div id="sol-graph" class="col-md-6"></div>
+    <!-- Empty divs for output -->
+    <div id="output">
+      <div id="user-box" class="col-md-6">
+        <div id="user-output"></div>
+        <div id="user-graph"></div>
+      </div>
+      <div id="sol-box" class="col-md-6">
+        <div id="sol-output"></div>
+        <div id="sol-graph"></div>
+      </div>
     </div>
 
 {% endblock %}
