@@ -389,6 +389,11 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			if "exception" in results:
 				error = results["exception"]
 
+			# Remove solution output if flag is false
+			if not self.problem.output_visibility:
+				results.pop("sol_graphics", None)
+				results.pop("sol_val", None)
+
 			return results, error
 		except Exception:
 			error = "Submission could not be run."
