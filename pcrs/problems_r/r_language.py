@@ -119,9 +119,13 @@ class RSpecifics(languages.BaseLanguage):
 			ret["passed_test"] = (ret["test_val"] == solution["test_val"])
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 			ret["sol_val"] = solution["test_val"]
 =======
 >>>>>>> Reverted changes to forms and added a default seed unique to current user
+=======
+			ret["sol_val"] = solution["test_val"]
+>>>>>>> Implemented output visibility field for R problems
 =======
 			ret["sol_val"] = solution["test_val"]
 >>>>>>> Implemented output visibility field for R problems
