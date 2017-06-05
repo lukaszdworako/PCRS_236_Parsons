@@ -26,7 +26,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
         fields = ('name', 'script', 'description', 'starter_code',
-                  'solution', 'tags', 'visibility')
+                  'solution', 'tags', 'visibility', 'output_visibility')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
