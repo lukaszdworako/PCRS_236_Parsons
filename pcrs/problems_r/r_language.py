@@ -19,6 +19,7 @@ class RSpecifics(languages.BaseLanguage):
 		Return dictionary <ret> containing results of a test run.
 		<ret> has the following mapping:
 		'test_val' -> <user_script> output (if successful),
+		'sol_val' -> <sol_script> output (if successful),
 		'graphics' -> path to graphics (if any),
 		'sol_graphics' -> path to solution's graphics (if any),
 		'passed_test' -> True if <user_script> outputs <expected_val>,
@@ -35,6 +36,7 @@ class RSpecifics(languages.BaseLanguage):
 				return ret
 
 			ret["passed_test"] = (ret["test_val"] == solution["test_val"])
+			ret["sol_val"] = solution["test_val"]
 
 			if "graphics" in solution.keys():
 				ret["sol_graphics"] = solution["graphics"]

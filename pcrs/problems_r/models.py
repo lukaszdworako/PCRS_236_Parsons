@@ -98,6 +98,7 @@ class Problem(AbstractProgrammingProblem):
 	script = models.ForeignKey(Script, null=True,
 							   on_delete=models.CASCADE)
 	sol_graphics = models.TextField(blank=True, null=True)
+	output_visibility = models.BooleanField(default=True)
 
 	def clean(self):
 		self.solution = self.solution.replace("\r", "")
@@ -162,6 +163,11 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			results = self.run_against_solution()
 			if "exception" in results:
 				error = results["exception"]
+
+			# Remove solution output if flag is false
+			if not self.problem.output_visibility:
+				results.pop("sol_graphics", None)
+				results.pop("sol_val", None)
 
 			return results, error
 		except Exception:

@@ -25,11 +25,13 @@ RSubmissionWrapper.prototype.createCodeMirrors = function() {
 RSubmissionWrapper.prototype.renderGraph = function(graph, sol) {
 		imurl = root+'/problems/'+this.language+'/graph/'+graph;
 		if (sol){
-				$('#sol-graph').replaceWith('<div id="sol-graph" class="col-md-6"> \
-						<h3 style="text-align: center;">Our Graph</h3><img alt ="Our graph" src="' + imurl + '"></div>');
+				$('#sol-graph').replaceWith('<div id="sol-graph"> \
+						<h3 style="text-align: center;">Our Graph</h3>\
+						<img alt ="Our graph" src="' + imurl + '" class="img-responsive"></div>');
 		} else{
-				$('#user-graph').replaceWith('<div id="user-graph" class="col-md-6"> \
-						<h3 style="text-align: center;">Your Graph</h3><img alt ="Your graph" src="' + imurl + '"></div>');
+				$('#user-graph').replaceWith('<div id="user-graph"> \
+						<h3 style="text-align: center;">Your Graph</h3> \
+						<img alt ="Your graph" src="' + imurl + '" class="img-responsive"></div>');
 		}
 }
 
@@ -55,6 +57,14 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
             postParams,
             function(data) {
             	var res = data["results"][0];
+							if ("test_val" in res){
+								$('#user-output').replaceWith('<div id="user-output" class="well"> \
+										<h3 style="text-align: center;">Your Output</h3><p>' + res["test_val"].replace('\n', '<br>') + '</p></div>');
+							}
+							if ("sol_val" in res){
+								$('#sol-output').replaceWith('<div id="sol-output" class="well"> \
+										<h3 style="text-align: center;">Our Output</h3><p>' + res["sol_val"].replace('\n', '<br>') + '</p></div>');
+							}
             	if ("graphics" in res && res["graphics"] != null) {
             		that.renderGraph(res["graphics"], false);
             	}
