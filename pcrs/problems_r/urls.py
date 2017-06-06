@@ -1,11 +1,11 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from problems_r.models import Problem, Submission
 from problems_r.views import *
 from problems_r.forms import ProblemForm
 from problems.views import *
 from editor.views import EditorAsyncView
 
-urlpatterns = patterns('',
+urlpatterns = [
 	url(r"^script/create$", ScriptCreateView.as_view(),
 		name="script_create"),
 	url(r"^script/create_and_run$", ScriptCreateAndRunView.as_view(),
@@ -58,4 +58,4 @@ urlpatterns = patterns('',
 								name='embedded_coding_problem_submit'),
 	url(r"^embed/script/(?P<pk>[0-9]+)$", ScriptDetailView.as_view(),
 		name="embedded_script_view"),
-	)
+	]
