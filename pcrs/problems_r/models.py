@@ -13,13 +13,10 @@ from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
 from pcrs.settings import PROJECT_ROOT
 from hashlib import sha1
-<<<<<<< b37bbead6c233315d0523c59861b4f0bafd2414b
 
 import logging
 import datetime
 from django.utils.timezone import localtime, utc
-=======
->>>>>>> Reverted changes to forms and added a default seed unique to current user
 
 import logging
 import datetime
