@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import (ProblemClearView, ProblemListView,
                             ProblemDeleteView, ProblemCreateView,
@@ -16,7 +16,7 @@ from problems_multiple_choice.views import (OptionCreateView,
                                             SubmissionMCHistoryAsyncView)
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^list$', ProblemListView.as_view(model=Problem),
         name='mc_problem_list'),
     url(r'^create$',
@@ -67,4 +67,4 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/monitor_data$',
         MonitoringAsyncView.as_view(model=Problem),
         name='mc_problem_get_monitor_data'),
-)
+]

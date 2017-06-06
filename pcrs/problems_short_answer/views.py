@@ -43,7 +43,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         problem = self.get_problem()
         self.submission = self.model.objects.create(problem=problem,
                               user=request.user, section=self.get_section())
-        self.submission.set_score(request.REQUEST['submission'])
+        self.submission.set_score(request.POST['submission'])
         return []
 
 
@@ -76,7 +76,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
                                 'best': False,
                                 'past_dead_line': False,
                                 'message': self.submission.message,
-                                }), mimetype='application/json')
+                                }), content_type='application/json')
 
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
@@ -99,7 +99,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
             'message': self.submission.message,
-            }), mimetype='application/json')
+            }), content_type='application/json')
 
 
 class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
@@ -135,5 +135,4 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
                 'sub_pk': sub.pk
             })
 
-        return HttpResponse(json.dumps(returnable), mimetype='application/json')
-
+        return HttpResponse(json.dumps(returnable), content_type='application/json')

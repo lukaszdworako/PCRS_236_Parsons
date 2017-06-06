@@ -12,7 +12,7 @@ from problems.widgets.select_multiple_field import SelectMultipleField
 from problems.helper import remove_tag
 
 class BaseProblemForm(CrispyFormMixin):
-    
+
     def __init__(self, *args, **kwargs):
         self.buttons = self._createButtons()
 
@@ -142,7 +142,7 @@ class MonitoringForm(CrispyFormMixin, forms.Form):
     final = forms.BooleanField(required=False, label='Static result', help_text='Leave unchecked if you want results updated live.')
     firstSubmissionsOnly = forms.BooleanField(required=False, label='Count first submissions only',\
                                               help_text='Check to see only results of all first submissions per student after start time')
-                                              
+
     def __init__(self, *args, **kwargs):
         go = Button('Go', value='Go', css_class='green-button')
         super().__init__(*args, **kwargs)

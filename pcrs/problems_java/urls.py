@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import *
 from problems.st_async_requests import visualizer_details
@@ -9,7 +9,7 @@ from .models import Problem, Submission
 from editor.views import EditorAsyncView
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^list$',
         ProblemListView.as_view(model=Problem),
         name='coding_problem_list'),
@@ -63,4 +63,4 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>[0-9]+)/browse_submissions$',
         BrowseSubmissionsView.as_view(model=Problem),
         name='coding_problem_browse_submissions'),
-)
+]

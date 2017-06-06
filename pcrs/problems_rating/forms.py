@@ -10,18 +10,18 @@ from problems_rating.models import Problem
 class ProblemForm(forms.ModelForm, CrispyFormMixin):
     save_and_continue = Submit('submit', 'Save and Continue',
                           css_class='btn-success pull-right')
-    
+
     class Meta:
         model = Problem
         widgets = {'max_score': forms.HiddenInput()}
-        create_fields = ('name', 'description', 'scale_type', 'tags', 'visibility',
+        fields = ('name', 'description', 'scale_type', 'tags', 'visibility',
                          'max_score')
 
-    def __init__(self, *args, **kwargs):        
+    def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
         CrispyFormMixin.__init__(self)
-        
-        fields = self.Meta.create_fields
+
+        # fields = self.Meta.create_fields
         self.buttons = (self.save_and_continue,)
         self.helper.layout = Layout(Fieldset('', *fields),
                                     ButtonHolder(*self.buttons))
@@ -31,9 +31,10 @@ class ProblemUpdateForm(forms.ModelForm, CrispyFormMixin):
                         'href="{{ object.get_absolute_url }}/clear">'
                         'Clear submissions</a>')
     save_button = Submit('submit', 'Save', css_class='btn-success pull-right')
-    
+
     class Meta:
         model = Problem
+        exclude = ()
         likert_fields = ('options', 'name', 'description', 'tags', 'visibility')
         slider_fields = ('minimum', 'maximum', 'increment', 'extra', 'name', 'description',
                          'tags', 'visibility')
@@ -45,7 +46,7 @@ class ProblemUpdateForm(forms.ModelForm, CrispyFormMixin):
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
         CrispyFormMixin.__init__(self)
-        
+
         if self.instance.scale_type == 'LIK':
             fields = self.Meta.likert_fields
             self.fields['options'].label = "Options*"
@@ -61,12 +62,12 @@ class ProblemUpdateForm(forms.ModelForm, CrispyFormMixin):
             self.fields['maximum'].label = "Number of stars*"
             self.fields['increment'].label = "Increment*"
             self.fields['options'].label = "Labels"
-            self.fields['options'].help_text = """Enter each label on a separate line. 
+            self.fields['options'].help_text = """Enter each label on a separate line.
             A label appears when you hover over its star. Leave this field empty
             to have no labels, or enter an empty line to not have a label for that
             particular star."""
             self.fields['extra'].label = "<i><b>Use larger star icons?</b></i>"
-        
+
         self.buttons = (Div(CrispyFormMixin.delete_button,
                             self.clear_button,
                             css_class='btn-group'),

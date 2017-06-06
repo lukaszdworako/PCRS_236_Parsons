@@ -2,6 +2,7 @@
 
 from django.forms import widgets
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 try:
     from django.forms.utils import flatatt
@@ -29,12 +30,24 @@ class SelectMultipleField(widgets.SelectMultiple):
         if value is None:
             value = []
 
-        final_attrs = self.build_attrs(rendered_attrs, name=name)
+
+
+        additional_attr = {'name': name}
+
+        final_attrs = self.build_attrs(rendered_attrs, additional_attr)
         output = [format_html('<select multiple="multiple"{0}>',
                               flatatt(final_attrs))]
-        options = self.render_options(choices, value)
-        if options:
-            output.append(options)
+
+        # Hacky, re-work this later (not sure about options API, was changed in 1.11)
+        for option in self.options(choices, value):
+            for selected_option in value:
+                if selected_option == option['value']:
+                    output.append("<option selected='selected' value={}>{}</option>"
+                        .format(escape(option['value']), escape(option['label'])))
+                    break
+            else:
+                output.append("<option value={}>{}</option>"
+                    .format(escape(option['value']), escape(option['label'])))
 
         output.append('</select>')
         return mark_safe('\n'.join(output))

@@ -15,12 +15,14 @@ $( document ).ready(function() {
             var checkboxes = $(this)
                 .parents('#multiple_choice-'+problem_pk)
                 .find('.controls')
+                .find('.checkbox')
+                .find('label')
                 .children();
 
             var submission = [];
             for (var x = 0; x < checkboxes.length; x++){
-                if ($(checkboxes[x]).children('input').is(':checked')){
-                    submission.push($(checkboxes[x]).children('input').val());
+                if ($(checkboxes[x]).is(':checked')){
+                    submission.push($(checkboxes[x]).val());
                 }
             }
             submit_mc(submission, problem_pk, $(this)

@@ -1,7 +1,11 @@
 from sys import modules
 
 from django.conf import settings
-from django.contrib.contenttypes import generic
+# ------------------
+# Removed in >1.5, replaced with below
+# from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
+# ------------------
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
@@ -126,7 +130,7 @@ class AbstractGenericObjectForeignKey(models.Model):
 
     object_id = models.PositiveIntegerField()
     content_type = models.ForeignKey(ContentType, limit_choices_to=objects, on_delete=models.CASCADE)
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     class Meta:
         abstract = True
@@ -134,7 +138,6 @@ class AbstractGenericObjectForeignKey(models.Model):
 
 class AbstractOrderedGenericObjectSequence(AbstractGenericObjectForeignKey):
     order = models.SmallIntegerField(blank=True, default=0)
-
     class Meta:
         abstract = True
         ordering = ['order']
@@ -147,13 +150,13 @@ class AbstractOrderedGenericObjectSequence2(AbstractGenericObjectForeignKey):
     parent_object_id = models.PositiveIntegerField()
     parent_content_type = models.ForeignKey(ContentType,
                                             limit_choices_to=parents)
-    parent_content_object = generic.GenericForeignKey('parent_content_type',
+    parent_content_object = GenericForeignKey('parent_content_type',
                                                       'parent_object_id')
 
     child_object_id = models.PositiveIntegerField()
     child_content_type = models.ForeignKey(ContentType,
                                            limit_choices_to=children)
-    child_content_object = generic.GenericForeignKey('child_content_type',
+    child_content_object = GenericForeignKey('child_content_type',
                                                      'child_object_id')
 
     class Meta:

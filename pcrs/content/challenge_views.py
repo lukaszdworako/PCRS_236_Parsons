@@ -206,7 +206,7 @@ class ReactiveContentPageData(ContentPageView, View):
                     'next_url': page.get_next_url(),
                     'prev_url': page.get_previous_url()
                 }
-            ), mimetype='application/json')
+            ), content_type='application/json')
 
 
 class ChallengeStatsView(CourseStaffViewMixin, DetailView):
@@ -256,7 +256,7 @@ class ChallengeStatsGetData(CourseStaffViewMixin, SectionViewMixin, DetailView):
         results = self.get_attempt_stats(
             self.get_object(), self.get_section(), active_only)
         return HttpResponse(json.dumps({'status': 'ok', 'results': results}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
 
 class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
@@ -279,7 +279,7 @@ class ChallengeCompletionForUserView(CourseStaffViewMixin, UserViewMixin,
                     data['challenge_to_total'].get(challenge.pk, 0)
             )
             for challenge in self.model.objects.all()
-        }),  mimetype='application/json')
+        }),  content_type='application/json')
 
 
 class ChallengeGraphView(ProtectedViewMixin, TemplateView):
@@ -299,7 +299,7 @@ class ChallengeGraphGenViewHorizontal(CourseStaffViewMixin, UserViewMixin, View)
         svg = os.path.join(os.getcwd(),
                            'resources/challenge_graph/ui/graph_gen_horizontal.svg')
         return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
-                            mimetype='text')
+                            content_type='text')
 
 
 class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
@@ -312,7 +312,7 @@ class ChallengeGraphGenViewVertical(CourseStaffViewMixin, UserViewMixin, View):
         svg = os.path.join(os.getcwd(),
                            'resources/challenge_graph/ui/graph_gen_vertical.svg')
         return HttpResponse(open(svg, 'r').read().replace('\\n', ''),
-                            mimetype='text')
+                            content_type='text')
 
 
 class ChallengeExportView(DetailView):

@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from pcrs.generic_views import GenericCourseStaffDeleteView
 
 from users.section_views import *
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^change$', ChangeSectionView.as_view(),
         name='section_change'),
     url(r'^list$', SectionListView.as_view(),
@@ -17,4 +17,4 @@ urlpatterns = patterns('',
         name='section_delete'),
     url(r'^(?P<pk>[\w-]+)/reports$', SectionReportsView.as_view(),
         name='section_reports'),
-)
+]

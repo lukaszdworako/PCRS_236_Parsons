@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import (ProblemCreateView,
                             ProblemUpdateView, ProblemClearView,
@@ -11,8 +11,8 @@ from problems_timed.views import (ProblemCreateRedirectView,
                                   SubmissionView, ProblemListView)
 from problems_timed.async_requests import AsyncAttempt, AsyncDownload
 
-urlpatterns = patterns('',
-                       
+urlpatterns = [
+
     url(r'^list$',
         ProblemListView.as_view(model=Problem),
         name='timed_list'),
@@ -20,20 +20,20 @@ urlpatterns = patterns('',
     url(r'^create$',
         ProblemCreateView.as_view(model=Problem, form_class=ProblemForm),
         name='timed_create'),
-    
+
     url(r'^create_redirect$',
         ProblemCreateRedirectView.as_view(model=Problem, form_class=ProblemForm),
         name='timed_create_redirect'),
-    
+
     url(r'^(?P<pk>[0-9]+)/?$',
         ProblemUpdateView.as_view(model=Problem, form_class=ProblemForm,
         template_name='problems_timed/problem_form.html'),
         name='timed_update'),
-    
+
     url(r'^(?P<pk>[0-9]+)/clear$',
         ProblemClearView.as_view(model=Problem),
         name='timed_clear'),
-    
+
     url(r'^(?P<pk>[0-9]+)/delete$',
         ProblemDeleteView.as_view(model=Problem),
         name='timed_delete'),
@@ -57,7 +57,7 @@ urlpatterns = patterns('',
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(),
         name='timed_submit'),
-    
+
     url(r'^(?P<problem_pk>[0-9]+)/attempt$',
         AsyncAttempt.problem_attempt,
         name='attempt'),
@@ -66,4 +66,4 @@ urlpatterns = patterns('',
         AsyncDownload.download_submissions,
         name='download'),
 
-)
+]

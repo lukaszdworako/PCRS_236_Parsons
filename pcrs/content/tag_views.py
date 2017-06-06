@@ -34,7 +34,7 @@ class TagCreateView(TagDetailEntry, GenericItemCreateView):
         # We want a JSON response for AJAX calls
         if request.is_ajax():
             result = self.ajaxPost(request)
-            return HttpResponse(json.dumps(result), mimetype='application/json')
+            return HttpResponse(json.dumps(result), content_type='application/json')
         else:
             return super().post(request, *args, **kwargs)
 

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from problems.views import *
 from problems_rdb.views import (RDBTestCaseCreateView,
@@ -9,7 +9,7 @@ from problems_sql.forms import ProblemForm, TestCaseForm
 from editor.views import EditorAsyncView
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^list$', ProblemListView.as_view(model=Problem),
         name='sql_problem_list'),
     url(r'^create$',
@@ -75,4 +75,4 @@ urlpatterns = patterns('',
             BrowseSubmissionsView.as_view(model=Problem),
             name='sql_problem_browse_submissions'),
 
-    )
+    ]

@@ -121,7 +121,7 @@ class TextCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
             textblock = self.model.objects.create(text=text)
             return HttpResponse(json.dumps({'status': 'ok',
                                             'pk': textblock.pk}),
-                                mimetype='application/json')
+                                content_type='application/json')
 
 
 class TextUpdateView(CourseStaffViewMixin, UpdateView):
@@ -138,7 +138,7 @@ class TextUpdateView(CourseStaffViewMixin, UpdateView):
             textblock.save()
             return HttpResponse(json.dumps({'status': 'ok',
                                             'pk': textblock.pk}),
-                                mimetype='application/json')
+                                content_type='application/json')
 
 
 class PageCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
@@ -155,7 +155,7 @@ class PageCreateView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
         new_page = self.model.objects.create(challenge=challenge,
                                              order=order)
         return HttpResponse(json.dumps({'status': 'ok', 'pk': new_page.pk}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
 
 class ItemDeleteView(CourseStaffViewMixin, DeleteView):
@@ -165,7 +165,7 @@ class ItemDeleteView(CourseStaffViewMixin, DeleteView):
     def post(self, *args, **kwargs):
         get_object_or_404(self.model, pk=self.kwargs.get('pk', None)).delete()
         return HttpResponse(json.dumps({'status': 'ok'}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
 
 class PageDeleteView(CourseStaffViewMixin, DeleteView):
@@ -181,7 +181,7 @@ class PageDeleteView(CourseStaffViewMixin, DeleteView):
         TextBlock.objects.filter(pk__in=text_ids).delete()
         page.delete()
         return HttpResponse(json.dumps({'status': 'ok'}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
 
 class ChangeProblemVisibilityView(CourseStaffViewMixin, ChallengeAddContentView, CreateView):
@@ -202,4 +202,4 @@ class ChangeProblemVisibilityView(CourseStaffViewMixin, ChallengeAddContentView,
             problem.open()
 
         return HttpResponse(json.dumps({'status': 'ok','old_visibility':old_visibility, 'new_visibility':problem.visibility}),
-                                mimetype='application/json')
+                                content_type='application/json')

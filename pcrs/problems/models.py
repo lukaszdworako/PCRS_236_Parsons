@@ -1,7 +1,11 @@
 import re
 from hashlib import sha1
 
-from django.contrib.contenttypes import generic
+# ------------------
+# Removed in >1.5, replaced with below
+# from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
+# ------------------
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, IntegrityError
 from django.db.models import Max, Q, Count, F
@@ -131,7 +135,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
     def get_best_submission_per_student_after_time(self, section, time):
         """
         Return the list of best submissions made after time in the section.
-        
+
         """
         return self.submission_set.all().filter(section=section,
                                                 timestamp__gt=time,
@@ -151,7 +155,7 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         Return QuerySet of first submissions after <time>.
         """
         firstSubmissions = []
-        
+
         def get_submissions_after_time():
             """
             Return QuerySet of all submissions after <time>.

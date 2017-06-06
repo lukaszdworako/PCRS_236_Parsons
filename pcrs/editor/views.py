@@ -182,5 +182,4 @@ class EditorAsyncView(EditorViewMixin, SingleObjectMixin,
             'best': self.object.has_best_score,
             'past_dead_line': deadline and self.object.timestamp > deadline,
             'max_score': self.object.problem.max_score}, cls=DateEncoder),
-        mimetype='application/json')
-
+        content_type='application/json')
