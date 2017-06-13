@@ -104,7 +104,6 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
 
 class ProgrammingSubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
-
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
 

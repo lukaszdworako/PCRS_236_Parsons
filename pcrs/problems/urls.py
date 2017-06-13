@@ -1,7 +1,6 @@
 from django.conf.urls import include, url
 from pcrs.settings import INSTALLED_PROBLEM_APPS
 
-
 pattern_options = {'problems_python': (r'^python/', 'problems_python.urls'),
                    'problems_c': (r'^c/', 'problems_c.urls'),
                    'problems_java': (r'^java/', 'problems_java.urls'),

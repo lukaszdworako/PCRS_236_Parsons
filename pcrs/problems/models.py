@@ -1,5 +1,7 @@
 import re
 from hashlib import sha1
+import os
+from pcrs.settings import PROJECT_ROOT
 
 # ------------------
 # Removed in >1.5, replaced with below
@@ -21,7 +23,7 @@ from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 
 import problems.TagManager as TagManager
 from problems.helper import remove_tag
-
+import datetime
 
 def get_problem_labels():
     """
@@ -648,3 +650,12 @@ def problem_delete(sender, instance, **kwargs):
     content.models.ContentSequenceItem.objects.filter(
         content_type=instance.get_content_type(), object_id=instance.pk)\
         .delete()
+
+
+class FileUpload(models.Model):
+    """
+    Model for files stored on db.
+    """
+    data = models.BinaryField(editable=True)
+    default_lifespan = timezone.now() + datetime.timedelta(days=1) # 1 day default lifespan
+    lifespan = models.DateTimeField(default=default_lifespan, null=True)

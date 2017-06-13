@@ -84,8 +84,8 @@ import re
 from rpy2 import robjects
 from hashlib import sha1
 from datetime import datetime
-
 import problems.pcrs_languages as languages
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -131,6 +131,9 @@ R_TEMPPATH = os.path.join(os.path.dirname(__file__), "CACHE/")
 R_TEMPPATH = os.path.join("../languages/r/CACHE/")
 >>>>>>> Installation instructions
 =======
+=======
+from pcrs.settings import PROJECT_ROOT
+>>>>>>> Added file uploads, still need to add file sanitization.
 R_TEMPPATH = os.path.join("languages/r/CACHE/")
 >>>>>>> Implemented graphics in browser
 =======
@@ -185,6 +188,13 @@ class RSpecifics(languages.BaseLanguage):
 			solution = self.run(sol_script)
 
 			if "exception" in solution or "exception" in ret:
+				if "graphics" in ret.keys():
+					delete_graph(ret["graphics"])
+				if "graphics" in solution.keys():
+					if solution["graphics"]:
+						path = PROJECT_ROOT + "/" + R_TEMPPATH + solution["graphics"] + ".png"
+						if os.path.isfile(path):
+							os.remove(path)
 				ret["passed_test"] = False
 				return ret
 
@@ -265,6 +275,8 @@ class RSpecifics(languages.BaseLanguage):
 		except Exception as e:
 			os.remove(path)
 			ret.pop("test_val", None)
+			if os.path.isfile(g_path):
+				os.remove(g_path)
 			ret["exception"] = str(e)
 		return ret
 
