@@ -120,7 +120,6 @@ SubmissionWrapper.prototype.submitAllCode = function() {
  */
 SubmissionWrapper.prototype.getTestcases = function(code) {
     var call_path = "";
-
     if (this.isEditor) {
         call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
@@ -496,4 +495,3 @@ SubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
     this.wrapperDiv.find('#grade-code').hide();
     this.wrapperDiv.find('#alert').hide();
 }
-

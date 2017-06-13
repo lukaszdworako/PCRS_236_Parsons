@@ -37,10 +37,21 @@
             {% include "pcrs/related_items.html" %}
         {% endwith %}
     {% endif %}
+
+    {% block file_upload %}
+        {% if object %}
+            <h3>Data Set</h3>
+            {% if object.data_set %}
+                <div class="alert-info" role="alert">
+                    <p>There is an existing data set.</p>
+                </div>
+            {% endif %}
+            <input type="file" id="file_upload" name="{{ object.pk }}"></input>
+        {% endif %}
+    {% endblock %}
 {% endblock %}
 
 {% block content %}
     {{ block.super }}
     {% include "problems/AlertModal.js.html" %}
 {% endblock %}
-

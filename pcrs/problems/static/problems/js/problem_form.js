@@ -138,3 +138,38 @@ function clearSubmissionsForCurrentProblem(clearUrl) {
     });
 }
 
+// Adds an event listener to file input allowing for ajax file uploads.
+$( document ).ready(function(){
+  $('#file_upload').change(function(){
+      var uploadedFile = $("#file_upload").prop('files')[0];
+      var probPk = $('#file_upload').attr('name');
+
+      // Build request URL
+      var problemPath = window.location.href;
+      var index = problemPath.indexOf("/problems/");
+      var isCreate = problemPath.indexOf("create");
+
+      if(isCreate != -1){
+          problemPath = problemPath.substring(index, isCreate) + probPk
+      } else{
+          problemPath = problemPath.substring(index, problemPath.length)
+      }
+
+      var uploadPath = root + problemPath + '/uploaddata';
+
+  		if(uploadedFile != undefined){
+  				$.ajax({
+  						url: uploadPath,
+  						type: "POST",
+  						data: uploadedFile,
+  						processData: false
+  				})
+          .done(function(data){
+              alert("Data set uploaded")
+          })
+          .error(function(jqXHR, textStatus, errorThrown){
+              alert("ERROR");
+          });
+      }
+  });
+})

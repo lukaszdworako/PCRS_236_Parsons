@@ -5,6 +5,7 @@
     {{ block.super }}
     {% load staticfiles %}
     {% include "problems/code_problem_scripts.html" %}
+    {% load compress %}
 {% endblock %}
 
 {% block stylesheets %}
@@ -32,5 +33,4 @@
         <div id="sol-graph"></div>
       </div>
     </div>
-
 {% endblock %}

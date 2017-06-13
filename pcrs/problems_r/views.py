@@ -1,12 +1,21 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from problems_r.models import Script, delete_graph
-from problems_r.forms import ScriptForm
+from problems_r.models import Script, delete_graph, FileSubmissionManager, Problem
+from problems_r.forms import ScriptForm, FileSubmissionForm
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView)
-from django.views.generic import (DetailView, DeleteView)
+from django.views.generic import (DetailView, DeleteView, View)
 from users.views_mixins import CourseStaffViewMixin
-from pcrs.settings import PROJECT_ROOT
+from pcrs.settings import PROJECT_ROOT, DEBUG
+from users.models import PCRSUser
+from problems.views import SubmissionView, FileUploadMixin, SubmissionAsyncView, DateEncoder
+from problems.models import FileUpload
+from django.core.exceptions import ObjectDoesNotExist
 import os
+
+# MIGHT DELETE THIS
+import logging
+from django.utils.timezone import localtime, now
+import json
 
 class ScriptView(CourseStaffViewMixin):
 	"""
@@ -67,3 +76,75 @@ def render_graph(request, image):
 	graph = open(path, "rb").read()
 	delete_graph(image)
 	return HttpResponse(graph, content_type="image/png")
+
+class FileSubmissionView(FileUploadMixin, SubmissionView):
+	"""
+	Adds file submission functionality.
+	"""
+	form_class = FileSubmissionForm
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['user'] = self.request.user
+		return kwargs
+
+class FileSubmissionAsyncView(FileUploadMixin, SubmissionAsyncView):
+	def post(self, request, *args, **kwargs):
+		try:
+			results = self.record_submission(request)
+		except AttributeError: # Probably an anonymous user
+			if DEBUG:
+				raise
+			return HttpResponse(json.dumps({
+					'results': ([], "Your session has expired. Please copy your submission (to save it) and refresh the page before submitting again."),
+					'score': 0,
+					'sub_pk': 0,
+					'best': False,
+					'past_dead_line': False,
+					'max_score': 1}, cls=DateEncoder),
+					content_type='application/json')
+
+		problem = self.get_problem()
+		user, section = self.request.user, self.get_section()
+
+		logger = logging.getLogger('activity.logging')
+		logger.info(str(localtime(self.object.timestamp)) + " | " +
+					str(user) + " | Submit " +
+					str(problem.get_problem_type_name()) + " " +
+					str(problem.pk))
+		try:
+			deadline = problem.challenge.quest.sectionquest_set\
+				.get(section=section).due_on
+		except Exception:
+			deadline = False
+		return HttpResponse(json.dumps({
+			'results': results,
+			'score': self.object.score,
+			'sub_pk': self.object.pk,
+			'best': self.object.has_best_score,
+			'past_dead_line': deadline and self.object.timestamp > deadline,
+			'max_score': self.object.problem.max_score}, cls=DateEncoder),
+		content_type='application/json')
+
+class FileManagerView(View):
+	"""
+	Keeps track of unique problem-user combinations for files.
+	"""
+	def post(self, request, *args, **kwargs):
+		print("ADD FILE SECURITY MEASURES")
+
+		# Retrieve user and problem model instances for combination
+		targ_user = PCRSUser.objects.get(username=request.user)
+		targ_problem = Problem.objects.get(pk=kwargs['problem'])
+		try:
+			existing_file = FileSubmissionManager.objects.get(user=targ_user, problem=targ_problem)
+			existing_file.file_upload.data = request.body
+			existing_file.file_upload.save()
+			return HttpResponse(existing_file.file_upload.pk)
+		except ObjectDoesNotExist:
+			# Create the new FileUpload instance and new FileSubmissionManager for this combo
+			new_file = FileUpload(data=request.body)
+			new_file.save()
+			new_entry = FileSubmissionManager(user=targ_user, problem=targ_problem, file_upload=new_file)
+			new_entry.save()
+			return HttpResponse(new_file.pk)

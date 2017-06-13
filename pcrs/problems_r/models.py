@@ -5,13 +5,16 @@ from problems.models import (AbstractProgrammingProblem,
 							 AbstractSubmission,
 							 AbstractTestCase,
 							 AbstractTestRun,
-							 testcase_delete, problem_delete)
+							 testcase_delete,
+							 problem_delete,
+							 FileUpload)
 from django.db.models.signals import post_delete
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
 from pcrs.settings import PROJECT_ROOT
 from hashlib import sha1
+from users.models import PCRSUser
 
 import logging
 import datetime
@@ -97,8 +100,10 @@ class Problem(AbstractProgrammingProblem):
 								default="r")
 	script = models.ForeignKey(Script, null=True,
 							   on_delete=models.CASCADE)
+	data_set = models.ForeignKey(FileUpload, null=True, on_delete=models.CASCADE)
 	sol_graphics = models.TextField(blank=True, null=True)
 	output_visibility = models.BooleanField(default=True)
+	allow_data_set = models.BooleanField(default=True)
 
 	def clean(self):
 		self.solution = self.solution.replace("\r", "")
@@ -108,6 +113,10 @@ class Problem(AbstractProgrammingProblem):
 		else:
 			code = self.solution
 
+		if self.data_set:
+			inst_code = load_dataset(self.data_set.data.tobytes().decode())
+			code += inst_code
+
 		r = RSpecifics()
 		ret = r.run(code)
 
@@ -116,7 +125,7 @@ class Problem(AbstractProgrammingProblem):
 				("R code is invalid. ")+ret["exception"])
 		else:
 			# Delete generated graph
-			if ret["graphics"]:
+			if "graphics" in ret.keys() and ret["graphics"]:
 				delete_graph(ret["graphics"])
 			self.max_score = 1
 			self.save()
@@ -154,18 +163,22 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	Submission for an R problem
 	"""
 	problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-	passed = models.BooleanField()
+	passed = models.BooleanField(default=True)
 
 	def run_testcases(self, request):
 		results = None
 		error = None
 		try:
-			results = self.run_against_solution()
+			# Add file upload to submission
+			data_set = get_dataset(request)
+
+			results = self.run_against_solution(data_set)
 			if "exception" in results:
 				error = results["exception"]
 
 			# Remove solution output if flag is false
 			if not self.problem.output_visibility:
+				delete_graph(results["sol_graphics"])
 				results.pop("sol_graphics", None)
 				results.pop("sol_val", None)
 
@@ -174,34 +187,54 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			error = "Submission could not be run."
 			return results, error
 
-	def run_against_solution(self):
+	def run_against_solution(self, data_set):
 		"""
 		Run the submission against the solution and return results.
+		Builds code in the following order:
+			1. Default user hash seed
+			2. Script
+			3. Instructor's data set
+			4. Data set
+			5. Submission/Solution code
 		"""
 		# Set common seed of solution and user based on hash of user id
 		seed = self.get_seed()
 		code = "set.seed({})".format(seed)
 		sol_code = "set.seed({})".format(seed)
 
-		# Preprocess tags in submission and append submission and solution to Script
+		# Append Script if it exists
 		if self.problem.script:
-			code = code+'\n'+self.problem.script.code+'\n'+\
-				   self.preprocessTags()[0]['code']
-			sol_code = sol_code+'\n'+self.problem.script.code+'\n'+\
-					   self.problem.solution
-		else:
-			code = code+'\n'+self.preprocessTags()[0]['code']
-			sol_code = sol_code+'\n'+self.problem.solution
+			code += '\n'+self.problem.script.code
+			sol_code += '\n'+self.problem.script.code
 
+		# Use instructor's data set if it exists
+		if self.problem.data_set:
+			inst_code = load_dataset(self.problem.data_set.data.tobytes().decode())
+			code += '\n'+inst_code
+			sol_code += '\n'+inst_code
+
+		# Use submitted data set if it exists
+		if data_set and self.problem.allow_data_set:
+			data_code = load_dataset(data_set)
+			code += '\n'+data_code
+			sol_code += '\n'+data_code
+
+		# Append actual user code
+		code += '\n'+self.preprocessTags()[0]['code']
+		sol_code += '\n'+self.problem.solution
+		
 		r = RSpecifics()
 		ret = r.run_test(code, sol_code)
 		return ret
 
-	def set_score(self):
+	def set_score(self, request):
 		"""
 		Score is 1 if passed, otherwise fail.
 		"""
-		ret = self.run_against_solution()
+		# Add file upload to submission
+		data_set = get_dataset(request)
+
+		ret = self.run_against_solution(data_set)
 		if ret["passed_test"]:
 			self.score = 1
 		else:
@@ -250,6 +283,12 @@ post_delete.connect(testcase_delete, sender=TestCase)
 
 post_delete.connect(problem_delete, sender=Problem)
 
+class FileSubmissionManager(models.Model):
+	user = models.ForeignKey(PCRSUser, on_delete=models.CASCADE)
+	file_upload = models.ForeignKey(FileUpload, on_delete=models.CASCADE)
+	problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+
+
 def delete_graph(graph):
 	"""
 	Deletes the given image from the CACHE of images.
@@ -259,3 +298,34 @@ def delete_graph(graph):
 		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", graph) + ".png"
 		if os.path.isfile(path):
 			os.remove(path)
+
+def get_dataset(request):
+	"""
+	Retrieves FileUpload instance's data from request.
+	"""
+	targ_file = request.POST.get('file_id', '')
+	if targ_file != '':
+		return FileUpload.objects.get(pk=targ_file).data.tobytes().decode()
+	return None
+
+def load_dataset(data_set):
+	"""
+	Loads a CSV dataset into R.
+	"""
+	total_string = ""
+	code_snippet = ""
+
+	rows = data_set.split('\n')
+	for row in rows:
+		for i in range(len(row)):
+			if row[i] != '\n' and row[i] != '"':
+				total_string += row[i]
+		if row != rows[-1]:
+			total_string += '\n'
+
+	code_snippet += "\nlines <- \"" + total_string + "\""
+	code_snippet += "\ncon <- textConnection(lines)"
+	code_snippet += "\ndata_set <- read.csv(con)"
+	code_snippet += "\nclose(con)"
+
+	return code_snippet

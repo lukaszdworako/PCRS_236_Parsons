@@ -19,8 +19,9 @@ from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
-
-
+from problems_r.forms import FileSubmissionForm
+from problems.models import FileUpload
+from django.core.exceptions import ObjectDoesNotExist
 # Helper class to encode datetime and decimal objects
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -231,15 +232,13 @@ class SubmissionViewMixin:
         submission_code = request.POST.get('submission', '')
         results, error = [], None
         if submission_code:
+            # submission = submission_model.objects.create(
+            #     user=request.user, problem=self.get_problem(),
+            #     section=self.get_section(), submission=submission_code)
             submission = submission_model.objects.create(
-                user=request.user, problem=self.get_problem(),
+                user=request.user, problem=self.get_problem(), passed=False,
                 section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
-
-   
-
-
-
             submission.set_score()
             self.object = submission
         return results, error
@@ -267,13 +266,31 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         user = self.request.user
-
         if user.is_instructor:
             kwargs['isInstructor'] = True
             if 'loadSolution' in self.request.GET:
                 kwargs['loadSolution'] = True
 
         return kwargs
+
+
+class FileUploadMixin(SubmissionViewMixin):
+    def record_submission(self, request):
+        """
+        Record the submission and return the results of running the testcases.
+        """
+        submission_model = self.model.get_submission_class()
+        submission_code = request.POST.get('submission', '')
+        results, error = [], None
+        if submission_code:
+            submission = submission_model.objects.create(
+                user=request.user, problem=self.get_problem(), passed=False,
+                section=self.get_section(), submission=submission_code)
+
+            results, error = submission.run_testcases(request)
+            submission.set_score(request)
+            self.object = submission
+        return results, error
 
 
 class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
@@ -309,7 +326,6 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                 .get(section=section).due_on
         except Exception:
             deadline = False
-
         return HttpResponse(json.dumps({
             'results': results,
             'score': self.object.score,
@@ -450,3 +466,24 @@ class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
                 'submissions': submissions,
                 'testcases': {tc.pk: tc for tc in problem.testcase_set.all()}
             })
+
+class FileUploadView(FileUploadMixin, View):
+    """
+    Uploads file to problem.
+    """
+    model = ''
+    def post(self, request, *args, **kwargs):
+        print("ADD FILE SECURITY MEASURES")
+        # Retrieve user and problem model instances for combination
+        targ_problem = self.get_problem()
+
+        if targ_problem.data_set:
+            targ_problem.data_set.data = request.body
+            targ_problem.data_set.save()
+            return HttpResponse(targ_problem.data_set.pk)
+        else:
+            new_file = FileUpload(data=request.body)
+            new_file.save()
+            targ_problem.data_set = new_file
+            targ_problem.save()
+            return HttpResponse(new_file.pk)
