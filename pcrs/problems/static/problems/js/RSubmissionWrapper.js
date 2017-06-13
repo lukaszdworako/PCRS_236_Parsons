@@ -1,3 +1,5 @@
+var MAX_FILE_SIZE = 100000
+
 function RSubmissionWrapper(name) {
 		SubmissionWrapper.call(this, name);
 		this.language = "r";
@@ -36,9 +38,8 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 		try{
 				var uploadedFile = $("input[name*='file_upload']").prop('files')[0];
 		} catch (err){
-				uploadedFile = null
+				uploadedFile = null;
 		}
-
 		// Build URLs for running test and uploading file
     var call_path = "";
     if (this.isEditor) {
@@ -50,7 +51,7 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 		var fileCallPath = root + '/problems/' + this.language + '/' + this.problemId + '/upload';
 
 		// Upload the file to the db before running tests
-		if(uploadedFile != undefined){
+		if(uploadedFile != undefined && uploadedFile.size <= MAX_FILE_SIZE && uploadedFile.type == "text/csv"){
 				$.ajax({
 						url: fileCallPath,
 						type: "POST",
@@ -92,6 +93,13 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 						$('#waitingModal').modal('hide');
 				});
 		} else{
+				if (uploadedFile.size > MAX_FILE_SIZE){
+						alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
+				}
+				if (uploadedFile.type != "text/csv"){
+						alert("File upload rejected, file is not csv");
+				}
+
 				// Run submission without file
 				postParams = {csrftoken: csrftoken, submission: code}
 		    $.post(call_path,

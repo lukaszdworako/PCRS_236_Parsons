@@ -1,4 +1,4 @@
-import os
+import os, datetime
 
 # Select the types of problems visible in the UI.
 # app_name : language name
@@ -15,6 +15,8 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_rating': '',
     'problems_short_answer': '',
 }
+
+FILE_LIFESPAN = datetime.timedelta(days=1) # Default 24hr lifespan from file upload time
 
 USE_SAFEEXEC = False              # For C only, for now
 SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.

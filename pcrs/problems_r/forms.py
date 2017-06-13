@@ -55,7 +55,7 @@ class FileSubmissionForm(ProgrammingSubmissionForm):
                 fsm = FileSubmissionManager.objects.get(user=user, problem=problem)
                 if fsm:
                     layout_fields = (HTML('<div class="alert-info" role="alert"> \
-					<p>There is an existing data set.</p></div><br><br>'), \
+					<p>There is an existing data set.</p></div><br><br>'),
 					Fieldset('', 'file_upload', 'submission'), buttonDiv)
             except:
                 layout_fields = (HTML('<br>'), Fieldset('', 'file_upload', 'submission'), buttonDiv)

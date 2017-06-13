@@ -53,7 +53,11 @@
     <div>
         {% autoescape off %}
             {% if problem.is_visible_to_students %}
-                <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+                {% if "/problems/r/" in request.path %}
+                    <h5 class="problem-description">{{ problem.replace_latex|linebreaksbr }}</h5>
+                {% else %}
+                    <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+                {% endif %}
             {% else %}
                 <h5>This question is currently unavailable.</h5>
             {% endif %}
