@@ -10,8 +10,7 @@ from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime, now
-
-from pcrs.settings import DEBUG
+from pcrs.settings import DEBUG, FILE_LIFESPAN
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
@@ -292,6 +291,7 @@ class FileUploadMixin(SubmissionViewMixin):
             self.object = submission
         return results, error
 
+    # def sanitize()
 
 class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                           SectionViewMixin, View):
@@ -473,17 +473,34 @@ class FileUploadView(FileUploadMixin, View):
     """
     model = ''
     def post(self, request, *args, **kwargs):
-        print("ADD FILE SECURITY MEASURES")
         # Retrieve user and problem model instances for combination
         targ_problem = self.get_problem()
 
         if targ_problem.data_set:
             targ_problem.data_set.data = request.body
+            if request.user.is_instructor:
+                targ_problem.data_set.lifespan = None
+            else:
+                targ_problem.data_set.lifespan = now() + FILE_LIFESPAN
             targ_problem.data_set.save()
             return HttpResponse(targ_problem.data_set.pk)
         else:
-            new_file = FileUpload(data=request.body)
+            if request.user.is_instructor:
+                new_file = FileUpload(data=request.body, lifespan=None)
+            else:
+                new_file = FileUpload(data=request.body)
             new_file.save()
             targ_problem.data_set = new_file
             targ_problem.save()
             return HttpResponse(new_file.pk)
+
+    def get(self, request, *args, **kwargs):
+        targ_problem = self.get_problem()
+
+        if targ_problem.data_set:
+            targ_problem.data_set.delete()
+            targ_problem.data_set = None
+            targ_problem.save()
+            return HttpResponse("Success")
+
+        return HttpResponse("Failure")

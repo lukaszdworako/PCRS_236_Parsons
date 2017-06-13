@@ -1,7 +1,7 @@
 import re
 from hashlib import sha1
 import os
-from pcrs.settings import PROJECT_ROOT
+from pcrs.settings import PROJECT_ROOT, FILE_LIFESPAN
 
 # ------------------
 # Removed in >1.5, replaced with below
@@ -657,5 +657,5 @@ class FileUpload(models.Model):
     Model for files stored on db.
     """
     data = models.BinaryField(editable=True)
-    default_lifespan = timezone.now() + datetime.timedelta(days=1) # 1 day default lifespan
+    default_lifespan = timezone.now() + FILE_LIFESPAN
     lifespan = models.DateTimeField(default=default_lifespan, null=True)

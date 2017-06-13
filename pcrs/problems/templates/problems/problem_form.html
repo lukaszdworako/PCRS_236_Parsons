@@ -40,13 +40,15 @@
 
     {% block file_upload %}
         {% if object %}
-            <h3>Data Set</h3>
+            <h3 id="data_set_title">Data Set</h3>
             {% if object.data_set %}
-                <div class="alert-info" role="alert">
-                    <p>There is an existing data set.</p>
+                <div class="alert-info" role="alert" id="file_existance">
+                    There is an existing data set.
+                    <input type="button" id="delete_file" class="btn btn-danger pull-right" value="Delete data set"></input>
                 </div>
             {% endif %}
             <input type="file" id="file_upload" name="{{ object.pk }}"></input>
+
         {% endif %}
     {% endblock %}
 {% endblock %}

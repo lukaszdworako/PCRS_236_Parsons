@@ -131,8 +131,6 @@ class FileManagerView(View):
 	Keeps track of unique problem-user combinations for files.
 	"""
 	def post(self, request, *args, **kwargs):
-		print("ADD FILE SECURITY MEASURES")
-
 		# Retrieve user and problem model instances for combination
 		targ_user = PCRSUser.objects.get(username=request.user)
 		targ_problem = Problem.objects.get(pk=kwargs['problem'])
