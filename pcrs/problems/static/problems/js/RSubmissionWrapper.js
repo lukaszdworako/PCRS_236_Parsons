@@ -24,6 +24,19 @@ RSubmissionWrapper.prototype.createCodeMirrors = function() {
  		this.tcm = this.createSubmissionMirror();
  }
 
+ RSubmissionWrapper.prototype.renderGraph = function(graph, sol) {
+		imurl = root+'/problems/'+this.language+'/graph/'+graph;
+		if (sol){
+				$('#sol-graph').replaceWith('<div id="sol-graph"> \
+						<h3 style="text-align: center;">Our Graph</h3>\
+						<img alt ="Our graph" src="' + imurl + '" class="img-responsive"></div>');
+		} else{
+				$('#user-graph').replaceWith('<div id="user-graph"> \
+						<h3 style="text-align: center;">Your Graph</h3> \
+						<img alt ="Your graph" src="' + imurl + '" class="img-responsive"></div>');
+		}
+}
+
 /**
  * @override
  */
@@ -93,11 +106,13 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 						$('#waitingModal').modal('hide');
 				});
 		} else{
-				if (uploadedFile.size > MAX_FILE_SIZE){
-						alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
-				}
-				if (uploadedFile.type != "text/csv"){
-						alert("File upload rejected, file is not csv");
+				if (uploadedFile){
+						if (uploadedFile.size > MAX_FILE_SIZE){
+								alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
+						}
+						if (uploadedFile.type != "text/csv"){
+								alert("File upload rejected, file is not csv");
+						}
 				}
 
 				// Run submission without file
