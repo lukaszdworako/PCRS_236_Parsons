@@ -22,6 +22,11 @@
                     <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
                             class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
+                    {% if "/problems/r/" in request.path %}
+                        <a href="{{ problem.get_absolute_url }}/exportall" title="Export Submissions"><i
+                            class="download-icon"></i><span
+                            class="at">Export {{problem.name}}</span></a>
+                    {% endif %}
                 </span>
             {% endblock %}
         {% endif %}

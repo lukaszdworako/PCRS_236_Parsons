@@ -1,5 +1,15 @@
 var MAX_FILE_SIZE = 100000
 
+function generateExportButton(subPk){
+		call_path = root + '/problems/r/' + subPk + '/export';
+		if (!$('#export-link').length){
+				$('#output').after('<a id="export-link" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
+		}
+		else {
+				$('#export-link').replaceWith('<a id="export-link" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
+		}
+}
+
 function RSubmissionWrapper(name) {
 		SubmissionWrapper.call(this, name);
 		this.language = "r";
@@ -92,6 +102,7 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 										if ("sol_graphics" in res && res["sol_graphics"] != null) {
 			            			that.renderGraph(res["sol_graphics"], true);
 			            	}
+										generateExportButton(data["sub_pk"])
 			              that._getTestcasesCallback(data);
 			              // Deactivate loading pop-up
 			              $('#waitingModal').modal('hide');
@@ -135,6 +146,7 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 								if ("sol_graphics" in res && res["sol_graphics"] != null) {
 										that.renderGraph(res["sol_graphics"], true);
 								}
+								generateExportButton(data["sub_pk"])
 								that._getTestcasesCallback(data);
 								// Deactivate loading pop-up
 								$('#waitingModal').modal('hide');

@@ -62,4 +62,10 @@ urlpatterns = [
 		name='embedded_coding_problem_submit'),
 	url(r"^embed/script/(?P<pk>[0-9]+)$", ScriptDetailView.as_view(),
 		name="embedded_script_view"),
+	url(r'^(?P<submission>[0-9]+)/export$',
+        retrieve_export,
+        name='retrieve_export'),
+	url(r'^(?P<problem>[0-9]+)/exportall$',
+        retrieve_all_export,
+        name='retrieve_all_export'),
 	]
