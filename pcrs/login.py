@@ -64,7 +64,7 @@ def login_django(request, username):
     elif not user.is_active:
         NOTIFICATION = "user inactive"
     else:
-        # request.session['section'] = user.section
+        request.session['section'] = user.section
         redirect_link = settings.SITE_PREFIX + '/content/quests'
 
         # Using meta data from request get next parameter
