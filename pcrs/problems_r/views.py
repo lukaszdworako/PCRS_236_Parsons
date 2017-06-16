@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
-from problems_r.models import Script, delete_graph, FileSubmissionManager, Problem
+from problems_r.models import Script, delete_graph, FileSubmissionManager, Problem, Submission
 from problems_r.forms import ScriptForm, FileSubmissionForm
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView)
 from django.views.generic import (DetailView, DeleteView, View)
@@ -10,6 +11,7 @@ from users.models import PCRSUser
 from problems.views import SubmissionView, FileUploadMixin, SubmissionAsyncView, DateEncoder
 from problems.models import FileUpload
 from django.core.exceptions import ObjectDoesNotExist
+
 import os
 
 # MIGHT DELETE THIS
@@ -66,16 +68,6 @@ class ScriptDeleteView(ScriptView, DeleteView):
 	Delete an existing R Script.
 	"""
 	template_name = "problems_r/script_check_delete.html"
-
-def render_graph(request, image):
-	"""
-	Render R graph image and delete it.
-	"""
-	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", image) + ".png"
-	# Display the graph on the browser then delete
-	graph = open(path, "rb").read()
-	delete_graph(image)
-	return HttpResponse(graph, content_type="image/png")
 
 class FileSubmissionView(FileUploadMixin, SubmissionView):
 	"""
@@ -146,3 +138,74 @@ class FileManagerView(View):
 			new_entry = FileSubmissionManager(user=targ_user, problem=targ_problem, file_upload=new_file)
 			new_entry.save()
 			return HttpResponse(new_file.pk)
+
+def render_graph(request, image):
+	"""
+	Render R graph image and delete it.
+
+	@param HttpRequest request
+	@param int image
+	@return HttpResponse
+	"""
+	path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", image) + ".png"
+	# Display the graph on the browser then delete
+	graph = open(path, "rb").read()
+	delete_graph(image)
+	return HttpResponse(graph, content_type="image/png")
+
+def retrieve_export(request, submission):
+	"""
+	Retrieves a Submission's pdf export.
+
+	@param HttpRequest request
+	@param int submission
+	@return HttpResponse
+	"""
+	try:
+		# Generate the pdf
+		targ_sub = Submission.objects.get(pk=submission)
+		path = targ_sub.create_pdf()
+		file_name = request.user.username + '_' + str(targ_sub.problem.pk) + '_' \
+					+ str(submission) + '.pdf'
+
+		# Read file into response
+		byte_data = open(path, 'rb').read()
+		file_to_send = ContentFile(byte_data)
+		response = HttpResponse(file_to_send, 'application/pdf')
+		response['Content-Length'] = file_to_send.size
+		response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+
+		# Delete local file
+		os.remove(path)
+
+		return response
+	except Exception as e:
+		return HttpResponse("Error processing pdf.")
+
+def retrieve_all_export(request, problem):
+	"""
+	Retrieves all best Submissions for a Problem.
+
+	@param HttpRequest request
+	@param int problem
+	@return HttpResponse
+	"""
+	try:
+		# Generate the zip
+		targ_prob = Problem.objects.get(pk=problem)
+		path = targ_prob.generate_export_zip()
+		zip_name = "Problem_{}.zip".format(problem)
+
+		# Read file into response
+		byte_data = open(path, 'rb').read()
+		file_to_send = ContentFile(byte_data)
+		response = HttpResponse(file_to_send, 'application/zip')
+		response['Content-Length'] = file_to_send.size
+		response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_name)
+
+		# Delete the folder
+		os.remove(path)
+
+		return response
+	except Exception as e:
+		return HttpResponse("Error processing zip file.")

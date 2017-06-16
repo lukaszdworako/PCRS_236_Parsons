@@ -291,8 +291,6 @@ class FileUploadMixin(SubmissionViewMixin):
             self.object = submission
         return results, error
 
-    # def sanitize()
-
 class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                           SectionViewMixin, View):
     """
