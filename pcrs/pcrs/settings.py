@@ -252,6 +252,7 @@ INSTALLED_APPS = (
     'editor',
     'compressor',
     'users',
+    'django_cron',
 ) + PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -302,4 +303,8 @@ LOGGING = {
             'propagate': True,
         }
     }
+}
+
+CRON_CLASSES = {
+    'problems_r.cron.FileCronJob'
 }

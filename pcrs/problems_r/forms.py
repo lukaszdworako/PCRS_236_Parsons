@@ -67,7 +67,3 @@ class FileSubmissionForm(ProgrammingSubmissionForm):
         else:
             layout_fields = (Fieldset('', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
-
-
-        # layout_fields = (Fieldset('', 'submission'), buttonDiv)
-        # self.helper.layout = Layout(*layout_fields)

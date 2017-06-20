@@ -41,6 +41,16 @@
     {% block file_upload %}
         {% if object %}
             <h3 id="data_set_title">Data Set</h3>
+            <div class="alert alert-info" role="alert">
+                R code is generated in the following order:
+                <br>&nbsp&nbsp1. Default seed based on user id
+                <br>&nbsp&nbsp2. Script
+                <br>&nbsp&nbsp3. Instructor's data set
+                <br>&nbsp&nbsp4. User's data set
+                <br>&nbsp&nbsp5. Submission code
+                <br>To use data sets, the script this problem uses must set the <strong>data_set</strong> variable. This variable
+                is what the data set will be stored in. For example, <strong>data_set <- 1</strong> would work.
+            </div>
             <input type="file" id="file_upload" name="{{ object.pk }}"></input>
             {% if object.data_set %}
                 <div id="file_existance" class="alert well">
