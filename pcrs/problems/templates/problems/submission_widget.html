@@ -72,6 +72,12 @@
 {% endblock %}
 
 {% if problem.is_visible_to_students or problem.name == 'blank' %}
+    {% if problem.allow_data_set %}
+        {% if "/problems/r/" in request.path %}
+            <input type="file" id="file_upload" name="{{ object.pk }}"></input>
+        {% endif %}
+    {% endif %}
+
     {% block submission_form %}
         {% autoescape off %}
             {% load crispy_forms_tags %}

@@ -12,8 +12,8 @@ function generateExportButton(subPk){
 
 function RSubmissionWrapper(name) {
 		SubmissionWrapper.call(this, name);
-		this.language = "r";
-		this.language_version = "3.3.2";
+		this.language = 'r';
+		this.language_version = '3.3.2';
 		this.tcm = null;
 }
 RSubmissionWrapper.prototype = Object.create(SubmissionWrapper.prototype);
@@ -59,12 +59,12 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 
 		// Retrieves file if exists, returns undefined if non-existant
 		try{
-				var uploadedFile = $("input[name*='file_upload']").prop('files')[0];
+				var uploadedFile = $('input[name*="file_upload"]').prop('files')[0];
 		} catch (err){
 				uploadedFile = null;
 		}
 		// Build URLs for running test and uploading file
-    var call_path = "";
+    var call_path = '';
     if (this.isEditor) {
         call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
@@ -74,10 +74,10 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 		var fileCallPath = root + '/problems/' + this.language + '/' + this.problemId + '/upload';
 
 		// Upload the file to the db before running tests
-		if(uploadedFile != undefined && uploadedFile.size <= MAX_FILE_SIZE && uploadedFile.type == "text/csv"){
+		if(uploadedFile != undefined && uploadedFile.size <= MAX_FILE_SIZE && uploadedFile.type == 'text/csv'){
 				$.ajax({
 						url: fileCallPath,
-						type: "POST",
+						type: 'POST',
 						data: uploadedFile,
 						processData: false
 				})
@@ -87,27 +87,27 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 				    $.post(call_path,
 								postParams,
             		function(data) {
-			            	var res = data["results"][0];
-										if ("test_val" in res){
+			            	var res = data['results'][0];
+										if ('test_val' in res){
 												$('#user-output').replaceWith('<div id="user-output" class="well"> \
 														<h3 style="text-align: center;">Your Output</h3><p>' + res["test_val"].replace(/\n/g, '<br>') + '</p></div>');
 										}
-										if ("sol_val" in res){
+										if ('sol_val' in res){
 												$('#sol-output').replaceWith('<div id="sol-output" class="well"> \
 														<h3 style="text-align: center;">Our Output</h3><p>' + res["sol_val"].replace(/\n/g, '<br>') + '</p></div>');
 										}
-			            	if ("graphics" in res && res["graphics"] != null) {
-			            			that.renderGraph(res["graphics"], false);
+			            	if ('graphics' in res && res['graphics'] != null) {
+			            			that.renderGraph(res['graphics'], false);
 			            	}
-										if ("sol_graphics" in res && res["sol_graphics"] != null) {
-			            			that.renderGraph(res["sol_graphics"], true);
+										if ('sol_graphics' in res && res['sol_graphics'] != null) {
+			            			that.renderGraph(res['sol_graphics'], true);
 			            	}
-										generateExportButton(data["sub_pk"])
+										generateExportButton(data['sub_pk'])
 			              that._getTestcasesCallback(data);
 			              // Deactivate loading pop-up
 			              $('#waitingModal').modal('hide');
 			          },
-        				"json")
+        				'json')
      				.fail(function(jqXHR, textStatus, errorThrown) {
 								// Deactivate loading pop-up
             		$('#waitingModal').modal('hide');
@@ -117,15 +117,6 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 						$('#waitingModal').modal('hide');
 				});
 		} else{
-				if (uploadedFile){
-						if (uploadedFile.size > MAX_FILE_SIZE){
-								alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
-						}
-						if (uploadedFile.type != "text/csv"){
-								alert("File upload rejected, file is not csv");
-						}
-				}
-
 				// Run submission without file
 				postParams = {csrftoken: csrftoken, submission: code}
 		    $.post(call_path,
@@ -157,4 +148,96 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
 						$('#waitingModal').modal('hide');
 				});
 		}
+}
+
+// Adds an event listener to file input allowing for ajax file uploads
+$( document ).ready(function(){
+    // Build request URL
+    var problemPath = window.location.href;
+    var index = problemPath.indexOf("/problems/");
+		var submitIndex = problemPath.indexOf("/submit");
+    problemPath = problemPath.substring(index, submitIndex);
+		var uploadPath = root + problemPath + '/upload';
+
+    $('#file_upload').change(function(){
+        var uploadedFile = $("#file_upload").prop('files')[0];
+        var probPk = $('#file_upload').attr('name');
+
+    		if(uploadedFile != undefined){
+						validFile = true;
+
+						// Check validity of file
+						if (uploadedFile.size > MAX_FILE_SIZE){
+								alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
+								validFile = false;
+						}
+						if (uploadedFile.type != "text/csv"){
+								alert("File upload rejected, file is not csv");
+								validFile = false;
+						}
+
+						// Upload file
+						if(validFile){
+								// Prepared data
+								var textData;
+								fr = new FileReader();
+
+								// File read is an async call, so must nest here
+								fr.onload = function(e){
+										textData = fr.result;
+										fileName = uploadedFile.name;
+										dataDict = {"data": textData, "name": fileName}
+
+										$.post(
+												uploadPath,
+												dataDict
+				    				)
+				            .done(function(data){
+				                alert("Data set uploaded");
+												htmlString = `<div id="file_existance" class="alert well">
+														<p><input type="button" id="delete_file" class="btn btn-danger pull-right"
+														value="Delete Data Set"></input>File Name: ` + fileName + "<br>First 150 Characters:<br>"
+														+ textData.replace(/\n/g, '<br>').substr(0, 150) + `</p></div>`;
+
+												if($('#file_existance').length){
+														$('#file_existance').replaceWith(htmlString);
+												}
+												else{
+														$('#file_upload').after(htmlString);
+												}
+				                setDeleteButton(uploadPath);
+				            })
+				            .error(function(jqXHR, textStatus, errorThrown){
+				                alert("Error uploading file.");
+				            });
+								}
+
+								// Async call here
+								fr.readAsText(uploadedFile);
+						}
+        }
+    });
+    setDeleteButton(uploadPath);
+});
+
+function setDeleteButton(uploadPath){
+    $('#delete_file').click(function(){
+        // Assumes that there is an existing file
+        $.ajax({
+            url: uploadPath,
+            type: "GET"
+        })
+        .done(function(data){
+            if(data == "Success"){
+								$('#delete_file').remove();
+                $('#file_existance').remove();
+            }
+            else{
+                alert('Error deleting file.');
+            }
+        })
+        .error(function(jqXHR, textStatus, errorThrown){
+            alert('Error deleting file.');
+        });
+    });
 }

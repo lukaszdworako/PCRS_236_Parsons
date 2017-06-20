@@ -471,11 +471,15 @@ class FileUploadView(FileUploadMixin, View):
     """
     model = ''
     def post(self, request, *args, **kwargs):
+        data = bytes(request.POST.get('data', ''), 'utf-8')
+        name = request.POST.get('name', '')
+
         # Retrieve user and problem model instances for combination
         targ_problem = self.get_problem()
 
         if targ_problem.data_set:
-            targ_problem.data_set.data = request.body
+            targ_problem.data_set.data = data
+            targ_problem.data_set.name = name
             if request.user.is_instructor:
                 targ_problem.data_set.lifespan = None
             else:
@@ -484,9 +488,9 @@ class FileUploadView(FileUploadMixin, View):
             return HttpResponse(targ_problem.data_set.pk)
         else:
             if request.user.is_instructor:
-                new_file = FileUpload(data=request.body, lifespan=None)
+                new_file = FileUpload(data=data, name=name, lifespan=None)
             else:
-                new_file = FileUpload(data=request.body)
+                new_file = FileUpload(data=data, name=name)
             new_file.save()
             targ_problem.data_set = new_file
             targ_problem.save()

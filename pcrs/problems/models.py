@@ -659,3 +659,12 @@ class FileUpload(models.Model):
     data = models.BinaryField(editable=True)
     default_lifespan = timezone.now() + FILE_LIFESPAN
     lifespan = models.DateTimeField(default=default_lifespan, null=True)
+    name = models.CharField(max_length=50, default="")
+
+    def get_str_data(self):
+        """
+        Returns the browser friendly data.
+
+        @return str
+        """
+        return self.data.tobytes().decode()

@@ -41,13 +41,17 @@
     {% block file_upload %}
         {% if object %}
             <h3 id="data_set_title">Data Set</h3>
+            <input type="file" id="file_upload" name="{{ object.pk }}"></input>
             {% if object.data_set %}
-                <div class="alert-info" role="alert" id="file_existance">
-                    There is an existing data set.
-                    <input type="button" id="delete_file" class="btn btn-danger pull-right" value="Delete data set"></input>
+                <div id="file_existance" class="alert well">
+                    <p>
+                        <input type="button" id="delete_file" class="btn btn-danger pull-right"
+                            value="Delete Data Set"></input>
+                        File Name: {{ object.data_set.name }}<br>First 150 Characters:<br>
+                        {{ object.data_set.get_str_data|linebreaksbr|slice:":150"}}
+                    </p>
                 </div>
             {% endif %}
-            <input type="file" id="file_upload" name="{{ object.pk }}"></input>
 
         {% endif %}
     {% endblock %}
