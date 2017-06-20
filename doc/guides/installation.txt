@@ -191,6 +191,11 @@ $ createdb pcrsadmin -O pcrsadmin
 
 <p><b>For installations serving SQL and relational algebra exercises</b>, run the sql commands in <tt>admin_scripts/create_crs_data.sql</tt> after changing the name of the database being created to match the name assigned to <tt>RDB_DATABASE</tt> in the settings file. These commands create roles for instructors and students that allow them to create and copy schemas. <em>When adding users to the system, they will need to be granted either the instructor or the student role to create or submit SQL or relational algebra exercises.</em>
 
+<p>For installations using file uploads, files have a lifespan to reduce server occupation. When a file's lifespan has passed, a django-cron job has been set up to delete it. This django command itself must be run through it's own cron job. The following command must be scheduled by cron:</p>
+<pre>python manage.py runcrons</pre>
+<p>By default the django-cron job checks everyday. For more details, refer to the django-cron documentation here: <a href="http://django-cron.readthedocs.io/en/latest/installation.html">Django-cron</a></p>
+
+
 <h2 id="markdown-header-static-files">Static Files</h2>
 <p>You should be using a static root -- unless you're just testing. Collect the static files and change permissions so they are visible.</p>
 <pre>$ python manage.py collecstatic
@@ -202,4 +207,3 @@ $ popd
 
 <h2 id="markdown-header-done">Done!</h2>
 <p>At this point, the software should be ready to view in a web browser.</p>
-
