@@ -14,7 +14,7 @@ from django.db.models.signals import post_delete
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
-from pcrs.settings import PROJECT_ROOT
+from pcrs.settings import PROJECT_ROOT, SECRET_KEY
 from hashlib import sha1
 import logging
 import datetime
@@ -146,7 +146,7 @@ class Problem(AbstractProgrammingProblem):
 			code = self.solution
 
 		if self.data_set:
-			inst_code = load_dataset(self.data_set.data.tobytes().decode())
+			inst_code = load_dataset(self.data_set.get_str_data())
 			code += inst_code
 
 		r = RSpecifics()
@@ -234,6 +234,12 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	def build_code(self, code, data_set):
 		"""
 		Builds string of code using Submission's fields.
+		Builds code in the following order:
+			1. Default user hash seed
+			2. Script
+			3. Instructor's data set
+			4. Data set
+			5. Submission/Solution code
 
 		@param str code
 		@return str
@@ -250,7 +256,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		# Use instructor's data set if it exists
 		if self.problem.data_set:
-			inst_code = load_dataset(self.problem.data_set.data.tobytes().decode())
+			inst_code = load_dataset(self.problem.data_set.get_str_data())
 			return_code += '\n'+inst_code
 
 		# Use submitted data set if it exists
@@ -294,12 +300,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 	def run_against_solution(self, data_set):
 		"""
 		Run the submission against the solution and return results.
-		Builds code in the following order:
-			1. Default user hash seed
-			2. Script
-			3. Instructor's data set
-			4. Data set
-			5. Submission/Solution code
 
 		@param str data_set
 		@return {}
@@ -365,7 +365,9 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
 		# Setup header flowable
 		date = datetime.datetime.now().strftime("%Y-%m-%d")
-		header_text = "<font size=12>" + self.user.username + " | " + self.problem.name + " | " + date + "</font>"
+		hash_str = self.generate_stu_hash()
+		header_text = "<font size=12>" + self.user.username + " | " + self.problem.name \
+					  + " | " + date + " | " + hash_str + "</font>"
 		header = Paragraph(header_text, styles["Normal"])
 		w, h = header.wrap(doc.width, doc.topMargin)
 		header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - h)
@@ -400,7 +402,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		# Generate user's output
 		try:
 			fsm = FileSubmissionManager.objects.get(user=self.user, problem=self.problem)
-			preprocessed_data = fsm.file_upload.data.tobytes().decode()
+			preprocessed_data = fsm.file_upload.get_str_data()
 			data_set = load_dataset(preprocessed_data)
 		except:
 			data_set = None
@@ -451,6 +453,17 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 			return pdf_path
 		else:
 			return None
+
+	def generate_stu_hash(self):
+		"""
+		Generates a hash based on user and current date.
+
+		@return int
+		"""
+		pre_hash_str = self.user.username + datetime.datetime.now().strftime("%Y-%m-%d") \
+					   + SECRET_KEY
+		hashed_str = sha1(str.encode("{}".format(pre_hash_str)))
+		return hashed_str.hexdigest()
 
 
 class TestCase(AbstractTestCase):

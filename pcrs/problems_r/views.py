@@ -80,6 +80,7 @@ class FileSubmissionView(FileUploadMixin, SubmissionView):
 		kwargs['user'] = self.request.user
 		return kwargs
 
+
 class FileSubmissionAsyncView(FileUploadMixin, SubmissionAsyncView):
 	def post(self, request, *args, **kwargs):
 		try:
@@ -120,24 +121,41 @@ class FileSubmissionAsyncView(FileUploadMixin, SubmissionAsyncView):
 
 class FileManagerView(View):
 	"""
-	Keeps track of unique problem-user combinations for files.
+	Keeps track of unique problem-user combinations for files. Abbreviated to FSM.
 	"""
 	def post(self, request, *args, **kwargs):
+		data = bytes(request.POST.get('data', ''), 'utf-8')
+		name = request.POST.get('name', '')
+
 		# Retrieve user and problem model instances for combination
 		targ_user = PCRSUser.objects.get(username=request.user)
 		targ_problem = Problem.objects.get(pk=kwargs['problem'])
 		try:
 			existing_file = FileSubmissionManager.objects.get(user=targ_user, problem=targ_problem)
-			existing_file.file_upload.data = request.body
+			existing_file.file_upload.data = data
+			existing_file.file_upload.name = name
 			existing_file.file_upload.save()
 			return HttpResponse(existing_file.file_upload.pk)
 		except ObjectDoesNotExist:
 			# Create the new FileUpload instance and new FileSubmissionManager for this combo
-			new_file = FileUpload(data=request.body)
+			new_file = FileUpload(data=data, name=name)
 			new_file.save()
 			new_entry = FileSubmissionManager(user=targ_user, problem=targ_problem, file_upload=new_file)
 			new_entry.save()
 			return HttpResponse(new_file.pk)
+
+	def get(self, request, *args, **kwargs):
+		# Retrieve user and problem model instances for combination
+		targ_user = PCRSUser.objects.get(username=request.user)
+		targ_problem = Problem.objects.get(pk=kwargs['problem'])
+		targ_fsm = FileSubmissionManager.objects.get(user=targ_user, problem=targ_problem)
+		targ_file = targ_fsm.file_upload
+
+		# Delete both FSM and FileUpload instances
+		targ_file.delete()
+		targ_fsm.delete()
+
+		return HttpResponse("Success")
 
 def render_graph(request, image):
 	"""
@@ -161,26 +179,26 @@ def retrieve_export(request, submission):
 	@param int submission
 	@return HttpResponse
 	"""
-	try:
-		# Generate the pdf
-		targ_sub = Submission.objects.get(pk=submission)
-		path = targ_sub.create_pdf()
-		file_name = request.user.username + '_' + str(targ_sub.problem.pk) + '_' \
-					+ str(submission) + '.pdf'
+	# try:
+	# Generate the pdf
+	targ_sub = Submission.objects.get(pk=submission)
+	path = targ_sub.create_pdf()
+	file_name = request.user.username + '_' + str(targ_sub.problem.pk) + '_' \
+				+ str(submission) + '.pdf'
 
-		# Read file into response
-		byte_data = open(path, 'rb').read()
-		file_to_send = ContentFile(byte_data)
-		response = HttpResponse(file_to_send, 'application/pdf')
-		response['Content-Length'] = file_to_send.size
-		response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+	# Read file into response
+	byte_data = open(path, 'rb').read()
+	file_to_send = ContentFile(byte_data)
+	response = HttpResponse(file_to_send, 'application/pdf')
+	response['Content-Length'] = file_to_send.size
+	response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
 
-		# Delete local file
-		os.remove(path)
+	# Delete local file
+	os.remove(path)
 
-		return response
-	except Exception as e:
-		return HttpResponse("Error processing pdf.")
+	return response
+	# except Exception as e:
+	# 	return HttpResponse("Error processing pdf.")
 
 def retrieve_all_export(request, problem):
 	"""

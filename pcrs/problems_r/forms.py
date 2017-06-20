@@ -34,7 +34,6 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         BaseProblemForm.__init__(self)
 
 class FileSubmissionForm(ProgrammingSubmissionForm):
-    file_upload = forms.FileField()
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
@@ -54,11 +53,21 @@ class FileSubmissionForm(ProgrammingSubmissionForm):
             try:
                 fsm = FileSubmissionManager.objects.get(user=user, problem=problem)
                 if fsm:
-                    layout_fields = (HTML('<div class="alert-info" role="alert"> \
-					<p>There is an existing data set.</p></div><br><br>'),
-					Fieldset('', 'file_upload', 'submission'), buttonDiv)
+                    # Retrieve file info
+                    name = fsm.file_upload.name
+                    substring = fsm.file_upload.get_str_data()[:150]
+
+                    layout_fields = (HTML('<br><div id="file_existance" class="alert well"> \
+						<p><input type="button" id="delete_file" class="btn btn-danger pull-right" \
+						value="Delete Data Set"></input>File Name: {} <br>First 150 Characters: \
+						<br>{}</p></div>'.format(name, substring.replace('\n', '<br>'))),
+						Fieldset('', 'submission'), buttonDiv)
             except:
-                layout_fields = (HTML('<br>'), Fieldset('', 'file_upload', 'submission'), buttonDiv)
+                layout_fields = (Fieldset('', 'submission'), buttonDiv)
         else:
             layout_fields = (Fieldset('', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
+
+
+        # layout_fields = (Fieldset('', 'submission'), buttonDiv)
+        # self.helper.layout = Layout(*layout_fields)
