@@ -57,7 +57,7 @@ urlpatterns = [
 	url(r'^graph/(?P<image>[a-zA-Z0-9]+)$',
         render_graph,
         name='render_graph'),
-	url(r'^embed/(?P<problem>[0-9]+)/submit$', SubmissionView.as_view(model=Submission,
+	url(r'^embed/(?P<problem>[0-9]+)/submit$', FileSubmissionView.as_view(model=Submission,
 		template_name='problems_r/submission.html'),
 		name='embedded_coding_problem_submit'),
 	url(r"^embed/script/(?P<pk>[0-9]+)$", ScriptDetailView.as_view(),
