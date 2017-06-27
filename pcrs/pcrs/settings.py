@@ -1,39 +1,16 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Don't touch this file, create/edit settings_local.py with what you need to change.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 import os
-
-# Select the types of problems visible in the UI.
-# app_name : language name
-INSTALLED_PROBLEM_APPS = {
-    #'problems_python': 'Python',
-    #'problems_c': 'C',
-    'problems_java': 'Java',
-    # 'problems_rdb': '',
-    # 'problems_sql': 'SQL',
-    # 'problems_ra': 'Relational Algebra',
-    'problems_multiple_choice': '',
-    # 'problems_timed': '',
-    # 'problems_rating': '',
-    'problems_short_answer': '',
-}
-
-USE_SAFEEXEC = False              # For C only, for now
-SAFEEXEC_USERID = "1004"          # Use the id command to identify correct values for these.
-SAFEEXEC_GROUPID = "1005"
+from .settings_pcrs import *
 
 # Session information
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
 SESSION_COOKIE_AGE = 86400       # One day, in seconds
 
-PRODUCTION = False
-DEBUG = not PRODUCTION
-SQL_DEBUG = False                   # Suppresses logging of SQL queries
-TEMPLATE_DEBUG = DEBUG
-
 # True if links to bug reporting emails should be generated
 REPORT_BUGS = False
-
-# controls if live-updated quests page should be used
-# live page receives updates from socket.io to update when items are completed
-QUESTS_LIVE = False
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -44,33 +21,13 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'pcrsdev',
-        'USER': 'pcrsdev',
-        'PASSWORD': 'apJIRu4',
-        'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                               # Set to empty string for default.
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': 'localhost', # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',          # Set to empty string for default.
     }
 }
-
-
-# RDB problems database information
-RDB_DATABASE = 'crs_data'
-RDB_DATABASE_test = 'crs_data_test'
-
-# Site prefix
-SITE_PREFIX = ''
-if PRODUCTION:
-    SITE_PREFIX = '/pcrs_108'
-FORCE_SCRIPT_NAME = SITE_PREFIX
-
-# Login details
-LOGIN_URL = SITE_PREFIX + '/login'
-if PRODUCTION:
-    LOGIN_URL = SITE_PREFIX + "/login"
-AUTH_USER_MODEL = 'users.PCRSUser'
-AUTHENTICATION_BACKENDS = ('pcrs_authentication.ModelBackend',)
-AUTH_TYPE = 'none'       # 'shibboleth', 'pwauth', 'pass', or 'none'
-AUTOENROLL = False
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -104,10 +61,6 @@ USE_TZ = True
 # Absolute filesystem path to the location of the project
 # Example: "/var/www/example.com/media/"
 PROJECT_ROOT = str(os.getcwd())
-
-# URL to the root of the system that stores PCRS documents. Make sure there is
-# no trailing slash.
-DOC_URL = 'https://bitbucket.org/utmandrew/pcrs-c-content/src/master/webdocs'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
@@ -150,29 +103,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '36!^rq34a%q0stzTNy2:34%328[setv8pwWtLLglihs4r1JOZ&'
-
-# All TEMPLATE_* variables are deprecated in 1.08, use TEMPLATE dict instead
-# List of callables that know how to import templates from various sources.
-# TEMPLATE_LOADERS = (
-#     'django.template.loaders.filesystem.Loader',
-#     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-# )
-# -------------------------------------------
-# TEMPLATE_CONTEXT_PROCESSORS = (
-#     "django.contrib.auth.context_processors.auth",
-#     "django.core.context_processors.debug",
-#     "django.core.context_processors.i18n",
-#     "django.core.context_processors.media",
-#     "django.core.context_processors.static",
-#     "django.core.context_processors.tz",
-#     "django.contrib.messages.context_processors.messages",
-#     "django.core.context_processors.request",
-#     "pcrs.context_processors.site_settings",
-# )
-# TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
-# TEMPLATE_DEBUG = DEBUG
+SECRET_KEY = ''
 
 TEMPLATES = [
     {
@@ -217,18 +148,7 @@ ROOT_URLCONF = 'pcrs.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'pcrs.wsgi.application'
 
-PROBLEM_APPS = (
-    'problems_python',
-    'problems_c',
-    'problems_java',
-    'problems_sql',
-    'problems_rdb',
-    'problems_ra',
-    'problems_multiple_choice',
-    'problems_timed',
-    'problems_rating',
-    'problems_short_answer',
-)
+TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -256,7 +176,8 @@ if DEBUG and not SQL_DEBUG:
     # These lines must be positioned *after* the definition of the not so secret SECRET_KEY
     # import django.db.backends
     # import django.db.backends.util
-    # django.db.backends.BaseDatabaseWrapper.make_debug_cursor = lambda self, cursor: django.db.backends.util.CursorWrapper(cursor, self)
+    # django.db.backends.BaseDatabaseWrapper.make_debug_cursor = lambda self, \
+    #     cursor: django.db.backends.util.CursorWrapper(cursor, self)
     pass
 
 # A sample logging configuration. The only tangible logging
@@ -299,3 +220,10 @@ LOGGING = {
         }
     }
 }
+
+# So we don't keep editing this file, edit settings_local
+try:
+    from settings_local import *
+except ImportError as e:
+    print("No local settings file found. Please create a settings_local.py and set your settings there.")
+
