@@ -500,7 +500,7 @@ def get_dataset(request):
 	"""
 	targ_file = request.POST.get('file_id', '')
 	if targ_file != '':
-		return FileUpload.objects.get(pk=targ_file).get_str_data
+		return FileUpload.objects.get(pk=targ_file).get_str_data()
 	return None
 
 def load_dataset(data_set):
