@@ -1,4 +1,5 @@
 import json
+import logging
 from django.http import HttpResponse
 from django.views.generic import CreateView
 from django.db.utils import IntegrityError
@@ -7,6 +8,7 @@ from content.models import Video, WatchedVideo, ContentSequenceItem
 
 from pcrs.generic_views import GenericItemListView, GenericItemCreateView, \
     GenericItemUpdateView
+from django.utils.timezone import now
 from users.views_mixins import CourseStaffViewMixin, ProtectedViewMixin
 
 
@@ -54,10 +56,13 @@ class VideoRecordWatchView(ProtectedViewMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         video = self.get_object()
-        if not WatchedVideo.watched(user=self.request.user, video=video):
-            try:
-                WatchedVideo.objects.create(video=video, user=self.request.user)
-            except IntegrityError:      # duplicate watched object
-                pass
+        dt = now()
+        try:
+            WatchedVideo.objects.create(video=video, user=self.request.user, timestamp=dt)
+        except IntegrityError:      # duplicate watched object
+            pass
+        logger = logging.getLogger('activity.logging')
+        logger.info('{} | {} | View Video {}'.format(dt, self.request.user, video.object_id))
+
         return HttpResponse(json.dumps({'status': 'ok'}),
                             content_type='application/json')

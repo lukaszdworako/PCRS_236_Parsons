@@ -116,9 +116,6 @@ class WatchedVideo(models.Model):
     user = models.ForeignKey(PCRSUser, to_field='username')
     timestamp = models.DateTimeField(default=now)
 
-    class Meta:
-        unique_together = ['video', 'user']
-
     @classmethod
     def get_watched_pk_list(cls, user):
         return set(cls.objects.filter(user=user)
