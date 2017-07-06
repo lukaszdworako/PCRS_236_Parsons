@@ -57,12 +57,9 @@ class VideoRecordWatchView(ProtectedViewMixin, CreateView):
     def post(self, request, *args, **kwargs):
         video = self.get_object()
         dt = now()
-        try:
-            WatchedVideo.objects.create(video=video, user=self.request.user, timestamp=dt)
-        except IntegrityError:      # duplicate watched object
-            pass
+        WatchedVideo.objects.create(video=video, user=self.request.user, timestamp=dt)
         logger = logging.getLogger('activity.logging')
-        logger.info('{} | {} | View Video {}'.format(dt, self.request.user, video.object_id))
+        logger.info('{} | {} | View Video {}'.format(dt, self.request.user, video.id))
 
         return HttpResponse(json.dumps({'status': 'ok'}),
                             content_type='application/json')

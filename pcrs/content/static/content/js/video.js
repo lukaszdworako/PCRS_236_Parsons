@@ -20,7 +20,6 @@ function video_watched(video_id) {
     $.post(root + "/content/videos/" + video_id + "/watched",
         {csrftoken: csrftoken})
         .success(function (data) {
-            $(document).find("#sb_video-" + video_id).addClass("video-watched");
             dispatchVideoWatches(video_id);
         });
 }
