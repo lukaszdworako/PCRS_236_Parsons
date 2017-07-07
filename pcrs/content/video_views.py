@@ -57,9 +57,12 @@ class VideoRecordWatchView(ProtectedViewMixin, CreateView):
     def post(self, request, *args, **kwargs):
         video = self.get_object()
         dt = now()
+        is_dl = request.POST.get('download', 'false') == 'true'
+        action = 'Download' if is_dl else 'View'
+
         WatchedVideo.objects.create(video=video, user=self.request.user, timestamp=dt)
         logger = logging.getLogger('activity.logging')
-        logger.info('{} | {} | View Video {}'.format(dt, self.request.user, video.id))
+        logger.info('{} | {} | {} Video {}'.format(dt, self.request.user, action, video.id))
 
         return HttpResponse(json.dumps({'status': 'ok'}),
                             content_type='application/json')
