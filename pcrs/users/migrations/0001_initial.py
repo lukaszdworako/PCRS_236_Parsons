@@ -7,6 +7,11 @@ import django.db.models.deletion
 import django.utils.timezone
 
 
+def create_master(apps, schema_editor):
+    Section = apps.get_model('users', 'Section')
+    Section(pk='master', description='master', location='master', lecture_time='master').save()
+
+
 class Migration(migrations.Migration):
 
     initial = True
@@ -51,4 +56,5 @@ class Migration(migrations.Migration):
             name='section',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.Section'),
         ),
+        migrations.RunPython(create_master),
     ]
