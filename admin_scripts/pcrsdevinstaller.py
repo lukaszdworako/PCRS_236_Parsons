@@ -4,7 +4,9 @@ import sys
 import os
 import pwd
 import secrets
-PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["rdb", "'problems_rdb': '',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Timed", "'problems_timed': '',"], ["Rating", "'problems_rating': '',"], ["Short Answer", "'problems_short_answer': '',"]]
+
+PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Short Answer", "'problems_short_answer': '',"]]
+
 if ("proc" not in sys.path[0] and "dev" not in sys.path[0]):
     os.chdir(sys.path[0])
 else:
@@ -125,7 +127,6 @@ import sys
 sys.path.append(\"""" + webDirectory + """\")
 os.environ["DJANGO_SETTINGS_MODULE"] = "pcrs.settings"
 
-
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
@@ -134,11 +135,11 @@ from django.core.wsgi import get_wsgi_application
     file.close()
     print("PCRSHttps.conf and PCRSwsgi.py have been created with your settings.")
     print("Location: " + os.getcwd())
+
 clone = input("Clone git repo? (Y/n)")
 if clone.lower() == "y" or clone == "":
     try:
-        #TODO: Change me when merging into master
-        result = subprocess.Popen(["git clone https://bitbucket.org/utmandrew/pcrs.git && cd pcrs && git checkout iss172"], shell=True)
+        result = subprocess.Popen(["git clone https://bitbucket.org/utmandrew/pcrs.git && cd pcrs"], shell=True)
         result.wait()
         os.chdir("pcrs/pcrs")
     except FileNotFoundError:
@@ -146,7 +147,8 @@ if clone.lower() == "y" or clone == "":
         sys.exit(1)
 else:
     print("This might not work (Needs a definitive home first)")
-    os.chdir("../../pcrs")
+    os.chdir("../pcrs")
+
 virt = input("Setup virtual env? (Y/n): ")
 if virt.lower() == "y" or virt=="":
     virtPath = input("Enter a path for the virtual enviroment: ")
@@ -184,14 +186,12 @@ if virt.lower() == "y" or virt=="":
          except FileNotFoundError:
              print("Prerequisite packages missing. Aborting.")
              sys.exit(1)
+
 print("Preparing Config")
 safeExecEnabled = False
 sqlEnabled = False
-userConfig = """import os
-
-# Select the types of problems visible in the UI.
-# app_name : language name
-INSTALLED_PROBLEM_APPS = {
+rdbEnabled = False
+userConfig = """INSTALLED_PROBLEM_APPS = {
 """
 for plugin in PCRSPlugins:
     enable = input("Enable " + plugin[0] + "? (Y/n): ")
@@ -200,27 +200,23 @@ for plugin in PCRSPlugins:
         if plugin[0] == "C":
             safeExecEnabled = True
         elif plugin[0] == "SQL":
-            sqlEnabled = True
+            rdbEnabled = sqlEnabled = True
+        elif plugin[0] == "RA":
+            rdbEnabled = True
+if rdbEnabled:
+    userConfig += "'problems_rdb': ''\n"
 userConfig += "}\n"
 if safeExecEnabled:
     userConfig += """\nUSE_SAFEEXEC = True
 SAFEEXEC_USERID = """ + str(pwd.getpwnam(wsgiUser).pw_uid) + """
 SAFEEXEC_GROUPID = """ + str(pwd.getpwnam(wsgiUser).pw_gid) + """
 """
-else:
-    userConfig += "USE_SAEEXEC = False\n"
 
-production = input("Enable production mode? Answering n will enable debugging. (Y/n): ")
-if production.lower() == "y" or production == "":
-    userConfig += """
-PRODUCTION = True
-"""
-else:
+production = input("Enable production mode? Answering n will enable debugging messages. (Y/n): ")
+if production.lower() == "n":
     userConfig += """
 PRODUCTION = False
-"""
-userConfig += """DEBUG = not PRODUCTION
-TEMPLATE_DEBUG = DEBUG
+DEBUG = True
 """
 
 if sqlEnabled:
@@ -229,20 +225,8 @@ if sqlEnabled:
         userConfig += """
 SQL_DEBUG = True
 """
-    else:
-        userConfig += """
-SQL_DEBUG = False
-"""
     studentDatabase = input("Enter the database for PCRS SQL: ")
-    userConfig += """RDB_DATABASE = '""" + studentDatabase + """'
-RDB_DATABASE_test = ''
-"""
-else:
-    userConfig += """
-SQL_DEBUG = False
-RDB_DATABASE = ''
-RDB_DATABASE_test = ''
-"""
+    userConfig += """RDB_DATABASE = '""" + studentDatabase
 
 print("Admin Information (Email Notifications)")
 userConfig += "\nADMINS = ("
@@ -272,19 +256,18 @@ DATABASES = {
         'PORT': '""" + dbPort + """',
     }
 }"""
+
 #Site prefixing (We know this info already)
 userConfig += """
 \nSITE_PREFIX = '""" + prefix + """'
 FORCE_SCRIPT_NAME = SITE_PREFIX
-LOGIN_URL = SITE_PREFIX + '/login'
-AUTH_USER_MODEL = 'users.PCRSUser'
-AUTHENTICATION_BACKENDS = ('pcrs_authentication.ModelBackend',)"""
+LOGIN_URL = SITE_PREFIX + '/login'"""
 
 print("Select an authentication method:")
 print("1) shibboleth")
 print("2) pwauth")
 print("3) pass")
-print("4) none")
+print("4) none (*DANGEROUS*)")
 authSelection = input("Selection: ")
 authSelection = "shibboleth" if authSelection == "1" else "pwauth" if authSelection == "2" else "pass" if authSelection == "3" else "none"
 userConfig += """
@@ -310,10 +293,7 @@ SECRET_KEY = '""" + secretToken + """'
 """
 
 print("Writing Config...")
-templateFile = open("pcrs/settings.py.template", "r")
-file = open("pcrs/settings.py", "w")
+file = open("pcrs/settings_local.py", "w")
 file.write(userConfig)
-file.write(templateFile.read())
 file.close()
-templateFile.close()
 print("Config Generated!")
