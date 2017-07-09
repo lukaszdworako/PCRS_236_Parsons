@@ -26,7 +26,7 @@ javac 1.7.0_10
 
   <p>You can either install PCRS onto an empty database or onto an image pre-loaded with videos and content. We have an image available for the C programming language, but <i>this image is not distributed on the web, since it contains solutions to the exercises.</i> To get access, <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Request%20for%20PCRS-C%20Database">mail us from your institution's email address</a>. Please include a web link to your institutional web page, so we can verify that you are a course instructor or system administrator.</p>
   <p>The remainder of this guide provides details on the individual steps required to install PCRS. However, the required steps have also been placed into a script. The interactive installer will guide you through the configuration for your specific use case:</p>
-  <div class="codehilite"><pre>$ python <(curl -L bitbucket.org/utmandrew/pcrs/src/6e77826b08727727524156ada78582b65ed37d6b/admin_scripts/pcrsdevinstaller.py?at=master)</pre></div>
+  <div class="codehilite"><pre>$ python3 <(curl -L https://bitbucket.org/utmandrew/pcrs/raw/6e77826b08727727524156ada78582b65ed37d6b/admin_scripts/pcrsdevinstaller.py)</pre></div>
 
 <h3 id="markdown-header-web-config">Webserver Configuration</h3>
 
