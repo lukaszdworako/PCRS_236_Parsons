@@ -201,7 +201,7 @@ for plugin in PCRSPlugins:
             safeExecEnabled = True
         elif plugin[0] == "SQL":
             rdbEnabled = sqlEnabled = True
-        elif plugin[0] == "RA":
+        elif plugin[0] == "Relational Algebra":
             rdbEnabled = True
 if rdbEnabled:
     userConfig += "'problems_rdb': ''\n"
