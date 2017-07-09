@@ -37,14 +37,10 @@ RDB_DATABASE_test = 'crs_data_test'
 
 # Site prefix
 SITE_PREFIX = ''
-if PRODUCTION:
-    SITE_PREFIX = '/pcrs_108'
 FORCE_SCRIPT_NAME = SITE_PREFIX
 
 # Login details
 LOGIN_URL = SITE_PREFIX + '/login'
-if PRODUCTION:
-    LOGIN_URL = SITE_PREFIX + "/login"
 AUTH_USER_MODEL = 'users.PCRSUser'
 AUTHENTICATION_BACKENDS = ('pcrs_authentication.ModelBackend',)
 AUTH_TYPE = 'none'       # 'shibboleth', 'pwauth', 'pass', or 'none'
