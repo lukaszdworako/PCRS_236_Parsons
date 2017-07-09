@@ -1,4 +1,4 @@
-<a name="prereqs"><h1 id="markdown-header-background-and-requirements">Background and Requirements</h1>
+<a name="prereqs"><h2 id="markdown-header-background-and-requirements">Background and Requirements</h2>
 <p>This build has been tested on Ubuntu.</p>
 <div class="codehilite"><pre>$  lsb_release -a
 No LSB modules are available.
@@ -7,6 +7,8 @@ Description:    Ubuntu 14.04.4 LTS
 Release:    14.04
 Codename:   trusty
 </pre></div>
+
+<p>Throughout this guide, some words will be surrounded by asterisks (*), this will denote a variable you will need to fill in.</p>
 
 <p>Before installation, make sure python3.6 and postgres9.4.2 are already installed and running. If the installation will be serving C exercises, gcc 4.9 is required, and Java exercises require a Java developer kit (JDK 1.7) installation (for javac). If you use a python virtual environment, the packages virtualenv and virtualenvwrapper are required.</p>
 <div class="codehilite"><pre>$ psql --version
@@ -23,11 +25,12 @@ javac 1.7.0_10
 </pre></div>
 
   <p>You can either install PCRS onto an empty database or onto an image pre-loaded with videos and content. We have an image available for the C programming language, but <i>this image is not distributed on the web, since it contains solutions to the exercises.</i> To get access, <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Request%20for%20PCRS-C%20Database">mail us from your institution's email address</a>. Please include a web link to your institutional web page, so we can verify that you are a course instructor or system administrator.</p>
-  <p>The PCRS installer can simply be run with a simple command. The interactive installer will guide you through the configuration for your specific use case.</p>
-  <div class="codehilite"><pre>$ python <(curl -L anthonytam.me/pcrsdevinstaller.py)</pre></div>
+  <p>The remainder of this guide provides details on the individual steps required to install PCRS. However, the required steps have also been placed into a script. The interactive installer will guide you through the configuration for your specific use case:</p>
+  <div class="codehilite"><pre>$ python <(curl -L bitbucket.org/utmandrew/pcrs/src/e1a6308c5b95acc108b97a9684b83993dd1f1fea/admin_scripts/setup_instance/?at=master/pcrsdevinstaller.py)</pre></div>
 
-  <p>For testing, you can turn off authentication and use <a href="https://docs.djangoproject.com/en/1.9/ref/django-admin/">django's "runserver"</a> command to experiment with PCRS. For production, you need a webserver and a method to authenticate. For the former, we use apache with mod_wsgi. For the latter, we use shibboleth, but you'll need to create your own interface depending on your authentication preference. Here are the lines we placed in httpd.conf to set up an instance for C exercises:</p>
-  <p>Throughout this guide, some words will be surrounded by asterisks (*), this will denote a variable you will need to fill in.</p>
+<h3 id="markdown-header-web-config">Webserver Configuration</h3>
+
+  <p>For testing, you can turn off authentication and use <a href="https://docs.djangoproject.com/en/1.11/ref/django-admin/">django's "runserver"</a> command to experiment with PCRS. For production, you need a webserver and a method to authenticate. For the former, we use apache with mod_wsgi. For the latter, we use shibboleth, but you'll need to create your own interface depending on your authentication preference. Here are the lines we placed in httpd.conf to set up an instance for C exercises:</p>
 
 <div class="codehilite"><pre>Alias /*Your Prefix*/static *Path to webfolder*
 <span class="nt">&lt;Directory</span> <span class="err">*Path to webfolder*</span><span class="nt">&gt;</span>
@@ -35,7 +38,7 @@ javac 1.7.0_10
     Allow from all
 <span class="nt">&lt;/Directory&gt;</span>
 
-WSGIDaemonProcess pcrs_*Your Preix* user=pcrsadmin group=pcrsadmin processes=5
+WSGIDaemonProcess pcrs_*Your Prefix* user=pcrsadmin group=pcrsadmin processes=5
 WSGIScriptAlias /*Your Prefix* *Path to webfolder*/wsgi.py
 <span class="nt">&lt;Directory</span> <span class="err">*Path to webfolder*</span><span class="nt">&gt;</span>
     <span class="nt">&lt;Files</span> <span class="err">wsgi.py</span><span class="nt">&gt;</span>
@@ -44,7 +47,6 @@ WSGIScriptAlias /*Your Prefix* *Path to webfolder*/wsgi.py
     <span class="nt">&lt;/Files&gt;</span>
 <span class="nt">&lt;/Directory&gt;</span>
 </pre></div>
-
 
 <p>Here is the wsgi.py referenced above:</p>
 <div class="codehilite"><pre><span class="kn">import</span> <span class="nn">os</span>
@@ -65,8 +67,8 @@ WSGIScriptAlias /*Your Prefix* *Path to webfolder*/wsgi.py
 <span class="n">_application</span> <span class="o">=</span> <span class="n">get_wsgi_application</span><span class="p">()</span>
 </pre></div>
 
-<h1 id="markdown-header-pcrs-setup">PCRS Setup</h1>
-<p>PCRS is a django application that runs on python3.6. I recommend setting up a virtual environment for it, but you may skip the next step if you'd prefer to install the dependencies in your system python libraries.</p>
+<h3 id="markdown-header-virtualenv">Virtualenv</h3>
+<p>PCRS is a django application that runs on python3.6. I recommend setting up a virtual environment for it, but you may skip this step if you'd prefer to install the dependencies in your system python libraries.</p>
 <pre>$ virtualenv -p /usr/local/bin/python3 ~/.virtualenvs/pcrsenv
 $ workon pcrsenv
 </pre>
@@ -80,9 +82,10 @@ $ workon pcrsenv
 $ pip3 install -r requirements.txt
 </pre></div>
 
-
-<h2 id="markdown-header-settings">Settings</h2>
-<p>Next, you'll need to edit pcrs/settings.py for your server.</p>
+<h3 id="markdown-header-settings">Settings</h3>
+<p>Next, you'll need to edit pcrs/settings_local.py for your server. settings_local overrides options that are given default values
+in settings.py and settings_pcrs.py. At a minimum, you need to perform steps 1, 5, and 11 below, but you should review all of the 
+settings, as several more could apply to your setup.</p>
 
 <ol>
 <li><p> Set INSTALLED_PROBLEM APPS to the languages you want supported. The example below is for instance serving C exercises and multiple choice questions. Any combination of apps is accepted as long as their dependencies are met.</p>
@@ -94,11 +97,11 @@ $ pip3 install -r requirements.txt
     # &#39;problems_sql&#39;: &#39;SQL&#39;,
     # &#39;problems_ra&#39;: &#39;Relational Algebra&#39;,
     &#39;problems_multiple_choice&#39;: &#39;&#39;,
-    # &#39;problems_timed&#39;: &#39;&#39;,
-    # &#39;problems_rating&#39;: &#39;&#39;,
     # &#39;problems_short_answer&#39;: &#39;&#39;,
 }
 </pre></div>
+
+If you enable "problems_ra" or "problems_sql", you must also enable "problems_rdb", which provides support for both relational languages.
 
 <li><p><b>An installation serving C exercises</b> should use <tt>safeexec</tt>. To do so, set the <tt>SAFEEXEC_USERID</tt> and <tt>SAFEEXEC_GROUPID</tt> to the id of the user running the server and then install <tt><a href="#safeexec">safeexec</a></tt>.
 <div class="codehilite"><pre>$ id
@@ -130,11 +133,13 @@ DEBUG = not PRODUCTION</pre>
 }</pre>
 </li>
 <li>
-<p><b>For instances serving SQL and relational algebra exercises</b>, set the <tt>RDB_DATABASE</tt>. This database will be used to execute student submissions.
+<p>For instances serving SQL and relational algebra exercises, set the <tt>RDB_DATABASE</tt>. This database will be used to execute student submissions.
 <li>
 <p>Change the site location. This value will vary depending on how you've set up Apache, WSGI, etc. For example, our server runs the application on &quot;https://*Server Address*/pcrs_dev&quot;, the site prefix is /pcrs_dev.</p>
 <pre>
-    SITE_PREFIX = '/pcrs_dev'</pre>
+    SITE_PREFIX = '/pcrs_dev'
+    FORCE_SCRIPT_NAME = SITE_PREFIX
+    LOGIN_URL = SITE_PREFIX + '/login'</pre>
 </li>
 <li>
 <p>Select how you'll authenticate. To start, you may want to use 'pass' (a password within the database) or 'none' (for a very brief time). Shibboleth and pwauth interfaces are provided (configured for U of T -- YMMV), but you may need to write your interface for your own central authentication service. </p>
@@ -155,7 +160,7 @@ STATIC_URL = 'https://*Server Address*/*Your Prefix*/static/'</pre>
 </pre></div></li>
 </ol>
 
-<h2 id="markdown-header-sandboxing">Sandboxing</h2>
+<h3 id="markdown-header-sandboxing">Sandboxing</h3>
 <p><b>This step is for installations serving C and Java exercises.</b></p>
 
 <p id="safeeexec">For C, we use a judging system, safeexec, to make sure the student code can't access arbitrary files or to run for any length of time. To set up safeexec:
@@ -175,7 +180,7 @@ $ cd languages/java/execution/JavaJail
 $ ./setup.sh
 </pre>
 
-<h2 id="markdown-header-database">Database</h2>
+<h3 id="markdown-header-database">Database</h3>
 <p>You can either set up an empty instance of PCRS or load a postgres dump into it. Either way, you'll need a user and database set up. The following example creates a user and database named <tt>pcrsadmin</tt>:</p>
 <pre>$ createuser -P pcrsadmin
 Enter password <span class="k">for</span> new role:
@@ -183,8 +188,8 @@ Enter it again:
 $ createdb pcrsadmin -O pcrsadmin
 </pre>
 
-<p>To create an empty instance, use syncdb.</p>
-<pre>$ python3 manage.py syncdb</pre>
+<p>To create an empty instance, use Django's migrations.</p>
+<pre>$ python3 manage.py migrate</pre>
 
 <p>Otherwise, load a pg_dump'd database image. (See the <a href="#prereqs">top of the page</a> if you need an image.)</p>
 <pre>$ psql -d pcrsadmin -f image.psql</pre>
@@ -196,7 +201,7 @@ $ createdb pcrsadmin -O pcrsadmin
 
 <p><b>For installations serving SQL and relational algebra exercises</b>, run the sql commands in <tt>admin_scripts/create_crs_data.sql</tt> after changing the name of the database being created to match the name assigned to <tt>RDB_DATABASE</tt> in the settings file. These commands create roles for instructors and students that allow them to create and copy schemas. <em>When adding users to the system, they will need to be granted either the instructor or the student role to create or submit SQL or relational algebra exercises.</em>
 
-<h2 id="markdown-header-static-files">Static Files</h2>
+<h3 id="markdown-header-static-files">Static Files</h3>
 <p>You should be using a static root -- unless you're just testing. Collect the static files and change permissions so they are visible.</p>
 <pre>$ python manage.py collecstatic
 $ pushd ../static
@@ -205,6 +210,6 @@ $ find . -type f -exec chmod 664 {} \;
 $ popd
 </pre>
 
-<h2 id="markdown-header-done">Done!</h2>
+<h3 id="markdown-header-done">Done!</h3>
 <p>At this point, the software should be ready to view in a web browser.</p>
 
