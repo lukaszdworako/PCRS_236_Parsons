@@ -1,3 +1,10 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Don't touch this file, create/edit settings_local.py with what you need to change.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+import os
+from .settings_pcrs import *
+
 # Session information
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
 SESSION_COOKIE_AGE = 86400       # One day, in seconds
@@ -5,9 +12,26 @@ SESSION_COOKIE_AGE = 86400       # One day, in seconds
 # True if links to bug reporting emails should be generated
 REPORT_BUGS = False
 
-# controls if live-updated quests page should be used
-# live page receives updates from socket.io to update when items are completed
-QUESTS_LIVE = False
+ADMINS = (
+    # ('Your Name', 'your_email@example.com'),
+)
+
+MANAGERS = ADMINS
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': 'localhost', # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',          # Set to empty string for default.
+    }
+}
+
+# Hosts/domain names that are valid for this site; required if DEBUG is False
+# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = []
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -37,10 +61,6 @@ USE_TZ = True
 # Absolute filesystem path to the location of the project
 # Example: "/var/www/example.com/media/"
 PROJECT_ROOT = str(os.getcwd())
-
-# URL to the root of the system that stores PCRS documents. Make sure there is
-# no trailing slash.
-DOC_URL = 'https://bitbucket.org/utmandrew/pcrs-c-content/src/master/webdocs'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
@@ -81,6 +101,9 @@ STATICFILES_FINDERS = (
     # finder for django_compress
     'compressor.finders.CompressorFinder',
 )
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = ''
 
 TEMPLATES = [
     {
@@ -125,18 +148,7 @@ ROOT_URLCONF = 'pcrs.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'pcrs.wsgi.application'
 
-PROBLEM_APPS = (
-    'problems_python',
-    'problems_c',
-    'problems_java',
-    'problems_sql',
-    'problems_rdb',
-    'problems_ra',
-    'problems_multiple_choice',
-    'problems_timed',
-    'problems_rating',
-    'problems_short_answer',
-)
+TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -159,13 +171,6 @@ INSTALLED_APPS = (
 ) + PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
-if DEBUG and not SQL_DEBUG:
-    # These lines must be positioned *after* the definition of the not so secret SECRET_KEY
-    # import django.db.backends
-    # import django.db.backends.util
-    # django.db.backends.BaseDatabaseWrapper.make_debug_cursor = lambda self, cursor: django.db.backends.util.CursorWrapper(cursor, self)
-    pass
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -207,3 +212,10 @@ LOGGING = {
         }
     }
 }
+
+# So we don't keep editing this file, edit settings_local
+try:
+    from .settings_local import *
+except ImportError as e:
+    print("No local settings file found. Please create a settings_local.py and set your settings there.")
+
