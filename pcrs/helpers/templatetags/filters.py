@@ -11,7 +11,8 @@ def problem_type(obj):
 
 @register.filter
 def get_item(dictionary, key):
-    return dictionary.get(key)
+    if dictionary:
+        return dictionary.get(key)
 
 @register.filter
 def problem_type_from_label(obj):

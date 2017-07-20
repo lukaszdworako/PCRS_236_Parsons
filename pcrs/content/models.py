@@ -463,7 +463,10 @@ class SectionQuest(AbstractLimitedVisibilityObject):
         ordering = ['quest__order']
 
     def is_past_due(self):
-        return datetime.datetime.utcnow().replace(tzinfo=utc) > self.due_on
+        if self.due_on:
+            return datetime.datetime.utcnow().replace(tzinfo=utc) > self.due_on
+        else:
+            return False
 
     def __str__(self):
         return '{section} {quest}'.format(section=self.section, quest=self.quest)
