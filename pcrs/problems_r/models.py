@@ -259,7 +259,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		error = None
 		try:
 			# Add file upload to submission
-			data_set = get_dataset(request)
+			data_set = self.get_dataset()
 
 			results = self.run_against_solution(data_set)
 			if "exception" in results:
@@ -302,7 +302,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		@return None
 		"""
 		# Add file upload to submission
-		data_set = get_dataset(request)
+		data_set = self.get_dataset()
 
 		ret = self.run_against_solution(data_set)
 		if ret["passed_test"]:
@@ -444,6 +444,18 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 		hashed_str = sha1(str.encode("{}".format(pre_hash_str)))
 		return hashed_str.hexdigest()
 
+	def get_dataset(self):
+		"""
+		Retrieves FileUpload instance's data from request.
+
+		@return str
+		"""
+		try:
+			fsm = FileSubmissionManager.objects.get(user=self.user, problem=self.problem)
+			return fsm.file_upload.get_str_data()
+		except:
+			return None
+
 
 class TestCase(AbstractTestCase):
 	"""
@@ -490,18 +502,6 @@ def delete_graph(graph):
 		path = os.path.join(PROJECT_ROOT, "languages/r/CACHE/", graph) + ".png"
 		if os.path.isfile(path):
 			os.remove(path)
-
-def get_dataset(request):
-	"""
-	Retrieves FileUpload instance's data from request.
-
-	@param HttpRequest request
-	@return str
-	"""
-	targ_file = request.POST.get('file_id', '')
-	if targ_file != '':
-		return FileUpload.objects.get(pk=targ_file).get_str_data()
-	return None
 
 def load_dataset(data_set):
 	"""

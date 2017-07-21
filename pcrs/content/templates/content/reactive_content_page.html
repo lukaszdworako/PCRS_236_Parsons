@@ -109,7 +109,6 @@
                     {% endif %}
                     {% with problem=item form=forms|get_item:problem_type|get_item:item.pk %}
                     {% include item.get_module_name|add:"/submission_widget.html" %}
-
     {% endwith %}
                 {% endwith %}
             </div>

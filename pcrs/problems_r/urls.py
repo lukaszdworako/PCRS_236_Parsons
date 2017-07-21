@@ -39,6 +39,8 @@ urlpatterns = [
 		 name='file_upload'),
 	url(r'^(?P<problem>[0-9]+)/uploaddata$', FileUploadView.as_view(model=Problem),
 		name='file_upload'),
+	url(r'^(?P<problem>[0-9]+)/uploadexist$', upload_exist,
+		name='file_exist'),
 	url(r'^editor/run$',
         EditorAsyncView.as_view(model=Submission, pType='r'),
         name='editor_problem_async_submit'),

@@ -18,7 +18,6 @@ from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
-from problems_r.forms import FileSubmissionForm
 from problems.models import FileUpload
 from django.core.exceptions import ObjectDoesNotExist
 # Helper class to encode datetime and decimal objects
@@ -231,13 +230,10 @@ class SubmissionViewMixin:
         submission_code = request.POST.get('submission', '')
         results, error = [], None
         if submission_code:
-            # submission = submission_model.objects.create(
-            #     user=request.user, problem=self.get_problem(),
-            #     section=self.get_section(), submission=submission_code)
             submission = submission_model.objects.create(
                 user=request.user, problem=self.get_problem(), passed=False,
                 section=self.get_section(), submission=submission_code)
-            results, error = submission.run_testcases(request)
+            results, error = submission.run_testcases()
             submission.set_score()
             self.object = submission
         return results, error
