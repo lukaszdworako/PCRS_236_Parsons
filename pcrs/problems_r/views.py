@@ -1,6 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from problems_r.models import Script, delete_graph, FileSubmissionManager, Problem, Submission
 from problems_r.forms import ScriptForm, FileSubmissionForm
 from pcrs.generic_views import (GenericItemListView, GenericItemCreateView)
@@ -227,3 +227,23 @@ def retrieve_all_export(request, problem):
 		return response
 	except Exception as e:
 		return HttpResponse("Error processing zip file.")
+
+def upload_exist(request, problem):
+	"""
+	Check whether the user has uploaded a problem.
+	"""
+	user = request.user
+	problem = Problem.objects.get(pk=problem)
+	try:
+		fsm = FileSubmissionManager.objects.get(user=user, problem=problem)
+		name = fsm.file_upload.name
+		substring = fsm.file_upload.get_str_data()[:150]
+		return JsonResponse({
+			'success': True,
+			'name': name,
+			'substring': substring
+		})
+	except:
+		return JsonResponse({
+			'success': False
+		})

@@ -73,8 +73,8 @@
 
 {% if problem.is_visible_to_students or problem.name == 'blank' %}
     {% if problem.allow_data_set %}
-        {% if "/problems/r/" in request.path %}
-            <input type="file" id="file_upload" name="{{ object.pk }}"></input>
+        {% if problem.get_problem_type_name == 'r' %}
+            <input type="file" class="file_upload" id="{{ problem.pk }}"></input>
         {% endif %}
     {% endif %}
 

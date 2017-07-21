@@ -48,22 +48,5 @@ class FileSubmissionForm(ProgrammingSubmissionForm):
         super().__init__(*args, **kwargs)
         self.fields['submission'].initial = code
         buttonDiv = self._generateButtonDiv(problem, isInstructor)
-
-        if problem.allow_data_set:
-            try:
-                fsm = FileSubmissionManager.objects.get(user=user, problem=problem)
-                if fsm:
-                    # Retrieve file info
-                    name = fsm.file_upload.name
-                    substring = fsm.file_upload.get_str_data()[:150]
-
-                    layout_fields = (HTML('<br><div id="file_existance" class="alert well"> \
-						<p><input type="button" id="delete_file" class="btn btn-danger pull-right" \
-						value="Delete Data Set"></input>File Name: {} <br>First 150 Characters: \
-						<br>{}</p></div>'.format(name, substring.replace('\n', '<br>'))),
-						Fieldset('', 'submission'), buttonDiv)
-            except:
-                layout_fields = (Fieldset('', 'submission'), buttonDiv)
-        else:
-            layout_fields = (Fieldset('', 'submission'), buttonDiv)
+        layout_fields = (Fieldset('', 'submission'), buttonDiv)
         self.helper.layout = Layout(*layout_fields)
