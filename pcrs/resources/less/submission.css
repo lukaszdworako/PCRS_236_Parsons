@@ -7415,20 +7415,6 @@ fieldset[disabled] .down-button.active {
 .text-icon:before {
   content: "\e052";
 }
-.question-sign-icon {
-  position: relative;
-  top: 1px;
-  display: inline-block;
-  font-family: 'Glyphicons Halflings';
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.question-sign-icon:before {
-  content: "\e085";
-}
 .download-icon {
   position: relative;
   top: 1px;
@@ -7442,6 +7428,20 @@ fieldset[disabled] .down-button.active {
 }
 .download-icon:before {
   content: "\e026";
+}
+.question-sign-icon {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-family: 'Glyphicons Halflings';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.question-sign-icon:before {
+  content: "\e085";
 }
 .red-label {
   display: inline;
@@ -10109,20 +10109,6 @@ fieldset {
 }
 .checked-icon:before {
   content: "\e067";
-}
-.download-icon {
-  position: relative;
-  top: 1px;
-  display: inline-block;
-  font-family: 'Glyphicons Halflings';
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.download-icon:before {
-  content: "\e026";
 }
 .floatdiv {
   overflow: auto;

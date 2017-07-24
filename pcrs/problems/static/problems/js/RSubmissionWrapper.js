@@ -1,11 +1,11 @@
 var MAX_FILE_SIZE = 100000
 
-function generateExportButton(subPk) {
+function generateExportButton(subPk, problemId) {
     call_path = root + '/problems/r/' + subPk + '/export';
-    if (!$('#export-link').length) {
-        $('#output').after('<a id="export-link" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
+    if (!$('#export-link-' + problemId).length) {
+        $('#output-' + problemId).append('<a type="button" id="export-link-' + problemId + '" href="' + call_path + '" class="green-button">Export Submission</a>');
     } else {
-        $('#export-link').replaceWith('<a id="export-link" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
+        $('#export-link-' + problemId).replaceWith('<a id="export-link-' + problemId + '" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
     }
 }
 
@@ -106,7 +106,7 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                             if ('sol_graphics' in res && res['sol_graphics'] != null) {
                                 that.renderGraph(res['sol_graphics'], true, problemId);
                             }
-                            generateExportButton(data['sub_pk'])
+                            generateExportButton(data['sub_pk'], problemId)
                             that._getTestcasesCallback(data);
                             // Deactivate loading pop-up
                             $('#waitingModal').modal('hide');
@@ -144,7 +144,7 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                     if ("sol_graphics" in res && res["sol_graphics"] != null) {
                         that.renderGraph(res["sol_graphics"], true, problemId);
                     }
-                    generateExportButton(data["sub_pk"])
+                    generateExportButton(data["sub_pk"], problemId)
                     that._getTestcasesCallback(data);
                     // Deactivate loading pop-up
                     $('#waitingModal').modal('hide');
