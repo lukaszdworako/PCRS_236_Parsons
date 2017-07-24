@@ -1,7 +1,7 @@
 {% extends "problems/submission_widget.html" %}
 
 {% block problem_specific %}
-    <div id="output">
+    <div id="output-{{ problem.id }}">
       <div id="user-box-{{ problem.id }}" class="col-md-6">
         <div id="user-output-{{ problem.id }}"></div>
         <div id="user-graph-{{ problem.id }}"></div>
