@@ -168,6 +168,7 @@ INSTALLED_APPS = (
     'editor',
     'compressor',
     'users',
+    'django_cron',
 ) + PROBLEM_APPS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -218,4 +219,3 @@ try:
     from .settings_local import *
 except ImportError as e:
     print("No local settings file found. Please create a settings_local.py and set your settings there.")
-

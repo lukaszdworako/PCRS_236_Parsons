@@ -12,7 +12,7 @@
             {% block instructor_options %}
                 <span class="widget_controls">
                     <a href="{{ problem.get_absolute_url }}" title="Edit"><i
-                            class="pencil-icon"></i><span 
+                            class="pencil-icon"></i><span
                             class="at">Edit {{ problem.name }}"</span></a>
 
                     <a href="{{ problem.get_browse_submissions_url }}" title="Browse submissions"><i
@@ -22,6 +22,11 @@
                     <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
                             class="stats-icon"></i><span
                             class="at">Statistics for {{ problem.name }}</span></a>
+                    {% if problem.get_problem_type_name == 'r' %}
+                        <a href="{{ problem.get_absolute_url }}/exportall" title="Export Submissions"><i
+                                class="download-icon"></i><span
+                                class="at">Export {{problem.name}}</span></a>
+                    {% endif %}
                 </span>
             {% endblock %}
         {% endif %}
@@ -53,7 +58,11 @@
     <div>
         {% autoescape off %}
             {% if problem.is_visible_to_students %}
-                <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+                {% if "/problems/r/" in request.path %}
+                    <h5 class="problem-description">{{ problem.replace_latex|linebreaksbr }}</h5>
+                {% else %}
+                    <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+                {% endif %}
             {% else %}
                 <h5>This question is currently unavailable.</h5>
             {% endif %}
@@ -63,6 +72,12 @@
 {% endblock %}
 
 {% if problem.is_visible_to_students or problem.name == 'blank' %}
+    {% if problem.allow_data_set %}
+        {% if problem.get_problem_type_name == 'r' %}
+            <input type="file" class="file_upload" id="{{ problem.pk }}"></input>
+        {% endif %}
+    {% endif %}
+
     {% block submission_form %}
         {% autoescape off %}
             {% load crispy_forms_tags %}

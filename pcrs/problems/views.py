@@ -10,8 +10,7 @@ from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime, now
-
-from pcrs.settings import DEBUG
+from pcrs.settings import DEBUG, FILE_LIFESPAN
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
@@ -19,8 +18,8 @@ from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,
 from users.section_views import SectionViewMixin
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
-
-
+from problems.models import FileUpload
+from django.core.exceptions import ObjectDoesNotExist
 # Helper class to encode datetime and decimal objects
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -232,9 +231,9 @@ class SubmissionViewMixin:
         results, error = [], None
         if submission_code:
             submission = submission_model.objects.create(
-                user=request.user, problem=self.get_problem(),
+                user=request.user, problem=self.get_problem(), passed=False,
                 section=self.get_section(), submission=submission_code)
-            results, error = submission.run_testcases(request)
+            results, error = submission.run_testcases()
             submission.set_score()
             self.object = submission
         return results, error
@@ -262,7 +261,6 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         user = self.request.user
-
         if user.is_instructor:
             kwargs['isInstructor'] = True
             if 'loadSolution' in self.request.GET:
@@ -270,6 +268,24 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin, SingleObjectMixin,
 
         return kwargs
 
+
+class FileUploadMixin(SubmissionViewMixin):
+    def record_submission(self, request):
+        """
+        Record the submission and return the results of running the testcases.
+        """
+        submission_model = self.model.get_submission_class()
+        submission_code = request.POST.get('submission', '')
+        results, error = [], None
+        if submission_code:
+            submission = submission_model.objects.create(
+                user=request.user, problem=self.get_problem(), passed=False,
+                section=self.get_section(), submission=submission_code)
+
+            results, error = submission.run_testcases(request)
+            submission.set_score(request)
+            self.object = submission
+        return results, error
 
 class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                           SectionViewMixin, View):
@@ -304,7 +320,6 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                 .get(section=section).due_on
         except Exception:
             deadline = False
-
         return HttpResponse(json.dumps({
             'results': results,
             'score': self.object.score,
@@ -445,3 +460,45 @@ class BrowseSubmissionsView(CourseStaffViewMixin, SingleObjectMixin,
                 'submissions': submissions,
                 'testcases': {tc.pk: tc for tc in problem.testcase_set.all()}
             })
+
+class FileUploadView(FileUploadMixin, View):
+    """
+    Uploads file to problem.
+    """
+    model = ''
+    def post(self, request, *args, **kwargs):
+        data = bytes(request.POST.get('data', ''), 'utf-8')
+        name = request.POST.get('name', '')
+
+        # Retrieve user and problem model instances for combination
+        targ_problem = self.get_problem()
+
+        if targ_problem.data_set:
+            targ_problem.data_set.data = data
+            targ_problem.data_set.name = name
+            if request.user.is_instructor:
+                targ_problem.data_set.lifespan = None
+            else:
+                targ_problem.data_set.lifespan = now() + FILE_LIFESPAN
+            targ_problem.data_set.save()
+            return HttpResponse(targ_problem.data_set.pk)
+        else:
+            if request.user.is_instructor:
+                new_file = FileUpload(data=data, name=name, lifespan=None)
+            else:
+                new_file = FileUpload(data=data, name=name)
+            new_file.save()
+            targ_problem.data_set = new_file
+            targ_problem.save()
+            return HttpResponse(new_file.pk)
+
+    def get(self, request, *args, **kwargs):
+        targ_problem = self.get_problem()
+
+        if targ_problem.data_set:
+            targ_problem.data_set.delete()
+            targ_problem.data_set = None
+            targ_problem.save()
+            return HttpResponse("Success")
+
+        return HttpResponse("Failure")

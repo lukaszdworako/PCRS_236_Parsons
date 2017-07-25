@@ -1,0 +1,36 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems/code_problem_scripts.html" %}
+    {% load compress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="{{ problem.get_problem_type_name }}-{{ problem.pk }}" class="code-mirror-wrapper">
+        {% include "problems_r/submission_widget.html" %}
+    </div>
+
+    <!-- Empty divs for output -->
+    <div id="output">
+      <div id="user-box" class="col-md-6">
+        <div id="user-output"></div>
+        <div id="user-graph"></div>
+      </div>
+      <div id="sol-box" class="col-md-6">
+        <div id="sol-output"></div>
+        <div id="sol-graph"></div>
+      </div>
+    </div>
+{% endblock %}

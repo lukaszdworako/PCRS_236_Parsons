@@ -1,3 +1,5 @@
+var MAX_FILE_SIZE = 100000
+
 function ProblemFormHandler($form) {
     this.$form = $form;
 }
@@ -138,3 +140,140 @@ function clearSubmissionsForCurrentProblem(clearUrl) {
     });
 }
 
+// Adds an event listener to file input allowing for ajax file uploads.
+$( document ).ready(function(){
+    // Build request URL
+    var problemPath = window.location.href;
+    var index = problemPath.indexOf("/problems/");
+    var isCreate = problemPath.indexOf("create");
+
+    if(isCreate != -1){
+        problemPath = problemPath.substring(index, isCreate) + probPk
+    } else{
+        problemPath = problemPath.substring(index, problemPath.length)
+    }
+
+    var uploadPath = root + problemPath + '/uploaddata';
+
+    // $('#file_upload').change(function(){
+    //     var uploadedFile = $("#file_upload").prop('files')[0];
+    //     var probPk = $('#file_upload').attr('name');
+    //
+    // 		if(uploadedFile != undefined){
+    //         validFile = true;
+    //
+		// 				// Check validity of file
+		// 				if (uploadedFile.size > MAX_FILE_SIZE){
+		// 						alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
+		// 						validFile = false;
+		// 				}
+		// 				if (uploadedFile.type != "text/csv"){
+		// 						alert("File upload rejected, file is not csv");
+		// 						validFile = false;
+		// 				}
+    //
+    //         // Upload file
+    //         if(validFile){
+    //     				$.ajax({
+    //     						url: uploadPath,
+    //     						type: "POST",
+    //     						data: uploadedFile,
+    //     						processData: false
+    //     				})
+    //             .done(function(data){
+    //                 alert("Data set uploaded");
+    //                 if (!$("#file_upload").length){
+    //                     $("#file_upload").after(`<br><div id="file_existance" class="alert well">
+    //     								<p><input type="button" id="delete_file" class="btn btn-danger" value="X" style="margin-right:10px">
+    //     								</input> There is an existing data set.</p></div>`);
+    //                 }
+    //                 setDeleteButton(uploadPath);
+    //             })
+    //             .error(function(jqXHR, textStatus, errorThrown){
+    //                 alert("Error uploading file.");
+    //             });
+    //         }
+    //     }
+    // });
+    $('#file_upload').change(function(){
+        var uploadedFile = $("#file_upload").prop('files')[0];
+        var probPk = $('#file_upload').attr('name');
+
+    		if(uploadedFile != undefined){
+						validFile = true;
+
+						// Check validity of file
+						if (uploadedFile.size > MAX_FILE_SIZE){
+								alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
+								validFile = false;
+						}
+						if (uploadedFile.type != "text/csv"){
+								alert("File upload rejected, file is not csv");
+								validFile = false;
+						}
+
+						// Upload file
+						if(validFile){
+								// Prepared data
+								var textData;
+								fr = new FileReader();
+
+								// File read is an async call, so must nest here
+								fr.onload = function(e){
+										textData = fr.result;
+										fileName = uploadedFile.name;
+										dataDict = {"data": textData, "name": fileName}
+
+										$.post(
+												uploadPath,
+												dataDict
+				    				)
+				            .done(function(data){
+				                alert("Data set uploaded");
+												htmlString = `<div id="file_existance" class="alert well">
+														<p><input type="button" id="delete_file" class="btn btn-danger pull-right"
+														value="Delete Data Set"></input>File Name: ` + fileName + "<br>First 150 Characters:<br>"
+														+ textData.replace(/\n/g, '<br>').substr(0, 150) + `</p></div>`;
+
+												if($('#file_existance').length){
+														$('#file_existance').replaceWith(htmlString);
+												}
+												else{
+														$('#file_upload').after(htmlString);
+												}
+				                setDeleteButton(uploadPath);
+				            })
+				            .error(function(jqXHR, textStatus, errorThrown){
+				                alert("Error uploading file.");
+				            });
+								}
+
+								// Async call here
+								fr.readAsText(uploadedFile);
+						}
+        }
+    });
+    setDeleteButton(uploadPath);
+});
+
+function setDeleteButton(uploadPath){
+    $('#delete_file').click(function(){
+        // Assumes that there is an existing file
+        $.ajax({
+            url: uploadPath,
+            type: "GET"
+        })
+        .done(function(data){
+            if(data == "Success"){
+                $('#delete_file').remove();
+                $('#file_existance').remove();
+            }
+            else{
+                alert("Error deleting file.");
+            }
+        })
+        .error(function(jqXHR, textStatus, errorThrown){
+            alert("Error deleting file.");
+        });
+    });
+}

@@ -124,6 +124,24 @@ class AbstractNamedObject(models.Model):
             'description': self.description
         }
 
+    def replace_latex(self):
+        tag_count = self.description.count("$$")
+        current_count = 0
+        sections = self.description.split("$$")
+        total_string = ""
+
+        for i in range(len(sections)):
+            if i % 2 == 0:
+                if i != 0 or sections[0] != "":
+                    total_string += sections[i]
+            elif current_count + 2 <= tag_count and i % 2 == 1:
+                total_string += '<img src="http://latex.codecogs.com/svg.latex?'
+                total_string += sections[i]
+                total_string += '" border="0"/>'
+                current_count += 2
+
+        return total_string
+
 
 class AbstractGenericObjectForeignKey(models.Model):
     objects = None

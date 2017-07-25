@@ -28,6 +28,8 @@ SubmissionWrapper.createWrapperFromDivId = function(wrapperDivId) {
         return new SQLSubmissionWrapper(wrapperDivId);
     } else if (wrapperDivId.indexOf("ra-") > -1) {
         return new RASubmissionWrapper(wrapperDivId);
+    } else if (wrapperDivId.indexOf("r-") > -1) {
+        return new RSubmissionWrapper(wrapperDivId);
     }
 }
 
@@ -118,7 +120,6 @@ SubmissionWrapper.prototype.submitAllCode = function() {
  */
 SubmissionWrapper.prototype.getTestcases = function(code) {
     var call_path = "";
-
     if (this.isEditor) {
         call_path = root + '/problems/' + this.language + '/editor/run';
     } else {
@@ -494,4 +495,3 @@ SubmissionWrapper.prototype._revertToCodeFromHistoryModal = function(code) {
     this.wrapperDiv.find('#grade-code').hide();
     this.wrapperDiv.find('#alert').hide();
 }
-
