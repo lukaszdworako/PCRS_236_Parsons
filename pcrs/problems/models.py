@@ -2,7 +2,6 @@ import re
 from hashlib import sha1
 import os
 from pcrs.settings import PROJECT_ROOT, FILE_LIFESPAN
-
 # ------------------
 # Removed in >1.5, replaced with below
 # from django.contrib.contenttypes import generic

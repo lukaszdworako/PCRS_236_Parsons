@@ -47,6 +47,7 @@ class RSpecifics(languages.BaseLanguage):
 			if "graphics" in solution.keys():
 				ret["sol_graphics"] = solution["graphics"]
 		except Exception as e:
+			ret = {}
 			ret["exception"] = str(e)
 			ret["passed_test"] = False
 

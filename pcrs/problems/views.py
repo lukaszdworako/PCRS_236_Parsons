@@ -10,7 +10,8 @@ from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
 from django.views.generic.detail import SingleObjectMixin
 from django.utils.timezone import localtime, now
-from pcrs.settings import DEBUG, FILE_LIFESPAN
+from pcrs.settings import DEBUG,FILE_LIFESPAN
+
 from pcrs.generic_views import (GenericItemCreateView, GenericItemListView,
                                 GenericItemUpdateView)
 from problems.forms import (ProgrammingSubmissionForm, MonitoringForm,

@@ -5,7 +5,9 @@ function generateExportButton(subPk, problemId) {
     if (!$('#export-link-' + problemId).length) {
         $('#output-' + problemId).append('<a type="button" id="export-link-' + problemId + '" href="' + call_path + '" class="green-button">Export Submission</a>');
     } else {
-        $('#export-link-' + problemId).replaceWith('<a id="export-link-' + problemId + '" href="' + call_path + '" class="green-button pull-right">Export Submission</a>');
+        $('#export-link-' + problemId).remove();
+        console.log("GANG GANG")
+        $('#output-' + problemId).append('<a type="button" id="export-link-' + problemId + '" href="' + call_path + '" class="green-button">Export Submission</a>');
     }
 }
 
@@ -36,11 +38,11 @@ RSubmissionWrapper.prototype.createCodeMirrors = function() {
 RSubmissionWrapper.prototype.renderGraph = function(graph, sol, problemId) {
     imurl = root + '/problems/' + this.language + '/graph/' + graph;
     if (sol) {
-        $('#sol-graph-' + problemId).replaceWith('<div id="sol-graph"> \
+        $('#sol-graph-' + problemId).replaceWith('<div id="sol-graph-' + problemId +'"> \
 						<h3 style="text-align: center;">Our Graph</h3>\
 						<img alt ="Our graph" src="' + imurl + '" class="img-responsive"></div>');
     } else {
-        $('#user-graph-' + problemId).replaceWith('<div id="user-graph"> \
+        $('#user-graph-' + problemId).replaceWith('<div id="user-graph-' + problemId + '"> \
 						<h3 style="text-align: center;">Your Graph</h3> \
 						<img alt ="Your graph" src="' + imurl + '" class="img-responsive"></div>');
     }
@@ -93,11 +95,11 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                         function(data, problemId) {
                             var res = data['results'][0];
                             if ('test_val' in res) {
-                                $('#user-output-' + problemId).replaceWith('<div id="user-output" class="well"> \
+                                $('#user-output-' + problemId).replaceWith('<div id="user-output-' + problemId + '" class="well"> \
 														<h3 style="text-align: center;">Your Output</h3><p>' + res["test_val"].replace(/\n/g, '<br>') + '</p></div>');
                             }
                             if ('sol_val' in res) {
-                                $('#sol-output-' + problemId).replaceWith('<div id="sol-output" class="well"> \
+                                $('#sol-output-' + problemId).replaceWith('<div id="sol-output-' + problemId + '" class="well"> \
 														<h3 style="text-align: center;">Our Output</h3><p>' + res["sol_val"].replace(/\n/g, '<br>') + '</p></div>');
                             }
                             if ('graphics' in res && res['graphics'] != null) {
@@ -131,11 +133,11 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                 function(data) {
                     var res = data["results"][0];
                     if ("test_val" in res) {
-                        $('#user-output-' + problemId).replaceWith('<div id="user-output" class="well"> \
+                        $('#user-output-' + problemId).replaceWith('<div id="user-output-' + problemId + '" class="well"> \
 												<h3 style="text-align: center;">Your Output</h3><p>' + res["test_val"].replace(/\n/g, '<br>') + '</p></div>');
                     }
                     if ("sol_val" in res) {
-                        $('#sol-output-' + problemId).replaceWith('<div id="sol-output" class="well"> \
+                        $('#sol-output-' + problemId).replaceWith('<div id="sol-output-' + problemId + '" class="well"> \
 												<h3 style="text-align: center;">Our Output</h3><p>' + res["sol_val"].replace(/\n/g, '<br>') + '</p></div>');
                     }
                     if ("graphics" in res && res["graphics"] != null) {
