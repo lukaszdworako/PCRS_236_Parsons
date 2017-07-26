@@ -10,7 +10,7 @@ Codename:   trusty
 
 <p>Throughout this guide, some words will be surrounded by asterisks (*), this will denote a variable you will need to fill in.</p>
 
-<p>Before installation, make sure python3.6 and postgres9.4.2 are already installed and running. If the installation will be serving C exercises, gcc 4.9 is required, and Java exercises require a Java developer kit (JDK 1.7) installation (for javac). If you use a python virtual environment, the packages virtualenv and virtualenvwrapper are required.</p>
+<p>Before installation, make sure python3.6 and postgres9.4.2 are already installed and running. If the installation will be serving C exercises, gcc 4.9 is required, and Java exercises require a Java developer kit (JDK 1.7) installation (for javac). For R exercises, R is required. If you use a python virtual environment, the packages virtualenv and virtualenvwrapper are required.</p>
 <div class="codehilite"><pre>$ psql --version
 psql <span class="o">(</span>PostgreSQL<span class="o">)</span> 9.3.9<span class="sb"></span>
 $ python3 --version
@@ -22,6 +22,8 @@ This is free software<span class="p">;</span> see the <span class="nb">source </
 warranty<span class="p">;</span> not even <span class="k">for</span> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 $ javac -version
 javac 1.7.0_10
+$ r --version
+R version 3.4.0
 </pre></div>
 
   <p>You can either install PCRS onto an empty database or onto an image pre-loaded with videos and content. We have an image available for the C programming language, but <i>this image is not distributed on the web, since it contains solutions to the exercises.</i> To get access, <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Request%20for%20PCRS-C%20Database">mail us from your institution's email address</a>. Please include a web link to your institutional web page, so we can verify that you are a course instructor or system administrator.</p>
