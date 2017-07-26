@@ -32,8 +32,6 @@
 
 {% block content %}
 
-    {% include "problems_python/code_trace.html" %}
-
     <div id="{{ problem.get_problem_type_name }}-{{ problem.pk }}" class="code-mirror-wrapper">
         {% include "problems_python/submission_widget.html" %}
     </div>
