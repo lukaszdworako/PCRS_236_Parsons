@@ -6,7 +6,6 @@ function generateExportButton(subPk, problemId) {
         $('#output-' + problemId).append('<a type="button" id="export-link-' + problemId + '" href="' + call_path + '" class="green-button">Export Submission</a>');
     } else {
         $('#export-link-' + problemId).remove();
-        console.log("GANG GANG")
         $('#output-' + problemId).append('<a type="button" id="export-link-' + problemId + '" href="' + call_path + '" class="green-button">Export Submission</a>');
     }
 }

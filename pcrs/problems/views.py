@@ -232,9 +232,9 @@ class SubmissionViewMixin:
         results, error = [], None
         if submission_code:
             submission = submission_model.objects.create(
-                user=request.user, problem=self.get_problem(), passed=False,
+                user=request.user, problem=self.get_problem(),
                 section=self.get_section(), submission=submission_code)
-            results, error = submission.run_testcases()
+            results, error = submission.run_testcases(request)
             submission.set_score()
             self.object = submission
         return results, error
