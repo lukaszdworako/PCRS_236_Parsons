@@ -26,7 +26,7 @@ class ScriptForm(CrispyFormMixin, forms.ModelForm):
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'script', 'description', 'starter_code', 'solution',
+        fields = ('name', 'script', 'description', 'starter_code', 'solution', 'author', 
 				  'tags', 'visibility', 'output_visibility', 'allow_data_set')
 
     def __init__(self, *args, **kwargs):

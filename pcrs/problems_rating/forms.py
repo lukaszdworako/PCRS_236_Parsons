@@ -15,7 +15,7 @@ class ProblemForm(forms.ModelForm, CrispyFormMixin):
         model = Problem
         widgets = {'max_score': forms.HiddenInput()}
         fields = ('name', 'description', 'scale_type', 'tags', 'visibility',
-                         'max_score')
+                         'max_score', 'author')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

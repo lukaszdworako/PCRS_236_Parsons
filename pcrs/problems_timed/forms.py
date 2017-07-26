@@ -10,7 +10,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     
     class Meta:
         model = Problem
-        fields = ('name', 'problem_description', 'submission_description', 'delay', 'attempts', 'tags', 'visibility')
+        fields = ('name', 'problem_description', 'submission_description', 'delay', 'attempts', 'author', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
         self.save_and_add = Submit('submit', 'Save and Add Pages',

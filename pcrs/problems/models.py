@@ -43,6 +43,8 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     max_score = models.SmallIntegerField(default=0, blank=True)
 
+    author = models.CharField(max_length=128, blank=True)
+
     class Meta:
         abstract = True
 
@@ -62,7 +64,8 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                 'problem_type': self.get_problem_type_name(),
                 'submit_url': '{}/run'.format(self.get_absolute_url()),
                 'max_score': self.max_score,
-                'challenge': self.challenge_id
+                'challenge': self.challenge_id,
+                'author': self.author
             }
         )
         return serialized

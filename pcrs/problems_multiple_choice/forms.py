@@ -10,7 +10,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     no_correct_response = forms.BooleanField(label="<b>Survey purposes only</b>", help_text="Click here if this problem will have no correct answer.", required=False)
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'tags', 'visibility', 'no_correct_response')
+        fields = ('name', 'description', 'author', 'tags', 'visibility', 'no_correct_response')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

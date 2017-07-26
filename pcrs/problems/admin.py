@@ -1,9 +1,9 @@
 from django.contrib import admin
 
 class ProblemAdmin(admin.ModelAdmin):
-    list_display = ( 'name', 'visibility', 'challenge', 'language' )
-    list_filter = ( 'language', 'visibility', 'challenge' )
-    search_fields = ( 'name', 'visibility', 'challenge' )
+    list_display = ( 'name', 'visibility', 'challenge', 'language', 'author' )
+    list_filter = ( 'language', 'visibility', 'challenge', 'author' )
+    search_fields = ( 'name', 'visibility', 'challenge', 'author' )
     select_related = ( 'challenge', )
 
 

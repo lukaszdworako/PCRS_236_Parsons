@@ -9,7 +9,7 @@ from problems_short_answer.models import Problem, Submission
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'max_score', 'solution', 'max_chars', 'tags', 'visibility')
+        fields = ('name', 'description', 'max_score', 'solution', 'max_chars', 'author', 'tags', 'visibility')
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
