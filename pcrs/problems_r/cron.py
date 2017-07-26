@@ -2,7 +2,7 @@ from django_cron import CronJobBase, Schedule
 from problems_r.models import FileSubmissionManager
 from problems.models import FileUpload
 from django.utils import timezone
-from pcrs.settings_r import FILE_DELETE_FREQUENCY
+from pcrs.settings import FILE_DELETE_FREQUENCY
 
 class FileCronJob(CronJobBase):
     """

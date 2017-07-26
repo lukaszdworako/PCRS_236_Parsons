@@ -1,6 +1,7 @@
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Don't touch this file, create/edit settings_local.py with what you need to change.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+from datetime import timedelta
 
 # Select the types of problems visible in the UI.
 # app_name : language name
@@ -11,7 +12,7 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
     # 'problems_ra': 'Relational Algebra',
-    'problems_r': 'R',
+    # 'problems_r': 'R',
     # 'problems_multiple_choice': '',
     # 'problems_timed': '',
     # 'problems_rating': '',
@@ -64,3 +65,9 @@ PROBLEM_APPS = (
     'problems_rating',
     'problems_short_answer',
 )
+
+# Period between file deletes of user uploads
+FILE_DELETE_FREQUENCY = 1440 #24 hrs
+
+# Default lifespan of files on the system
+FILE_LIFESPAN = timedelta(days=1)

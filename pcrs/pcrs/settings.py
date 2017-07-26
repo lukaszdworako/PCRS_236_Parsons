@@ -4,7 +4,6 @@
 
 import os
 from .settings_pcrs import *
-from .settings_r import *
 
 # Session information
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
