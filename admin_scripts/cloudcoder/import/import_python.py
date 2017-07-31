@@ -54,6 +54,11 @@ if __name__ == '__main__':
         pd = {}
         pd['name'] = '{} (CC)'.format(problem_data['brief_description'])
         pd['description'] = problem_data['description']
+        if "<body>" in pd['description']:
+            sindex = pd['description'].find("<body>") + 6
+            eindex = pd['description'].find("</body>")
+            pd['description'] = pd['description'][sindex: eindex]
+
         if problem_data['author_name']:
             pd['author'] = '{} ({})'.format(problem_data['author_name'], problem_data['author_email'])
         else:
