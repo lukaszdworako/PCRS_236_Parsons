@@ -66,6 +66,10 @@ PROBLEM_APPS = (
     'problems_short_answer',
 )
 
+CRON_CLASSES = {
+    'problems_r.cron.FileCronJob'
+}
+
 # Period between file deletes of user uploads
 FILE_DELETE_FREQUENCY = 1440 #24 hrs
 
