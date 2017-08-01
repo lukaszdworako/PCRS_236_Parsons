@@ -208,7 +208,7 @@ $ createdb pcrsadmin -O pcrsadmin
 <p>By default the django-cron job checks everyday. For more details, refer to the django-cron documentation here: <a href="http://django-cron.readthedocs.io/en/latest/installation.html">Django-cron</a></p>
 
 
-<h2 id="markdown-header-static-files">Static Files</h2>
+<h3 id="markdown-header-static-files">Static Files</h3>
 <p>You should be using a static root -- unless you're just testing. Collect the static files and change permissions so they are visible.</p>
 <pre>$ python manage.py collecstatic
 $ pushd ../static
