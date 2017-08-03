@@ -37,6 +37,14 @@ PythonSubmissionWrapper.prototype.createCodeMirrors = function() {
     this.tcm = this.createSubmissionMirror();
 }
 
+function getPyTAClickEvent() {
+    $.post("/problems/python/pyta");
+}
+
+PythonSubmissionWrapper.prototype._createPyTADropdown = function(testcase) {
+    this.wrapperDiv.find('#gradeMatrix').before('<div class="dropdown" id="PyTADropdown" onclick="getPyTAClickEvent()" style="width:100%;"><button class="btn dropdown-toggle" type="button" data-toggle="dropdown" style="width:100%;background-color:#a94442;border-color:#ebccd1;color:#f2dede;margin-bottom:5px;">Expand for Detailed Error Message <span class="caret"></span></button><ul class="dropdown-menu" style="width:100%;position:relative;margin-bottom:5px;top:-6px;padding:0;box-shadow:none;"><li class="red-alert" style="width:100%;margin:0px;">' + testcase.test_val + '</li></ul></div>');    
+}
+
 /**
  * @override
  */

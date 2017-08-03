@@ -9,6 +9,13 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
     SubmissionPreprocessorMixin, AbstractTestCaseWithDescription,
     AbstractTestRun,
     testcase_delete, problem_delete)
+from pcrs.models import AbstractSelfAwareModel
+from pcrs.settings import PROJECT_ROOT
+
+import io, python_ta, re, os, tempfile
+from contextlib import redirect_stdout
+
+
 
 
 class Problem(AbstractProgrammingProblem):
@@ -29,6 +36,8 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     A coding problem submission.
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    #Record PyTA output
+    pyta = models.TextField(blank=True, null=True)
 
     def run_testcases(self, request, save=True):
         """
@@ -67,6 +76,55 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             results.append(run)
 
         return results, error
+
+    def run_pyta(self):
+        """
+        Run PyTA with the submitted code as input.
+        Return the output of PyTA.
+        """
+        submittedFiles = self.preprocessTags()
+        # We don't support multiple files yet
+        submittedCode = submittedFiles[0]['code']
+
+        pytaResult = {}
+        pytaResult['test_desc'] = 'PyTA'
+        #Identify the result as PyTA output
+        pytaResult['PyTA'] = True
+        
+        try:
+            tempfileDir= os.path.join(PROJECT_ROOT,'languages','python','execution','temporary')
+            submittedCodeFile = tempfile.NamedTemporaryFile(delete=False, dir=tempfileDir, suffix='.py')
+            submittedCodeFile.write(submittedCode.encode())
+            submittedCodeFile.close()
+            with io.StringIO() as buf, redirect_stdout(buf):
+                python_ta.check_all('.'.join(('languages','python','execution','temporary',submittedCodeFile.name.split(os.sep)[-1])))
+                #Remove ANSI characters
+                pytaOutput = re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]','',buf.getvalue()).replace('\n','<br />').replace('[','&emsp;[')
+        except Exception as e:
+            pytaOutput = str(e)
+        
+        try:
+            os.remove(submittedCodeFile.name)
+        except (OSError, UnboundLocalError):
+            pass
+
+        pytaResult['test_val'] = pytaOutput
+        
+        self.pyta = pytaOutput
+        self.save()
+
+        return pytaResult
+
+
+class PyTAClickEvent(AbstractSelfAwareModel, SubmissionPreprocessorMixin):
+    """
+    A PyTA error message click event.
+
+    A PyTAClickEvent has a submission_id. It is created when the PyTA error
+    message is expanded.
+    """
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
+    click_count = models.PositiveIntegerField(default=1)
 
 
 class TestCase(AbstractTestCaseWithDescription):

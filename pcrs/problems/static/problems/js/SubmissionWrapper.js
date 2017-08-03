@@ -233,6 +233,13 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
         return;
     }
 
+    //PyTA
+    if (testcases.length > 0 && testcases[testcases.length-1].hasOwnProperty("PyTA")){
+        this.wrapperDiv.find("#PyTADropdown").remove();
+        this._createPyTADropdown(testcases[testcases.length-1]);
+        testcases.splice(testcases.length-1,1);
+    }
+
     this._addTestCasesToTable(testcases, $gradingTable);
 
     if (best && ! past_dead_line) {
