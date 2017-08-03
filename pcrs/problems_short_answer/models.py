@@ -15,6 +15,7 @@ class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     max_chars = models.PositiveIntegerField(default=200)
+    min_chars = models.PositiveIntegerField(default=50)
     keys = HStoreField(default=None)
 
     def clean_fields(self, exclude=None):
@@ -44,38 +45,32 @@ class Submission(AbstractSubmission):
     def set_score(self, submission):
         self.submission = submission
         result = 0
-        message = ""
 
-        answer_dict = {}
-        answer_keys = []
-        answer_values = []
-        checked_indices = []
-        index = 0
+        if len(self.submission) < self.problem.min_chars:
+            self.message = 'Your answer is less than minimum character requirement of ' \
+                            + str(self.problem.min_chars) + '.'
+        else:
+            words = self.submission.split()
+            messages = []
 
-        for key in self.problem.keys:
-            key_array = []
-            for ele in key.split(","):
-                key_array.append(ele.lower())
-                answer_dict[ele.strip()] = index
-            answer_keys.append(key_array)
-            answer_values.append(self.problem.keys[key])
-            checked_indices.append(False)
-            index += 1
+            # Check each key in submission
+            for key in self.problem.keys:
+                # Build dict from array of keys for fast lookup
+                key_dict = {}
+                for ele in key.split(","):
+                    key_dict[ele.strip()] = 1
 
-        if self.submission.strip() == "":
-            self.score = 0
+                for word in words:
+                    if word in key_dict:
+                        result += 1
+                        break
+                else:
+                    messages.append(self.problem.keys[key])
 
-        words = self.submission.split(" ")
-        for word in words:
-            if word in answer_dict and checked_indices[answer_dict[word]] != True:
-                result += 1
-                checked_indices[answer_dict[word]] = True
-
-        for i in range(index):
-            if checked_indices[i] == False:
-                message += answer_values[i] + "\n"
+            separator = '\n'
+            message = separator.join(messages)
+            self.message = message
 
         self.score = result
-        self.message = message
         self.save()
         self.set_best_submission()
