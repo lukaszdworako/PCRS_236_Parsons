@@ -49,8 +49,8 @@ class GenericLanguage(object):
     def get_exec_trace(self, user_script, add_params):
         return self.lang.get_exec_trace(user_script, add_params)
 
-    def run_test(self, user_script, test_input, exp_output):
-        return self.lang.run_test(user_script, test_input, exp_output)
+    def run_test(self, user_script, test_input, exp_output, pre_code=""):
+        return self.lang.run_test(user_script, test_input, exp_output, pre_code)
 
     def get_download_mimetype(self):
         return self.lang.get_download_mimetype()
