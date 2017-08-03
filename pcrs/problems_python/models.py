@@ -79,6 +79,7 @@ class TestCase(AbstractTestCaseWithDescription):
     """
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
                                 null=False, blank=False)
+    pre_code = models.TextField(default="", blank=True)
     test_input = models.TextField()
     expected_output = models.TextField()
 
@@ -106,7 +107,7 @@ class TestCase(AbstractTestCaseWithDescription):
 
     def run(self, code):
         runner = GenericLanguage(self.problem.language)
-        return runner.run_test(code, self.test_input, self.expected_output)
+        return runner.run_test(code, self.test_input, self.expected_output, self.pre_code)
 
 
 class TestRun(AbstractTestRun):
