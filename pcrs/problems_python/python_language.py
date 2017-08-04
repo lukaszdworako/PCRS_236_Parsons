@@ -106,14 +106,13 @@ class PythonSpecifics(languages.BaseLanguage):
         return data
 
 
-    def run_test(self, user_script, test_input, exp_output):
+    def run_test(self, user_script, test_input, exp_output, pre_code=""):
         ''' Return dictionary ret containing results of a testrun.
             ret has the following mapping:
             'test_val' -> encoded for visualizer format test output.
             'passed_test' -> boolean
             'exception' (only if exception occurs) -> exception message.
         '''
-
         try:
             ret = {}
             user_script = str(user_script)
@@ -122,7 +121,7 @@ class PythonSpecifics(languages.BaseLanguage):
 
             # calling the resulting value is always last
             test_params = test_input.split('; ')
-
+            prepended_code = pre_code.split('\n')
             code_lines = self.sanitize_user_script(user_script)
 
             script = [  "import sys, os",
@@ -130,6 +129,7 @@ class PythonSpecifics(languages.BaseLanguage):
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
                         "import pg_encoder"] +\
+                        prepended_code +\
                         code_lines +\
                         test_params[: -1] +\
                         ["result = " + test_params[-1],

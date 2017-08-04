@@ -19,7 +19,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
 class TestCaseForm(BaseRelatedObjectForm):
     class Meta:
         model = TestCase
-        fields = ('description', 'test_input', 'expected_output', 'is_visible',
+        fields = ('description', 'pre_code', 'test_input', 'expected_output', 'is_visible',
                   'problem')
         widgets = {'problem': forms.HiddenInput()}
 
