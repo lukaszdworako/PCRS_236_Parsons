@@ -81,7 +81,7 @@ public class SCode {{
             tests.append('''    @Test
     public void {0}() {{
         SCode sc = new SCode();
-        assertEquals("{0}", sc.{1}({2}), {3});
+        assertEquals("{0}", {3}, sc.{1}({2}));
     }}
 '''.format(t['test_case_name'], testname, t['input'], t['output']))
 
