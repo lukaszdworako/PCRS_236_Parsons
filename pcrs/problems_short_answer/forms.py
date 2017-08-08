@@ -5,11 +5,19 @@ from pcrs.form_mixins import CrispyFormMixin
 from problems.forms import BaseProblemForm, BaseSubmissionForm
 from problems_short_answer.models import Problem, Submission
 
+from django.utils.translation import ugettext_lazy as _
 
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
         fields = ('name', 'description', 'max_score', 'keys', 'max_chars', 'min_chars', 'author', 'tags', 'visibility')
+        help_texts = {
+            'keys': _('Keys follow the format: <br> \
+            { <br> \
+                "key1, key2, ...": "hint", <br>\
+                "key1, key2, ...": "hint" <br>\
+            }'),
+        }
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)

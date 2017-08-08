@@ -193,6 +193,14 @@ $ createdb pcrsadmin -O pcrsadmin
 <p>To create an empty instance, use Django's migrations.</p>
 <pre>$ python3 manage.py migrate</pre>
 
+<p>While running migrate, you will get the following error if your postgres user does not have superuser privileges:</p>
+<pre>
+django.db.utils.ProgrammingError: permission denied to create extension "hstore"
+HINT:  Must be superuser to create this extension.
+</pre>
+<p>To fix this, you must manually create the HStore extension in the database. Using a user with appropriate privileges, connect to your database and run the query:</p>
+<pre>CREATE EXTENSION IF NOT EXISTS hstore;</pre>
+
 <p>Otherwise, load a pg_dump'd database image. (See the <a href="#prereqs">top of the page</a> if you need an image.)</p>
 <pre>$ psql -d pcrsadmin -f image.psql</pre>
 
