@@ -155,49 +155,8 @@ $( document ).ready(function(){
 
     var uploadPath = root + problemPath + '/uploaddata';
 
-    // $('#file_upload').change(function(){
-    //     var uploadedFile = $("#file_upload").prop('files')[0];
-    //     var probPk = $('#file_upload').attr('name');
-    //
-    // 		if(uploadedFile != undefined){
-    //         validFile = true;
-    //
-		// 				// Check validity of file
-		// 				if (uploadedFile.size > MAX_FILE_SIZE){
-		// 						alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
-		// 						validFile = false;
-		// 				}
-		// 				if (uploadedFile.type != "text/csv"){
-		// 						alert("File upload rejected, file is not csv");
-		// 						validFile = false;
-		// 				}
-    //
-    //         // Upload file
-    //         if(validFile){
-    //     				$.ajax({
-    //     						url: uploadPath,
-    //     						type: "POST",
-    //     						data: uploadedFile,
-    //     						processData: false
-    //     				})
-    //             .done(function(data){
-    //                 alert("Data set uploaded");
-    //                 if (!$("#file_upload").length){
-    //                     $("#file_upload").after(`<br><div id="file_existance" class="alert well">
-    //     								<p><input type="button" id="delete_file" class="btn btn-danger" value="X" style="margin-right:10px">
-    //     								</input> There is an existing data set.</p></div>`);
-    //                 }
-    //                 setDeleteButton(uploadPath);
-    //             })
-    //             .error(function(jqXHR, textStatus, errorThrown){
-    //                 alert("Error uploading file.");
-    //             });
-    //         }
-    //     }
-    // });
     $('#file_upload').change(function(){
         var uploadedFile = $("#file_upload").prop('files')[0];
-        var probPk = $('#file_upload').attr('name');
 
     		if(uploadedFile != undefined){
 						validFile = true;
