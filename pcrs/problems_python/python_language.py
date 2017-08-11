@@ -121,7 +121,10 @@ class PythonSpecifics(languages.BaseLanguage):
 
             # calling the resulting value is always last
             test_params = test_input.split('; ')
-            prepended_code = pre_code.split('\n')
+            if pre_code:
+                prepended_code = pre_code.split('\n')
+            else:
+                prepended_code = []
             code_lines = self.sanitize_user_script(user_script)
 
             script = [  "import sys, os",
