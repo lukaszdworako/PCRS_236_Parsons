@@ -8,6 +8,7 @@ from .settings_pcrs import *
 # Session information
 PROTOCOL_TYPES = (('http', 'http'), ('https', 'https'), ('ssh', 'ssh'))
 SESSION_COOKIE_AGE = 86400       # One day, in seconds
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 # True if links to bug reporting emails should be generated
 REPORT_BUGS = False
