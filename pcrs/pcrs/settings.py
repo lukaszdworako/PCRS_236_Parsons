@@ -214,6 +214,10 @@ LOGGING = {
     }
 }
 
+# If you set this to True, python submissions will have an additional,
+# more detailed error message included with them.
+PYTA = True
+
 # So we don't keep editing this file, edit settings_local
 try:
     from .settings_local import *

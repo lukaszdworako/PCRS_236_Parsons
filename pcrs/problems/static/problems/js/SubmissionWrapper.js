@@ -235,7 +235,7 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
 
     //PyTA
     if (testcases.length > 0 && testcases[testcases.length-1].hasOwnProperty("PyTA")){
-        this.wrapperDiv.find("#PyTADropdown").remove();
+        this.wrapperDiv.find("[id^=PyTADropdown]").remove();
         this._createPyTADropdown(testcases[testcases.length-1]);
         testcases.splice(testcases.length-1,1);
     }

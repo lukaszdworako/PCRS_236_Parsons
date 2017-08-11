@@ -51,7 +51,12 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         # We don't support multiple files yet
         submittedCode = submittedFiles[0]['code']
 
+        tags = [tag.name for tag in self.problem.tags.all()]
+
         for testcase in self.problem.testcase_set.all():
+            if "PyTA" in tags and testcase.description == "PyTA":
+                continue
+
             run = testcase.run(submittedCode)
 
             try:
@@ -115,13 +120,47 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
 
         return pytaResult
 
+    def run_pyta_testcase(self, pyta_output):
+        """
+        Run testcase for PyTA tagged problems to check for
+        presence of a certain error code.
+        """
+        testcases = self.problem.testcase_set.all()
+        pyta_testcase = testcases[len(testcases)-1]
+        err_code = pyta_testcase.test_input.strip()
+
+        ret = {}
+        ret['test_desc'] = pyta_testcase.description
+        ret['expected_output'] = ['string',99999,"No " + err_code + " Found"]
+        
+        if err_code in pyta_output['test_val']:
+            ret['passed_test'] = False
+            ret['test_val'] = ['string',99999,err_code + " Found"]
+        else:
+            ret['passed_test'] = True
+            ret['test_val'] = ['string',99999,"No " + err_code + " Found"]
+
+        TestRun.objects.create(submission=self, testcase=pyta_testcase,
+                                       test_passed=ret['passed_test'])
+        self.set_score()
+        
+        ret['debug'] = False
+        if pyta_testcase.is_visible:
+            ret['test_input'] = pyta_testcase.test_input.replace('\n','<br />')
+            ret['debug'] = True
+        else:
+            ret['test_input'] = None
+        
+        return ret
+
 
 class PyTAClickEvent(AbstractSelfAwareModel, SubmissionPreprocessorMixin):
     """
     A PyTA error message click event.
 
-    A PyTAClickEvent has a submission_id. It is created when the PyTA error
-    message is expanded.
+    A PyTAClickEvent has a submission_id and click_count. It is created when 
+    the PyTA error message dropdown is expanded and click_count is updated 
+    after every subsequent click.
     """
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
     click_count = models.PositiveIntegerField(default=1)
