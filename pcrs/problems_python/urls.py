@@ -1,10 +1,11 @@
 from django.conf.urls import url
 
 from problems.views import *
+from .views import *
 from problems.st_async_requests import visualizer_details
 
 from .forms import ProblemForm, TestCaseForm
-from .models import Problem, TestCase, Submission
+from .models import Problem, TestCase, Submission, PyTAClickEvent
 from editor.views import EditorAsyncView
 
 
@@ -47,11 +48,11 @@ urlpatterns = [
         TestCaseDeleteView.as_view(model=TestCase),
         name='coding_problem_delete_testcase'),
     url(r'^(?P<problem>[0-9]+)/submit$',
-        SubmissionView.as_view(model=Submission,
+        PythonSubmissionView.as_view(model=Submission,
                                template_name='problems_python/submission.html'),
         name='coding_problem_submit'),
     url(r'^(?P<problem>[0-9]+)/run$',
-        SubmissionAsyncView.as_view(model=Submission),
+        PythonSubmissionAsyncView.as_view(model=Submission),
         name='coding_problem_async_submit'),
     url(r'^editor/run$',
         EditorAsyncView.as_view(model=Submission, pType='python'),
@@ -73,4 +74,8 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/browse_submissions$',
         BrowseSubmissionsView.as_view(model=Problem),
         name='coding_problem_browse_submissions'),
+
+    # PyTA
+    url(r'^pyta$',
+        PyTAClickEventView.as_view(model=PyTAClickEvent))
 ]
