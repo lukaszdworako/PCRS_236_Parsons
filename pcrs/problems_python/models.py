@@ -12,7 +12,7 @@ from problems.models import (AbstractProgrammingProblem, AbstractSubmission,
 from pcrs.models import AbstractSelfAwareModel
 from pcrs.settings import PROJECT_ROOT
 
-# import python_ta
+import python_ta
 import io, re, os, tempfile
 from contextlib import redirect_stdout
 
