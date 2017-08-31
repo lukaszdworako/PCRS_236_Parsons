@@ -38,7 +38,7 @@ PythonSubmissionWrapper.prototype.createCodeMirrors = function() {
 }
 
 function getPyTAClickEvent(obj) {
-    $.post("/problems/python/pyta", {'problem_id': $(obj).attr('id'), csrftoken: csrftoken});
+    $.post(root + "/problems/python/pyta", {'problem_id': $(obj).attr('id'), csrftoken: csrftoken});
 }
 
 PythonSubmissionWrapper.prototype._createPyTADropdown = function(testcase) {
