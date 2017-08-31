@@ -22,7 +22,7 @@ import problems_python.models as python_models
 import problems_ra.models as ra_models
 import problems_sql.models as sql_models
 import problems_java.models as java_models
-#import problems_r.models as r_models
+import problems_r.models as r_models
 
 
 class EditorViewMixin:
@@ -130,10 +130,10 @@ class EditorViewMixin:
                 submission = java_models.Submission(
                     user=request.user, problem=self.get_problem(),
                     section=self.get_section(), submission=submission_code)
-            #elif self.pType == 'r':
-            #    submission = r_models.Submission(
-            #        user=request.user, problem=self.get_problem(),
-            #        section=self.get_section(), submission=submission_code)
+            elif self.pType == 'r':
+                submission = r_models.Submission(
+                    user=request.user, problem=self.get_problem(),
+                    section=self.get_section(), submission=submission_code)
             results, error = submission.run_testcases(request)
             self.object = submission
         return results, error

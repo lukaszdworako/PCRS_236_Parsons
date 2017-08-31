@@ -59,7 +59,7 @@ PROBLEM_APPS = (
     'problems_sql',
     'problems_rdb',
     'problems_ra',
-    #'problems_r',
+    'problems_r',
     'problems_multiple_choice',
     'problems_timed',
     'problems_rating',
