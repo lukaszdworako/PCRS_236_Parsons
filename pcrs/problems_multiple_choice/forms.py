@@ -1,4 +1,4 @@
-from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset
+from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Field
 from django import forms
 
 from pcrs.form_mixins import BaseRelatedObjectForm
@@ -40,8 +40,9 @@ class SubmissionForm(BaseSubmissionForm):
         problem = kwargs.get('problem', None)
         super().__init__(*args, **kwargs)
         self.fields['options'].queryset = Option.objects.filter(problem=problem)
+        Field.template = 'problems_multiple_choice/field_template.html'
         self.helper.layout = Layout(
-            Fieldset('', 'options'),
+            Fieldset('', Field('options')),
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right')
         )
