@@ -16,7 +16,6 @@ $( document ).ready(function() {
                 .parents('#multiple_choice-'+problem_pk)
                 .find('.controls')
                 .find('.checkbox')
-                .find('label')
                 .children();
 
             var submission = [];
