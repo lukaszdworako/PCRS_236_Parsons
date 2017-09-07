@@ -234,10 +234,14 @@ SubmissionWrapper.prototype.prepareGradingTable = function(testData) {
     }
 
     //PyTA
-    if (testcases.length > 0 && testcases[testcases.length-1].hasOwnProperty("PyTA")){
+    lastCase = testcases[testcases.length - 1]
+    if (testcases.length > 0 && lastCase.hasOwnProperty("PyTA")) {
         this.wrapperDiv.find("[id^=PyTADropdown]").remove();
-        this._createPyTADropdown(testcases[testcases.length-1]);
-        testcases.splice(testcases.length-1,1);
+        this._createPyTADropdown(lastCase);
+        testcases.splice(testcases.length-1, 1);
+        if (lastCase.passed_test) {
+            this.wrapperDiv.find("[id^=PyTADropdown]").hide()
+        }
     }
 
     this._addTestCasesToTable(testcases, $gradingTable);

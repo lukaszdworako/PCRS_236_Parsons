@@ -120,6 +120,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             pass
 
         pytaResult['test_val'] = pytaOutput
+        pytaResult['passed_test'] = '[Line' not in pytaOutput
         
         self.pyta = pytaOutput
         self.save()
