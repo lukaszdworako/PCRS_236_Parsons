@@ -98,14 +98,19 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         pytaResult['PyTA'] = True
         
         try:
-            tempfileDir= os.path.join(PROJECT_ROOT,'languages','python','execution','temporary')
+            tempfileDir = os.path.join(PROJECT_ROOT, 'languages', 'python', 'execution', 'temporary')
+            pytaConfig = os.path.join(PROJECT_ROOT, 'languages', 'python', 'pyta', 'pyta.config')
             submittedCodeFile = tempfile.NamedTemporaryFile(delete=False, dir=tempfileDir, suffix='.py')
             submittedCodeFile.write(submittedCode.encode())
             submittedCodeFile.close()
-            with io.StringIO() as buf, redirect_stdout(buf):
-                python_ta.check_all('.'.join(('languages','python','execution','temporary',submittedCodeFile.name.split(os.sep)[-1])))
-                #Remove ANSI characters
-                pytaOutput = re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]','',buf.getvalue()).replace('\n','<br />').replace('[','&emsp;[')
+            with io.StringIO() as buf, redirect_stdout(buf):  
+                python_ta.check_all(submittedCodeFile.name, config=pytaConfig)
+                pytaOutput = re.sub(r'^###.*\n', '', buf.getvalue(), flags=re.M)
+                pytaOutput = pytaOutput.split('\n', 1)[1]
+                #remove copied student code where errors occur
+                pytaOutput = re.sub(r'^(\s*\d+|\s{4,}).*\n', '', pytaOutput, flags=re.M)
+                #make it a bit more compact
+                pytaOutput = re.sub(r'\n\n\s*\[', '\n[', pytaOutput).strip().replace('\n', '<br />').replace('[', '&emsp;[')
         except Exception as e:
             pytaOutput = str(e)
         
