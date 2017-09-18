@@ -26,6 +26,7 @@ class Video(AbstractSelfAwareModel, AbstractNamedObject, AbstractTaggedObject):
     """
     A Video object has a name, a description, and a link to a video.
     """
+    description = models.TextField(blank=True)   # Overrides (required) description from AbstractNamedObject
     link = models.TextField()
     thumbnail = models.URLField(blank=True)
     download = models.URLField(blank=True)
