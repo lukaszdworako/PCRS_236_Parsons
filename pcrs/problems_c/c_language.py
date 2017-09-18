@@ -67,9 +67,12 @@ class CSpecifics():
         ret = {}
         user = str(self.username)
         user_script = str(self.submission)
-        # Escape potential shell injections
-        test_input = re.escape(test_input.strip('\r\n'))
-        test_input = test_input.replace("\\ ", " ")
+        # Would like to escape potential shell injections but cannot use re.escape, since 
+        # it escapes too much. We need to trust our test cases. If they can inject into the 
+        # database, we're already done.
+        #test_input = re.escape(test_input.strip('\r\n'))
+        #test_input = test_input.replace("\\ ", " ")
+        test_input.strip('\r\n')
 
         # Compile C source code
         if not self.compiled:
