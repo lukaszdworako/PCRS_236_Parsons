@@ -216,7 +216,7 @@ class PythonSpecifics(languages.BaseLanguage):
 
         safe_imports = ['math', 'random', 'datetime', 'functools', 'operator',
                         'string', 'collections', 're', 'json', 'heapq', 'bisect',
-                        'numpy', 'scipy']
+                        'numpy', 'scipy', 'typing']
 
         BANNED_BUILTINS = ('reload', 'input', 'apply', 'open', 'compile',
                            'file', 'eval', 'exec', 'execfile',
@@ -227,7 +227,6 @@ class PythonSpecifics(languages.BaseLanguage):
 
         import_statement = "import {0}"
         import_as_variable = "{0} = {1}"
-        import_as_modules = []
 
         i = 0
         while(i < len(code_lines)):
@@ -241,7 +240,22 @@ class PythonSpecifics(languages.BaseLanguage):
                 import_name = line[import_ind + 7:].split()[0]
                 if import_name in safe_imports:
                     code_lines[i] = import_statement.format(import_name)
-                    import_as_modules.append(import_as_variable.format(short_name, import_name))
+                    i += 1
+                    code_lines.insert(i, import_as_variable.format(short_name, import_name))
+                else:
+                    raise IllegalInputCode("The import '{0}' was found in your program; please remove it.".format(import_name))
+
+            # hack for "from ... import" statements; imports the module and
+            # sets the variable to point to that item
+            elif ("from" in line) and (" import " in line):
+                from_ind = line.find("from ")
+                import_ind = line.find("import")
+                import_name = line[from_ind + 5: import_ind].strip()
+                short_name = line[import_ind + 6:].strip()
+                if import_name in safe_imports:
+                    code_lines[i] = import_statement.format(import_name)
+                    i += 1
+                    code_lines.insert(i, "{0} = {1}.{0}".format(short_name, import_name))
                 else:
                     raise IllegalInputCode("The import '{0}' was found in your program; please remove it.".format(import_name))
 
@@ -259,7 +273,6 @@ class PythonSpecifics(languages.BaseLanguage):
                     raise IllegalInputCode("The string '{0}' was found in your program; please remove it.".format(banned_builtin))
 
             i += 1
-        code_lines += import_as_modules
         return code_lines
 
 

@@ -87,7 +87,8 @@ else:
 ALLOWED_MODULE_IMPORTS = ('math', 'random', 'datetime',
                           'functools', 'operator', 'string',
                           'collections', 're', 'json',
-                          'heapq', 'bisect')                   # , 'numpy', 'scipy')  -- uncomment to enable numpy and scipy
+                          'heapq', 'bisect', 'typing')
+                          # , 'numpy', 'scipy')  -- uncomment to enable numpy and scipy
 
 # PREEMPTIVELY import all of these modules, so that when the user's
 # script imports them, it won't try to do a file read (since they've
