@@ -251,11 +251,12 @@ class PythonSpecifics(languages.BaseLanguage):
                 from_ind = line.find("from ")
                 import_ind = line.find("import")
                 import_name = line[from_ind + 5: import_ind].strip()
-                short_name = line[import_ind + 6:].strip()
+                short_names = line[import_ind + 6:].split(',')
                 if import_name in safe_imports:
                     code_lines[i] = import_statement.format(import_name)
-                    i += 1
-                    code_lines.insert(i, "{0} = {1}.{0}".format(short_name, import_name))
+                    for sname in short_names:
+                        i += 1
+                        code_lines.insert(i, "{0} = {1}.{0}".format(sname.strip(), import_name))
                 else:
                     raise IllegalInputCode("The import '{0}' was found in your program; please remove it.".format(import_name))
 
