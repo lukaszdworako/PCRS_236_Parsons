@@ -201,7 +201,9 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             runner.lang.compile(self.user.username, files, self.problem.test_suite)
             test_results = runner.lang.run_test_suite()
         except CompilationError as e:
-            return self._createCompileErrorResponse(e)
+            return self._createErrorResponse(e, "Compile")
+        except UnicodeEncodeError as e:
+            return self._createErrorResponse(e)
 
         if 'exception' in test_results:
             return [{ 'passed_test': False,
@@ -239,12 +241,12 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     def _formatTextForHTML(self, text):
         return str(html.escape(text)).replace('\n', '<br />')
 
-    def _createCompileErrorResponse(self, e: CompilationError):
-        error = 'Compile error:<br />' + str(e).replace('\n', '<br />')
-        return [{ 'passed_test': False,
-                  'exception_type': 'error',
-                  'exception': error,
-                  'test_val': error}], None
+    def _createErrorResponse(self, e, errorLabel='Submission'):
+        error = '{} Error:<br />{}'.format(errorLabel, str(e).replace('\n', '<br />'))
+        return [{'passed_test': False,
+                 'exception_type': 'error',
+                 'exception': error,
+                 'test_val': error}], None
 
 
 class TestCase(AbstractTestCaseWithDescription):
