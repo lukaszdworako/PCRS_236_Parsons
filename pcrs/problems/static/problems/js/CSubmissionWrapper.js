@@ -193,7 +193,7 @@ CSubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
             .append(testResultDiv)));
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
-    this._addDebugColumnToTestRow($newRow, testcase.debug);
+    //this._addDebugColumnToTestRow($newRow, testcase.debug);
     this._addA11yToTestRow($newRow, testcase.test_val,
         testcase.passed_test, testcase.expected_output);
 
