@@ -299,7 +299,7 @@ SubmissionWrapper.prototype._createTestCaseRow = function(testcase) {
     if ("exception" in testcase) {
         $newRow.append($('<th class="red-alert" colspan="12"></th>')
             .attr('style', 'width: 100%;')
-            .append(testcase.exception));
+            .append("<code>" + testcase.exception + "</code>"));
     }
 
     return $newRow;
