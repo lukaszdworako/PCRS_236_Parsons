@@ -149,8 +149,6 @@ ROOT_URLCONF = 'pcrs.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'pcrs.wsgi.application'
 
-TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
