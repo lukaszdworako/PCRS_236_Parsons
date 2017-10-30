@@ -73,20 +73,10 @@ except ImportError:
   resource_module_loaded = False
 
 
-# ugh, I can't figure out why in Python 2, __builtins__ seems to
-# be a dict, but in Python 3, __builtins__ seems to be a module,
-# so just handle both cases ... UGLY!
-if type(__builtins__) is dict:
-  BUILTIN_IMPORT = __builtins__['__import__']
-else:
-  assert type(__builtins__) is types.ModuleType
-  BUILTIN_IMPORT = __builtins__.__import__
-
-
 # whitelist of module imports
 ALLOWED_MODULE_IMPORTS = ('math', 'random', 'datetime',
                           'functools', 'operator', 'string',
-                          'collections', 're', 'json',
+                          'collections', 're', 'json', 'io',
                           'heapq', 'bisect', 'typing')
                           # , 'numpy', 'scipy')  -- uncomment to enable numpy and scipy
 
@@ -105,6 +95,18 @@ def __restricted_import__(*args):
     return BUILTIN_IMPORT(*args)
   else:
     raise ImportError('{0} not supported'.format(args[0]))
+
+
+# ugh, I can't figure out why in Python 2, __builtins__ seems to
+# be a dict, but in Python 3, __builtins__ seems to be a module,
+# so just handle both cases ... UGLY!
+if type(__builtins__) is dict:
+  BUILTIN_IMPORT = __builtins__['__import__']
+  __builtins__['__import__'] = __restricted_import__
+else:
+  assert type(__builtins__) is types.ModuleType
+  BUILTIN_IMPORT = __builtins__.__import__
+  __builtins__.__import__ = __restricted_import__
 
 
 # blacklist of builtins

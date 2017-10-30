@@ -67,8 +67,8 @@ class PythonSpecifics(languages.BaseLanguage):
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
-                        "import pg_logger_v3",
                         "import pg_encoder",
+                        "import pg_logger_v3",
                         "code_lines =" + str(user_script.split("\n")),
                         "code = '\\n'.join(code_lines)",
                         "print(pg_logger_v3.exec_script_str(code," +\
@@ -131,7 +131,8 @@ class PythonSpecifics(languages.BaseLanguage):
                         "import resource",
                         "resource.setrlimit(resource.RLIMIT_AS, (200000000, 200000000))",
 						"resource.setrlimit(resource.RLIMIT_CPU, (3, 3))",    # 3 seconds of CPU. Insurance.
-                        "import pg_encoder"] +\
+                        "import pg_encoder",
+                        "import pg_logger_v3"] +\
                         prepended_code +\
                         code_lines +\
                         test_params[: -1] +\
@@ -216,7 +217,7 @@ class PythonSpecifics(languages.BaseLanguage):
 
         safe_imports = ['math', 'random', 'datetime', 'functools', 'operator',
                         'string', 'collections', 're', 'json', 'heapq', 'bisect',
-                        'numpy', 'scipy', 'typing']
+                        'numpy', 'scipy', 'typing', 'io']
 
         BANNED_BUILTINS = ('reload', 'input', 'apply', 'open', 'compile',
                            'file', 'eval', 'exec', 'execfile',
