@@ -75,7 +75,8 @@ class Submission(AbstractSubmission):
             run['test_desc'] = testcase.description
             run['debug'] = False
             if testcase.is_visible:
-                run['test_input'] = " ".join(['"{0}"'.format(c.strip('"')) for c in testcase.test_input.split()])
+                #run['test_input'] = " ".join(['"{0}"'.format(c.strip('"')) for c in testcase.test_input.split()])
+                run['test_input'] = testcase.test_input
                 run['debug'] = runner.visualizable
             results.append(run)
 
