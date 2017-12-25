@@ -96,11 +96,21 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         pytaResult['test_desc'] = 'PyTA'
         #Identify the result as PyTA output
         pytaResult['PyTA'] = True
+
+        # Need to build code with the 'pre' code.
+        pre_code = None
+        testcases = self.problem.testcase_set.all()
+        if len(testcases) > 0:
+            pre_code = self.problem.testcase_set.all()[0].pre_code
         
         try:
             tempfileDir = os.path.join(PROJECT_ROOT, 'languages', 'python', 'execution', 'temporary')
             pytaConfig = os.path.join(PROJECT_ROOT, 'languages', 'python', 'pyta', 'pyta.config')
             submittedCodeFile = tempfile.NamedTemporaryFile(delete=False, dir=tempfileDir, suffix='.py')
+
+            if pre_code is not None:
+                submittedCodeFile.write(pre_code)
+
             submittedCodeFile.write(submittedCode.encode())
             submittedCodeFile.close()
             with io.StringIO() as buf, redirect_stdout(buf):  
