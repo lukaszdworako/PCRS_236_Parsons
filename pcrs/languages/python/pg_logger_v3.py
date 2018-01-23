@@ -77,7 +77,8 @@ except ImportError:
 ALLOWED_MODULE_IMPORTS = ('math', 'random', 'datetime',
                           'functools', 'operator', 'string',
                           'collections', 're', 'json', 'io',
-                          'heapq', 'bisect', 'typing')
+                          'heapq', 'bisect', 'typing',
+                          'linecache') # required for pg_encoder
                           # , 'numpy', 'scipy')  -- uncomment to enable numpy and scipy
 
 # PREEMPTIVELY import all of these modules, so that when the user's
