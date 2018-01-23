@@ -109,7 +109,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             submittedCodeFile = tempfile.NamedTemporaryFile(delete=False, dir=tempfileDir, suffix='.py')
 
             if pre_code is not None:
-                submittedCodeFile.write(pre_code)
+                submittedCodeFile.write(pre_code.encode())
 
             submittedCodeFile.write(submittedCode.encode())
             submittedCodeFile.close()
