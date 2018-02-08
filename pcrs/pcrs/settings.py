@@ -83,7 +83,8 @@ STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 #Indicates to django_compress that you want the files to be compressed
-COMPRESS_ENABLED = "True"
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = False
 
 # Additional locations of static files
 STATICFILES_DIRS = (
