@@ -50,7 +50,6 @@ class Submission(AbstractSubmission):
             self.message = 'Your answer is less than minimum character requirement of ' \
                             + str(self.problem.min_chars) + '.'
         else:
-            words = self.submission.split()
             messages = []
 
             # Check each key in submission
@@ -60,8 +59,8 @@ class Submission(AbstractSubmission):
                 for ele in key.split(","):
                     key_dict[ele.strip()] = 1
 
-                for word in words:
-                    if word in key_dict:
+                for word in key_dict:
+                    if word in submission:
                         result += 1
                         break
                 else:
