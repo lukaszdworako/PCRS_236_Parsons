@@ -14,7 +14,7 @@ from django.db.models.signals import post_delete
 from pcrs.model_helpers import has_changed
 from pcrs.models import AbstractSelfAwareModel
 from problems_r.r_language import *
-from pcrs.settings import PROJECT_ROOT, SECRET_KEY
+from pcrs.settings import SITE_PREFIX, PROJECT_ROOT, SECRET_KEY
 from hashlib import sha1
 from users.models import PCRSUser
 
@@ -43,10 +43,10 @@ class Script(AbstractSelfAwareModel):
 		return self.name
 
 	def get_absolute_url(self):
-		return "/problems/r/script/{}".format(self.pk)
+		return "{}/problems/r/script/{}".format(SITE_PREFIX, self.pk)
 
 	def get_base_url(self):
-		return "/problems/r/script"
+		return "{}/problems/r/script".format(SITE_PREFIX)
 
 	def clean(self):
 		r = RSpecifics()
