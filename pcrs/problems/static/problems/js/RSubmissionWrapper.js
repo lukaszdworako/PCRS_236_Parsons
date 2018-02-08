@@ -163,7 +163,7 @@ $(document).ready(function() {
     // Check whether there is a file for each file upload element
     $('.file_upload').each(function(i, obj) {
         var probPk = obj.id;
-        var url = "/problems/r/" + probPk + "/uploadexist";
+        var url = root + "/problems/r/" + probPk + "/uploadexist";
         if (probPk != undefined && probPk > 0) {
             $.post(url, function(data) {
                 if (data.success == true) {
@@ -185,7 +185,7 @@ $(document).ready(function() {
             problemPath = problemPath.substring(index, submitIndex);
             var uploadPath = root + problemPath + '/upload';
         } else {
-            var uploadPath = '/problems/r/' + probPk + '/upload';
+            var uploadPath = root + '/problems/r/' + probPk + '/upload';
         }
         $(obj).change(function() {
             var uploadedFile = $(obj).prop('files')[0];

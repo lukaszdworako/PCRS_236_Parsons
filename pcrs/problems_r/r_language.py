@@ -4,7 +4,7 @@ from hashlib import sha1
 from datetime import datetime
 import problems.pcrs_languages as languages
 from pcrs.settings import PROJECT_ROOT
-R_TEMPPATH = os.path.join("languages/r/CACHE/")
+R_TEMPPATH = os.path.join(PROJECT_ROOT, "languages/r/CACHE/")
 
 class RSpecifics(languages.BaseLanguage):
 	"""
