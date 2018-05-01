@@ -5,6 +5,8 @@
         <div
                 {% if quest.is_past_due %}
                     class="pcrs-panel-title quest-expired collapsed"
+                {% elif quest.quest_id in completed_quests %}
+                    class="pcrs-panel-title quest-completed collapsed"
                 {% else %}
                     class="pcrs-panel-title quest-live collapsed"
                 {% endif %}

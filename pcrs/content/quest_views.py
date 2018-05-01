@@ -187,8 +187,40 @@ class QuestsView(ProtectedViewMixin, UserViewMixin, ListView):
             item.pk: item.content_object
             for item in ContentSequenceItem.objects.prefetch_related('content_object').all()
         }
-        
+
+        context['completed_quests'] = self.get_completed_quests(context, user, section)
+
         return context
+
+    def get_completed_quests(self, context, user, section):
+        challenge_data = Challenge.get_challenge_problem_data(user, section)
+        quests = context['object_list']
+        challenges = context['challenges']
+        quest_to_completed_challenges = {}
+        quest_to_challenges = {}
+        completed_quests = []
+
+        # Create mapping from quest id to number of challenges
+        for q in challenges:
+            for c in challenges[q]:
+                if c.quest_id not in quest_to_challenges:
+                    quest_to_challenges[c.quest_id] = []
+                quest_to_challenges[c.quest_id].append(c.id)
+
+        # Create mapping from quest id to number of completed challenges
+        for c in challenge_data['challenges_completed']:
+            for q in quest_to_challenges:
+                if c in quest_to_challenges[q]:
+                    if q not in quest_to_completed_challenges:
+                        quest_to_completed_challenges[q] = []
+                    quest_to_completed_challenges[q].append(c)
+
+        # Determine which quests are complete
+        for q in quest_to_completed_challenges:
+            if len(quest_to_completed_challenges[q]) == len(quest_to_challenges[q]):
+                completed_quests.append(q)
+
+        return completed_quests
 
     def get_queryset(self):
         all_quests = SectionQuest.objects

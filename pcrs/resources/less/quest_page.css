@@ -1044,6 +1044,8 @@ a.list-group-item.active>.blue-tag,.nav-pills>.active>a>.blue-tag{color:#428bca;
 .challenge-attempted:hover{background-color:#fdffc5;cursor:pointer}
 .challenge-not-attempted{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#ffe6e6;border-color:#ffc5c5;padding:17px 22px}.challenge-not-attempted>.dropdown .dropdown-toggle{color:inherit}
 .challenge-not-attempted:hover{background-color:#ffc5c5;cursor:pointer}
+.quest-completed{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e8ffe6;border-color:#caffc5;padding:17px 22px}.quest-live>.dropdown .dropdown-toggle{color:inherit}
+.quest-completed:hover{background-color:#caffc5;cursor:pointer}
 .quest-expired{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6e6e6;border-color:#d5d5d5;padding:17px 22px}.quest-expired>.dropdown .dropdown-toggle{color:inherit}
 .quest-expired:hover{background-color:#d5d5d5;cursor:pointer}
 .quest-live{border-style:solid !important;border-width:1px !important;padding:10px 15px;border-bottom:1px solid transparent;border-top-right-radius:3px;border-top-left-radius:3px;background-color:#e6ecff;border-color:#c5d3ff;padding:17px 22px}.quest-live>.dropdown .dropdown-toggle{color:inherit}
