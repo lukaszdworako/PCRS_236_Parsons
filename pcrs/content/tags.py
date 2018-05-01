@@ -33,7 +33,7 @@ class AbstractTaggedObject(models.Model):
     """
     An object that may have any number of tags.
     """
-    tags = models.ManyToManyField(Tag, null=True, blank=True,
+    tags = models.ManyToManyField(Tag, blank=True,
                                   related_name='%(app_label)s_%(class)s_related')
 
     class Meta:

@@ -297,7 +297,7 @@ class Challenge(AbstractSelfAwareModel, AbstractNamedObject,
     order = models.SmallIntegerField(default=0, blank=True)
     is_graded = models.BooleanField(default=False, blank=True)
     prerequisites = models.ManyToManyField('self', symmetrical=False,
-                                           blank=True, null=True)
+                                           blank=True)
     enforce_prerequisites = models.BooleanField(default=False, blank=True)
 
     class Meta:
