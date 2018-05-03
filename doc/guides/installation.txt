@@ -179,8 +179,10 @@ $ <span class="nb">popd</span>
 <pre>$ git submodule init
 $ git submodule update
 $ cd languages/java/execution/JavaJail
-$ ./setup.sh
+$ JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 ant build
 </pre>
+
+<p>Not: The last line will work for Java8 but will need to be updated for later versions.</p>
 
 <h3 id="markdown-header-database">Database</h3>
 <p>You can either set up an empty instance of PCRS or load a postgres dump into it. Either way, you'll need a user and database set up. The following example creates a user and database named <tt>pcrsadmin</tt>:</p>
