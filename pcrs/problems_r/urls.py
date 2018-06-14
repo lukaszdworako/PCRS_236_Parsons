@@ -21,6 +21,10 @@ urlpatterns = [
 	url(r"^create$", ProblemCreateView.as_view(model=Problem,
 		form_class=ProblemForm, template_name="problems_r/problem_form.html"),
 		name="code_problem_create"),
+        url(r'^(?P<pk>[0-9]+)/clone$',
+                ProblemCloneView.as_view(model=Problem, form_class=ProblemForm,
+                template_name='problems_r/problem_form.html'),
+                name='code_problem_clone'),
 	url(r'^(?P<pk>[0-9]+)/?$', ProblemUpdateView.as_view(
 		model=Problem, form_class=ProblemForm,
         template_name='problems_r/problem_form.html'),
