@@ -109,6 +109,11 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                             }
                             generateExportButton(data['sub_pk'], problemId)
                             that._getTestcasesCallback(data);
+                            var alertBox = that.wrapperDiv.find('#alert');
+                            if (alertBox.children('span').text().search("out of") != -1) {
+                                alertBox.children('span').text("Your output does not match our output.");
+                                that.wrapperDiv.find('.screen-reader-text').prop("Your output does not match our output.");
+                            }
                             // Deactivate loading pop-up
                             $('#waitingModal').modal('hide');
                         },
@@ -147,6 +152,11 @@ RSubmissionWrapper.prototype.getTestcases = function(code) {
                     }
                     generateExportButton(data["sub_pk"], problemId)
                     that._getTestcasesCallback(data);
+                    var alertBox = that.wrapperDiv.find('#alert');
+                    if (alertBox.children('span').text().search("out of") != -1) {
+                        alertBox.children('span').text("Your output does not match our output.");
+                        that.wrapperDiv.find('.screen-reader-text').prop("Your output does not match our output.");
+                    }
                     // Deactivate loading pop-up
                     $('#waitingModal').modal('hide');
                 },
