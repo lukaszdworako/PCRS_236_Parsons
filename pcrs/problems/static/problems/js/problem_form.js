@@ -166,10 +166,10 @@ $( document ).ready(function(){
 								alert("File upload rejected, file is too big. Max size: " + MAX_FILE_SIZE);
 								validFile = false;
 						}
-						if (uploadedFile.type != "text/csv"){
-								alert("File upload rejected, file is not csv");
-								validFile = false;
-						}
+						//if (uploadedFile.type != "text/csv"){
+						//		alert("File upload rejected, file is not csv");
+						//		validFile = false;
+						//}
 
 						// Upload file
 						if(validFile){
