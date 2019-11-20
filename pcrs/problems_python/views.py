@@ -16,7 +16,7 @@ class PythonSubmissionViewMixin(SubmissionViewMixin):
             submission_model = self.model.get_submission_class()
             submission_code = request.POST.get('submission', '')
             if submission_code:
-                submission = submission_model.objects.filter(user_id=request.user).order_by('-id')[0]
+                submission = next(submission_model.objects.filter(user_id=request.user).order_by('-id').iterator())
                 #PyTA result must always be last
                 results.append(submission.run_pyta())
                 if "PyTA" in [tag.name for tag in submission.problem.tags.all()]:
@@ -47,7 +47,7 @@ class PyTAClickEventView(TemplateView):
         submission_model = self.model.get_submission_class()
         dropdown_id = request.POST.get('problem_id', 'PyTADropdownError')[12:]
         try:
-            submission = submission_model.objects.filter(problem_id=dropdown_id, user_id=request.user).order_by("-id")[0]
+            submission = next(submission_model.objects.filter(problem_id=dropdown_id, user_id=request.user).order_by("-id").iterator())
         except (IndexError, AttributeError):
             return HttpResponse(status=500)
         if self.model.objects.filter(submission_id=submission.id).exists():
