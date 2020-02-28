@@ -18,10 +18,10 @@ $(document).ready(function() {
                 .parents('div[id^="short_answer-"]')[0].id);
         });
 
-        $(all_short_answer[x]).find("[name='history']").one("click", (function(){
+        $(all_short_answer[x]).find("[name='history']").click(function(){
             var short_answer_id = $(this).parents('div[id^="short_answer-"]')[0].id;
             getSAHistory(short_answer_id);
-        }));
+        });
     }
 });
 
@@ -106,6 +106,7 @@ function getSAHistory(short_answer_id){
     function(data){
         $('#'+short_answer_id).find('#history_accordion').html("");
         show_short_answer_history(data, short_answer_id);
+        $('#history_window_' + short_answer_id).modal('show');
     },
     'json')
     .fail(function(jqXHR, textStatus, errorThrown) { console.log(textStatus); });
