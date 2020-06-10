@@ -1,0 +1,14 @@
+__pycache__
+.DS_Store
+.idea
+*.pyc
+*.log
+*.swp
+CACHE
+node_modules
+venv
+pcrs*.c
+.pylintrc
+.python-version
+static/
+settings_local.py

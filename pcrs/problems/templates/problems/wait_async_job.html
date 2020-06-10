@@ -1,0 +1,15 @@
+{% load staticfiles %}
+
+<div class="pcrs-modal-trace" id="waitingModal" aria-hidden="false" style="" >
+  <div class="pcrs-modal-dialog">
+    <div class="pcrs-modal-content" style="margin-top:20%;">
+      <div class="pcrs-modal-header">
+        <h4 class="pcrs-modal-title">Loading&hellip;</h4>
+      </div>
+      <div class="pcrs-modal-body" align="center">
+        <p>Processing code, please wait&hellip;</p>
+        <img src="{% static "problems/img/loading.gif" %}" alt="Loading"  height="42" width="42"/>
+      </div>
+    </div>
+  </div>
+</div>

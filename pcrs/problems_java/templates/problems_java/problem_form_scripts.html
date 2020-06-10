@@ -1,0 +1,157 @@
+{% load compress %}
+{% compress js %}
+<script>
+/**
+ * Show a help dialog including some sample code for the instructor.
+ */
+function showJunitHelp() {
+    var previewTcm = new TabbedCodeMirror();
+    previewTcm.setNewFileOptions({
+        'readOnly': true,
+        'mode': cmModeForLanguageAndVersion('java', null),
+        'theme': user_theme, // global
+    });
+
+    var sampleCode = $('#sampleJUnitSuiteCode').text().trim();
+    previewTcm.addFile({
+        'name': 'SampleSuite.java',
+        'code': sampleCode,
+    });
+    AlertModal.alert('Sample Test Suite', previewTcm.getJQueryObject());
+    previewTcm.refresh();
+}
+
+problemFormPageLoadCallback = function() {
+    var handler = new JavaProblemFormHandler($('form'));
+    handler.pageLoad();
+
+    $('#div_id_test_suite label').append(
+        $('<a type="button"></a>')
+            .attr('title', 'Test Suite Help')
+            .attr('class', 'label-icon-button')
+            .click(showJunitHelp)
+            .append('<i class="question-sign-icon"></i>'));
+    $('#div_id_solution label').append(
+        $('<a type="button"></a>')
+            .attr('title', 'Solution Help')
+            .attr('class', 'label-icon-button')
+            .click(function() {
+                AlertModal.alert('Solution Help',
+                    'Your solution student_code tags and file names must '
+                    + 'match the starter code to use the "Load Solution" '
+                    + 'button on the instructor submission test page.'
+                    + 'In general, the solution code is used for instructor '
+                    + 'reference, so it is completely optional.');
+            })
+            .append('<i class="question-sign-icon"></i>'));
+}
+
+function JavaProblemFormHandler($form) {
+    var mode = cmModeForLanguageAndVersion('java', null);
+    ProgrammingProblemFormHandler.call(this, $form, mode);
+    this.enableTabsInStarterCode('java');
+
+    // These are created in _setupCodeMirrors
+    this.testSuiteCodeMirror = null;
+    this.visualizerCodeMirror = null;
+}
+JavaProblemFormHandler.prototype =
+    Object.create(ProgrammingProblemFormHandler.prototype);
+JavaProblemFormHandler.prototype.constructor = JavaProblemFormHandler;
+
+/**
+ * @override
+ */
+JavaProblemFormHandler.prototype._setupCodeMirrors = function() {
+    ProgrammingProblemFormHandler.prototype._setupCodeMirrors.call(this);
+    this.testSuiteCodeMirror = to_code_mirror('java', null,
+        $('#id_test_suite'), $('#id_test_suite').text(), false);
+    this.visualizerCodeMirror = to_code_mirror('java', null,
+        $('#id_visualizer_code'), $('#id_visualizer_code').text(), false);
+}
+
+/**
+ * @override
+ */
+JavaProblemFormHandler.prototype._setHiddenFieldValues = function() {
+    var starterCode = TagManager.concatFilesIntoCode(
+        this.starterCodeTcm.getFiles(), true);
+    var solutionCode = TagManager.concatFilesIntoCode(
+        this.solutionTcm.getFiles(), true);
+    var testSuiteCode = this.testSuiteCodeMirror.getValue();
+    var visualizerCode = this.visualizerCodeMirror.getValue();
+
+    this.$form.find("#id_starter_code_tmp").val(starterCode);
+    this.$form.find("#id_solution_tmp").val(solutionCode);
+    this.$form.find("#id_test_suite_tmp").val(testSuiteCode);
+    this.$form.find("#id_visualizer_code_tmp").val(visualizerCode);
+}
+
+/**
+  * @override
+  */
+JavaProblemFormHandler.prototype._createHiddenFormFields = function() {
+    ProgrammingProblemFormHandler.prototype._createHiddenFormFields.call(this);
+    this.$form.append(this._createHiddenField('test_suite'));
+    this.$form.append(this._createHiddenField('visualizer_code'));
+}
+</script>
+{% endcompress %}
+
+<script id="sampleJUnitSuiteCode" type="text/plain">
+import org.junit.*;
+import static org.junit.Assert.*;
+import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+
+public class Tests {
+    private java.util.List list;
+    private ByteArrayOutputStream out;
+    private PrintStream oldSystemOut;
+
+    // Called before every test case.
+    @Before
+    public void setUp() {
+        list = new java.util.ArrayList();
+        // Used to capture stdout - handy for testing
+        out = new ByteArrayOutputStream();
+        oldSystemOut = System.out;
+        System.setOut(new PrintStream(out));
+    }
+
+    // Called after every test case. Used to clean up resources.
+    @After
+    public void tearDown() {
+        System.setOut(oldSystemOut);
+        // Dump stdout - we still want it to print eventually
+        System.out.println(out.toString());
+        list = null;
+        out = null;
+    }
+
+    /**
+     * Test case comments will be shown to the student when they submit code.
+     * You can either have them as a block comment or a line comment above
+     * each test case.
+     */
+    @Test
+    public void testFoo() {
+        // Not providing an assert description will hide the assertion details.
+        assertEquals(4, 2 + 2);
+        // If you provide a description, the assert will _not_ be hidden.
+        assertEquals("Arithmetic is broken!", 6, 3 + 3);
+    }
+
+    @Test(expected=IndexOutOfBoundsException.class)
+    public void testIndexException() {
+        Object o = list.get(42);
+    }
+
+    @Test
+    public void testCaptureStdout() {
+        System.out.println("o hai");
+        assertEquals("o hai\n", out.toString());
+    }
+}
+</script>
+

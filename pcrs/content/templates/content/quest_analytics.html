@@ -1,0 +1,46 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    Quest Analytics: {{ questName }}
+{% endblock %}
+
+{% block content %}
+    <table id="analyticsTable" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th id="problemName">Name</th>
+                <th id="problemType">Type</th>
+                <th id="problemAttemptMedian">Attempts per Student (Median)</th>
+                <th id="problemAttemptPercent">Percent of Class Attempted</th>
+                <th id="problemSolvedPercent">Percent of Class Solved</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+    $(function() {
+        // Set from the Django template
+        var userCount = {{userCount}};
+        var problems = {{problems|safe}};
+        var $tbody = $('#analyticsTable');
+        var renderer = new QuestAnalyticsRenderer(userCount, problems, $tbody);
+        renderer.render();
+    });
+    </script>
+    {% load staticfiles %}
+    <script type="text/javascript"
+        src="{% static "content/js/quest_analytics.js" %}"></script>
+    <script type="text/javascript"
+        src="{% static "jquery.tablesort.min.js" %}"></script>
+{% endblock %}
+
+{% block stylesheets %}
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "less/quest_analytics.css" %}">
+{% endblock %}
+

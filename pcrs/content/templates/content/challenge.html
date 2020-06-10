@@ -1,0 +1,19 @@
+{% extends "pcrs/base.html" %}
+
+{% block page_title %}
+    {{ object.name }}
+{% endblock %}
+
+
+{% block content %}
+    <div>
+    {% autoescape off %}
+        {{ object.description|linebreaks }}
+    {% endautoescape  %}
+    </div>
+    <div class="button-block">
+        <a role="button" class="green-button-right"
+           href="{{ object.get_first_page }}">Go!</a>
+    </div>
+    {% include "problems_c/wait_async_job.html" %}
+{% endblock %}

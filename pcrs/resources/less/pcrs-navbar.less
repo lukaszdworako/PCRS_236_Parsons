@@ -1,0 +1,112 @@
+@import "../bootstrap_less/bootstrap-3.2.0/less/navs";
+@import "../bootstrap_less/bootstrap-3.2.0/less/navbar";
+@import "../bootstrap_less/bootstrap-3.2.0/less/dropdowns";
+
+// Basics of a navbar
+@navbar-default-color:             @uft-white;
+@navbar-default-bg:                @uft-white;
+@navbar-default-border:            darken(@navbar-default-bg, 6.5%);
+
+// Navbar links
+@navbar-default-link-color:                @uft-blue;
+@navbar-default-link-hover-color:          @uft-white;
+@navbar-default-link-hover-bg:             @uft-blue;
+@navbar-default-link-active-color:         @uft-white;
+@navbar-default-link-active-bg:            darken(@uft-blue, 6.5%);
+@navbar-default-link-disabled-color:       red;
+@navbar-default-link-disabled-bg:          @uft-grey;
+
+// Navbar brand label
+@navbar-default-brand-color:               @uft-blue;
+@navbar-default-brand-hover-color:         darken(@uft-blue, 10%);
+@navbar-default-brand-hover-bg:            transparent;
+
+// Navbar toggle
+@navbar-default-toggle-hover-bg:           #ddd;
+@navbar-default-toggle-icon-bar-bg:        #888;
+@navbar-default-toggle-border-color:       #ddd;
+
+.pcrs-navbar{
+  .navbar;
+  .navbar-default;
+
+  .pcrs-navbar-brand{
+    .navbar-brand;
+  }
+  .pcrs-navbar-text{
+    .navbar-text;
+  }
+  .pcrs-navbar-nav{
+    .navbar-nav;
+  }
+  .pcrs-navbar-toggle{
+    .navbar-toggle;
+  }
+  .pcrs-navbar-collapse,
+  .pcrs-navbar-form{
+    .navbar-collapse;
+  }
+  .pcrs-navbar-nav{
+    .navbar-nav;
+  }
+
+}
+
+.pcrs-navbar-header{
+  .navbar-header;
+}
+
+.pcrs-navbar-toggle{
+  .navbar-toggle;
+  .pcrs-icon-bar{
+    .navbar-toggle > .icon-bar;
+  }
+}
+
+.pcrs-navbar-brand{
+  .navbar-brand;
+}
+
+.pcrs-navbar-collapse{
+  .navbar-collapse;
+}
+
+.pcrs-navbar-nav{
+  .nav;
+  .navbar-nav;
+  @media (max-width: @screen-xs-max) {
+    width: 100%;
+  }
+}
+
+.pcrs-navbar-nav-right{
+  .pcrs-navbar-nav;
+  @media (max-width: @screen-xs-max) {
+    margin-left:0;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    .pull-right;
+  }
+}
+
+//icons
+    .pcrs-dropdown-icon{
+      .glyphicon;
+      .glyphicon-align-justify;
+    }
+
+    .pcrs-settings-icon{
+      .glyphicon;
+      .glyphicon-cog;
+    }
+
+    .pcrs-feedback-icon{
+      .glyphicon;
+      .glyphicon-envelope;
+    }
+
+    .pcrs-logout-icon{
+      .glyphicon;
+      .glyphicon-log-out;
+    }

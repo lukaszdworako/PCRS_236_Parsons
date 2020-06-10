@@ -1,0 +1,53 @@
+<!-- Must check if values are null since 0 is a valid entry.  -->
+{% if problem.maximum == None or problem.increment == None %}
+    <div class="alert alert-danger" role="alert">The required fields for this problem were not filled out.</div>
+{% else %}
+    <div style="text-align: left">
+    Rating: <input type="text" id="val_star" name="rating" style="border:hidden;text-align:left;font-weight:bold;"
+    {% if previous_rating %}
+        value="{{ previous_rating_value }}"
+    {% else %}
+        value="0"
+    {% endif %}
+    readonly/>
+    </div>
+    <br>
+    
+    {% load staticfiles %}
+    <script src="{% static "problems_rating/js/jquery.rateit.min.js" %}" type="text/javascript"></script>
+    <link rel="stylesheet" href="{% static "problems_rating/css/rateit.css" %}" type="text/css"></link>
+    {% if problem.extra %}
+        <link rel="stylesheet" href="{% static "problems_rating/css/bigstars.css" %}" type="text/css"></link>
+        <div id="rateit_id" class="rateit bigstars"
+             data-rateit-starwidth="32"
+             data-rateit-starheight="32"
+             data-rateit-max="{{ problem.maximum }}"
+             data-rateit-step="{{ problem.increment }}"
+            {% if previous_rating %}
+                data-rateit-value="{{ previous_rating_value }}"
+            {% endif %}
+             data-rateit-resetable="false">
+        </div>
+    {% else %}
+        <div id="rateit_id" class="rateit"
+             data-rateit-max="{{ problem.maximum }}"
+             data-rateit-step="{{ problem.increment }}"
+            {% if previous_rating %}
+                data-rateit-value="{{ previous_rating_value }}"
+            {% endif %}
+             data-rateit-resetable="false">
+        </div>
+    {% endif %}
+    
+    <script type="text/javascript">
+        $(document).ready( function() {
+            var labels = [];
+            {% for option in problem.get_options %}
+                labels.push("{{ option }}");
+            {% endfor %}
+            $("#rateit_id").bind('rated', function (event, value) { $('#val_star').val(value); });
+            $("#rateit_id").bind('over', function (event, value) { $(this).attr('title', labels[value-1]); });
+        });
+    </script>
+{% endif %}
+

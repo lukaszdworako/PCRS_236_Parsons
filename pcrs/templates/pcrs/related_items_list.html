@@ -1,0 +1,21 @@
+<h3>{{ list_name }}</h3>
+{% for object in object_list %}
+    <div class="item row">
+        {% block item_title %}
+            {% autoescape off %}
+                <div class="col-sm-11">
+                    {{ object }}
+                </div>
+            {% endautoescape %}
+        {% endblock %}
+        <span class="col-sm-1">
+            {% block item_controls %}
+                {% include "pcrs/buttons/edit.html" %}
+                <a href="{{ object.get_absolute_url }}/delete"
+                        title="Edit {{ object.name }}">
+                    <i class="trash-icon-right"></i>
+                </a>
+            {% endblock %}
+        </span>
+    </div>
+{% endfor %}

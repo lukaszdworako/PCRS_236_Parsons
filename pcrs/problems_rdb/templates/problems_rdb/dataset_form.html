@@ -1,0 +1,14 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% block links %}
+    <a class="button" href="{{ schema.get_absolute_url }}">< Back to schema</a>
+{% endblock %}
+
+{% block content %}
+    <div class="well">
+        {% autoescape off %}
+            {{ schema.representation }}
+        {% endautoescape %}
+    </div>
+    {{ block.super }}
+{% endblock %}

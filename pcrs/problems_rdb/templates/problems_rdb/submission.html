@@ -1,0 +1,24 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems/code_problem_scripts.html" %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="{{ problem.get_problem_type_name }}-{{ problem.pk }}" class="code-mirror-wrapper">
+        {% include "problems_rdb/submission_widget.html" %}
+    </div>
+
+{% endblock %}

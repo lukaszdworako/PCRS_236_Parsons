@@ -1,0 +1,66 @@
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    {{ problem.name|default_if_none:"Multiple Choice Question" }}
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+
+        <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}"></span>
+
+        {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
+            <span class="widget_controls">
+            <a href="{{ problem.get_absolute_url }}" title="Edit">
+            <i style="color:navy" class="pencil-icon"></i><span class="at">Edit {{ problem.name }}"</span></a>
+
+            <a href="{{ problem.get_browse_submissions_url }}" title="Browse submissions"><i
+                    class="openfolder-icon"></i><span
+                    class="at">Submissions for {{ problem.name }}</span></a>
+
+            <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
+                    class="stats-icon"></i><span
+                    class="at">Statistics for {{ problem.name }}</span></a>
+            </span>
+        {% endif %}
+    </h3>
+{% endblock %}
+
+{% block problem_description %}
+    <div>
+        {% autoescape off %}
+            {% if problem.is_visible_to_students %}
+                <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+            {% else %}
+                <h5>This question is currently unavailable.</h5>
+            {% endif %}
+        {% endautoescape %}
+    </div>
+    <br>
+{% endblock %}
+
+{% if problem.is_visible_to_students %}
+    {% block submission_form %}
+        {% autoescape off %}
+            {% load crispy_forms_tags %}
+            {% crispy form %}
+        {% endautoescape %}
+    {% endblock %}
+
+    {% block alert %}
+        <br>
+        <div class="alert-container" id="alert">
+            <icon class=""></icon>
+            <span></span>
+            <a class="at screen-reader-text" href=''></a>
+        </div>
+    {% endblock %}
+
+    {% block history %}
+        {% include "problems/submission_history.html" %}
+    {% endblock %}
+
+    {% block problem_specific %}
+    {% endblock %}
+{% endif %}

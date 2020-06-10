@@ -1,0 +1,66 @@
+<!--#include virtual="/~pcrs/pcrs/header.txt"-->
+
+        <div class="clearfix">
+
+            <div class="outline">
+                <ol>
+                    <li><a href="#layout">Page Layout and Navigation</a></li>
+                    <li><a href="#problems">Challenges and Problems</a></li>
+                    <li><a href="#code_editor">Code Editor</a></li>
+                    <li><a href="#faq">Frequently Asked Questions</a></li>
+                </ol>
+            </div> <!-- outline -->
+
+            <a name="layout"><h2>Page Layout and Navigation</h2></a>
+            <p>
+                Upon logging in, you'll see a navigation bar at the top of the screen and, in the remainder of the screen, the content that is visible for your section.
+            </p>
+
+            <p>
+                The navigation bar provides easy access to a Code Editor that can be used to step through code one line at a time. The right side of the navigation bar lists your username and section.
+            </p>
+
+            <p>
+                Below the navigation bar, you'll see a series of quests. Each quest contains a series of challenges, and each challenge contains resources about a specific topic: videos, possibly, or multiple choice or coding questions. If the work is being marked, then a due date is visible on the right-hand side of the quest bar.
+            </p>
+
+            <img alt="A list of challenges under the 'C Language Basics' quest." src="images/guide/challenges.png" width="100%" />
+
+            <p>
+                Clicking on a quest expands it, so that you can see the challenges it contains. Each challenge has its own name, and it tells you whether the challenge is for practice or whether it is being graded for credit. Clicking on the challenge's name expands it, but you can also click on the arrow on the bar to enter the challenge.
+            </p>
+
+            <a name="problems"><h2>Challenges and Problems</h2></a>
+
+            <p>
+                Inside a challenge, you'll see a progress bar in the top right and content on the main page. The progress bar contains icons -- for videos and exercises -- and these icons are red if you have not attempted the problem, yellow if you have attempted but not completed the problem, and green if you have solved the problem. Clicking on an icon takes you directly to the problem it represents. Clicking the navigation chevrons will take you to other pages of problems, if there are other pages in the challenge.
+            </p>
+
+            <img alt="An example of how students view testcases." src="images/guide/testcase-visibility.png" width="100%" />
+
+            <p>
+                While your challenge may contain multiple items -- videos, multiple choice problems, or programming exercises -- each item can be completed separately. The picture above shows a programmign exercise that has been completed. Make sure to check the message that is displayed when you click "Submit" carefully. If the message is red or yellow, an error has occurred: your code may not have compiled, may have failed tests, or may be after a deadline. A green bar indicates that all tests have passed. You'll also see a checkmark appear on the problem that you've solved.
+            </p>
+
+            <a name="code_editor"><h2>Code Editor</h2></a>
+            <p>
+                The code editor contains a text area where C, Python, Java, or SQL code (depending on your course) can be entered. When the code is submitted, it is compiled, and warnings are reported below the text area. If compilation is successful, then the code is instrumented, and a trace of execution is displayed. Users can step through the trace (forwards or backwards), and a representation of the program's state is updated as the user navigates the code.
+            </p>
+
+            <a name="faq"><h2>Frequently Asked Questions</h2></a>
+
+            <ol>
+                <li><i>I can't import system libraries. Why not?</i><br />
+                    PCRS runs code on the server, so we have disallowed certain libraries which give you access to the internals of the server.
+                <li><i>In Python, I can't seem to use any variable with "open" (or "file" or "input" or ...) in it. I get odd errors.</i><br />
+                    Yes -- Python gives you access to some builtin commands -- like open -- that have to be disallowed. The filter that removes them is a little enthusiastic, so even variable names with open are removed. Sorry! Just use a different variable name.
+                <li><i>The code editor (or debug button) isn't available.</i><br />
+                    Some instructors turn off the code editor for the courses. In addition, if a test case contains
+                    hidden code (necessary for testing it for correctness), the debug button is not available.
+            </ol>
+
+
+        </div> <!-- clearfix -->
+
+<!--#include virtual="/~pcrs/pcrs/footer.txt"-->
+

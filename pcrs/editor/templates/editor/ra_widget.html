@@ -1,0 +1,28 @@
+{% extends "problems_rdb/submission_widget.html" %}
+
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    Relational Algebra Editor
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+    </h3>
+
+    {% if problem.schema.representation %}
+        <div id="schema" class="well">
+            {% autoescape off %}
+                {{ problem.schema.representation }}
+            {% endautoescape %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block problem_description %}
+    <div>
+        <h5>Enter your relational algebra code here to run it on the schema above.</h5>
+    </div>
+    <br>
+{% endblock %}

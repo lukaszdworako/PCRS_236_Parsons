@@ -1,0 +1,26 @@
+{% extends "problems/submission.html" %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block scripts %}
+
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "csrf_protection.js" %}" type="text/javascript"></script>
+        <script src="{% static "problems/js/problems_helper.js" %}"
+            type="text/javascript"></script>
+        <script src="{% static "problems_rating/js/rating_submit.js" %}"
+            type="text/javascript"></script>
+    {% endcompress %}
+
+{% endblock %}
+
+{% block content %}
+
+    <div id="rating-{{ problem.pk }}">
+        {% include "problems_rating/submission_widget.html" %}
+    </div>
+
+{% endblock %}

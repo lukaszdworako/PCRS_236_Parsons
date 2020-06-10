@@ -1,0 +1,44 @@
+{% extends "pcrs/base.html" %}
+
+{% load filters %}
+{% load feedback %}
+
+{% load staticfiles %}
+
+{#{% block less %}#}
+{#    <link rel="stylesheet/less"#}
+{#          type="text/css"#}
+{#          href="{% static "less/quest_page.less" %}" />#}
+{##}
+{#    <script src="{% static "less/less-1.7.3.min.js" %}"#}
+{#            type="text/javascript">#}
+{#    </script>#}
+{#{% endblock %}#}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load static %}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "content/js/Quest_color_control.js" %}"
+                type="text/javascript">
+        </script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {% load compress %}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "less/quest_page.css" %}">
+    {% endcompress %}
+{% endblock %}
+
+{% block page_title %}
+    Quests
+{% endblock %}
+
+{% block content %}
+    {% for quest in object_list %}
+        {% include "content/display_quests.html" %}
+    {% endfor %}
+{% endblock %}

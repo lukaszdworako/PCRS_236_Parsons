@@ -1,0 +1,309 @@
+<!--#include virtual="/~pcrs/pcrs/header.txt"-->
+
+        <div class="clearfix">
+
+            <div class="outline">
+                <ol>
+                    <li><a href="#layout">Page Layout and Navigation</a></li>
+                    <li><a href="#problems">Problems</a></li>
+                    <ol>
+                        <li><a href="#C_problems">C Problems</a></li>
+                        <li><a href="#mc">Multiple Choice Problems</a></li>
+                    </ol>
+                    <li><a href="#content">Content</a></li>
+                    <ol>
+                        <li><a href="#tags">Tags</a></li>
+                        <li><a href="#videos">Videos</a></li>
+                        <li><a href="#challenges">Challenges</a></li>
+                        <li><a href="#quests">Quests</a></li>
+                        <li><a href="#sections">Sections</a></li>
+                    </ol>
+                    <li><a href="#code_editor">Code Editor</a></li>
+                </ol>
+            </div> <!-- outline -->
+
+            <a name="layout"><h2>Page Layout and Navigation</h2></a>
+            <p>
+                Upon logging in, instructor users see a navigation bar at the top of the screen and, in the remainder of the screen, the student view of content that is visible in the section.
+            </p>
+
+            <p>
+                The navigation bar provides easy access to tools for modifying the contents of PCRS, and is split into three tabs: "Problems", "Content", and "Code Editor". The "Problems" tab allows instructors to create and edit programming, multiple choice, and short-answer exercises, while the "Content" tab provides tools for organizing the layout of PCRS, as well as the ability to add videos. The "Code Editor" is a direct link to the tool for tracing code.
+            </p>
+
+            <p>
+                The right-hand side of the navbar also contains a few useful tools. Clicking on "Viewing as ..." allows an instructor to enter a user's ID. While viewing "as a user", the instructor will see what that student sees -- including their history. An instructor can also change the section they are viewing as.
+            </p>
+
+            <p>
+                A few icons are used consistently throughout the system. Look for a right arrow in a circle to go to content, a pencil to edit an item, and a graph to get statistics about an item.
+            </p>
+
+            <a name="problems"><h2>Problems</h2></a>
+            <p>
+                The "Problems" tab contains links to the available problem types: programming exercises (<a href="https://mcs.utm.utoronto.ca/~pcrs/C-programming/index.shtml">C</a>, <a href="https://mcs.utm.utoronto.ca/~pcrs/java-programming/index.shtml">Java</a>, <a href="https://mcs.utm.utoronto.ca/~pcrs/python-programming/index.shtml">Python</a>, and <a href="https://mcs.utm.utoronto.ca/~pcrs/sql-programming/index.shtml">SQL and relational algebra</a>), <a href="#mc">multiple choice</a> questions, and short-answer questions. The problem pages are structured similarly, containing a "+" icon at the top for adding new problems followed by a list of all pre-existing problems with links for attempting (arrow-icon) and editing (pencil-icon) each problem.
+            </p>
+
+            <p>
+                For instructions on how to add a problem to a page, please refer to <a href="#challenges">Challenges</a>.
+            </p>
+
+            <a name="problems"><h3>Problems</h3></a>
+
+            <img alt="The PCRS page for entering new C problems" src="images/guide/problem-editor-c.png" width="100%" />
+
+            <p>
+                For all of the programming languages supported by PCRS, pressing the "+" icon leads to a form for creating a new problem. Existing problems can be edited by clicking on the pencil icon next to the problem description.
+            </p>
+
+            <h4>Fields</h4>
+
+            <p>
+                The exact fields for various problem types vary, but most include:
+            </p>
+
+            <ul>
+                <li><b>Name</b>: the name / title of the problem.</li>
+                <li><b>Description</b>: a description of the problem.</li>
+                <li><b>Starter Code</b>: the code the student sees as well as (potentially) hidden code to support testing; <a href="#starter">see this section for details</a>.</li>
+                <li><b>Solution Code</b>: a solution, for reference. For C, Python, or Java, this is optional, but SQL and relational algebra problems require a solution to test student submissions.</li>
+                <li><b>Tags</b> (optional): associates the problem with a tag for organizational purposes.</li>
+                <li><b>Visibility</b>: whether the student is visible (open) or invisible (closed) to students .</li>
+                <li><b>Testcases</b>: this field becomes visible once a problem has been created (saved once). (SQL problems replace this with a schema, which is a dataset that the submission and solution are applied to.)<a href="#testcases">Refer to this section for details</a>.</li>
+            </ul>
+
+            <a name="starter"><h4>Starter Code</h4></a>
+            <p>
+                The contents of the "Starter Code" field are displayed to the student when they first load the problem. The student adds to the field containing this code and then submits their solution for testing. Any text can be entered into the field, but it's usually advisable to enter code and comments in the style of the language being taught.
+            </p>
+
+            <p>
+                In addition to text, PCRS-C and PCRS-Java also support three tags that determine the visibility and editability of sections of the code: student_code, blocked code, and hidden code. In the other languages, the entire contents of the Starter Code field is displayed to the user.
+            </p>
+
+            <img alt="The contents of a starter code field" src="images/guide/starter-code1.png" width="100%" />
+
+            <img alt="And how it is rendered for the user" src="images/guide/starter-code2.png" width="100%" />
+
+            <ul>
+                <li>
+                    <b>student_code</b>: code wrapped in [student_code][/student_code] tags will be visible and modifiable to users attempting the problem. These area allows a student to enter new code, as well.
+                </li>
+                <li>
+                    <b>blocked</b>: code wrapped in [blocked][/blocked] tags will be visible to users attempting the problem, but cannot be modified. This is typically used to set up a situation which requires a specific solution.
+                </li>
+                <li>
+                    <b>hidden</b>: code wrapped in [hidden][/hidden] tags will not be visible to users attempting the problem. This is typically used early in a course, to hide code students have not seen yet, or to keep users from seeing how the code is being tested.
+
+                    <i>This feature has a cost.</i> If a problem includes hidden code, students cannot trace (visualize) the results of a test. Furthermore, it is possible that a bug introduced earlier in the program will be revealed within a hidden code section. In this case, PCRS will display part of the error message but will omit details about the code that failed.
+                </li>
+            </ul>
+
+            <p>
+                Tags can be entered as plain-text, or added by highlighting starter code text and clicking on either the "Student Code", "Blocked", or "Hidden" button.
+            </p>
+
+            <a name="testcases"><h4>Test Cases</h4></a>
+            <p>
+                Student submissions are graded based on the number of test cases passed -- if a submission passes every test case, the solution is marked as correct. Submissions to problems with no test cases will always be marked as correct if they compile.
+            </p>
+
+            <p>
+                The method for testing depends on the language of the exercises.
+            <p>
+
+            <ul>
+                <li>
+                    <b>Python</b>'s testcases are simply appended to the end of the student submission. They should be legal python code, with the final line in the testcase being an expression (not statement). The value of the final line of the testcase is compared to the expected value to see if the test has passed.
+                </li>
+                <li>
+                    <b>C</b>'s tests are based on standard output. Each testcase provides a set of command line options and the expected output of the program. PCRS-C runs the submitted program against each testcase and compares the student's output (stdout) with the expected output. This means that you can ask students to print specific values -- or you can add your own print statements, wrapped in blocked or hidden tags, to evaluate specific variables in the program.<br /><br />
+
+                    Test cases are not whitespace-sensitive (spaces, newlines, tabs, etc.), so a test case with expected output "ab" will pass if the program prints "a b\n", and vice-versa (i.e. expect "a b\n", receive "ab").
+                </li>
+                <li>
+                    <b>Java</b> uses the unittest framework for testing. A full unittest class should be provided.
+                </li>
+                <li>
+                    <b>SQL and relational algebra</b> require a solution and schemas, rather than testcases. The provided solution and the student submission are both run on each of the provided schemas and then compared. If the results match, the schema (in essence, a testcase) passes.
+                </li>
+            </ul>
+
+            <p>
+                For C and Python, new test cases can be added by pressing the (+) icon in the "Testcases" section of a problem page. For SQL, pressing the (+) icon associates new schemas to the problem. For Java, add tests directly to the unittest class. Test cases can be edited <em>as long as there are no submissions to the problem</em>. If submissions have been recorded for the problem in question, you will need to <i>clear submissions</i> before adding or altering the problem's test cases.
+            </p>
+
+            <img alt="An example of how students view testcases." src="images/guide/testcase-visibility.png" width="100%" />
+
+            <p>
+                Each test case also has visibility that can be altered by checking / unchecking the "Testcase visible to students" box at the bottom of the testcase editing page. If set to visible, students will be able to view the contents of the "test input" and "expected output" fields. If not, then the students are shown the test case description but no details about what their code generated in that test.
+            </p>
+
+            <a name="mc"><h3>Multiple Choice and Short Answer Problems</h3></a>
+            <p>
+                In addition to programming problems, PCRS supports multiple choice and short-answer style problems.
+            </p>
+
+            <img alt="An example multiple choice problem" src="images/guide/multiple-choice.png" width="100%" />
+
+            <h4>Fields</h4>
+
+            <ul>
+                <li><b>Name</b> (optional): the title of program. If no title is provided, then the question is presented as a "Multiple Choice Question".</li>
+                <li><b>Description</b>: the question to be answered.</li>
+                <li><b>Tags</b> (optional): associates the problem with a tag for organizational purposes.</li>
+                <li><b>Visibility</b>: whether the student is visible (open) or invisible (closed) to students.</li>
+                <li><b>Answer Options</b>: this field becomes visible once a problem has been created (saved once). Refer to the next section for details.</li>
+            </ul>
+
+            <p>
+                Short-answer questions have a <b>Solution</b> field instead of <b>Answer Options</b>. The field should contain valid python code to evaluate the student's submission (stored in a variable <tt>submission</tt>) and to place the mark in a variable named <tt>score</tt>.
+            </p>
+
+            <h4>Multiple-Choice Answer Options</h4>
+
+            <p>
+                New multiple choice options can be added to a problem by clicking the (+) icon in the "Answer Options" of a multiple choice problem page, and pre-existing options can be edited by clicking on the pencil (pencil-icon) icon <b>as long as there are no submissions to the problem</b>. If submissions have been recorded for the problem in question, you must clear them before adding or altering the problem's answers.
+            </p>
+
+            <p>
+                The edit / add option page consists of an "answer text" field and an "is correct" box. In the "answer text" field, you may enter text to be displayed for that answer option. If you'd like to accept the option as a correct choice, check the "is correct" box.
+            </p>
+
+            <p>
+                Questions may have zero, one, or multiple correct answers. If a question has zero correct answers, then it is marked correct if a student submits the problem without selecting any options. If it has multiple correct answers, then it is marked correct only if the student selects all of the correct answers.
+            </p>
+
+            <a name="content"><h2>Content</h2></a>
+            <p>
+                The "Content" tab contains six links: Tags, Videos, Challenges, Quests, Sections, and Student Quest List View. These pages allow you to modify how the content in PCRS is organized, as well as to add supplementary videos.
+            </p>
+
+            <a name="tags"><h3>Tags</h3></a>
+
+            <p>
+                The "Tags" page allows you to add, edit, and delete available tags which can be used to search for problems.
+            </p>
+
+            <p>
+                To add a new tag, press the (+) icon at the top. Clicking the pencil (pencil-icon) icon next to a tag takes you to a page where you can change the tag's name, or delete the tag entirely.
+            </p>
+
+            <a name="videos"><h3>Videos</h3></a>
+
+            <p>
+                The "Videos" page allows you to create, modify, and delete videos presented in PCRS.
+            </p>
+
+            <p>
+                To add a new video, press the (+) icon at the top -- this takes you to the "New Video" page where you can then specify information about your new video by filling in the fields. To edit or delete a video, click the pencil (pencil-icon) next to the video's name on the Videos page.
+            </p>
+
+            <p>
+                Note that adding a video does not automatically add it to a page. For instructions on how to add a video to a page, <a href="#managing_content">please refer to the section on managing content in challenges</a>.
+            </p>
+
+            <h4>Fields</h4>
+
+            <ul>
+                <li><b>Name</b> and <b>Description</b>: the title of the video and a brief description of its content.</li>
+                <li><b>Resources</b> (optional): resources are links displayed below the video. Typically, this field is used to provide the code discussed.
+
+                Each line in the resources field has two components: a URL, followed by whitespace, and then a description of the URL. The URL may be a full link to a resource (https://...), or it may begin with the tag "{{DOC_URL}}". If the link begins with {{DOC_URL}}, then PCRS appends the link to the root path to a document store that was set up during installation.</li>
+                <li><b>Thumbnail</b> (optional): a link to a thumbnail image to be displayed before the video plays.</li>
+                <li><b>Download</b> (optional): a link to a downloadable (not embedded) version of the video. Note: youtube videos don't support a download link.</li>
+                <li><b>Tags</b> (optional): associates the video with a tag for organizational purposes.</li>
+            </ul>
+
+            <a name="challenges"><h3>Challenges</h3></a>
+
+            <img alt="A list of challenges under the 'C Language Basics' quest." src="images/guide/challenges.png" width="100%" />
+
+            <p>
+                Challenges represent collections of related videos and exercises. A Quest may have one or many challenges. <a href="#quests">See the Quests section for details on organizing challenges within quests.</a>
+            </p>
+
+            <p>
+                To add a challenge, press the (+) icon at the top of the page and enter a name and description for the challenge. If you would like the problems in the challenge to be graded, check the "is graded" box. Graded challenges can have a due date set <a href="#sections">in the sections interface</a> and show up in grade reports. Challenges are "open" (visible) to students by default. If you wish for a challenge to be invisible to students (for maintenance, or so you can release it during class), then set its visibility to "closed".
+            </p>
+
+            <p>
+                After saving a challenge, you can manage its contents by clicking on the "Manage Content" button in the bottom right.
+            </p>
+
+            <a name="managing_content"><h4>Managing Content in Challenges</h4></a>
+
+            <p>
+                The "Manage Content" page allows you to modify the contents of a challenge, such as which problems and videos appear in each page, as well as the order in which items appear.
+            </p>
+
+            <img alt="The 'Manage Content' page containing videos and problems." src="images/guide/manage-content.png" width="100%" />
+
+            <p>
+                The page is mainly divided into two parts. Listed on the left side of the page, in separate tabs, are the multiple choice problems, programming problems, and videos available on PCRS. The right side contains the current contents of the challenge. A new challenge begins with no content, so the right side is initially empty.
+            <p>
+
+            <p>
+                To begin adding content to a challenge, you must add a new page to the challenge. Each page is a box for content. Pressing the "+ Page" button adds an empty box on the right side with an "X" in the top-right corner. You may have multiple pages in a challenge, each represented by its own box, and can delete unwanted pages by pressing the "X" in the top right of a page.
+            </p>
+
+            <p>
+                To add a problem or video to a page, drag and drop the item you'd like from the left onto a page's box on the right. The order that you place the items on the right will be the same order in which they'll appear. Each item may only appear in <b>one</b> challenge, so if you do not see a problem or video in the left box, check to see if it has already been added to another challenge.
+            </p>
+
+            <p>
+                If you'd like to add text to a page, select a page by clicking somewhere on its box, press the "Add Text" button next to "+ Page", enter the desired text (using HTML formatting), and then press save. Pre-existing text fields can be edited by clicking on the pencil icon in the text object.
+            </p>
+
+            <p>
+                To remove an item from a challenge, click the "X" in the top-right corner of the item.
+            </p>
+
+            <p>
+                After you're done, <b>don't forget to press the "Save" button</b> in the bottom right of the page. New text boxes and deletions are saved automatically (since they need to be placed in the database), but the order of challenges isn't saved until you request it.
+            </p>
+
+            <a name="quests"><h3>Quests</h3></a>
+
+            <p>
+                Quests are the highest-level organizational category in PCRS. Each quest contains a set of challenges, and the student view of the system consists of a list of the available quests.
+            </p>
+
+            <p>
+                To add a new quest, press the (+) icon at the top of the page and enter a name and description for the quest. Setting the quest's mode to "live" will make it visible on the main page. To delete or edit a pre-existing quest, click the pencil (pencil-icon) to the right of the quest's name and then click the delete button at the bottom of the page.
+            </p>
+
+            <p>
+                The interface of the "Quests" page is similar to the "Manage Content" page of challenges. To add a challenge to a quest, drag and drop the challenge from the left onto the desired quest on the right. Challenges can be removed by clicking on the "X" in the top-right of the challenge's box, and re-ordered by placing elements above / below each other.
+            </p>
+
+            <p>
+                Clicking the up and down arrows to the left of a quest in the "Quest List" section will allow you to change the order in which quests appear on the main page.
+            </p>
+
+            <p>
+                <b>Don't forget to save!</b> To do so, press the "Save" button in the top- or bottom-right of the "Quests" page.
+            </p>
+
+            <a name="sections"><h3>Sections</h3></a>
+
+            <p>
+                A section represents a collection of students who will be using the content in the same way: in essence, a course. The functionality in the section interface allows an instructor to set deadlines and record marks.
+            </p>
+
+            <p>
+                The reporting functions (accessed through the graph icon) allow an instructor to download a grade report for a section. Grade reports are generated as CSV files that can be imported into spreadsheet software. Each grade report contains data for a single quest. The instructor can choose which users (all or just those who are active) and which problems (all problems or just those that were marked as graded) to include.
+            </p>
+
+            <p>
+                The first three rows in the report files contain header information. The first row contains the name and URL of each of the problems included in the report. The second line includes the maximum score for each problem. Finally, the third line reports whether the problem was marked as being graded ("for credit") or not.
+            </p>
+
+            <p>
+                The edit functions of the section interface (accessed by clicking the pencil icon and then "manage content") allow the instructor to set when content becomes visible and when graded work becomes due. There are three options: visibility, an open date, and a due date. Quest visibility is normally "open". If a quest is closed, then it will never be visible, regardless of the open date. If an open date is set, then the quest will not be visible until that date. Finally, if a due date is set, then students will see the due date in their quest list and, once the due date passes, will be told that their submissions are past the deadline. Grade reports only include submissions that were made before the due date.
+            </p>
+
+        </div> <!-- clearfix -->
+
+<!--#include virtual="/~pcrs/pcrs/footer.txt"-->
+

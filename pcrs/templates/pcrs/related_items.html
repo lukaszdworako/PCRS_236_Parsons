@@ -1,0 +1,9 @@
+<div class="item-list">
+    {% include "pcrs/related_items_list.html" %}
+    <br>
+    <a type="button" class="small-button" aria-label="add"
+       href="{{ object.get_absolute_url }}/{{ related_item_name }}">
+        <i class="plus-icon"></i>
+    </a>
+    <hr>
+</div>

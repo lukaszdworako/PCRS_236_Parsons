@@ -1,0 +1,174 @@
+<nav class="pcrs-navbar" role="navigation">
+    <div class="pcrs-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="pcrs-navbar-header">
+            <button type="button" class="pcrs-navbar-toggle"
+                    data-toggle="collapse"
+                    data-target="#instructor-navbar">
+                <span class="at">Toggle navigation</span>
+                <span class="pcrs-dropdown-icon"></span>
+            </button>
+            <a class="pcrs-navbar-brand" href="{% url 'login' %}">PCRS</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="instructor-navbar">
+            <ul class="pcrs-navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Problems
+                        <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        {% if 'problems_multiple_choice' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/multiple_choice/list">Multiple
+                                Choice</a></li>
+                        {% endif %}
+                        {% if 'problems_timed' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/timed/list">Timed</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_rating' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/rating/list">Rating</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_short_answer' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/short_answer/list">Short Answer</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_python' in problem_types or 'problems_c' in problem_types or 'problems_java' in problem_types %}
+                            <li class="divider"></li>
+                        {% endif %}
+                        {% if 'problems_python' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/python/list">Python</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_c' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/c/list">C</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_java' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/java/list">Java</a>
+                        </li>
+                        {% endif %}
+                        {% if 'problems_rdb' in problem_types %}
+                            <li class="divider"></li>
+                            <li>
+                                <a href="{{ site_prefix }}/problems/rdb/schema/list">Schemas</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_sql' in problem_types %}
+                            <li><a href="{{ site_prefix }}/problems/sql/list">SQL</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_ra' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/problems/ra/list">RA</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_r' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/problems/r/list">R</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+            <ul class="pcrs-navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Content
+                        <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="{{ site_prefix }}/content/tags/list">Tags</a>
+                        </li>
+                        <li><a href="{{ site_prefix }}/content/videos/list">Videos</a>
+                        </li>
+                        <li><a href="{{ site_prefix }}/content/challenges/list">Challenges</a>
+                        </li>
+                        <li><a href="{{ site_prefix }}/content/quests/list">Quests</a>
+                        </li>
+                        <li>
+                            <a href="{{ site_prefix }}/sections/list">Sections</a>
+                        </li>
+                        <li>
+                            <a href="{{ site_prefix }}/content/import">Import</a>
+                        </li>
+                        {% if 'problems_r' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/r/script/list">R Scripts</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+            {% if 'problems_c' in problem_types or 'problems_python' in problem_types or 'problems_ra' in problem_types or 'problems_sql' in problem_types %}
+                <ul class="pcrs-navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
+                            <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        {% if 'problems_python' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/python/submit">Python</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_c' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/c/submit">C</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_java' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/java/submit">Java</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_sql' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/sql/submit">SQL</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_ra' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/ra/submit">Relational Algebra</a>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
+
+            <ul class="pcrs-navbar-nav-right">
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a class="pcrs-navbar-link"
+                           href="{{ site_prefix }}/users/view_as">
+                            Viewing as
+                            {% if request.session.viewing_as %}
+                                <b>{{ request.session.viewing_as }}</b>
+                            {% else %}
+                                {{ request.user }}
+                            {% endif %}
+                        </a>
+                    </li>
+                </ul>
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="{{ site_prefix }}/sections/change"
+                           class="pcrs-navbar-link">
+                            section:
+                            {% if request.session.viewing_as %}
+                                {{ request.session.viewing_as.section }}
+                            {% else %}
+                                {{ request.session.section }}
+                            {% endif %}
+                        </a>
+                    </li>
+                </ul>
+                {% include "pcrs/shared_navigation.html" %}
+            </ul>
+        </div>
+    </div>
+</nav>

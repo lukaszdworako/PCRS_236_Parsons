@@ -1,0 +1,44 @@
+; Core relational algebra grammar rules.
+; Uses rules from proto_grammar.bnf, condition_grammar.bnf.
+
+statement ::= (assignment | expression) terminate
+
+assignment ::= relation_name assign expression |
+               relation_name param_start attribute_list param_stop assign expression
+
+expression ::= paren_left expression paren_right |
+               project_expr | rename_expr | select_expr |
+               difference_expr | union_expr | join_expr |
+               relation_expr
+
+project_expr ::= project param_start attribute_reference_list param_stop expression
+
+select_expr ::= select param_start conditions param_stop expression
+
+rename_expr ::= rename param_start rename_parameters param_stop expression
+rename_parameters ::= relation_name | paren_left attribute_list paren_right |
+                      relation_name paren_left attribute_list paren_right
+
+join_expr ::= expression join expression
+
+difference_expr ::= expression difference expression
+
+union_expr ::= expression union expression
+
+relation_expr ::= relation_name
+
+assign ::= ":="
+project ::= "\\project"
+rename ::= "\\rename"
+select ::= "\\select"
+difference ::= "\\difference"
+union ::= "\\union"
+join ::= "\\join"
+
+attribute_reference_list ::= attribute_reference |
+                             attribute_list delim attribute_reference
+
+attribute_list ::= attribute_name | attribute_list delim attribute_name
+
+param_start ::= "_{"
+param_stop ::= "}"

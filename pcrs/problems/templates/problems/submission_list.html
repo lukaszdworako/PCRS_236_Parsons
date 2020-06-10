@@ -1,0 +1,49 @@
+{% extends "pcrs/base.html" %}
+
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/python/python.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/sql/sql.js" %}"></script>
+        <script src="{% static "codemirror-4.1/mode/ra/ra.js" %}"></script>
+        <script src="{% static "code_mirror.js" %}"></script>
+        <script src="{% static "code_mirror_browse_submissions.js" %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% load filters %}
+
+{% block page_title %}
+    Matched submissions: {{ submissions|length }}
+{% endblock %}
+
+{% block content %}
+    {% for submission in submissions %}
+        <div>
+            <h4><b>{{ submission.timestamp }}</b></h4>
+            <div>
+                <div class="code" id="{{ submission.problem.language }}_{{ submission.pk }}">{{ submission.submission }}</div>
+                <table class="table">
+                    {% for testrun in submission.testrun_set.all %}
+                        {% with testcase=testcases|get_item:testrun.testcase.pk %}
+                            <tr class="row">
+                                <td class="col-lg-11 col-md-11 col-sm-11 col-xs-11 {{testrun.test_passed}}">{{ testcase.display|default:'Hidden' }}</td>
+                                <td class="col-lg-1 col-md-1 col-sm-1 col-xs-1 {{testrun.test_passed}}"><b>{{testrun.test_passed}}</b></td>
+                            </tr>
+                        {% endwith %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <hr>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,231 @@
+<a name="prereqs"><h2 id="markdown-header-background-and-requirements">Background and Requirements</h2>
+<p>This build has been tested on Ubuntu.</p>
+<div class="codehilite"><pre>$  lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 14.04.4 LTS
+Release:    14.04
+Codename:   trusty
+</pre></div>
+
+<p>Throughout this guide, some words will be surrounded by asterisks (*), this will denote a variable you will need to fill in.</p>
+
+<p>Before installation, make sure python3.6 and postgres9.4.2 are already installed and running. If the installation will be serving C exercises, gcc 4.9 is required, and Java exercises require a Java developer kit (JDK 1.7) installation (for javac). For R exercises, R is required. If you use a python virtual environment, the packages virtualenv and virtualenvwrapper are required.</p>
+<div class="codehilite"><pre>$ psql --version
+psql <span class="o">(</span>PostgreSQL<span class="o">)</span> 9.3.9<span class="sb"></span>
+$ python3 --version
+Python 3.6.1
+$ gcc --version
+gcc <span class="o">(</span>Ubuntu 4.9.2-0ubuntu1~14.04<span class="o">)</span> 4.9.2
+Copyright <span class="o">(</span>C<span class="o">)</span> <span class="m">2014</span> Free Software Foundation, Inc.
+This is free software<span class="p">;</span> see the <span class="nb">source </span><span class="k">for</span> copying conditions.  There is NO
+warranty<span class="p">;</span> not even <span class="k">for</span> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+$ javac -version
+javac 1.7.0_10
+$ r --version
+R version 3.4.0
+</pre></div>
+
+  <p>You can either install PCRS onto an empty database or onto an image pre-loaded with videos and content. We have an image available for the C programming language, but <i>this image is not distributed on the web, since it contains solutions to the exercises.</i> To get access, <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Request%20for%20PCRS-C%20Database">mail us from your institution's email address</a>. Please include a web link to your institutional web page, so we can verify that you are a course instructor or system administrator.</p>
+  <p>The remainder of this guide provides details on the individual steps required to install PCRS. However, the required steps have also been placed into a script. The interactive installer will guide you through the configuration for your specific use case:</p>
+  <div class="codehilite"><pre>$ python3 <(curl -L https://bitbucket.org/utmandrew/pcrs/raw/6e77826b08727727524156ada78582b65ed37d6b/admin_scripts/pcrsdevinstaller.py)</pre></div>
+
+<h3 id="markdown-header-web-config">Webserver Configuration</h3>
+
+  <p>For testing, you can turn off authentication and use <a href="https://docs.djangoproject.com/en/1.11/ref/django-admin/">django's "runserver"</a> command to experiment with PCRS. For production, you need a webserver and a method to authenticate. For the former, we use apache with mod_wsgi. For the latter, we use shibboleth, but you'll need to create your own interface depending on your authentication preference. Here are the lines we placed in httpd.conf to set up an instance for C exercises:</p>
+
+<div class="codehilite"><pre>Alias /*Your Prefix*/static *Path to webfolder*
+<span class="nt">&lt;Directory</span> <span class="err">*Path to webfolder*</span><span class="nt">&gt;</span>
+    Order deny,allow
+    Allow from all
+<span class="nt">&lt;/Directory&gt;</span>
+
+WSGIDaemonProcess pcrs_*Your Prefix* user=pcrsadmin group=pcrsadmin processes=5
+WSGIScriptAlias /*Your Prefix* *Path to webfolder*/wsgi.py
+<span class="nt">&lt;Directory</span> <span class="err">*Path to webfolder*</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Files</span> <span class="err">wsgi.py</span><span class="nt">&gt;</span>
+        Order deny,allow
+        Allow from all
+    <span class="nt">&lt;/Files&gt;</span>
+<span class="nt">&lt;/Directory&gt;</span>
+</pre></div>
+
+<p>Here is the wsgi.py referenced above:</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c"># We defer to a DJANGO_SETTINGS_MODULE already in the environment. This breaks</span>
+<span class="c"># if running multiple sites in the same mod_wsgi process. To fix this, use</span>
+<span class="c"># mod_wsgi daemon mode with each site in its own daemon process, or use</span>
+<span class="c"># os.environ[&quot;DJANGO_SETTINGS_MODULE&quot;] = &quot;pcrs.settings&quot;</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;*Path to webfolder*&quot;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;DJANGO_SETTINGS_MODULE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;pcrs.settings&quot;</span>
+
+
+<span class="c"># This application object is used by any WSGI server configured to use this</span>
+<span class="c"># file. This includes Django&#39;s development server, if the WSGI_APPLICATION</span>
+<span class="c"># setting points here.</span>
+<span class="kn">from</span> <span class="nn">django.core.wsgi</span> <span class="kn">import</span> <span class="n">get_wsgi_application</span>
+<span class="n">_application</span> <span class="o">=</span> <span class="n">get_wsgi_application</span><span class="p">()</span>
+</pre></div>
+
+<h3 id="markdown-header-virtualenv">Virtualenv</h3>
+<p>PCRS is a django application that runs on python3.6. I recommend setting up a virtual environment for it, but you may skip this step if you'd prefer to install the dependencies in your system python libraries.</p>
+<pre>$ virtualenv -p /usr/local/bin/python3 ~/.virtualenvs/pcrsenv
+$ workon pcrsenv
+</pre>
+
+<p>Pull down a fresh copy of PCRS. Using git will allow you to pull updates automatically.</p>
+<div class="codehilite"><pre>$ git clone https://bitbucket.org/utmandrew/pcrs.git
+</pre></div>
+
+<p>There is a requirements file that you can use to set up the dependencies.</p>
+<div class="codehilite"><pre>$ cd pcrs
+$ pip3 install -r requirements.txt
+</pre></div>
+
+<h3 id="markdown-header-settings">Settings</h3>
+<p>Next, you'll need to edit pcrs/settings_local.py for your server. settings_local overrides options that are given default values
+in settings.py and settings_pcrs.py. At a minimum, you need to perform steps 1, 5, and 11 below, but you should review all of the
+settings, as several more could apply to your setup.</p>
+
+<ol>
+<li><p> Set INSTALLED_PROBLEM APPS to the languages you want supported. The example below is for instance serving C exercises and multiple choice questions. Any combination of apps is accepted as long as their dependencies are met.</p>
+<div class="codehilite"><pre>INSTALLED_PROBLEM_APPS = {
+    # &#39;problems_python&#39;: &#39;Python&#39;,
+    &#39;problems_c&#39;: &#39;C&#39;,
+    # &#39;problems_java&#39;: &#39;Java&#39;,
+    # &#39;problems_rdb&#39;: &#39;&#39;,
+    # &#39;problems_sql&#39;: &#39;SQL&#39;,
+    # &#39;problems_ra&#39;: &#39;Relational Algebra&#39;,
+    &#39;problems_multiple_choice&#39;: &#39;&#39;,
+    # &#39;problems_short_answer&#39;: &#39;&#39;,
+}
+</pre></div>
+
+If you enable "problems_ra" or "problems_sql", you must also enable "problems_rdb", which provides support for both relational languages.
+
+<li><p><b>An installation serving C exercises</b> should use <tt>safeexec</tt>. To do so, set the <tt>SAFEEXEC_USERID</tt> and <tt>SAFEEXEC_GROUPID</tt> to the id of the user running the server and then install <tt><a href="#safeexec">safeexec</a></tt>.
+<div class="codehilite"><pre>$ id
+uid=1001(pcrsadmin) gid=1001(pcrsadmin) groups=1001(pcrsadmin)
+</pre></div>
+
+<li>
+<p>Production mode enables site caching and hides full error messages. Debug mode will show full stacktraces on the site when errors are encountered. Normally, you do not want both of these on at once.</p>
+<pre>PRODUCTION = True
+DEBUG = not PRODUCTION</pre>
+</li>
+<li>
+<p>Set admins if you want email on failures. An example of this field with the name &quot;Test Admin&quot; and the email example@test.com can be seen below.</p>
+<pre>ADMINS = (
+  ('Test Admin', 'example@test.com'),
+)</pre>
+</li>
+<li>
+<p>Change the password of the database user, and if you wish, the the name of the database. <em>If you are installing PCRS using a database dump, you will need to keep the user the same.</em> Otherwise, if you are installing into an empty database, you may change the user as well.</p>
+<pre>DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pcrsadmin',
+        'USER': 'pcrsadmin',
+        'PASSWORD': 'adminpass',
+        'HOST': 'localhost',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',                               # Set to empty string for default.
+    }
+}</pre>
+</li>
+<li>
+<p>For instances serving SQL and relational algebra exercises, set the <tt>RDB_DATABASE</tt>. This database will be used to execute student submissions.
+<li>
+<p>Change the site location. This value will vary depending on how you've set up Apache, WSGI, etc. For example, our server runs the application on &quot;https://*Server Address*/pcrs_dev&quot;, the site prefix is /pcrs_dev.</p>
+<pre>
+    SITE_PREFIX = '/pcrs_dev'
+    FORCE_SCRIPT_NAME = SITE_PREFIX
+    LOGIN_URL = SITE_PREFIX + '/login'</pre>
+</li>
+<li>
+<p>Select how you'll authenticate. To start, you may want to use 'pass' (a password within the database) or 'none' (for a very brief time). Shibboleth and pwauth interfaces are provided (configured for U of T -- YMMV), but you may need to write your interface for your own central authentication service. </p>
+<pre>AUTH_TYPE = 'pass'       # 'shibboleth', 'pwauth', 'pass', or 'none'</pre>
+</li>
+<li>
+<p>If DEBUG is True, set allowed_hosts to the specific host (or domain of the hosts) running the application.</p>
+<pre>ALLOWED_HOSTS = ['.*Server Address*']</pre>
+</li>
+<li>
+<p>Set the project root if you'd prefer it were not set automagically. Set the static root to match your server settings.</p>
+<pre>PROJECT_ROOT = '*Path to webfolder*/pcrs/'
+STATIC_ROOT = '*Path to webfolder*/static'
+STATIC_URL = 'https://*Server Address*/*Your Prefix*/static/'</pre>
+</li>
+<li><p>Change your secret key, this should be a set of random characters produced from a cryptography secure source.</p>
+<pre>SECRET_KEY = &#39;....&#39;
+</pre></div></li>
+</ol>
+
+<h3 id="markdown-header-sandboxing">Sandboxing</h3>
+<p><b>This step is for installations serving C and Java exercises.</b></p>
+
+<p id="safeeexec">For C, we use a judging system, safeexec, to make sure the student code can't access arbitrary files or to run for any length of time. To set up safeexec:
+
+<pre>$ <span class="nb">pushd </span>*Path to webfolder*/languages/c/execution/safeexec_master/
+$ gcc -o safeexec safeexec.c
+$ chown root.root safeexec
+$ chmod <span class="m">4555</span> safeexec
+$ <span class="nb">popd</span>
+</pre>
+
+<p>For Java, we use a customized version of <a href="https://github.com/elimirks/JavaJail">JavaJail</a> (<a href="https://github.com/daveagp/java_jail">originally written by David Pritchard</a>). To set up JavaJail, start from the main PCRS directory:
+
+<pre>$ git submodule init
+$ git submodule update
+$ cd languages/java/execution/JavaJail
+$ JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 ant build
+</pre>
+
+<p>Not: The last line will work for Java8 but will need to be updated for later versions.</p>
+
+<h3 id="markdown-header-database">Database</h3>
+<p>You can either set up an empty instance of PCRS or load a postgres dump into it. Either way, you'll need a user and database set up. The following example creates a user and database named <tt>pcrsadmin</tt>:</p>
+<pre>$ createuser -P pcrsadmin
+Enter password <span class="k">for</span> new role:
+Enter it again:
+$ createdb pcrsadmin -O pcrsadmin
+</pre>
+
+<p>To create an empty instance, use Django's migrations.</p>
+<pre>$ python3 manage.py migrate</pre>
+
+<p>While running migrate, you will get the following error if your postgres user does not have superuser privileges:</p>
+<pre>
+django.db.utils.ProgrammingError: permission denied to create extension "hstore"
+HINT:  Must be superuser to create this extension.
+</pre>
+<p>To fix this, you must manually create the HStore extension in the database. Using a user with appropriate privileges, connect to your database and run the query:</p>
+<pre>CREATE EXTENSION IF NOT EXISTS hstore;</pre>
+
+<p>Otherwise, load a pg_dump'd database image. (See the <a href="#prereqs">top of the page</a> if you need an image.)</p>
+<pre>$ psql -d pcrsadmin -f image.psql</pre>
+
+
+<p>If you need to create a superuser to access the admin interface for PCRS, you can create one with a command like the one below, which creates an admin instructor named peters43.</p>
+<pre>pcrsadmin=# insert into users_pcrsuser (last_login, username, section_id, code_style, is_student, is_ta, is_instructor, is_active, is_admin, is_staff, use_simpleui) values (CURRENT_TIMESTAMP, &#39;peters43&#39;, &#39;master&#39;, 'eclipse', False, False, True, True, True, True, False);
+</pre>
+
+<p><b>For installations serving SQL and relational algebra exercises</b>, run the sql commands in <tt>admin_scripts/create_crs_data.sql</tt> after changing the name of the database being created to match the name assigned to <tt>RDB_DATABASE</tt> in the settings file. These commands create roles for instructors and students that allow them to create and copy schemas. <em>When adding users to the system, they will need to be granted either the instructor or the student role to create or submit SQL or relational algebra exercises.</em>
+
+<p>For installations using file uploads, files have a lifespan to reduce server occupation. When a file's lifespan has passed, a django-cron job has been set up to delete it. This django command itself must be run through it's own cron job. The following command must be scheduled by cron:</p>
+<pre>python manage.py runcrons</pre>
+<p>By default the django-cron job checks everyday. For more details, refer to the django-cron documentation here: <a href="http://django-cron.readthedocs.io/en/latest/installation.html">Django-cron</a></p>
+
+
+<h3 id="markdown-header-static-files">Static Files</h3>
+<p>You should be using a static root -- unless you're just testing. Collect the static files and change permissions so they are visible.</p>
+<pre>$ python manage.py collecstatic
+$ pushd ../static
+$ find . -type d -exec chmod 775 {} \;
+$ find . -type f -exec chmod 664 {} \;
+$ popd
+</pre>
+
+<h3 id="markdown-header-done">Done!</h3>
+<p>At this point, the software should be ready to view in a web browser.</p>

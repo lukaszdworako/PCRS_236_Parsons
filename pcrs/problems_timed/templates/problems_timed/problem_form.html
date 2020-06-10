@@ -1,0 +1,10 @@
+{% extends "problems/problem_form.html" %}
+
+{% block related_items %}
+    {% if object %}
+        {% with list_name='List of Pages' object_list=object.page_set.all related_item_name='page' %}
+            {% include "pcrs/related_items.html" %}
+        {% endwith %}
+    {% endif %}
+{% endblock %}
+

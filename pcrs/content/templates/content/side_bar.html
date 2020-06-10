@@ -1,0 +1,28 @@
+<div class="pcrs-sidebar" role="complementary">
+    <ul class="pcrs-sidenav">
+        <br>
+        <div class="row">
+            {% if content_page.order > 1 %}
+                <a class="side-bar-arrow" href="{{ content_page.order|add:-1 }}" title="Go to page {{ content_page.order|add:-1 }} of {{ num_pages }}">
+                <span id="step_left" class="icon-prev-active" >
+                </span>
+            {% else %}
+                <a class="side-bar-arrow">
+                <span class="icon-prev-inactive">
+                </span>
+            {% endif %}
+                </a>
+
+            {% if next %}
+                <a href="{{ next.get_absolute_url }}" title="Go to page {{ content_page.order|add:1 }} of {{ num_pages }}">
+                <span id="step_right" class="icon-next-active">
+                </span>
+            {% else %}
+                <a>
+                <span class="icon-prev-inactive">
+                </span>
+            {% endif %}
+                </a>
+        </div>
+    </ul>
+</div>

@@ -1,0 +1,91 @@
+{% extends "pcrs/item_list.html" %}
+{% load static %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js" %}"
+                type="text/javascript"></script>
+        <script src="{% static "csrf_protection.js" %}"
+                type="text/javascript"></script>
+        <script src="{% static "content/js/quest_list.js" %}"
+                type="text/javascript"></script>
+        <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
+                type="text/javascript"></script>
+        <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/transition.js" %}"
+                type="text/javascript"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress css %}
+    <link rel="stylesheet" href="{% static "less/quest_list.css" %}">
+    {% endcompress %}
+{% endblock %}
+
+
+{% block content %}
+{#    <div class="row-fluid row-height">#}
+        <span class="top-save">
+            <button id="save_top" class="green-button disabled pull-right">
+                Save
+            </button>
+        </span>
+        <div class="available_challenges">
+            <h3 class="challenge_title">Challenges</h3>
+            <a class="small-button" type="button"
+                    href="{% url 'challenge_create' %}">
+                <i class="plus-icon"></i>
+                <span class="at">Add Challenge</span>
+            </a>
+
+            <div id="challenges" class="tab-content">
+                {% with challenges=challenges %}
+                    {% include "content/quest_list_challenge_list.html" %}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="set_challenges">
+            <h3>Quests</h3>
+            <div id="all-quests">
+                {% for object in object_list %}
+                    {% with quest=object %}
+                        {% include "content/quest_list_quest_item.html" %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+{#    </div>#}
+    <button id="save_bot" class="green-button disabled pull-right">
+        Save
+    </button>
+    <div class="modal fade" id="page-entry-modal" tabindex="-1" role="dialog"
+            aria-labelledby="page_entry_ModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="page_entry_ModalLabel"></h4>
+                </div>
+                <div class="modal-body">
+                    <select id="quest_list">
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="reg-button"
+                            data-dismiss="modal">Close
+                    </button>
+                    <button type="button" data-dismiss="modal"
+                            class="green-button" id="save-page-num"
+                            onclick="move_challenge()">Ok
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

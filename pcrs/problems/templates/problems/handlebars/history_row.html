@@ -1,0 +1,40 @@
+{% verbatim %}
+<script id="hb_history_row" type="text/x-handlebars-template">
+<div class="{{panelClass}}">
+    <a data-toggle="collapse" data-parent="#history_accordian"
+            style="display: block" class="pcrs-panel-heading pcrs-panel-title"
+            href="#collapse_{{subPk}}">
+        {{title}}
+        <span class="pull-right">
+            {{#if isBest}}
+                <icon style="font-size:1.2em" class="star-icon"
+                    title="Latest Best Submission"> </icon>
+            {{/if}}
+            <sup class="h_score">{{score}}</sup> /
+            <sub class="h_score">{{maxScore}}</sub>
+        </span>
+    </a>
+    <div class="pcrs-panel-collapse collapse" id="collapse_{{subPk}}">
+        <div id="buttonArea"></div>
+        <div id="{{mirrorId}}"></div>
+        <ul class="pcrs-list-group">
+        {{#each testcases}}
+            <li class="testcase-{{#if passed}}success{{else}}fail{{/if}}">
+                <icon class="{{#if passed}}ok{{else}}remove{{/if}}-icon"> </icon>
+                {{#if visible}}
+                    {{input}} -&gt; {{output}}
+                {{else}}
+                    {{#if description}}
+                        {{description}}
+                    {{else}}
+                        Hidden Test
+                    {{/if}}
+                {{/if}}
+            </li>
+        {{/each}}
+        </ul>
+    </div>
+</div>
+</script>
+{% endverbatim %}
+

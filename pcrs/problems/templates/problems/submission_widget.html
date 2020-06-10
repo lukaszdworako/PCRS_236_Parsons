@@ -1,0 +1,103 @@
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    {{ problem.name|default:"Multiple Choice Question" }}
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+
+        {% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
+            {% block instructor_options %}
+                <span class="widget_controls">
+                    <a href="{{ problem.get_absolute_url }}" title="Edit"><i
+                            class="pencil-icon"></i><span
+                            class="at">Edit {{ problem.name }}"</span></a>
+
+                    <a href="{{ problem.get_browse_submissions_url }}" title="Browse submissions"><i
+                            class="openfolder-icon"></i><span
+                            class="at">Submissions for {{ problem.name }}</span></a>
+
+                    <a href="{{ problem.get_monitoring_url }}" title="Monitor submissions"><i
+                            class="stats-icon"></i><span
+                            class="at">Statistics for {{ problem.name }}</span></a>
+                    {% if problem.get_problem_type_name == 'r' %}
+                        <a href="{{ problem.get_absolute_url }}/exportall" title="Export Submissions"><i
+                                class="download-icon"></i><span
+                                class="at">Export {{problem.name}}</span></a>
+                    {% endif %}
+                </span>
+            {% endblock %}
+        {% endif %}
+
+        {% if not user.use_simpleui %}
+            <span class="problem-score" id="score-{{ problem.get_problem_type_name }}-{{ problem.pk }}">
+                <span class="align-right">
+                {% if mark|default_if_none:'-' >= problem.max_score %}
+                    <span class="green-checkmark-icon" title="Progress so far: complete"></span>
+                {% else %}
+                    {% if mark|length > 0 %}
+                        <span class="incomplete_problem" title="Progress so far: " + {{ mark }} + " of " + {{ problem.max_score }}>
+                    {% else %}
+                        <span class="incomplete_problem" title="Progress so far: not attempted">
+                    {% endif %}
+                            <span class="nonreactive_score">
+                                <sup>{{ mark|default_if_none:'-' }}</sup>/<sub>{{ problem.max_score }}</sub>
+                            </span>
+                        </span>
+                {% endif %}
+                </span>
+            </span>
+        {% endif %}
+
+    </h3>
+{% endblock %}
+
+{% block problem_description %}
+    <div>
+        {% autoescape off %}
+            {% if problem.is_visible_to_students %}
+                {% if "/problems/r/" in request.path %}
+                    <h5 class="problem-description">{{ problem.replace_latex|linebreaksbr }}</h5>
+                {% else %}
+                    <h5 class="problem-description">{{ problem.description|linebreaksbr }}</h5>
+                {% endif %}
+            {% else %}
+                <h5>This question is currently unavailable.</h5>
+            {% endif %}
+        {% endautoescape %}
+    </div>
+    <br>
+{% endblock %}
+
+{% if problem.is_visible_to_students or problem.name == 'blank' %}
+    {% if problem.allow_data_set %}
+        {% if problem.get_problem_type_name == 'r' %}
+            <input type="file" class="file_upload" id="{{ problem.pk }}"></input>
+        {% endif %}
+    {% endif %}
+
+    {% block submission_form %}
+        {% autoescape off %}
+            {% load crispy_forms_tags %}
+            {% crispy form %}
+        {% endautoescape %}
+    {% endblock %}
+
+    {% block alert %}
+        <br>
+        <div class="alert-container" id="alert">
+            <icon class=""></icon>
+            <span></span>
+            <a class="at screen-reader-text" href=''></a>
+        </div>
+    {% endblock %}
+
+    {% block history %}
+        {% include "problems/submission_history.html" %}
+    {% endblock %}
+
+    {% block problem_specific %}
+    {% endblock %}
+{% endif %}

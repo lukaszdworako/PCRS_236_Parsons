@@ -1,0 +1,24 @@
+TESTING INSTRUCTIONS
+
+tests.txt contains comma-separated lines, one line per test.
+The first value is the url of the page to be tested.
+If the second value is unspecified, then the page will be issued a get request.
+If the second value is specified, the test will issue a post request,
+lookup the file with that name, and post its content as data.
+
+NOTE:
+At the current state, the csrf protection needs to be disabled to run post tests.
+
+You can specify the number of users, and the number of concurrent connections
+for every test. Only tests with greater or equal number of concurrent
+connection than the number of users are run.
+When all the test for a url are finished, you will get a report table printed.
+Rows corresponds to a number of users, and columns to the number of concurrent
+connections, lowest to highest, based on the values set in the tests.
+Every value in the table is a tuple, where the first value is the mean request
+time, and the second is mean request time across concurrent connections as
+reporte by apache bench.
+
+Note, that if a page returns a 200 status, or transfers no html, it is
+considered an error. This is because, at the moment, the requests to pages we
+want to test should never return a non-200 status, this would be an error.

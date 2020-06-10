@@ -1,0 +1,20 @@
+{% extends "pcrs/crispy_form.html" %}
+
+{% if object %}
+    {% block page_title %}
+        Edit option
+    {% endblock %}
+{% endif %}
+
+{% block links %}
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to
+        problem</a>
+{% endblock %}
+
+{% block content %}
+    {% with object_list=problem.option_set.all list_name='Existing Options' %}
+        {% include "problems_multiple_choice/option_display.html" %}
+        <hr>
+    {% endwith %}
+    {{ block.super }}
+{% endblock %}

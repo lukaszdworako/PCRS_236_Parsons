@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        var root = '{{ site_prefix }}';
+        var user_theme = '{{ user.code_style }}';
+    </script>
+
+    <meta content='width=device-width, initial-scale=1' name='viewport'/>
+    {% load staticfiles %}
+    <link rel="shortcut icon" href="{% static "favicon.ico" %}" type="image/x-icon">
+    <link rel="icon" href="{% static "favicon.ico" %}" type="image/x-icon">
+
+{#    {% block less %}#}
+{#        <link rel="stylesheet/less" type="text/css" href="{% static "less/base.less" %}" />#}
+{#        <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>#}
+{#    {% endblock %}#}
+
+    {% block stylesheets %}
+        {% load compress %}
+        {% compress css %}
+            <link rel="stylesheet" href="{% static "less/base.css" %}">
+        {% endcompress %}
+    {% endblock %}
+
+    {% block scripts %}
+        {% load compress %}
+        {% compress js %}
+            <script src="{% static "jquery-2.1.1.min.js" %}"
+                    type="text/javascript"></script>
+<!--            <script src="{% static "bootstrap-3.1.1/js/bootstrap.min.js" %}"
+                    type="text/javascript"></script> -->
+            <script src="{% static "handlebars-v4.0.5/handlebars.js" %}"
+                    type="text/javascript"></script>
+            <script src="{% static "handlebars-v4.0.5/handlebars.getTemplate.js" %}"
+                    type="text/javascript"></script>
+            <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/collapse.js" %}"
+                    type="text/javascript"></script>
+            <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/dropdown.js" %}"
+                    type="text/javascript"></script>
+            <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/transition.js" %}"
+                    type="text/javascript"></script>
+
+        {% endcompress %}
+    {% endblock %}
+
+    <script type="text/javascript">
+        $(document).keydown(function(e) {
+            if (e.keyCode == 8) {
+                var elID = $(document.activeElement).hasClass('textarea') || $(document.activeElement).hasClass('datetimeinput') || $(document.activeElement).hasClass('form-control');
+                if (!elID) {
+                    return false;
+                }
+            };
+        });
+    </script>
+
+    <title>{% block title %}PCRS{% endblock %}</title>
+
+</head>
+
+<body class="body-bg">
+{% if not "embed" in request.path %}
+    {% if user.is_instructor or user.is_ta %}
+        {% include "pcrs/instructor_navigation.html" %}
+    {% else %}
+        {% include "pcrs/student_navigation.html" %}
+    {% endif %}
+{% endif %}
+
+<div class="pcrs-fluid">
+{#    <div id="content" class="row">#}
+        {% block side-bar %}
+        {% endblock %}
+        <div class="main-page">
+
+                <h1>
+                    {% block page_title %}
+                        {{ page_title|title }}
+                        <i>{{ object|striptags|truncatechars:150 }}</i>
+                    {% endblock %}
+                </h1>
+                {% block links %} {% endblock %}
+
+            <hr>
+
+                {% block content %}
+                    {% block alerts %} {% endblock %}
+                {% endblock %}
+
+        </div>
+{#    </div>#}
+</div>
+</body>
+</html>

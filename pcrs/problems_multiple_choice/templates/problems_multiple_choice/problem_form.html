@@ -1,0 +1,15 @@
+{% extends "problems/problem_form.html" %}
+
+{% block related_items %}
+    {% if object %}
+        {% with list_name='Answer options' object_list=object.option_set.all related_item_name='option' %}
+            {% include "problems_multiple_choice/option_display.html" %}
+        {% endwith %}
+    {% endif %}
+    <br>
+    <a type="button" class="small-button" title="Add option" aria-label="add" href="{{ object.get_absolute_url }}/option">
+        <i class="plus-icon"></i>
+    </a>
+    <hr>
+{% endblock %}
+

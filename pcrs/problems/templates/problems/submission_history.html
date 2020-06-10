@@ -1,0 +1,24 @@
+{% autoescape off %}
+<div class="pcrs-modal-history" id="history_window_{{ problem.get_problem_type_name }}-{{ problem.pk }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="pcrs-modal-content">
+        <div class="pcrs-modal-header">
+            <h4 class="pcrs-modal-title" id="myModalLabel" title="{{ problem.name }} History">
+                {% block modal_title %}
+                    {{ problem.name }} History
+                {% endblock %}
+            </h4>
+                <button type="button" class="x-button-right" data-dismiss="modal" aria-hidden="false" title="Close History"></button>
+        </div>
+        <div class="pcrs-modal-body">
+            <div class="pcrs-panel-group" id="history_accordion">
+
+            </div>
+        </div>
+        <div class="pcrs-modal-footer">
+            <button type="button" class="reg-button" data-dismiss="modal">Close
+                <span class="at"> Close History </span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endautoescape %}

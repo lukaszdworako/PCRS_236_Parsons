@@ -1,0 +1,41 @@
+{% extends "pcrs/base.html" %}
+
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "content/js/stats.js" %}"></script>
+        <script src="{% static "csrf_protection.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.common.core.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.common.key.js" %}"></script>
+        <script src="{% static "RGraph/RGraph.bar.js" %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+
+{% block content %}
+    {{ block.super }}
+
+        {% autoescape off %}
+        <h4>
+        {{ object.description }}
+        </h4>
+    {% endautoescape %}
+
+    <div>
+    <div class="checkbox">
+        <label>
+          <input type="checkbox" id="active_only"> Include only active users
+        </label>
+    </div>
+    <div class="button-group">
+        <button class="green-button" id="generate_graph">Generate</button>
+    </div>
+        </div>
+
+    <canvas id="attempts-graph" width="400" height="500"># Students
+    </canvas>
+
+{% endblock %}

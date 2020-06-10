@@ -1,0 +1,69 @@
+{% load staticfiles %}
+
+{% autoescape off %}
+<h3> <p class="widget_title"> {{ item.name }} </p>
+<span class="video-status align-right" id="watched-{{ item.get_uri_id }}"></span>
+</h3>
+<div> {{ item.description|linebreaks }} </div>
+{% endautoescape  %}
+<br />
+
+{% if "youtube.com" in item.url %}
+<div class="iframe-video-wrapper">
+    <div class="iframe-video-container">
+        <iframe id = "yt-video-{{ item.pk }}" width="560" height="315" src="{{ item.url }}?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+
+        <!--Add the new iframe id and onPlayerStateChange function
+        to YT_Videos-->
+        <script type="text/javascript">
+          var video{{ item.pk }} = {"id": "yt-video-{{ item.pk }}", "onPlayerStateChange": onPlayerStateChange{{ item.pk }}};
+
+          YT_Videos.push(video{{ item.pk }});
+
+          function onPlayerStateChange{{ item.pk }}(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+              video_watched({{ item.pk }});
+            }
+          }
+        </script>
+
+    </div> <!-- iframe-video-container -->
+</div> <!-- iframe-video-wrapper -->
+{% else %}
+    <video id="my_video_{{ item.pk }}"
+           class="video-js vjs-default-skin"
+           controls
+           preload="auto"
+
+           data-setup='{"customControlsOnMobile": true }'
+           {% if item.thumbnail %}
+               poster="{{ item.thumbnail }}">
+           {% else %}
+               poster="{% static "content/images/gradient.jpg" %}">
+           {% endif %}
+           <source src="{{ item.url }}" type='{{ item.format }}'>
+    </video>
+
+    {% if item.download %}
+        <br />
+        <div> <!-- video-download -->
+            <a id="video-download_{{ item.pk }}" href="{{ item.download_link }}">
+                Download Video
+            </a>
+        </div> <!-- video-download -->
+        <br />
+    {% endif %}
+{% endif %}
+
+{% if item.resource_list %}
+<br />
+<div> <!-- video-resources -->
+    <b>Resources</b>
+    <ol>
+    {% for reslink, restext in item.resource_list %}
+       <li><a href="{{ reslink }}">{{ restext }}</a></li>
+    {% endfor %}
+    </ol>
+</div> <!-- video-resources -->
+<br />
+{% endif %}

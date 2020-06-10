@@ -1,0 +1,60 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block history %}
+{% endblock %}
+
+{% block problem_header %}
+    <h3>
+        {% autoescape off %}
+            {% block problem_title %}
+                <p class="widget_title">
+                    {{ problem.name|default:"Rating" }}
+                </p>
+            {% endblock %}
+        {% endautoescape %}
+
+        {% if user.is_instructor and not request.session.viewing_as.is_student %}
+            {% block instructor_options %}
+            <!--    <span class="widget_controls">
+                    <a href="{{ problem.get_browse_submissions_url }}"><i
+                            class="openfolder-icon"></i><span
+                            class="at">Submissions for {{ problem.name }}</span></a>
+
+                    <a href="{{ problem.get_monitoring_url }}" title="Browse"><i
+                            class="stats-icon"></i><span
+                            class="at">Statistics for {{ problem.name }}</span></a>
+                    </span>-->
+            {% endblock %}
+        {% endif %}
+
+    </h3>
+{% endblock %}
+
+
+{% block submission_form %}
+<br>
+<form id="submission_form" method="post">
+    {% csrf_token %}
+    
+    <fieldset><div id="div_id_submission" class="form-group"><div class="controls">
+    <div style="width: auto;text-align: center">
+        
+        {% if problem.scale_type == "LIK" %}
+            {% include "problems_rating/submission_scales/likert.html" %}
+        {% elif problem.scale_type == "SLI" %}
+            {% include "problems_rating/submission_scales/slider.html" %}
+        {% elif problem.scale_type == "STA" %}
+            {% include "problems_rating/submission_scales/star.html" %}
+        {% endif %}
+        
+    </div>
+    </div></div></fieldset>
+    <br>
+    <div class="buttonHolder pull-right">
+        <input value="Submit" class="btn btn-primary btn-success" id="submit-id-submit" type="submit">
+    </div>
+</form>
+{% endblock %}
+
+{% block problem_specific %}
+{% endblock %}

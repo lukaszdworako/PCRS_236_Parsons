@@ -1,0 +1,53 @@
+@import "base";
+
+@import "problem_icons";
+
+@import "pcrs-modal";
+@import "pcrs-row";
+
+@import "../bootstrap_less/bootstrap-3.2.0/less/wells";
+@import "../bootstrap_less/bootstrap-3.2.0/less/modals";
+
+
+.main-page{
+  .main-page-wide;
+}
+
+.page{
+  .well;
+}
+
+.problem-tab-content{
+  min-height: 200px;
+}
+
+.visibility-open{
+  .btn;
+  .btn-xs;
+  .glyphicon;
+  .glyphicon-eye-open;
+  .pretty-buttons(@visibility-open-color,@visibility-open-background-color);
+  padding: 3px;
+  margin-top: -5px;
+  border-color: black;
+}
+
+.ui-selected{
+  background-color: lightblue !important;
+}
+
+.visibility-closed{
+  .btn;
+  .btn-xs;
+  .glyphicon;
+  .glyphicon-eye-close;
+  .pretty-buttons(@visibility-closed-color,@visibility-closed-background-color);
+  padding: 3px;
+  margin-top: -5px;
+  border-color: black;
+}
+
+.item{
+  .well;
+  background-color: @uft-light-blue;
+}

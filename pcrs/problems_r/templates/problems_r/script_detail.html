@@ -1,0 +1,31 @@
+{% extends "pcrs/item_form.html" %}
+{% load nbsp %}
+
+{% block content %}
+    <h3>Code</h3>
+    <div class="well">
+        {% autoescape off %}
+            {{ object.code | nbsp | linebreaks }}
+        {% endautoescape %}
+    </div>
+
+    <h3>Output</h3>
+    <div class="well">
+        {% autoescape off %}
+            {{ object.expected_output | nbsp | linebreaks }}
+        {% endautoescape %}
+        {% if object.graphics %}
+            {% if "embed" in request.path %}
+              <img src="../../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
+            {% else %}
+              <img src="../graph/{{ object.graphics }}" class="img-responsive" alt="graph image">
+            {% endif %}
+        {% endif %}
+    </div>
+
+    {% block controls %}
+        {% if not "embed" in request.path %}
+            {% include "pcrs/buttons/delete.html" %}
+        {% endif %}
+    {% endblock %}
+{% endblock %}

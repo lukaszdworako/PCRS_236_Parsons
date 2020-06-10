@@ -1,0 +1,31 @@
+{% if user %}
+
+    {% if report_bugs %}
+    <ul class="pcrs-navbar-nav">
+        <li>
+            <a href="mailto:c.programming.ontario.online@gmail.com?Subject=Bug%20Report">
+                <i class="pcrs-feedback-icon" title="Send Bug Report or Feedback"></i>
+            </a>
+        </li>
+    </ul>
+    {% endif %}
+
+    <ul class="pcrs-navbar-nav">
+        <li>
+            <a href="{{ site_prefix }}/settings">
+                <i class="pcrs-settings-icon" title="Settings"></i>
+            </a>
+        </li>
+    </ul>
+
+    {% if not auth_shibboleth %}
+    <ul class="pcrs-navbar-nav">
+        <li>
+            <a href="{{ site_prefix }}/logout">
+                <i class="pcrs-logout-icon" title="Log Out"></i>
+            </a>
+        </li>
+    </ul>
+    {% endif %}
+
+{% endif %}

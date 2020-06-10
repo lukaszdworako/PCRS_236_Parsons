@@ -1,0 +1,67 @@
+{% load staticfiles %}
+
+{% load compress %}
+{% compress js %}
+    <script src="{% static 'codemirror-4.1/lib/codemirror_accessible.js' %}"></script>
+    <script src="{% static 'codemirror-4.1/mode/python/python.js' %}"></script>
+    <script src="{% static 'codemirror-4.1/mode/clike/clike.js' %}"></script>
+    <script src="{% static 'codemirror-4.1/mode/sql/sql.js' %}"></script>
+    <script src="{% static 'codemirror-4.1/mode/ra/ra.js' %}"></script>
+    <script src="{% static 'codemirror-4.1/mode/r/r.js' %}"></script>
+    <script src="{% static 'bootstrap_less/bootstrap-3.2.0/js/modal.js' %}"
+        type="text/javascript"></script>
+    <script src="{% static 'bootstrap_less/bootstrap-3.2.0/js/tab.js' %}"
+        type="text/javascript"></script>
+    <script src="{% static 'cryptojs-3.1.2/rollups/sha1.js' %}"></script>
+{% endcompress %}
+
+{% include "problems/AlertModal.js.html" %}
+
+{# When another language is added modify code_mirror.js #}
+<script src="{% static 'code_mirror.js' %}"></script>
+
+<script type="text/javascript">
+    var use_simpleui = "{{ request.user.use_simpleui }}";
+    var visualizer = null;
+    var happyFaceURL = "{% static 'problems/img/yellow-happy-face.png' %}";
+    var sadFaceURL = "{% static 'problems/img/red-sad-face.jpg' %}";
+</script>
+
+{% load compress %}
+{% compress js %}
+<script src="{% static 'problems/js/problems_helper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/SubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/PythonSubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/CSubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/JavaSubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/SQLSubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/RASubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/RSubmissionWrapper.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/problem.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/TagManager.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/TabbedCodeMirror.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/SubmissionTabbedCodeMirror.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/Visualizer.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/CVisualizer.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/PythonVisualizer.js' %}"
+        type="text/javascript"></script>
+<script src="{% static 'problems/js/JavaVisualizer.js' %}"
+        type="text/javascript"></script>
+{% endcompress %}
+
+{% include "problems/handlebars/history_row.html" %}
+

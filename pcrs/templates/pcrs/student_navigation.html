@@ -1,0 +1,67 @@
+<nav class="pcrs-navbar" role="navigation">
+    <div class="pcrs-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="pcrs-navbar-header">
+            <button type="button" class="pcrs-navbar-toggle" data-toggle="collapse" data-target="#student-navbar">
+                <span class="at">Toggle navigation</span>
+                <span class="pcrs-dropdown-icon"></span>
+            </button>
+            <a class="pcrs-navbar-brand" href="{% url 'login' %}">PCRS</a>
+        </div>
+        <div class="collapse navbar-collapse" id="student-navbar">
+            {% if user %}
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="{{ site_prefix }}/content/quests" title="Quests">
+                            Quests
+                        </a>
+                    </li>
+                </ul>
+                {% if 'problems_c' in problem_types or 'problems_python' in problem_types or 'problems_ra' in problem_types or 'problems_sql' in problem_types %}
+                <ul class="pcrs-navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Code Editor
+                            <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        {% if 'problems_python' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/editor/python/submit">Python</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_c' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/c/submit">C</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_java' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/java/submit">Java</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_sql' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/sql/submit">SQL</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_ra' in problem_types %}
+                            <li><a href="{{ site_prefix }}/editor/ra/submit">Relational Algebra</a>
+                            </li>
+                        {% endif %}
+                        {% if 'problems_r' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/problems/r/list">R</a>
+                            </li>
+                        {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+                {% endif %}
+            {% endif %}
+            <ul class="pcrs-navbar-nav-right">
+                <ul class="pcrs-navbar-nav">
+                    <li>
+                        <a href="">Logged in as <i>{{ request.user }}</i></a>
+                    </li>
+                 </ul>
+                {% include "pcrs/shared_navigation.html" %}
+            </ul>
+        </div>
+    </div>
+</nav>

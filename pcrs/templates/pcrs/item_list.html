@@ -1,0 +1,66 @@
+{% extends "pcrs/base.html" %}
+{% block links %}
+    {% if user.is_instructor or user.is_ta %}
+        {% include "pcrs/buttons/add.html" %}
+        <br>
+        <br>
+        {% include "content/search.html" %}
+    {% endif %}
+{% endblock %}
+
+{#{% block less %}#}
+{#    <link rel="stylesheet/less"#}
+{#          type="text/css"#}
+{#          href="{% static "less/quest_page.less" %}" />#}
+{##}
+{#    <script src="{% static "less/less-1.7.3.min.js" %}"#}
+{#            type="text/javascript">#}
+{#    </script>#}
+{#{% endblock %}#}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load static %}
+    {% load compress %}
+    {% compress js %}
+        <script src="{% static "content/js/Quest_color_control.js" %}"
+                type="text/javascript">
+        </script>
+    {% endcompress %}
+{% endblock %}
+
+{% block stylesheets %}
+    {% load compress %}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "less/quest_page.css" %}">
+    {% endcompress %}
+{% endblock %}
+
+{% block content %}
+    <div class="item-list">
+        {% for object in object_list %}
+            {% block object_info %}
+                <div class="item">
+                    {% block item_title %}
+                        {{ object }}
+                    {% endblock %}
+
+                    {% if user.is_instructor or user.is_ta %}
+                        <span>
+                            {% block item_controls %}
+                                {% include "pcrs/buttons/edit.html" %}
+                            {% endblock %}
+                        </span>
+                    {% endif %}
+
+                    <div>
+                        {% block item_details %}
+                            {% include "pcrs/tags.html" %}
+                        {% endblock %}
+                    </div>
+                    <hr>
+                </div>
+            {% endblock %}
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="textblock item" id="textblock-{{ item.pk }}">
+    <button class="xs-x-button-right remove_item">
+        <span class="at">Delete text block. {{ item.text }}</span>
+    </button>
+    <a class="pull-right" href="javascript:void(0)" onclick="updateText({{ item.pk }});" title="Edit">
+        <i style="color:navy" class="pencil-icon"></i>
+    </a>
+    &nbsp;
+    <div class="html">{% autoescape off %}{{ item.text }}{% endautoescape %}</div>
+</div>
+

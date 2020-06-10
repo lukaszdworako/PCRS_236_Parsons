@@ -1,0 +1,35 @@
+@import "base";
+@import "pcrs-table";
+
+/* https://css-tricks.com/snippets/css/useful-css3-less-mixins/ */
+.user-select(@val) {
+    -webkit-touch-callout: @val;
+    -webkit-user-select: @val;
+    -khtml-user-select: @val;
+    -moz-user-select: @val;
+    -ms-user-select: @val;
+    user-select: @val;
+}
+
+#analyticsTable th {
+    .user-select(none);
+    cursor: pointer;
+}
+
+#analyticsTable th:after {
+    .glyphicon;
+    content: '\e150'; /* no sort icon */
+    float: right;
+    margin-right: 4px;
+}
+
+#analyticsTable th.sorted.ascending:after {
+    content: '\e155'; /* sort asc icon */
+    color: #090;
+}
+
+#analyticsTable th.sorted.descending:after {
+    content: '\e156'; /* sort desc icon */
+    color: #090;
+}
+

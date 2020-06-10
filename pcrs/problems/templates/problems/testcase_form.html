@@ -1,0 +1,27 @@
+{% extends "pcrs/crispy_form.html" %}
+
+
+{% if object %}
+    {% block page_title %}
+        Edit testcase
+    {% endblock %}
+{% endif %}
+
+{% block links %}
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to
+        problem</a>
+{% endblock %}
+
+{% block content %}
+    {% if problem.submission_set.all and not object.pk %}
+        <div class="red-alert">
+            Submissions must be cleared before adding a testcase.
+        </div>
+    {% else %}
+        {% with object_list=problem.testcase_set.all list_name='Existing Testcases' %}
+            {% include "pcrs/related_items_list.html" %}
+            <hr>
+        {% endwith %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}

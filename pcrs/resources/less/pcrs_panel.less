@@ -1,0 +1,75 @@
+//common classes
+.quest_border {
+    border-style:solid !important;
+    border-width:1px !important;
+}
+
+.pcrs-panel-fully-clickable(@bg-color) {
+    .quest_border;
+    .panel-heading;
+
+    background-color:@bg-color;
+    border-color: darken(@bg-color, 6.5%);
+    padding: 17px 22px;
+
+    &:hover {
+        background-color: darken(@bg-color, 6.5%);
+        cursor: pointer;
+    }
+}
+
+.problem-panel {
+    .pcrs-panel-fully-clickable(white);
+}
+
+//arrow indicating opened and closed panels
+.collapse-indicator {
+    .glyphicon;
+    .glyphicon-chevron-right;
+    margin-right: 10px;
+}
+
+.collapsed > .collapse-indicator {
+    .collapse-indicator;
+}
+
+:not(.collapsed) > .collapse-indicator {
+  transform: rotate(90deg);
+}
+
+.pcrs-panel-group{
+  .panel-group;
+  .pcrs-panel{
+    .panel;
+  }
+  .pcrs-panel-heading{
+    .panel-group > .panel-heading;
+  }
+  .pcrs-panel-footer{
+    .panel-footer;
+  }
+}
+
+.pcrs-panel{
+  .panel;
+  .panel-default;
+  .pcrs-panel-heading{
+    .panel-heading;
+  }
+  .pcrs-panel-body{
+    .panel-body;
+  }
+}
+
+.pcrs-panel-title{
+  .panel-title;
+}
+
+.pcrs-panel-body{
+  .panel-group;
+  .panel-body;
+}
+
+.pcrs-panel-heading{
+  .panel-heading;
+}

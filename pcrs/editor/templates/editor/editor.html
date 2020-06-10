@@ -1,0 +1,37 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+    {% include "problems/code_problem_scripts.html" %}
+    {% if problem.language == 'python' %}
+        {% include "problems/visualizer_python_includes.html" %}
+    {% elif problem.language == 'java' %}
+        {% include "problems/visualizer_java_includes.html" %}
+    {% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    {% include "problems/code_problem_stylesheets.html" %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+    {% if problem.language == 'c' %}
+        {% include "problems_c/visualizer.html" %}
+    {% endif %}
+
+    {% with problem.language|add:"-1"|add:"-editor" as tag %}
+        <div id={{ tag }} class="code-mirror-wrapper">
+    {% endwith %}
+
+    {% with "editor/"|add:problem.language|add:"_widget.html" as URL %}
+        {% include URL %}
+    {% endwith %}
+    </div>
+
+{% endblock %}
