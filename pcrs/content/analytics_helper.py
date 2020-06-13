@@ -21,6 +21,7 @@ class QuestAnalyticsHelper:
         'problems_ra': problems_ra.models,
         'problems_multiple_choice': problems_multiple_choice.models,
         'problems_short_answer': problems_short_answer.models,
+        'problems_parsons': problems_parsons.models,
     }
 
     def __init__(self, quest, users):

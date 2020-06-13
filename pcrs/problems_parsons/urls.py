@@ -3,9 +3,9 @@ from django.conf.urls import url
 from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
                             ProblemDeleteView)
-from problems_short_answer.models import Problem, Submission
-from problems_short_answer.forms import ProblemForm
-from problems_short_answer.views import (SubmissionView, SubmissionAsyncView,
+from problems_parson.models import Problem, Submission
+from problems_parson.forms import ProblemForm
+from problems_parson.views import (SubmissionView, SubmissionAsyncView,
                                          ProblemCreateRedirectView, ProblemCloneView,
                                          SubmissionHistoryAsyncView)
 
@@ -29,7 +29,7 @@ urlpatterns = [
 
     url(r'^(?P<pk>[0-9]+)/?$',
         ProblemUpdateView.as_view(model=Problem, form_class=ProblemForm,
-        template_name='problems_short_answer/problem_form.html'),
+        template_name='problems_parson/problem_form.html'),
         name='short_answer_update'),
 
     url(r'^(?P<pk>[0-9]+)/clear$',

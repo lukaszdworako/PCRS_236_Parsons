@@ -3,7 +3,7 @@ from django import forms
 
 from pcrs.form_mixins import CrispyFormMixin
 from problems.forms import BaseProblemForm, BaseSubmissionForm
-from problems_short_answer.models import Problem, Submission
+from problems_parsons.models import Problem, Submission
 
 from django.utils.translation import ugettext_lazy as _
 

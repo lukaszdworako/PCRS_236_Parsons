@@ -9,8 +9,8 @@ from django.utils.timezone import localtime, utc
 from django.views.generic import CreateView, FormView, View
 from django.views.generic.detail import SingleObjectMixin
 
-from problems_short_answer.models import Problem, Submission
-from problems_short_answer.forms import SubmissionForm
+from problems_parson.models import Problem, Submission
+from problems_parson.forms import SubmissionForm
 
 import problems.views
 from users.views import UserViewMixin
@@ -34,7 +34,7 @@ class ProblemCreateRedirectView(CourseStaffViewMixin, CreateView):
 class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
     model = Submission
     form_class = SubmissionForm
-    template_name = 'problems_short_answer/submission.html'
+    template_name = 'problems_parson/submission.html'
 
     def record_submission(self, request):
         """
