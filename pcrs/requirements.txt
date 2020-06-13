@@ -17,5 +17,6 @@ rcssmin==1.0.6
 reportlab==3.4.0
 requests==2.13.0
 rjsmin==1.0.12
+rpy2==2.8.6
 six==1.10.0
 python_ta==1.2.0
