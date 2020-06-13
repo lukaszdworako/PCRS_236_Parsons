@@ -1,7 +1,7 @@
 from django.conf import settings
 
 import problems_java, problems_python, problems_c, problems_sql, problems_ra
-import problems_multiple_choice, problems_short_answer
+import problems_multiple_choice, problems_short_answer, problems_parsons
 from content.models import (Challenge, ContentType, ContentPage,
     ContentSequenceItem)
 from statistics import median

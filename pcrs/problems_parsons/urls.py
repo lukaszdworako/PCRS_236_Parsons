@@ -3,9 +3,9 @@ from django.conf.urls import url
 from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
                             ProblemDeleteView)
-from problems_parson.models import Problem, Submission
-from problems_parson.forms import ProblemForm
-from problems_parson.views import (SubmissionView, SubmissionAsyncView,
+from .models import Problem, Submission
+from .forms import ProblemForm
+from .views import (SubmissionView, SubmissionAsyncView,
                                          ProblemCreateRedirectView, ProblemCloneView,
                                          SubmissionHistoryAsyncView)
 

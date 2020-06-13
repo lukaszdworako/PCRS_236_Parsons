@@ -9,8 +9,8 @@ from django.utils.timezone import localtime, utc
 from django.views.generic import CreateView, FormView, View
 from django.views.generic.detail import SingleObjectMixin
 
-from problems_parson.models import Problem, Submission
-from problems_parson.forms import SubmissionForm
+from .models import Problem, Submission
+from .forms import SubmissionForm
 
 import problems.views
 from users.views import UserViewMixin
