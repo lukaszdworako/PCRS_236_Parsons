@@ -19,7 +19,6 @@ from problems.forms import ProgrammingSubmissionForm
 from problems_multiple_choice.forms import SubmissionForm as MCSubmissionForm
 from problems_rating.forms import SubmissionForm as RatingSubmissionForm
 from problems_short_answer.forms import SubmissionForm as ShortAnswerSubmissionForm
-from problems_parsons.forms import SubmissionForm as ParsonsSubmissionForm
 from django.core import serializers
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse

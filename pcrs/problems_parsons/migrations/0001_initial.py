@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             name='Problem',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('src', models.TextField(blank=False, null=False)),
+                ('starter_code', models.TextField(blank=False, null=False)),
                 ('invariant', models.TextField(blank=False, null=False)),
                 ('unit_tests', models.TextField(blank=True, null=True)),
                 ('run_unit', models.BooleanField(default=False)),
@@ -42,8 +42,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
                 ('submission', models.TextField(blank=True, null=True)),
-                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problems_parson.Problem')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='problems_parson_submission_related', to=settings.AUTH_USER_MODEL, to_field='username')),
+                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problems_parsons.Problem')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='problems_parsons_submission_related', to=settings.AUTH_USER_MODEL, to_field='username')),
             ],
             options={
                 'ordering': ['-timestamp'],

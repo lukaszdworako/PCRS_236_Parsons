@@ -1,5 +1,14 @@
-{% extends "problems/problem_form.html" %}
-
-{% block related_items %}
+{% extends "problems/parsons_problem_form.html" %}
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+    <script type="text/javascript">
+        problemFormPageLoadCallback = function() {
+            var mode = cmModeForLanguageAndVersion('python', 3);
+            new ProgrammingProblemFormHandler($('form'), mode).pageLoad();
+        };
+    </script>
+    {% endcompress %}
 {% endblock %}
 
