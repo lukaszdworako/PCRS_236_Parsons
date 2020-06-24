@@ -41,7 +41,8 @@ urlpatterns = [
         name='parsons_delete'),
 
     url(r'^(?P<problem>[0-9]+)/submit$',
-        SubmissionView.as_view(),
+        SubmissionView.as_view(
+        template_name='problems_parsons/submission.html'),
         name='parsons_submit'),
 
     url(r'^embed/(?P<problem>[0-9]+)/submit$',

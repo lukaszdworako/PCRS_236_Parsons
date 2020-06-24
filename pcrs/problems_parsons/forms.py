@@ -1,3 +1,4 @@
+from crispy_forms.layout import ButtonHolder, Submit, Layout, Fieldset, Div, Button, Field
 from django import forms
 
 from pcrs.form_mixins import BaseRelatedObjectForm
@@ -5,10 +6,12 @@ from problems.forms import BaseProblemForm, BaseSubmissionForm
 from problems_parsons.models import Problem, Submission
 from django.utils.translation import ugettext_lazy as _
 
+import pdb
+
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'starter_code', 'author', 'visibility')
+        fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'run_unit', 'author', 'visibility')
         help_texts = {}
 
     def __init__(self, *args, **kwargs):
@@ -20,10 +23,10 @@ class SubmissionForm(BaseSubmissionForm):
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
+        
         super().__init__(*args, **kwargs)
 
         self.helper.layout = Layout(
-            Fieldset('', Field('submission', maxlength=problem.max_chars)),
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right'))
 

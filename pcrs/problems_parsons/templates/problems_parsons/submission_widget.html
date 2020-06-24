@@ -1,7 +1,61 @@
 {% extends "problems/submission_widget.html" %}
 
+{% load staticfiles %}
 {% block problem_specific %}
-    {% include "problems_parsons/grade_table.html" %}
-    {% include "problems_parsons/code_trace.html" %}
-    {% include "problems/wait_async_job.html" %}
+<div>
+    <script src="{% static "parsons/jquery.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery.sound.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery.ui.touch-punch.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery-ui.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/prettify.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/skulpt.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/skulpt-stdlib.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/underscore-min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/lis.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/parsons.js" %}" type="text/javascript"></script>
+    <link rel="stylesheet" href="{% static "parsons/prettify.css" %}" type="text/css" />
+    <link rel="stylesheet" href="{% static "parsons/parsons.css" %}" type="text/css" />
+
+    <div id="sortableTrash" class="sortable-code">
+        <p>Trash</p>
+    </div>
+    <div id="sortable" class="sortable-code">
+        <p>Solution</p>
+    </div>
+    <div style="clear:both;"></div>
+    <p>
+        <a href="#" id="newInstanceLink">New instance</a>
+        <a href="#" id="feedbackLink">Get feedback</a>
+    </p>
+    <div id="jsparson"></div>
+    <script>
+        var my_data = "{{problem.invariant}}";
+        console.log(my_data);
+        var initial = `{{problem.starter_code}}`;
+        console.log(initial);
+        var unittests = `{{problem.unit_tests}}`;
+
+        $(document).ready(function () {
+            var parson = new ParsonsWidget({
+                'sortableId': 'sortable',
+                'trashId': 'sortableTrash',
+                'unittests': unittests,
+                toggleTypeHandlers: { abc: ["a", "b", "c"] }
+            });
+            parson.init(initial);
+            parson.shuffleLines();
+            $("#newInstanceLink").click(function (event) {
+                event.preventDefault();
+                parson.shuffleLines();
+            });
+            $("#feedbackLink").click(function (event) {
+                event.preventDefault();
+                var fb = parson.getFeedback();
+                $("#jsparson").html("<h2>Feedback from testing your program:</h2>" +
+                    fb.feedback);
+                if (fb.success) { alert("Good, you solved the assignment!"); }
+            });
+        });
+    </script>
+</div>
 {% endblock %}

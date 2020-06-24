@@ -6,8 +6,8 @@ from datetime import timedelta
 # Select the types of problems visible in the UI.
 # app_name : language name
 INSTALLED_PROBLEM_APPS = {
-    # 'problems_python': 'Python',
-    # 'problems_c': 'C',
+    'problems_python': 'Python',
+    'problems_c': 'C',
     # 'problems_java': 'Java',
     # 'problems_rdb': '',
     # 'problems_sql': 'SQL',
@@ -17,6 +17,7 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_timed': '',
     # 'problems_rating': '',
     # 'problems_short_answer': '',
+    'problems_parsons': '',
 }
 
 USE_SAFEEXEC = False              # For C only, for now

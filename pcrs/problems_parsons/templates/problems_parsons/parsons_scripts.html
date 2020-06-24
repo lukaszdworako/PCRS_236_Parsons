@@ -1,0 +1,15 @@
+{% load staticfiles %}
+
+{% load compress %}
+{% compress js %}
+    <script src="{% static "parsons/jquery.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery.sound.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery.ui.touch-punch.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/jquery-ui.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/prettify.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/skulpt.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/skulpt-stdlib.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/underscore-min.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/lis.js" %}" type="text/javascript"></script>
+    <script src="{% static "parsons/parsons.js" %}" type="text/javascript"></script>
+{% endcompress %}

@@ -14,7 +14,7 @@ from problems_python.python_language import PythonSpecifics
 
 
 class Problem(AbstractProblem):
-    name = models.TextField(blank=True)
+    name = models.CharField(max_length=50, default="")
     description = models.TextField(blank=True)
     starter_code = models.TextField(blank=True)
     solution = models.TextField(blank=True)
@@ -31,4 +31,4 @@ class Problem(AbstractProblem):
 
 class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-
+    

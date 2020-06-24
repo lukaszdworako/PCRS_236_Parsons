@@ -1,0 +1,6 @@
+{% load staticfiles %}
+{% load compress %}
+{% compress css %}
+    <link rel="stylesheet" href="{% static "parsons/prettify.css" %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static "parsons/parsons.css" %}" type="text/css"/>
+{% endcompress %}
