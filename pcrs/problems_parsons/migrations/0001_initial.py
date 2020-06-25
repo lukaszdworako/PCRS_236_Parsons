@@ -27,10 +27,6 @@ class Migration(migrations.Migration):
                 ('unit_tests', models.TextField(blank=True, null=True)),
                 ('run_unit', models.BooleanField(default=False)),
                 ('visible_unit', models.BooleanField(default=False)),
-                ('static', models.TextField(blank=True, null=True)),
-                ('groups', models.TextField(blank=True, null=True)),
-                ('inter', models.TextField(blank=True, null=True)),
-                ('solution', models.TextField(blank=False, null=False)),
             ],
             options={
                 'abstract': False,

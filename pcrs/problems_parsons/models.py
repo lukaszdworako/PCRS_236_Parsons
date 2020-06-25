@@ -17,15 +17,10 @@ class Problem(AbstractProblem):
     name = models.CharField(max_length=50, default="")
     description = models.TextField(blank=True)
     starter_code = models.TextField(blank=True)
-    solution = models.TextField(blank=True)
     invariant = models.TextField(blank=True)
     unit_tests = models.TextField(blank=True)
     run_unit = models.BooleanField(default=False)
     visible_unit = models.BooleanField(default=False)
-    static = models.TextField(blank=True)
-    groups = models.TextField(blank=True)
-    inter = models.TextField(blank=True)
-    solution = models.TextField(blank=True)
     
 
 
