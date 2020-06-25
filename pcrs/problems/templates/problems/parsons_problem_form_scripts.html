@@ -127,8 +127,6 @@
      */
     ProgrammingProblemFormHandler.prototype._setHiddenFieldValues = function () {
         var starterCode = this.starterCodeTcm.getFiles()[0].code;
-        starterCode = TagManager.addStudentCodeTags(starterCode);
-
         // Move values to temporary variables
         this.$form.find("#id_starter_code_tmp").val(starterCode);
     }

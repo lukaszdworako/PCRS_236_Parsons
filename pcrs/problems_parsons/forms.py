@@ -12,7 +12,9 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
         fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'run_unit', 'author', 'visibility')
-        help_texts = {}
+        help_texts = {
+            'starter_code': _('To add a distractor line, simply place it anywhere and add #distractor afterwards'),
+        }
 
     def __init__(self, *args, **kwargs):
         super(forms.ModelForm, self).__init__(*args, **kwargs)
