@@ -1,0 +1,129 @@
+h1, h2, h3, h4 {
+    color: #002A5C;
+}
+
+a {
+    color: #00709b;
+}
+
+.prettyprint {
+    margin-top: 0.5em;
+    padding: 1em !important;
+}
+
+textarea {
+    resize: vertical;
+}
+
+textarea.tc-input-box {
+    height: 20px;
+}
+
+.accordion-group {
+    margin-bottom: 1.5em;
+    padding-bottom: 1em;
+}
+
+.label {
+    margin-right: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.tag-label {
+    background-color: #00709b;
+    /*background-color: #e86537; */
+    /*margin-left: 0.5em;*/
+}
+
+.quest-box {
+    padding: 2em 0 1em 0;
+}
+
+.quest {
+    margin-left: 0 !important;
+}
+
+.progress {
+    margin-bottom: 1em;
+    margin-top: 2em;
+}
+
+.challenge-box {
+    background-color: white;
+}
+
+
+.icon-ok-sign {
+    color: green;
+    font-size: 1.5em;
+}
+
+.challenge-complete {
+    background-color: #DCF7E7;
+}
+
+.muted {
+    background-color: #E1E3E2;
+	cursor: not-allowed !important;
+}
+
+.icon-lock {
+    font-size: 1.5em;
+}
+
+.challenge, .search-tag, .download, .show-hide {
+    cursor: hand;
+    cursor: pointer;
+}
+
+.download_form {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.gradeMatrixRow {
+    text-align: left;
+}
+
+.testInputP {
+    word-break: break-word;
+}
+
+.challenge-title {
+    height: 3.5em;
+    text-decoration: none;
+}
+
+.fixed-text-box {
+    line-height: 1.5;
+    overflow: hidden;
+    position: relative;
+}
+
+.fixed-text-box-4 {
+    /* Restrct to 4 lines, ie line-height x 4 */
+    height: 6em;
+}
+
+.fixed-text-box-2 {
+    /* Restrct to 2 lines, ie line-height x 2 */
+    height: 3em;
+}
+
+.ellipsis {
+    background: #fff;
+    bottom: 0;
+    position: absolute;
+    right: 0;
+}
+
+.fill {
+    /*background: #fff;*/
+    height: 100%;
+    position: absolute;
+    width: 100%;
+}
+
+.st-learning-resources {
+    table-layout: fixed;
+}

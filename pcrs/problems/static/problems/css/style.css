@@ -1,0 +1,154 @@
+body.modal-open {
+    /* Prevent scrolling behind Bootstrap modals */
+    overflow: hidden !important;
+};
+
+/* for numbered table rows */
+table.numbered {
+    counter-reset: rowNumber;
+}
+
+table.numbered tr.numbered {
+    counter-increment: rowNumber;
+}
+
+table.numbered tr.numbered td:first-child::before {
+    content: counter(rowNumber);
+    min-width: 1em;
+    margin-right: 0.5em;
+}
+
+.tabbed-code-mirror li {
+    border: 1px solid #dddddd;
+    border-bottom-color: transparent;
+    border-radius: 4px 4px 0px 0px;
+    background-color: #eeeeee;
+    margin-right: -1px;
+    display: table;
+}
+
+.tabbed-code-mirror li.active {
+    background-color: #ffffff;
+}
+
+.tabbed-code-mirror li.active:hover {
+    background-color: #ffffff;
+}
+
+.tabbed-code-mirror li:hover {
+    background-color: #f6f6f6;
+}
+
+.tabbed-code-mirror li a:hover {
+    background-color: transparent;
+    border: none !important;
+}
+
+.tabbed-code-mirror li a {
+    margin: 0px;
+    border: none !important;
+    background-color: transparent;
+    color: #777777;
+    display: inline-block;
+}
+
+.tabbed-code-mirror li.active a {
+    background-color: transparent;
+    border: none !important;
+    cursor: pointer;
+}
+
+.tabbed-code-mirror li.active a:hover {
+    background-color: transparent;
+    border: none !important;
+}
+
+.tabbed-code-mirror li a.tab-dropdown-title {
+    display: table-cell;
+    border: none !important;
+    padding-right: 0px;
+}
+
+.tabbed-code-mirror li div.dropdown {
+    display: table-cell;
+    margin: 0px !important;
+    padding: 0px !important;
+    height: 100%;
+}
+
+.tabbed-code-mirror li div.dropdown.open a {
+    background-color: transparent;
+}
+
+.tabbed-code-mirror li div.dropdown a {
+    background-color: transparent;
+    border-left-color: transparent;
+    border-top-left-radius: 0px;
+    padding-right: 6px;
+    padding-left: 5px;
+    color: #777777;
+
+    /* FIXME make it full height. This does it _mostly_*/
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+}
+
+.tabbed-code-mirror li div.dropdown a:hover {
+    color: #000000;
+}
+
+.tabbed-code-mirror li.active a {
+    background-color: #ffffff;
+    color: #555555;
+}
+
+.tabbed-code-mirror .dropdown-menu .dropdown-item {
+    display: block;
+    clear: both;
+    padding: 3px 20px !important;
+    line-height: 1.42 !important;
+    color: #333333 !important;
+    cursor: pointer;
+}
+
+.tabbed-code-mirror .dropdown-menu .dropdown-item:hover {
+    text-decoration: none;
+    color: #262626;
+    background-color: #f5f5f5 !important;
+}
+
+.problem-description-container ul {
+    font-size: 0px;
+}
+
+.problem-description-container li {
+    font-size: 14px;
+}
+/*
+ * CodeMirror style extensions
+ *
+ * We only use 3 of the styles:
+ * monokai: dark, eclipse: light, shaped: black&white
+ */
+
+.cm-s-monokai .CodeMirror-error-background {
+    background: #992626 !important;
+}
+.cm-s-eclipse .CodeMirror-error-background {
+    color: #f00 !important;
+}
+.cm-s-shaped .CodeMirror-error-background {
+    background: lightgrey !important;
+    color: #f8f8f0 !important;
+}
+
+.cm-s-monokai .CodeMirror-trace-background {
+    background: #474841 !important;
+}
+.cm-s-eclipse .CodeMirror-trace-background {
+    background: #d8e2ef !important;
+}
+.cm-s-shaped .CodeMirror-trace-background {
+    background: #c7c8c1 !important
+}

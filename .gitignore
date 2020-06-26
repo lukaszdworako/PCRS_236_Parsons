@@ -10,5 +10,4 @@ venv
 pcrs*.c
 .pylintrc
 .python-version
-static/
 settings_local.py
