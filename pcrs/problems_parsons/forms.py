@@ -14,6 +14,9 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'run_unit', 'author', 'visibility')
         help_texts = {
             'starter_code': _('To add a distractor line, simply place it anywhere and add #distractor afterwards'),
+            'unit_tests': _('Please enter as: input:"", output:"" one per line'),
+            'visible_unit': _('Do you want students to see the unit tests'),
+            'run_unit': _('Do you want to run the unit tests you made'),
         }
 
     def __init__(self, *args, **kwargs):
