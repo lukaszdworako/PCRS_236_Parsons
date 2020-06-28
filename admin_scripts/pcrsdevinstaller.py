@@ -5,7 +5,7 @@ import os
 import pwd
 import secrets
 
-PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Short Answer", "'problems_short_answer': '',"], ["Parsons", "'problems_parsons': '',"]]
+PCRSPlugins = [["Python", "'problems_python': 'Python',"], ["C", "'problems_c': 'C',"], ["Java", "'problems_java': 'Java',"], ["SQL", "'problems_sql': 'SQL',"], ["Relational Algebra", "'problems_ra': 'Relational Algebra',"], ["Multiple Choice", "'problems_multiple_choice': '',"], ["Short Answer", "'problems_short_answer': '',"]]
 
 if ("proc" not in sys.path[0] and "dev" not in sys.path[0]):
     os.chdir(sys.path[0])
