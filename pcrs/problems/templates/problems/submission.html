@@ -2,11 +2,6 @@
 
 {% load static %}
 
-{#{% block less %}#}
-{#    <link rel="stylesheet/less" type="text/css" href="{% static "less/submission.less" %}" />#}
-{#    <script src="{% static "less/less-1.7.3.min.js" %}" type="text/javascript"></script>#}
-{#{% endblock %}#}
-
 {% block scripts %}
     {{ block.super }}
     {% load compress %}
@@ -24,7 +19,7 @@
 {% block stylesheets %}
     {% load compress %}
     {% compress css %}
-        <link rel="stylesheet" href="{% static "less/submission.css" %}">
+        {{ block.super }}
         <link rel="stylesheet" href="{% static "problems/css/style.css" %}">
     {% endcompress %}
 {% endblock %}

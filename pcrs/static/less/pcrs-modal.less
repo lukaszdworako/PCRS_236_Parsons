@@ -1,0 +1,130 @@
+@import "../bootstrap/less/modals";
+
+.pcrs-modal{
+  .modal;
+  .fade;
+  &.fade .pcrs-modal-dialog {
+    .modal-dialog;
+  }
+  &.in .pcrs-modal-dialog {
+    .modal-dialog;
+  }
+  border-radius: none;
+}
+
+.pcrs-modal-history{
+  .pcrs-modal;
+  > .pcrs-modal-content{
+    top: 5%;
+    width: 90%;
+    margin-right:5%;
+    margin-left:5%;
+    min-width: 200px;
+  }
+  overflow-y: scroll;
+}
+
+.pcrs-modal-preview{
+  .pcrs-modal;
+  > .pcrs-modal-content{
+    margin-top:10%;
+    width: 70%;
+    margin-right:15%;
+    margin-left:15%;
+  }
+  overflow-y: scroll;
+}
+
+.pcrs-modal-wait{
+  .pcrs-modal;
+  > .pcrs-modal-content{
+    margin-top:10%;
+    width: 50%;
+    height: 30%;
+    margin-right:25%;
+    margin-left:25%;
+  }
+  .pcrs-modal-body{
+    text-align: center;
+  }
+  overflow-y: scroll;
+}
+
+.pcrs-modal-trace{
+  .pcrs-modal;
+  overflow: auto;
+}
+
+.pcrs-small-modal{
+  .pcrs-modal;
+  @media (min-width: @screen-lg-min) {
+    width: 40%;
+    margin-left: 30%;
+    margin-right: 30%;
+  }
+  @media (max-width: @screen-md-max) {
+    width: 50%;
+    margin-left: 25%;
+    margin-right: 25%;
+  }
+  @media (max-width: @screen-sm-max) {
+    width: 70%;
+    margin-left: 15%;
+    margin-right: 15%;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+  margin-top:10%;
+//  margin-bottom:10%;
+  min-width: 400px;
+  min-height: 250px;
+  overflow-y: auto;
+  textarea{
+    width: 80%;
+    margin-left: 10%;
+    resize: vertical;
+  }
+  .xs-x-button-right{
+    top:10px;
+    right:10px;
+  }
+}
+
+.pcrs-modal-content{
+  .modal-content;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.pcrs-modal-trace-content{
+  .pcrs-modal-content;
+  top: 5%;
+  width: 90%;
+  margin-right:5%;
+  margin-left:5%;
+  min-width:1050px;
+}
+
+.pcrs-modal-dialog{
+  .modal-dialog;
+}
+
+.pcrs-modal-header{
+  .modal-header;
+}
+
+.pcrs-modal-title{
+  .modal-title;
+}
+
+.pcrs-modal-body{
+  .modal-body;
+}
+
+.pcrs-modal-footer{
+  .modal-footer;
+  clear: both;
+}

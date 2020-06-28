@@ -1,0 +1,121 @@
+.info{
+  @media (max-width: @screen-sm-max) {
+    margin-left: 25px;
+  }
+
+  @media (min-width: @screen-md-min) {
+    display: flex;
+    .pull-right;
+    .info-sm{
+      display: None;
+    }
+  }
+}
+
+.challenge-mark-complete{
+  margin-top:4px;
+  .info;
+  .complete-icon{
+    .glyphicon;
+    .glyphicon-ok;
+    margin-left:30px;
+  }
+  .challenge-mark{
+    display: None;
+  }
+}
+
+.challenge-mark-incomplete{
+  margin-top:4px;
+  .info;
+  .complete-icon{
+    display: None;
+  }
+  .challenge-mark{
+    margin-left: 15px;
+  }
+}
+
+.challenge-mark-unknown{
+  margin-top:4px;
+  .info;
+  .complete-icon{
+    display: None;
+  }
+  .challenge-mark{
+    display: None;
+  }
+  margin-right: 45px;
+}
+
+.quest-body{
+  .pcrs-panel-body;
+  padding-left:2.5%;
+  padding-right:2.5%;
+}
+
+
+.pcrs-panel{
+  margin-bottom: 10px !important;
+}
+
+//challenge page level
+.challenge-page{
+  .make-xs-column(12);
+  .make-sm-column(6);
+  .make-md-column(4);
+  .make-lg-column(3);
+  padding-left:0;
+  padding-top: 15px;
+}
+
+
+//challenge level
+.challenge-icon-padding{
+  margin-left:5px;
+  margin-right: 10px;
+}
+
+.credit-challenge{
+  .fontello;
+  .fontello-graduation-cap;
+  .challenge-icon-padding;
+}
+
+.practice-challenge{
+  .fontello;
+  .fontello-library;
+  .challenge-icon-padding;
+}
+
+.challenge-empty {
+    .pcrs-panel-fully-clickable(white);
+}
+.challenge-completed {
+    .pcrs-panel-fully-clickable(@challenge-completed-bg);
+}
+.challenge-attempted{
+    .pcrs-panel-fully-clickable(@challenge-attempted-bg);
+}
+.challenge-not-attempted{
+    .pcrs-panel-fully-clickable(@challenge-not-attempted-bg);
+}
+.quest-expired {
+    .pcrs-panel-fully-clickable(@quest-expired-bg);
+}
+.quest-live {
+    .pcrs-panel-fully-clickable(@quest-live-bg);
+}
+
+input#searcher {
+    padding-left: 5px;
+}
+
+.pcrs-panel-title .challenge-name {
+    margin-right: 10px;
+}
+
+.pcrs-panel-title a i:hover {
+    color: #777;
+}
+

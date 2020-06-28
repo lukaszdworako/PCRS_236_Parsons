@@ -89,17 +89,20 @@ class BaseSubmissionForm(CrispyFormMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.helper.form_show_labels = False
         self.submit_button = Submit('Submit', value='Submit',
-                                    css_class='green-button pull-right')
+                                    css_class='green-button')
         if not (problem.name == 'blank' or problem.challenge == None or simpleui):
             history_css = 'reg-button'
         else:
             history_css = 'reg-button hidden'
-        self.history_button = StrictButton('History', name='history',
-                                           data_toggle="modal",
-                                           data_target="#history_window_"+
-                                           problem.get_problem_type_name()+
-                                                   "-{}".format(problem.pk),
-                                           css_class=history_css)
+        # Only show the history button if the problem is not a part of a mastery quiz
+        self.history_button = None
+        if problem.challenge is None or not problem.challenge.is_mastery_challenge():
+            self.history_button = StrictButton('History', name='history',
+                                               data_toggle="modal",
+                                               data_target="#history_window_"+
+                                               problem.get_problem_type_name()+
+                                                       "-{}".format(problem.pk),
+                                               css_class=history_css)
 
 
 

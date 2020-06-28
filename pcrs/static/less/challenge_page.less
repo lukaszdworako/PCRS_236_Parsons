@@ -1,0 +1,115 @@
+@import "base";
+@import "problem_icons";
+
+@import "submission";
+
+@import "../bootstrap/less/tables";
+@import "../bootstrap/less/wells";
+@import "../bootstrap/less/modals";
+
+.alert{
+  margin-bottom:2px;
+}
+
+.pcrs-sidebar.affix {
+  .pcrs-sidebar;
+}
+.pcrs-sidebar.affix-top{
+  .pcrs-sidebar;
+  margin-right: 1%;
+}
+
+.pcrs-sidebar{
+  background-color: @sidebar-background-color;
+  width: 100%;
+  height: auto;
+}
+
+.pcrs-sidenav{
+  .nav;
+}
+
+.icon-next-active{
+  .chevron-right-icon;
+  color: @active-icon-color;
+}
+
+.icon-next-inactive{
+  .chevron-right-icon;
+  color: @inactive-icon-color;
+}
+
+.icon-prev-active{
+  .chevron-left-icon;
+  color: @active-icon-color;
+}
+
+.icon-prev-inactive{
+  .chevron-left-icon;
+  color: @inactive-icon-color;
+}
+
+.active_sb{
+  border-color: @sidebar-indicator-color !important;
+}
+
+.side-bar-el {
+  display: flex;
+  float: left;
+  a {
+    display: block;
+    background: #0f0;
+    height: 40px;
+    line-height: 40px;
+  }
+}
+
+.side-bar-arrow {
+  width: 200px;
+}
+
+.video-js{
+  @media (min-width: @screen-lg-min) {
+    width: 450px !important;
+    height: 250px !important;
+  }
+  @media (max-width: @screen-md-max) {
+    width: 400px !important;
+    height: 200px !important;
+  }
+  @media (max-width: @screen-sm-max) {
+    width: 350px !important;
+    height: 175px !important;
+  }
+  @media (max-width: @screen-xs-max) {
+    width: 300px !important;
+    height: 150px !important;
+  }
+}
+
+/* Elastic iframe videos courtesy Nick La @ http://webdesignerwall.com/tutorials/css-elastic-videos */
+
+.iframe-video-container {
+	position: relative;
+	padding-bottom: 56.25%;
+	padding-top: 30px;
+	height: 0;
+	overflow: hidden;
+}
+
+.iframe-video-container iframe,
+.iframe-video-container object,
+.iframe-video-container embed {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.iframe-video-wrapper {
+	width: 600px;
+	max-width: 100%;
+}
+
+/* End elastic iframe video code */

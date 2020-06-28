@@ -1,0 +1,126 @@
+//Navbar colors can be found in "pcrs-navbar.less"
+//They are overwriting the built in bootstrap colors
+
+//uft colors
+@uft-red: #E31837;
+@uft-light-red: #EACACD;
+@uft-light-green: #DAE5CD;
+@uft-light-grey: #CECFCB;
+@uft-blue: #002A5C;
+@uft-white: white;
+@uft-light-blue: #7BA4D9;
+@uft-grey: #CECFCB;
+
+@uft-custom-green: #1BD337;
+
+//###############################################################
+//problem_icon.less
+@not-attempted-problem-color: @uft-red;
+@attempted-problem-color: orange;
+@completed-problem-color: green;
+@closed-problem-color: black;
+
+//###############################################################
+//quest_page.less
+@quest-expired-bg: #E6E6E6;
+@quest-live-bg: #E6ECFF;
+@challenge-completed-bg: #E8FFE6;
+@challenge-attempted-bg: #FEFFE6;
+@challenge-not-attempted-bg: #FFE6E6;
+
+//###############################################################
+//challenge_page
+@sidebar-background-color: @uft-white;
+
+@active-icon-color: green;
+@inactive-icon-color: grey;
+
+@sidebar-indicator-color: indigo;
+
+//###############################################################
+//base
+@custom-border-color: @uft-light-blue;
+@body-background-color: @uft-grey;
+
+@green-checkmark-color: green;
+
+@blue-tag-bg: @uft-blue;
+
+  //buttons
+  @reg-button-color: black;
+  @reg-button-background-color: @uft-light-green;
+
+  @green-button-color: white;
+  @green-button-background-color: #388e3c;
+
+  @red-button-color: white;
+  @red-button-background-color: red;
+
+  @dark-grey-button-color: white;
+  @dark-grey-button-background-color: #444;
+
+  @light-grey-button-color: #333;
+  @light-grey-button-background-color: #ccc;
+
+//###############################################################
+//edit_challenge
+
+@visibility-open-color: green;
+@visibility-open-background-color: @uft-light-green;
+
+@visibility-closed-color: red;
+@visibility-closed-background-color: @uft-light-red;
+
+//###############################################################
+//pcrs-table
+@sql-extra-background-color: #FFE6E6;
+@sql-order-background-color: #E6ECFF;
+
+
+//###############################################################
+//quest_list
+@quest-page-challenge-background-color: @uft-blue;
+@quest-page-challenge-color: white;
+
+//###############################################################
+//submission
+
+  //testcase success and fail use bootstrap built in colors can be changed in submission file
+@history-best-background-color: #3333FF;
+@history-best-color: white;
+
+//Function
+
+//preatty button generator
+.pretty-buttons(@color, @background, @text-shadow: none) {
+  color: @color;
+  // #gradient > .vertical(lighten(@background, 5%), darken(@background, 5%), 0%, 100%);
+  background: @background;
+  border-color: darken(@background, 20%);
+  border-bottom-color: darken(@background, 20%);
+  text-shadow: @text-shadow;
+  border-radius: 2px;
+  border: 2px;
+  padding: 6px;
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    // #gradient > .vertical(darken(@background, 0), darken(@background, 10%), 0%, 100%);
+    background: darken(@background, 5%);
+    border-color: darken(@background, 5%);
+    color: @color;
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &,
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      background-color: @background;
+      border-color: darken(@background, 5%);
+    }
+  }
+}

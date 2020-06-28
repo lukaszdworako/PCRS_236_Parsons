@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{qtree}
+\usepackage{amsmath}
+
+
+\begin{document}
+
+% Relational algebra operators
+% select: $\sigma$
+% project: $\pi$
+% rename: $\rho$
+% assign $:=$
+% join $\times$ 
+% natural join $\bowtie$
+% union $\cap$
+% intersect $\cup$
+% assign $:=$
+
+% relation
+\Tree[.$Alpha$ ]
+
+% select
+\Tree[.$\sigma_{(x = y)}$ [.$Alpha$ ] ]
+
+% project
+\Tree[.$\pi_{a1, a2, a3}$ [.$Alpha$ ] ]
+
+% rename
+\Tree[.$\rho_{Apex}$ [.$Alpha$ ] ]
+\Tree[.$\rho_{(a1, a2, a3)}$ [.$Alpha$ ] ]
+\Tree[.$\rho_{Apex(a1, a2, a3)}$ [.$Alpha$ ] ]
+
+% assign
+\Tree[.$NewAlpha$ [.$Alpha$ ] ]
+\Tree[.$NewAlpha(a,b,c)$ [.$Alpha$ ] ]
+
+% join
+\Tree[.$\times$ [.$Alpha$ ] [.$Beta$ ] ]
+
+% natural join
+\Tree[.$\bowtie$ [.$Alpha$ ] [.$Beta$ ] ]
+
+% union
+\Tree[.$\cup$ [.$Alpha$ ] [.$Beta$ ] ]
+
+% intersect
+\Tree[.$\cap$ [.$Alpha$ ] [.$Beta$ ] ]
+
+% big tree
+\Tree[.$AlphaPrime:=$ [.$\bowtie$ [.$\cup$ [.$Alpha$ ] [.$Beta$ ] ] [.$\cap$ [.$Alpha$ ] [.$Beta$ ] ] ] ]
+
+
+\end{document}

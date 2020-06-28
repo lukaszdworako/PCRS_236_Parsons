@@ -1,0 +1,130 @@
+@import "../bootstrap/less/navs";
+@import "../bootstrap/less/navbar";
+@import "../bootstrap/less/dropdowns";
+
+// Basics of a navbar
+@navbar-default-color:             #eee;
+@navbar-default-bg:                #eee;
+@navbar-default-border:            darken(@navbar-default-bg, 6.5%);
+
+// Navbar links
+@navbar-default-link-color:                #444;
+@navbar-default-link-hover-color:          #444;
+@navbar-default-link-hover-bg:             #eee;
+@navbar-default-link-active-color:         #444;
+@navbar-default-link-active-bg:            #eee;
+@navbar-default-link-disabled-color:       #444;
+@navbar-default-link-disabled-bg:          #444;
+
+// Navbar brand label
+@navbar-default-brand-color:               #444;
+@navbar-default-brand-hover-color:         #eee;
+@navbar-default-brand-hover-bg:            #eee;
+
+// Navbar toggle
+@navbar-default-toggle-hover-bg:           #ddd;
+@navbar-default-toggle-icon-bar-bg:        #888;
+@navbar-default-toggle-border-color:       #ddd;
+
+.pcrs-navbar{
+
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 300;
+
+  .navbar-default;
+  margin-bottom: 25px;
+
+  .pcrs-navbar-brand{
+    .navbar-brand;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    img {
+      margin: auto;
+      width: 50%;
+    }
+  }
+  .pcrs-navbar-text{
+    .navbar-text;
+  }
+  .pcrs-navbar-nav{
+    .navbar-nav;
+  }
+  .pcrs-navbar-toggle{
+    .navbar-toggle;
+  }
+  .pcrs-navbar-collapse,
+  .pcrs-navbar-form{
+    .navbar-collapse;
+  }
+  .pcrs-navbar-nav{
+    .navbar-nav;
+    font-size: 14px;
+  }
+  .pcrs-navbar-left {
+
+  }
+
+  border-bottom: none;
+}
+
+.pcrs-navbar-header{
+  .navbar-header;
+}
+
+.pcrs-navbar-toggle{
+  .navbar-toggle;
+  .pcrs-icon-bar{
+    .navbar-toggle > .icon-bar;
+  }
+}
+
+.pcrs-navbar-brand{
+  .navbar-brand;
+}
+
+.pcrs-navbar-collapse{
+  .navbar-collapse;
+}
+
+.pcrs-navbar-nav{
+  .nav;
+  .navbar-nav;
+  @media (max-width: @screen-xs-max) {
+    width: 100%;
+  }
+}
+
+.pcrs-navbar-nav-right{
+  .pcrs-navbar-nav;
+  @media (max-width: @screen-xs-max) {
+    margin-left:0;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    .pull-right;
+  }
+}
+
+//icons
+    .pcrs-dropdown-icon{
+      .glyphicon;
+      .glyphicon-align-justify;
+    }
+
+    .pcrs-settings-icon{
+      .glyphicon;
+      .glyphicon-cog;
+    }
+
+    .pcrs-feedback-icon{
+      .glyphicon;
+      .glyphicon-envelope;
+    }
+
+    .pcrs-logout-icon{
+      .glyphicon;
+      .glyphicon-log-out;
+    }

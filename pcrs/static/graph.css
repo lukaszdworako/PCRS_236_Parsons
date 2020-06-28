@@ -1,0 +1,151 @@
+html, body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.challenge-node {
+    width: 200px;
+    height: auto;
+}
+
+.node-content {
+    clear: both;
+    height: auto;
+    width: 200px;
+    background: #eee;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 0 0 5px 5px;
+}
+
+.challenge-node:hover {
+    cursor: pointer;
+}
+
+.node-main {
+    height: 100%;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 5px 5px 0 0;
+}
+
+.node-body {
+    width: 100%;
+    height: 60px;
+    float: right;
+}
+
+.node-left {
+    -webkit-box-shadow:inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 0 1px;
+    -moz-box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+    box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+    width: 30%;
+    height: 100%;
+    float: left;
+    text-align: center;
+    border-radius: 5px 0 0 0;
+}
+
+.node-left-done {
+    background: #8bc34a;
+    border: 1px solid green;
+    color: #005200;
+}
+
+.node-left-progress {
+    color: #874400;
+    background: #ffc107;
+    border: 1px solid orange;
+}
+
+.node-left-locked {
+    color: #424242;
+    background: #c7c7c7;
+    border: 1px solid #717171;
+}
+
+.node-left-expired {
+    color: #820000;
+    background: #f44336;
+    border: 1px solid #820000;
+}
+
+
+.node-icon {
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+}
+
+.node-top {
+    line-height: 14px;
+    padding-top: 5px;
+    font-size: 16px;
+    height: 40px;
+    text-align: center;
+    font-weight: 300;
+    width: auto;
+    align-items: center;
+    justify-content: center;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progress-left {
+    float: left;
+}
+
+.progress {
+    border-radius: 0px;
+    background: #666;
+    box-shadow: none;
+    height: 10px;
+    width: 120px;
+    margin: 0 auto 0 auto;
+    height: 12px;
+}
+
+.progress-bar {
+
+}
+
+.progress-bar p {
+    color: #000;
+    line-height: 12px;
+}
+
+.container-fluid {
+    margin-top: 100px;
+}
+
+.popover {
+    background: #fff;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+#quest_table {
+    border-spacing: 30px 60px;
+    border-collapse: separate;
+    margin: 0 auto 0 auto;
+    z-index: 99999;
+}
+
+.node-content p {
+    margin-bottom: 0;
+}
+
+td {
+    /* background: #ff0; */
+}
+
+.drag-available {
+    opacity: 0.5;
+}
+
+canvas {
+    z-index: 0;
+}

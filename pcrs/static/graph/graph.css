@@ -1,0 +1,378 @@
+.challenge-node {
+    width: auto;
+    height: auto;
+}
+
+.node-content {
+    clear: both;
+    height: auto;
+    width: auto;
+    overflow auto;
+    background: #eee;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 0 0 5px 5px;
+}
+
+.challenge-node:hover {
+    cursor: pointer;
+}
+
+.node-main {
+    height: 100%;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 5px 5px 0 0;
+}
+
+.node-body {
+    width: 100%;
+    height: 100%s;
+    float: right;
+}
+
+.node-left {
+    -webkit-box-shadow:inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 0 1px;
+    -moz-box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+    box-shadow:inset 0px 0px 0px 1px rgba(255, 255, 255, 0.2);
+    width: 30%;
+    height: 100%;
+    float: left;
+    text-align: center;
+    border-radius: 5px 0 0 0;
+}
+
+.node-left-done {
+    background: #8bc34a;
+    border: 1px solid green;
+    color: #005200;
+}
+
+.node-left-progress {
+    color: #874400;
+    background: #ffc107;
+    border: 1px solid orange;
+}
+
+.node-left-locked {
+    color: #424242;
+    background: #c7c7c7;
+    border: 1px solid #717171;
+}
+
+.node-left-expired {
+    color: #820000;
+    background: #f44336;
+    border: 1px solid #820000;
+}
+
+.node-icon::before {
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+}
+
+.node-top {
+    line-height: 14px;
+    padding-top: 5px;
+    font-size: 16px;
+    height: 40px;
+    text-align: center;
+    font-weight: 300;
+    width: auto;
+    align-items: center;
+    justify-content: center;
+    display: block;
+    overflow: auto;
+    text-overflow: ellipsis;
+}
+
+.progress-left {
+    float: left;
+}
+
+.progress {
+    border-radius: 0px;
+    background: #666;
+    box-shadow: none;
+    height: 10px;
+    width: 60%;
+    margin: 0 auto 0 auto;
+}
+
+.progress-bar p {
+    color: #000;
+    line-height: 12px;
+}
+
+.popover {
+    background: #fff;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+#challenge-graph {
+    width: 100%;
+    margin: 0 auto 0 auto;
+    z-index: 99999;
+    padding-bottom: 30px;
+    overflow: scroll;
+    display:table
+
+}
+
+#quest_table {
+     border-spacing: 30px 60px;
+     border-collapse: separate;
+     margin: 0 auto 0 auto;
+     z-index: 99999;
+ }
+
+#unplaced-nodes {
+    margin: 0 auto 0 auto;
+    padding-bottom: 5px;
+    z-index: 99999;
+}
+
+.node-content p {
+    margin-bottom: 0;
+}
+
+td {
+    width: auto;
+    height: 80px;
+    min-width: 200px;
+}
+
+.drag-available {
+    opacity: 0.5;
+}
+
+#edges {
+    z-index: 9999999999;
+    position: absolute;
+    mix-blend-mode: multiply;
+}
+
+.empty-block {
+    border-radius: 5px;
+    border: 2px solid #73AD21;
+    color: #73AD21;
+}
+
+.del-node {
+    border-radius: 5px;
+    border: 2px solid #ff0000;
+}
+
+.selected-green {
+    border-radius: 5px 5px 5px 5px;
+    background-color: #5cb85c;
+border-color: #4cae4c;
+}
+
+.selected-red {
+    border-radius: 5px 5px 5px 5px;
+    background-color: #c9302c;
+    border-color: #761c19;
+}
+
+.quest-elements {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.quest-progress {
+    height: 100%;
+    width: 20px;
+}
+
+table.indicator_table {
+    font-size: 24px;
+    border-spacing: 0 60px;
+    border-collapse: separate;
+    margin: 0 auto 0 auto;
+    z-index: 20;
+}
+
+.table-row {
+    clear: both;
+    z-index: 2;
+    padding: 35px 0 35px 0;
+}
+
+.table-col::after {
+    clear: both;
+}
+
+.table-col {
+    min-width: 200px;
+    min-height: 91px
+}
+
+.table-col-quest {
+    margin: 0;
+}
+
+#quest-progress {
+    height: 10px;
+    width: auto;
+}
+
+.quest-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 10px;
+}
+
+h4.quest-marker-title {
+    text-align: center;
+    font-size: 5hv;
+    font-weight: 300;
+    cursor: pointer;
+} 
+
+// -------------------------------
+// Minimap Settings
+// -------------------------------
+
+.minimap {
+    width: 500px;
+    border: 1px solid red;
+}
+
+.miniregion {
+    border-radius: 4px;
+    background: #444;
+    border: 1px solid #444;
+    opacity: 0.2;
+}
+
+// -------------------------------
+// New integrated nav Settings
+// -------------------------------
+
+.del-row {
+background-color : #f44336;
+ border-radius: 50%;
+}
+
+.row-btns {
+    align: center;
+    vertical-align: center;
+    width: auto;
+    height: 100%;
+}
+
+
+.hide-node-btns {
+    text-align: center;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 0 0 5px 5px;
+    background: #eee;
+}
+
+.btn-add {
+    color: #fff;
+background-color: #5cb85c;
+border-color: #4cae4c;
+    float: right;
+}
+
+.btn-rm {
+    color: #fff;
+background-color: #c9302c;
+border-color: #761c19;
+    float: left;
+}
+
+.rm-dependency  {
+position: relative;
+bottom: 0px;
+right 50%;
+float:right;
+color: #c9302c;
+border-color: #761c19;
+font-weight: 700;
+font-size: 20px;
+}
+
+.add-dependency  {
+position: relative;
+bottom: 0px;
+float:left;
+color: #4cae4c;
+border-color: #4cae4c;
+font-weight: 700;
+font-size: 20px;
+}
+
+.rm-row  {
+clear: both;
+float: right;
+position: relative;
+color: #c9302c;
+border-color: #761c19;
+font-weight: 700;
+font-size: 20px;
+}
+
+.add-row  {
+clear: both;
+float: right;
+position: relative;
+color: #4cae4c;
+border-color: #4cae4c;
+font-weight: 700;
+font-size: 20px;
+}
+
+
+.quest-btns {
+text-align: center;
+align-items: center;
+    justify-content: center;
+}
+
+#rm-quest  {
+color: #c9302c;
+border-color: #761c19;
+font-weight: 700;
+font-size: 20px;
+}
+
+#add-quest  {
+color: #4cae4c;
+border-color: #4cae4c;
+font-weight: 700;
+font-size: 20px;
+}
+
+#add-node  {
+clear: both;
+position: relative;
+float: right;
+right: 50%;
+top: 25px;
+color: #4cae4c;
+border-color: #4cae4c;
+font-weight: 700;
+font-size: 3vw;
+}
+
+.row-line{
+background-color: #4cae4c;
+color: #4cae4c;
+border-color: #4cae4c;
+
+}

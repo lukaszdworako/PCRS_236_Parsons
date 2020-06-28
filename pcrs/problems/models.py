@@ -1,6 +1,5 @@
 import re
 from hashlib import sha1
-import os
 from pcrs.settings import PROJECT_ROOT, FILE_LIFESPAN
 # ------------------
 # Removed in >1.5, replaced with below
@@ -23,6 +22,8 @@ from users.models import PCRSUser, Section, AbstractLimitedVisibilityObject
 import problems.TagManager as TagManager
 from problems.helper import remove_tag
 import datetime
+from mastery.models import MasteryQuizSessionParticipant
+
 
 def get_problem_labels():
     """
@@ -42,8 +43,10 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         related_name='%(app_label)s_%(class)s_related', on_delete=models.SET_NULL)
 
     max_score = models.SmallIntegerField(default=0, blank=True)
+    scaling_factor = models.FloatField(default=1)
 
     author = models.CharField(max_length=128, blank=True)
+    notes = models.CharField(max_length=256, blank=True)
 
     class Meta:
         abstract = True
@@ -65,7 +68,8 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
                 'submit_url': '{}/run'.format(self.get_absolute_url()),
                 'max_score': self.max_score,
                 'challenge': self.challenge_id,
-                'author': self.author
+                'author': self.author,
+                'notes': self.notes
             }
         )
         return serialized
@@ -118,6 +122,13 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
 
     def get_browse_submissions_url(self):
         return '{}/browse_submissions'.format(self.get_absolute_url())
+
+    def get_submissions_by_user(self, student):
+        return self.submission_set.filter(user=student).all()
+
+    def get_mastery_submissions_by_user(self, student, mastery_test):
+        return self.submission_set.filter(user=student, mastery_quiz_session_participant=mastery_test).order_by('-score').all()
+
 
     def best_per_user_before_time(self, deadline=timezone.now()):
         """
@@ -235,6 +246,10 @@ class AbstractProblem(AbstractSelfAwareModel, AbstractLimitedVisibilityObject,
         return self.get_submission_class()\
             .get_best_score_before_deadline(self, user)
 
+    def get_best_mastery_score(self, user, session):
+        return self.get_submission_class()\
+            .get_best_mastery_score(self, user, session)
+
     def is_editor_problem(self):
         return self.pk == AbstractProblem.editor_problem_id()
 
@@ -290,6 +305,7 @@ class AbstractProgrammingProblem(AbstractProblem, AbstractNamedObject):
         content = [self]+[tc for tc in self.testcase_set.all()]
         return content
 
+
 class AbstractSubmission(AbstractSelfAwareModel):
     """
     Base submission class.
@@ -308,6 +324,8 @@ class AbstractSubmission(AbstractSelfAwareModel):
     submission = models.TextField(blank=True, null=True)
     score = models.SmallIntegerField(default=0)
     has_best_score = models.BooleanField(default=False)
+    mastery_quiz_session_participant = models.ForeignKey(MasteryQuizSessionParticipant,
+                                        related_name='%(app_label)s_%(class)s_related', null=True)
 
     class Meta:
         abstract = True
@@ -431,6 +449,12 @@ class AbstractSubmission(AbstractSelfAwareModel):
                             .filter(user=user, problem=problem)\
                             .values_list('score', flat=True)
         return max(scores) if scores else None
+
+    @classmethod
+    def get_best_mastery_score(cls, problem, user, session):
+        scores = cls.objects.filter(user=user, problem=problem, mastery_quiz_session_participant=session)\
+            .values_list('score', flat=True)
+        return round(max(scores) * problem.scaling_factor) if scores else 0
 
 
 class AbstractTestCase(AbstractSelfAwareModel):

@@ -4,7 +4,7 @@ import datetime
 import decimal
 import logging
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import (DetailView, UpdateView, DeleteView, FormView,
                                   View)
@@ -21,6 +21,12 @@ from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
 from problems.models import FileUpload
 from django.core.exceptions import ObjectDoesNotExist
+from mastery.models import MasteryQuizSession
+from django.conf import settings
+from pcrs.logger import log_request
+mastery_logger = logging.getLogger('masteryquizsubmission')
+logger = logging.getLogger('submission')
+
 # Helper class to encode datetime and decimal objects
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -197,10 +203,6 @@ class SubmissionViewMixin:
 
         problem_class = self.model.get_problem_class()
         pk = self.kwargs.get('problem')
-        logger = logging.getLogger('activity.logging')
-        logger.info(str(now()) + " | " +
-                    str(self.request.user) + " | View " +
-                    str(problem_class.get_problem_type_name()) + " " + str(pk))
 
         if self.request.user.is_student:
             return get_object_or_404(problem_class, pk=pk, visibility='open')
@@ -230,10 +232,19 @@ class SubmissionViewMixin:
         submission_model = self.model.get_submission_class()
         submission_code = request.POST.get('submission', '')
         results, error = [], None
-        if submission_code:
+        problem = self.get_problem()
+        if problem.challenge and problem.challenge.is_mastery_challenge():
+            # If this is a mastery challenge, we want to record which session
+            # this submission was submitted to.
+            submission = submission_model.objects.create(
+                user=request.user, problem=self.get_problem(),
+                section=self.get_section(), submission=submission_code,
+                mastery_quiz_session_participant=MasteryQuizSession.get_user_active_mastery_quiz(request.user))
+        else:
             submission = submission_model.objects.create(
                 user=request.user, problem=self.get_problem(),
                 section=self.get_section(), submission=submission_code)
+        if submission_code:
             results, error = submission.run_testcases(request)
             submission.set_score()
             self.object = submission
@@ -294,6 +305,36 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
     Create a submission for a problem asynchronously.
     """
     def post(self, request, *args, **kwargs):
+        # First, check if this is a mastery problem and they've already attempted
+        # it the max number of times.
+        problem = self.get_problem()
+        # Get the submissions for this problem
+        if problem.challenge and problem.challenge.is_mastery_challenge():
+            log_request(mastery_logger, request, 'Mastery Quiz Problem Submission.')
+            # Check if they're past their allowed time limit
+            # Get the session of the user
+            user_session = MasteryQuizSession.get_user_active_mastery_quiz(request.user)
+            mastery_submissions = problem.get_mastery_submissions_by_user(request.user, user_session)
+            if user_session is None:
+                return JsonResponse({
+                    'results': ([], None),
+                    'expired': 1,
+                    'score': 0,
+                    'sub_pk': 0,
+                    'best': False,
+                    'max_score': 1
+                })
+            if problem.get_problem_type_name == 'problems_python' and len(mastery_submissions) + 1 > settings.MASTERY_QUIZ_CODE_ATTEMPTS:
+                return JsonResponse({
+                    'results': ([], None),
+                    'num_attempts': len(mastery_submissions) + 1,
+                    'max_attempts': settings.MASTERY_QUIZ_CODE_ATTEMPTS,
+                    'score': 0,
+                    'sub_pk': 0,
+                    'best': False,
+                    'max_score': 1
+                })
+        log_request(logger, request, 'Problem Submission.')
         try:
             results = self.record_submission(request)
         except AttributeError: # Probably an anonymous user
@@ -308,14 +349,9 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin,
                                 'max_score': 1}, cls=DateEncoder),
                                 content_type='application/json')
 
-        problem = self.get_problem()
+
         user, section = self.request.user, self.get_section()
 
-        logger = logging.getLogger('activity.logging')
-        logger.info(str(localtime(self.object.timestamp)) + " | " +
-                    str(user) + " | Submit " +
-                    str(problem.get_problem_type_name()) + " " +
-                    str(problem.pk))
         try:
             deadline = problem.challenge.quest.sectionquest_set\
                 .get(section=section).due_on

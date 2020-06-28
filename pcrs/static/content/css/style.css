@@ -1,0 +1,46 @@
+.ui-selected {
+    background-color: lightblue;
+}
+
+.page {
+    min-height: 7em;
+}
+
+i[class^="delete"] {
+    color: gray;
+    margin: -10px;
+    font-size: smaller;
+    cursor: hand;
+}
+
+.close {
+    font-size: small;
+    cursor: hand;
+}
+
+.textblock, .problem, .video {
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.problem, .video {
+    margin-top: 10px;
+}
+
+.uiselected {
+    background-color: #CECFCB;
+}
+
+.quest-controls {
+    margin-right: 10px;
+}
+
+.challenge {
+    padding: 5px;
+    background-color: #008BB0;
+    color: white
+}
+
+.hidden {
+    display: none;
+}

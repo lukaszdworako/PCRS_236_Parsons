@@ -1,5 +1,8 @@
 {% extends "pcrs/item_form.html" %}
 
+{% load static %}
+{% load compress %}
+
 {% block page_title %}
     {% if object %}
         Edit Problem
@@ -8,24 +11,19 @@
     {% endif %}
 {% endblock %}
 
-{% load static %}
-{% load compress %}
 {% block scripts %}
     {{ block.super }}
     {% compress js %}
         <script type="text/javascript" src="{% static 'csrf_protection.js' %}"></script>
-        <script type="text/javascript" src="{% static 'jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'multi-select/js/jquery.multi-select.js' %}"></script>
         <script type="text/javascript" src="{% static 'multi-select/js/jquery.quicksearch.js' %}"></script>
-        <script type="text/javascript" src="{% static 'bootstrap_less/bootstrap-3.2.0/js/modal.js' %}"></script>
         <script type="text/javascript" src="{% static 'problems/js/problem_form.js' %}"></script>
     {% endcompress %}
 {% endblock %}
 
 {% block stylesheets %}
     {% compress css %}
-        {# Necessary for modal windows #}
-        <link rel="stylesheet" href="{% static "less/problem_form.css" %}">
+        {{ block.super }}
         <link rel="stylesheet" href="{% static 'multi-select/css/multi-select.css' %}">
         <link rel="stylesheet" href="{% static 'problems/css/style.css' %}">
     {% endcompress %}
