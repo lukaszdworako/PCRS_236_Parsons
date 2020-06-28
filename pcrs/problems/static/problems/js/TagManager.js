@@ -105,6 +105,9 @@ TagManager.findTagRanges = function(code) {
         'hidden': [],
         'student_code': [],
         'no_tag': [],
+        'static': [],
+        'inter': [],
+        'group': [],
     };
 
     // How many tags deep we are (assuming tags can be embedded)

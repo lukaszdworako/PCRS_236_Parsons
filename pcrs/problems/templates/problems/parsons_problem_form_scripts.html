@@ -1,0 +1,139 @@
+{# Needed for AdminTabbedCodeMirror #}
+{% include "problems/handlebars/icon_button.html" %}
+
+{% load staticfiles %}
+
+{% load compress %}
+{% compress js %}
+<script src="{% static "codemirror-4.1/lib/codemirror_accessible.js" %}" type="text/javascript"></script>
+<script src="{% static "codemirror-4.1/mode/clike/clike.js" %}" type="text/javascript"></script>
+<script src="{% static "codemirror-4.1/mode/python/python.js" %}" type="text/javascript"></script>
+<script src="{% static "problems/js/TagManager.js" %}" type="text/javascript"></script>
+<script src="{% static "problems/js/TabbedCodeMirror.js" %}" type="text/javascript"></script>
+<script src="{% static "problems/js/AdminTabbedCodeMirror_parsons.js" %}" type="text/javascript"></script>
+{# When another language is added modify code_mirror.js #}
+<script src="{% static 'code_mirror.js' %}" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+    /**
+     * Class to organize rendering problem submissions.
+     * @param {jQuery} $form The problem form object
+     * @param {Object} cmMode The CodeMirror mode to use
+     */
+    function ProgrammingProblemFormHandler($form, cmMode) {
+        ProblemFormHandler.call(this, $form);
+        this.starterCodeTcm = new AdminTabbedCodeMirror();
+        this._codeMirrorMode = cmMode;
+    }
+    ProgrammingProblemFormHandler.prototype =
+        Object.create(ProblemFormHandler.prototype);
+    ProgrammingProblemFormHandler.prototype.constructor =
+        ProgrammingProblemFormHandler;
+
+    /**
+     * @override
+     */
+    ProgrammingProblemFormHandler.prototype.pageLoad = function () {
+        ProblemFormHandler.prototype.pageLoad.apply(this, arguments);
+        this._setupFormCallbacks();
+        this._createHiddenFormFields();
+        this._setupCodeMirrors();
+    }
+
+    /**
+     * Enables tab modification widgets for the starter code field.
+     * @param {string} fileExtension The extension to force on the files
+     */
+    ProgrammingProblemFormHandler.prototype.enableTabsInStarterCode =
+        function (fileExtension) {
+            this._enableTabsOnTcm(this.starterCodeTcm, fileExtension);
+        }
+
+    ProgrammingProblemFormHandler.prototype._enableTabsOnTcm =
+        function (tcm, extension) {
+            var newFileName = 'NewFile.' + extension;
+
+            tcm.enableTabEditingWidgets();
+            tcm.setNewFileOptions({
+                'name': newFileName,
+                'code': '',
+                'mode': this._codeMirrorMode,
+                'theme': user_theme,
+            });
+            tcm.setForcedFileExtension(extension);
+
+            // For legacy problems which didn't include tabs
+            var files = tcm.getFiles();
+            if (files.length > 0 && files[0].name == '') {
+                tcm.renameFileAtIndex(0, newFileName);
+            }
+        }
+
+    ProgrammingProblemFormHandler.prototype._setupCodeMirrors = function () {
+        this._replaceElementWithTcm($('#id_starter_code'), this.starterCodeTcm);
+    }
+
+    ProgrammingProblemFormHandler.prototype._replaceElementWithTcm =
+        function ($element, tcm) {
+            var code = $element.text();
+            $element.replaceWith(tcm.getJQueryObject());
+
+            tcm.setNewFileOptions({
+                'mode': this._codeMirrorMode,
+                'theme': user_theme,
+            });
+
+            // Parse the files from tags in the plaintext value in the DOM
+            var files = TagManager.parseCodeIntoFiles(code);
+            for (var i = 0; i < files.length; i++) {
+                tcm.addFile(files[i]);
+            }
+
+            return tcm;
+        }
+
+    ProgrammingProblemFormHandler.prototype._setupFormCallbacks = function () {
+        var that = this;
+        var callback = function () {
+            that._submitHidden();
+        };
+        // Add function to submit button to update hidden field data
+        this.$form.find("#submit-id-clone").click(callback);
+        this.$form.find("#submit-id-submit").click(callback);
+        this.$form.find("#submit-id-attempt").click(callback);
+    }
+
+    ProgrammingProblemFormHandler.prototype._createHiddenField = function (name) {
+        var $field = $('<input type="hidden" value=""></input>')
+            .attr('id', 'id_' + name + '_tmp')
+            .attr('name', name);
+        this.$form.append($field);
+        return $field;
+    }
+
+    ProgrammingProblemFormHandler.prototype._submitHidden = function () {
+        try {
+            this._setHiddenFieldValues();
+            return true;
+        } catch (err) {
+            alert('Error submitting code: ' + err.message);
+            return false;
+        }
+    }
+
+    /**
+     * Extend this if you need to add code mirror content to the form submission.
+     */
+    ProgrammingProblemFormHandler.prototype._setHiddenFieldValues = function () {
+        var starterCode = this.starterCodeTcm.getFiles()[0].code;
+        // Move values to temporary variables
+        this.$form.find("#id_starter_code_tmp").val(starterCode);
+    }
+
+    // Add hidden values to submit code
+    ProgrammingProblemFormHandler.prototype._createHiddenFormFields = function () {
+        this.$form.append(this._createHiddenField('starter_code'));
+    }
+</script>
+{% endcompress %}

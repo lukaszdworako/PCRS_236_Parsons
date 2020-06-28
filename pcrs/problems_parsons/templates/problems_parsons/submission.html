@@ -1,0 +1,16 @@
+{% extends "problems/submission.html" %}
+
+{% load staticfiles %}
+{% block scripts %}
+    {{ block.super }}
+    {% load staticfiles %}
+{% endblock %}
+
+{% block page_title %}
+{% endblock %}
+
+{% block content %}
+    <div id="{{ problem.get_problem_type_name }}-{{ problem.pk }}" class="code-mirror-wrapper">
+        {% include "problems_parsons/submission_widget.html" %}
+    </div>
+{% endblock %}

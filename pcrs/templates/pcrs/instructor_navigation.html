@@ -56,6 +56,11 @@
                             <a href="{{ site_prefix }}/problems/java/list">Java</a>
                         </li>
                         {% endif %}
+                        {% if 'problems_parsons' in problem_types %}
+                            <li>
+                                <a href="{{ site_prefix }}/problems/parsons/list">Parsons</a>
+                            </li>
+                        {% endif %}
                         {% if 'problems_rdb' in problem_types %}
                             <li class="divider"></li>
                             <li>
