@@ -1,0 +1,27 @@
+{% extends "problems/submission_widget.html" %}
+
+{% block problem_title %}
+    {{ block.super }}
+{% endblock %}
+
+{% if user.is_instructor and not request.session.viewing_as.is_student and not user.use_simpleui %}
+{% block instructor_options %}
+    <span class="widget_controls">
+        <a href="{{ problem.get_absolute_url }}" title="Edit"><i
+                class="pencil-icon"></i><span
+                class="at">Edit {{ problem.name }}"</span></a>
+    </span>
+{% endblock %}
+{% endif %}
+
+{% block submission_form %}
+<br>
+    {% load crispy_forms_tags %}
+    {% crispy form %}
+    {% load filters %}
+
+{% endblock %}
+
+{% block history %}
+    {% include "problems_short_answer/submission_history.html" %}
+{% endblock %}
