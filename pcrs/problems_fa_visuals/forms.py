@@ -12,7 +12,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         model = Problem
         fields = ('name', 'description', 'regex', 'author', 'tags', 'visibility')
         help_texts = {
-            'regex': _('Regular expressions follow the format: <br> \'
+            'regex': _('Regular expressions follow the format: <br>' 
             # ε is the empty string <br> \
             +'() for grouping <br> \
             * for Kleene star <br> '

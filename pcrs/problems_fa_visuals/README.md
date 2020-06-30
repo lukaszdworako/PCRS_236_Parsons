@@ -2,11 +2,12 @@
 
 * models.py cannot successfully import the PADS package (tried it for a couple hours to no avail)
 
-**Questions:**
+# Questions:
 
 1. What have you done so far?
 
-A: I have created an app for the visualization, outlined a clear algorithm to use to test the user and have begun putting the algorithm in the app. I have also modified the forms accordingly. The current commit does not run (at the time of writing), so I'll stash some of my changes and keep what I had finished.
+A: I have created an app for the visualization, outlined a clear algorithm to use to test the user and have begun putting the algorithm in the app (have been met with quite a few difficulties). I have also modified the forms accordingly. You can view the forms at http://127.0.0.1:8000/problems/fa_visuals/list (replace localhost with whatever you're using).
+~~The current commit does not run (at the time of writing), so I'll stash some of my changes and keep what I had finished.~
 
 2. What I expected to get done.
 
@@ -15,9 +16,9 @@ A: I expected to have a very simple proof-of-concept that would have the form wi
 3. Accomodations for difficulty you encountered.
 
 A: The bulk of the Django/app development occured after June 22nd, where I had my last midterm. Since then I've had issues with:
-- Django IMPORTED_APPS
-- Django documentation
-- PADS library
+- Django IMPORTED_APPS (I emailed you about this just earlier today)
+- Django documentation (trying to use it to debug things and find fields that I can use is very difficult)
+- PADS library (does. not. import.)
 I'm not very proficient at checking long dependency chains and resolving very unhelpful errors, so it took me more than a couple days to fix these (the PADS error still going unfixed). I'm going to try to fix this in the next couple of days, but it's not going to be easy.
 
 4. Where am I going to use this in 236/263?

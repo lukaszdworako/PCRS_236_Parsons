@@ -11,38 +11,17 @@ from problems.models import AbstractProblem, AbstractSubmission
 from problems_python.python_language import PythonSpecifics
 
 # import pads
-from problems_fa_visuals import Automata
+# from problems_fa_visuals import Automata
 
-# class Dfa ():
-#     states = []
-#     sigma = []
-#     start = 0
-#     delta = {}
-#     final = []
-#     def __init__():
+# class dfa (Automata.DFA):
+#     transitions = {}
+#     finals = []
 
-# class Nfa():
-#     states = []
-#     sigma = []
-#     start = 0
-#     delta = {}
-#     final = []
-#     def __init__(regexp: str):
-
-
-class dfa (Automata.DFA):
-    transitions = {}
-    finals = []
-
-    def transition (state, symbol):
-        return transitions[(state, symbol)]
+#     def transition (state, symbol):
+#         return transitions[(state, symbol)]
     
-    def is_final(state):
-        return state in finals
-
-# def powerset(regexp: str):
-
-#     return
+#     def is_final(state):
+#         return state in finals
 
 class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
@@ -50,8 +29,8 @@ class Problem(AbstractProblem):
     regex = models.CharField(max_length=80)
     dfa = None
 
-    def save_dfa(obj):
-        self.dfa = Automata._DFAfromNFA(Automata.RegExp(regex))
+    # def save_dfa(obj):
+    #     self.dfa = Automata._DFAfromNFA(Automata.RegExp(regex))
 
 
     def clean_fields(self, exclude=None):
@@ -81,25 +60,26 @@ class Submission(AbstractSubmission):
     class Meta:
         app_label = 'problems_fa_visuals'
 
-
+    
     def set_score(self, submission):
-        self.submission = submission
-        result = 0
+    #     self.submission = submission
+    #     result = 0
 
-        # visual to dfa conversion
-        stu_dfa = dfa
-        lines = self.submission.split('\n')
-        stu_dfa.alphabet = lines[0].split(',')
-        stu_dfa.initial = int(lines[1])
-        stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
-        for i in range(3, len(lines)):
-            line = lines[i].split(',')
-            stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
+    #     # visual to dfa conversion
+    #     stu_dfa = dfa
+    #     lines = self.submission.split('\n')
+    #     stu_dfa.alphabet = lines[0].split(',')
+    #     stu_dfa.initial = int(lines[1])
+    #     stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
+    #     for i in range(3, len(lines)):
+    #         line = lines[i].split(',')
+    #         stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
 
 
-        self.problem.dfa.asDFA(self.problem.regex)
+    #     self.problem.dfa.asDFA(self.problem.regex)
 
         
-        self.score = int(self.problem.dfa == stu_dfa)
+    #     self.score = int(self.problem.dfa == stu_dfa)
+        self.score = 1
         self.save()
         self.set_best_submission()
