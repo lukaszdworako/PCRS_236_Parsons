@@ -10,11 +10,49 @@ from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission
 from problems_python.python_language import PythonSpecifics
 
+# import pads
+from problems_fa_visuals import Automata
+
+# class Dfa ():
+#     states = []
+#     sigma = []
+#     start = 0
+#     delta = {}
+#     final = []
+#     def __init__():
+
+# class Nfa():
+#     states = []
+#     sigma = []
+#     start = 0
+#     delta = {}
+#     final = []
+#     def __init__(regexp: str):
+
+
+class dfa (Automata.DFA):
+    transitions = {}
+    finals = []
+
+    def transition (state, symbol):
+        return transitions[(state, symbol)]
+    
+    def is_final(state):
+        return state in finals
+
+# def powerset(regexp: str):
+
+#     return
 
 class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     regex = models.CharField(max_length=80)
+    dfa = None
+
+    def save_dfa(obj):
+        self.dfa = Automata._DFAfromNFA(Automata.RegExp(regex))
+
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
@@ -43,38 +81,25 @@ class Submission(AbstractSubmission):
     class Meta:
         app_label = 'problems_fa_visuals'
 
-    
+
     def set_score(self, submission):
         self.submission = submission
         result = 0
 
-        if len(self.submission) < self.problem.min_chars:
-            self.message = 'Your answer is less than minimum character requirement of ' \
-                            + str(self.problem.min_chars) + '.'
-        else:
-            messages = []
+        # visual to dfa conversion
+        stu_dfa = dfa
+        lines = self.submission.split('\n')
+        stu_dfa.alphabet = lines[0].split(',')
+        stu_dfa.initial = int(lines[1])
+        stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
+        for i in range(3, len(lines)):
+            line = lines[i].split(',')
+            stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
 
-            # Check each key in submission
-            for key in self.problem.keys:
-                # Build dict from array of keys for fast lookup
-                key_dict = {}
-                for ele in key.split(","):
-                    key_dict[ele.strip()] = 1
 
-                for word in key_dict:
-                    if word in submission:
-                        result += 1
-                        break
-                else:
-                    messages.append(self.problem.keys[key])
+        self.problem.dfa.asDFA(self.problem.regex)
 
-            separator = '\n'
-            message = separator.join(messages)
-            self.message = message
-
-        self.score = result
+        
+        self.score = int(self.problem.dfa == stu_dfa)
         self.save()
         self.set_best_submission()
-
-    # def get_submission_class(cls):
-    #     return cls.get_class_by_name('Submission')
