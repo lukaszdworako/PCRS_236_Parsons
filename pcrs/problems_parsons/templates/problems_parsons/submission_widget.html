@@ -39,7 +39,34 @@
     </div>
     <div style="clear:both;"></div>
     <p>
-        <a href="#" id="newInstanceLink">New instance</a>
+        <style>
+            .resetButton {
+                box-shadow: inset 0px 1px 0px 0px #cf866c;
+                background: linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+                background-color: #d0451b;
+                border-radius: 3px;
+                border: 1px solid #942911;
+                display: inline-block;
+                cursor: pointer;
+                color: #ffffff;
+                font-family: Arial;
+                font-size: 13px;
+                padding: 6px 24px;
+                text-decoration: none;
+                text-shadow: 0px 1px 0px #854629;
+            }
+        
+            .resetButton:hover {
+                background: linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
+                background-color: #bc3315;
+            }
+        
+            .resetButton:active {
+                position: relative;
+                top: 1px;
+            }
+        </style>
+        <a href="#" id="newInstanceLink" class="resetButton">New instance</a>
         <a href="#" id="feedbackLink">Get feedback</a>
     </p>
     <div id="jsparson"></div>
@@ -48,17 +75,31 @@
         console.log(my_data);
         var initial = `{{problem.starter_code}}`;
         console.log(initial);
-        var unittests = `{{problem.unit_tests}}`;
+        if ('{{problem.unit_tests}}')
+        {
+            var unittests = `{{problem.unit_tests}}`;
+        }
 
         $(document).ready(function () {
-            var parson = new ParsonsWidget({
-                'sortableId': 'sortable',
-                'trashId': 'sortableTrash',
-                'unittests': unittests,
-                toggleTypeHandlers: { abc: ["a", "b", "c"] }
-            });
+            var payload = {'sortableId': 'sortable','trashId': 'sortableTrash'};
+            if (unittests)
+            {
+                payload.unittests = unittests;
+            }
+            
+            var parson = new ParsonsWidget(payload);
             parson.init(initial);
             parson.shuffleLines();
+            $("#button-id-submit").click(function(event) {
+                event.preventDefault();
+                var fb = parson.getFeedback();
+                if (unittests){
+                    $("#jsparson").html("<h2>Feedback from testing your program:</h2>" +
+                        fb.feedback);
+                    }
+                    console.log(fb);
+                    if (fb.success) { alert("Good, you solved the assignment!"); }
+            });
             $("#newInstanceLink").click(function (event) {
                 event.preventDefault();
                 parson.shuffleLines();

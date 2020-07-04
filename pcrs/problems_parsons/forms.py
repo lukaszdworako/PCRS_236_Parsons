@@ -30,6 +30,7 @@ class SubmissionForm(BaseSubmissionForm):
         problem = kwargs.get('problem', None)
         
         super().__init__(*args, **kwargs)
+        self.submit_button = Button('Submit', value='Submit', css_class='green-button pull-right', id='submit')
 
         self.helper.layout = Layout(
             self.history_button,
