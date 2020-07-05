@@ -73,21 +73,24 @@ AdminTabbedCodeMirror.prototype._createTagButtons = function() {
  * Displays a code preview, as the student would see the code.
  */
 AdminTabbedCodeMirror.prototype._previewCode = function() {
-    var previewTcm = new TabbedCodeMirror();
-    previewTcm.setNewFileOptions($.extend({}, this.newFileOptions, {
-        'readOnly': true,
-    }));
-
-    var files = this.getFiles();
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        previewTcm.addFile({
-            'name': file.name,
-            'code': this._cleanFileCodeForPreview(file.code),
-        });
+    var mirror = this.getCodeMirror(this.getActiveTabIndex());
+    // Detect tags in the source code
+    var code = mirror.getValue();
+    var cut = code.split("\n");
+    var length = cut.length - 1;
+    for (var i = length; i >= 0; i--)
+    {
+        if (cut[i].match(/\[(\/)?(static|inter|group)\]$/))
+        {
+            cut.splice(i,1);
+        }
     }
-    AlertModal.alert('Code Preview', previewTcm.getJQueryObject());
-    previewTcm.refresh();
+    code = cut.join("\n");
+    var payload = {'sortableId': 'sortable','trashId': 'sortableTrash'};
+    var parson = new ParsonsWidget(payload);
+    parson.init(code);
+    parson.shuffleLines();
+    $('#parsonsModal').modal('show');
 }
 
 AdminTabbedCodeMirror.prototype._cleanFileCodeForPreview = function(code) {
@@ -99,6 +102,7 @@ AdminTabbedCodeMirror.prototype._cleanFileCodeForPreview = function(code) {
         /\r?\n[ \t]*\[hidden\]\s*[\s\S]*\[\/hidden\][ \t]*/g, '');
     // Hide student_code and blocked tags
     code = code.replace(/\r?\n?\[\/?(student_code|blocked)\]/g, '');
+    code = code.replace(/\[(\/)?(static|inter|group)\]$/, '');
     // The tag at the top of the file will leave a stray newline
     code = code.replace(/^[ \t]*\n/, '');
 

@@ -67,14 +67,10 @@
             }
         </style>
         <a href="#" id="newInstanceLink" class="resetButton">New instance</a>
-        <a href="#" id="feedbackLink">Get feedback</a>
     </p>
     <div id="jsparson"></div>
     <script>
-        var my_data = "{{problem.invariant}}";
-        console.log(my_data);
         var initial = `{{problem.starter_code}}`;
-        console.log(initial);
         if ('{{problem.unit_tests}}')
         {
             var unittests = `{{problem.unit_tests}}`;
@@ -97,19 +93,11 @@
                     $("#jsparson").html("<h2>Feedback from testing your program:</h2>" +
                         fb.feedback);
                     }
-                    console.log(fb);
                     if (fb.success) { alert("Good, you solved the assignment!"); }
             });
             $("#newInstanceLink").click(function (event) {
                 event.preventDefault();
                 parson.shuffleLines();
-            });
-            $("#feedbackLink").click(function (event) {
-                event.preventDefault();
-                var fb = parson.getFeedback();
-                $("#jsparson").html("<h2>Feedback from testing your program:</h2>" +
-                    fb.feedback);
-                if (fb.success) { alert("Good, you solved the assignment!"); }
             });
         });
     </script>
