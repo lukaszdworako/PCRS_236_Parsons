@@ -60,13 +60,6 @@ AdminTabbedCodeMirror.prototype._createTagButtons = function() {
         })).click(function () {
             that._createTagAtCurrentSelection('inter');
         }))
-        .add($(btnTemplate({
-            type: 'warning',
-            glyph: 'folder-open',
-            text: 'Group',
-        })).click(function () {
-            that._createTagAtCurrentSelection('group');
-        }))
 }
 
 /**

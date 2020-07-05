@@ -5,6 +5,7 @@ from pcrs.form_mixins import BaseRelatedObjectForm
 from problems.forms import BaseProblemForm, BaseSubmissionForm
 from problems_parsons.models import Problem, Submission
 from django.utils.translation import ugettext_lazy as _
+from django.utils.html import escape
 
 import pdb
 
@@ -13,7 +14,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         model = Problem
         fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'run_unit', 'author', 'visibility')
         help_texts = {
-            'starter_code': _('To add a distractor line, simply place it anywhere and add #distractor afterwards'),
+            'starter_code': _(escape('To add a distractor line, simply place it anywhere and add #distractor afterwards. To group lines, use the following form: line1<br>line2<br>...<br>lineN')),
             'unit_tests': _('Please enter as: input:"", output:"" one per line'),
             'visible_unit': _('Do you want students to see the unit tests'),
             'run_unit': _('Do you want to run the unit tests you made'),
