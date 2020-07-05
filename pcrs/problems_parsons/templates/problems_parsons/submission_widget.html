@@ -69,11 +69,12 @@
         <a href="#" id="newInstanceLink" class="resetButton">New instance</a>
     </p>
     <div id="jsparson"></div>
+    {% autoescape off %}
     <script>
         var initial = `{{problem.starter_code}}`;
         if ('{{problem.unit_tests}}')
         {
-            var unittests = `{{problem.unit_tests}}`;
+            var unittests = String.raw `{{problem.unit_tests}}`;
         }
 
         $(document).ready(function () {
@@ -101,6 +102,7 @@
             });
         });
     </script>
+    {% endautoescape %}
     {% if user.is_instructor or user.is_ta or problem.visible_unit %}
     {% if problem.unit_tests %}
     <div>
