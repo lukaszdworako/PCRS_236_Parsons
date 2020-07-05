@@ -952,6 +952,12 @@
      $.each(lines, function(index, item) {
        lineObject = new ParsonsCodeline(item, that);
        lineObject.orig = index;
+       if(item.search(/\[(\/)?(static|inter|group)\]$/) >= 0) 
+       {
+         // this line contains a tag, ignore it for now
+         // TODO: implement these specific cases to allow for custom creation
+         return true;
+       }
         if (item.search(/#distractor\s*$/) >= 0) {
           // This line is a distractor
           lineObject.indent = -1;

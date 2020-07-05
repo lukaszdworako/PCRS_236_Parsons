@@ -1075,7 +1075,7 @@
     var hash = this.solutionHash();
     var previously = this.states[hash];
     if (!previously) { return undefined; }
-    var visits = _.filter(this.state_path, function (state) {
+    var visits = _.filter(this.state_path, function (state) {,
       return state == hash;
     }).length - 1;
     var i, stepsToLast = 0, s,
