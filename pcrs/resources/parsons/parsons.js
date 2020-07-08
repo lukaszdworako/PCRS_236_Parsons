@@ -1283,6 +1283,7 @@
     * TODO(petri): Separate UI from here
     */
    ParsonsWidget.prototype.getFeedback = function() {
+      this.submit();
      this.feedback_exists = true;
      var fb = this.grader.grade();
      if (this.options.feedback_cb) {
@@ -1301,6 +1302,36 @@
        return fb.errors;
      }
    };
+   ParsonsWidget.prototype.submit = function () {
+    
+    var parson = this.grader.parson;
+    var elemId = parson.options.sortableId;
+    var student_code = parson.normalizeIndents(parson.getModifiedCode("#ul-" + elemId));
+    student_code = parson.minimizeSubmission(student_code);
+    var postParams = { csrftoken: csrftoken, submission: student_code };
+    var problem_pk = window.location.pathname.match(/\d/g);
+
+    $.post(root+'/problems/parsons/'+problem_pk+'/run',
+    postParams,
+    function(data) {
+      if (data['past_dead_line']){
+        alert('This submission is past the deadline!');
+        $('#'+div_id).find('#deadline_msg').remove();
+        $('#'+div_id)
+            .find('#alert')
+            .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
+      }
+      
+    }, "json").fail(function(jqXHR, textStatus, errorThrown) {console.log(textStatus);});
+  };
+
+  ParsonsWidget.prototype.minimizeSubmission = function(student_code) {
+    var minimized = [];
+    $.each(student_code, function(index, value){
+      minimized.push({"index":index, "code":value.code, "indent":value.indent});
+    });
+    return minimized;
+  };
 
    ParsonsWidget.prototype.clearFeedback = function() {
      if (this.feedback_exists) {
