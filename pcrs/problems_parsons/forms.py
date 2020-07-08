@@ -7,17 +7,15 @@ from problems_parsons.models import Problem, Submission
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
 
-import pdb
-
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'run_unit', 'author', 'visibility')
+        fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'author', 'visibility', 'evaluation_type')
         help_texts = {
             'starter_code': _(escape('To add a distractor line, simply place it anywhere and add #distractor afterwards. To group lines, use the following form: line1<br>line2<br>...<br>lineN')),
             'unit_tests': _('Please enter as: input:"", output:"" one per line'),
             'visible_unit': _('Do you want students to see the unit tests'),
-            'run_unit': _('Do you want to run the unit tests you made'),
+            'evaluation_type': _('How do you want to evaluate student submissions (default is line comparison). Please only select one')
         }
 
     def __init__(self, *args, **kwargs):
@@ -25,7 +23,7 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         BaseProblemForm.__init__(self)
 
 class SubmissionForm(BaseSubmissionForm):
-    submission = forms.CharField(widget=forms.Textarea())
+    submission = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)

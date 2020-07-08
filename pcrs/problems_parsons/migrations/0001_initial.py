@@ -25,8 +25,8 @@ class Migration(migrations.Migration):
                 ('starter_code', models.TextField(blank=False, null=False)),
                 ('invariant', models.TextField(blank=False, null=False)),
                 ('unit_tests', models.TextField(blank=True, null=True)),
-                ('run_unit', models.BooleanField(default=False)),
                 ('visible_unit', models.BooleanField(default=False)),
+                ('evaluation_type', models.PositiveSmallIntegerField(default=0, null=False))
             ],
             options={
                 'abstract': False,
