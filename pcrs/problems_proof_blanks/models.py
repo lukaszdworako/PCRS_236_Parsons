@@ -68,13 +68,16 @@ class Submission(AbstractSubmission):
     def set_score(self, submission):
         var_map = {} # maps instructor variables to student variables
         print(submission)
-        self.submission = json.load(submission)
+        self.submission = submission
         result = 0
         correct = []
         messages = {}
         for key in self.problem.answer_keys.keys():
-            sub_ans = submission[key]
+            sub_ans = self.submission[key]
             inst_ans = self.problem.answer_keys[key]
+            print("Feedback ")
+            self.problem.feedback_keys[key] = self.problem.feedback_keys[key].replace("'", '"')
+            print(self.problem.feedback_keys[key])
             feedback = json.loads(self.problem.feedback_keys[key])
 
             if feedback["type"] == "mathexpr":
@@ -98,11 +101,11 @@ class Submission(AbstractSubmission):
                         messages[key] = "correct"
                         # to convert to latex -- sympy.latex()
                     else:
-                        messages[key] = _check_feedback(sub_ans, inst_ans)
+                        messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
                 except:
-                    messages[key] = _check_feedback(sub_ans, inst_ans, feedback)
+                    messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
             else:
-                messages[key] = _check_feedback(sub_ans, inst_ans, feedback)
+                messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
             
             if messages[key] == "correct":
                 result += 1
@@ -110,12 +113,15 @@ class Submission(AbstractSubmission):
 
         self.messages = messages
         self.score = result
+        print("###Score: {} ####".format(result))
         self.save()
         self.set_best_submission()
     
-    def _check_feedback(sub_ans, inst_ans, feedback):
+    def _check_feedback(self, sub_ans, inst_ans, feedback):
+        print("##IN HERE##")
+        print(type(feedback))
         
-        for (condition, _) in feedback.items:
+        for (condition, _) in feedback.items():
             try:
                 func_verifier = r"lambda . : . (>|<|!|=)=? .+"
                 condition_regex = re.compile(condition)

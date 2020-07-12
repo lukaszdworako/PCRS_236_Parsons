@@ -43,7 +43,20 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         problem = self.get_problem()
         self.submission = self.model.objects.create(problem=problem,
                               user=request.user, section=self.get_section())
-        self.submission.set_score(request.POST['submission'])
+        print("## Submission ##")
+        submission = {}
+        '''
+        <QueryDict: {'csrfmiddlewaretoken': ['MZIkJ8Q2vP4upf2xBvzKBBTvCRscvjvhsq1zk6q3jTlVQbzD3wRn2svsmGTzZ1Jx'], 'sub2': ['{"a": "b"}'], 'Submit': ['Submit']}>
+        '''
+        for key in request.POST:
+            if key.split("_")[0] == "submission":
+                submission[key.split("_")[1]] = request.POST[key]
+        print(submission)
+        self.submission.set_score(submission)
+        #submission = {}
+
+
+
         return []
 
 
