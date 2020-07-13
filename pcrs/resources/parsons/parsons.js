@@ -1308,9 +1308,9 @@
     var elemId = parson.options.sortableId;
     var student_code = parson.normalizeIndents(parson.getModifiedCode("#ul-" + elemId));
     student_code = parson.minimizeSubmission(student_code);
-    var postParams = { csrftoken: csrftoken, submission: student_code };
-    var problem_pk = window.location.pathname.match(/\d/g);
-
+    console.log(student_code);
+    var postParams = { "csrfmiddlewaretoken": getCookie("csrftoken"), "submission": JSON.stringify(student_code) };
+    var problem_pk = window.location.pathname.match(/\d{1,}/g);
     $.post(root+'/problems/parsons/'+problem_pk+'/run',
     postParams,
     function(data) {
@@ -1322,7 +1322,7 @@
             .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
       }
       
-    }, "json").fail(function(jqXHR, textStatus, errorThrown) {console.log(textStatus);});
+    }).fail(function(jqXHR, textStatus, errorThrown) {console.log(jqXHR, textStatus, errorThrown);});
   };
 
   ParsonsWidget.prototype.minimizeSubmission = function(student_code) {
