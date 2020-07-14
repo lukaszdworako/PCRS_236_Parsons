@@ -1328,7 +1328,7 @@
   ParsonsWidget.prototype.minimizeSubmission = function(student_code) {
     var minimized = [];
     $.each(student_code, function(index, value){
-      minimized.push({"index":index, "code":value.code, "indent":value.indent});
+      minimized.push({"code":value.code, "indent":value.indent});
     });
     return minimized;
   };
