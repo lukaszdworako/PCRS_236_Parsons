@@ -75,7 +75,6 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
                                 'sub_pk': None,
                                 'best': False,
                                 'past_dead_line': False,
-                                'message': self.submission.message,
                                 }), content_type='application/json')
 
         problem = self.get_problem()
@@ -98,7 +97,6 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'best': self.submission.has_best_score,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
-            'message': self.submission.message,
             }), content_type='application/json')
 
 
