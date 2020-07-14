@@ -33,7 +33,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         assembled = ""
         code = json.loads(code)
         for line in code:
-            print(line)
             if("<br>" in line["code"]):
                 grouped = line.split("<br>")
                 for temp_line in grouped:
@@ -72,6 +71,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     # result 2 -> too few lines
     # result 3 -> line mismatch
     # result 4 -> indent mismatch
+    # this entire thing is just a mess not gonna lie...
     def line_comparison(self, student_code, solution_code):
         result = 0
         student_split = student_code.split("\n")
@@ -107,8 +107,14 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     # for now, this only supports simple line comparison. In the future will need to implement more advanced comparison
     def run_against_solution(self, student_code):
         stu_code = self.build_code(student_code)
-        sol_code = self.build_sol_code(self.problem.starter_code)
-        incorrect, result = self.line_comparison(stu_code, sol_code)
+        incorrect, result = [], 0
+        if self.problem.evaluation_type == 0 or self.problem.evaluation_type == 1:
+            sol_code = self.build_sol_code(self.problem.starter_code)
+            incorrect, result = self.line_comparison(stu_code, sol_code)
+        
+        if self.problem.evaluation_type == 0 or self.problem.evaluation_type == 2:
+            # do nothing for now
+            pass
         return (result, incorrect)
 
 
