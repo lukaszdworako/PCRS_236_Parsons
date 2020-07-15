@@ -4,14 +4,14 @@ import datetime
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import localtime, utc
 from django.views.generic import CreateView, FormView, View
 from django.views.generic.detail import SingleObjectMixin
 
 from problems_proof_blanks.models import Problem, Submission
 from problems_proof_blanks.forms import SubmissionForm
-
+from pcrs.generic_views import GenericItemCreateView
 import problems.views
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -30,6 +30,12 @@ class ProblemCreateRedirectView(CourseStaffViewMixin, CreateView):
         return reverse('proof_blanks_update',
                        kwargs={'pk': self.object.pk})
 
+class ProblemCreateAndAddTCView(problems.views.ProblemCreateView):
+    """
+    Create a new problem and add testcases.
+    """
+    def get_success_url(self):
+        return '{}/feedback'.format(self.object.get_absolute_url())
 
 class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
     model = Submission
@@ -149,3 +155,30 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
             })
 
         return HttpResponse(json.dumps(returnable), content_type='application/json')
+
+class FeedbackCreateView(CourseStaffViewMixin, GenericItemCreateView):
+    """
+    Base view for creating and updating testcases for a problem.
+    """
+    template_name = 'problems_proof_blanks/feedback_form.html'
+
+    def get_problem(self):
+        return get_object_or_404(self.model.get_problem_class(),
+                                 pk=self.kwargs.get('problem'))
+
+    def get_initial(self):
+        return {
+            'problem': self.get_problem(),
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['problem'] = self.get_problem()
+        return context
+
+    def get_queryset(self):
+        visible_problems = self.get_visible_problems(self.request)
+        return self.model.objects.filter(problem__in=visible_problems)
+
+    def get_success_url(self):
+        return self.get_problem().get_absolute_url()

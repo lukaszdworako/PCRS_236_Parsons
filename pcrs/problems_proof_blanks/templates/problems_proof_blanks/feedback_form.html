@@ -1,0 +1,14 @@
+{% extends "problems/problem_form.html" %}
+{% load staticfiles %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% load compress %}
+    {% compress js %}
+        <script type="text/javascript" src="{% static 'problems_proof_blanks/js/proof_blanks_feedback_form.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block related_items %}
+{% endblock %}
+

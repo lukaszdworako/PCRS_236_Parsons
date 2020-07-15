@@ -2,9 +2,9 @@ from crispy_forms.layout import HTML, ButtonHolder, Submit, Layout, Fieldset, Di
 from django import forms
 from django.contrib.postgres.forms.jsonb import JSONField
 
-from pcrs.form_mixins import CrispyFormMixin
+from pcrs.form_mixins import CrispyFormMixin, BaseRelatedObjectForm
 from problems.forms import BaseProblemForm, BaseSubmissionForm
-from problems_proof_blanks.models import Problem, Submission
+from problems_proof_blanks.models import Problem, Feedback, Submission
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -16,15 +16,30 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         no_correct_response = forms.BooleanField(label="<b>Survey purposes only</b>",
                                            help_text="Click here if this problem will have no correct answer.",
                                            required=False)
-        fields = ('name', 'proof_statement', 'incomplete_proof', 'no_correct_response', 'answer_keys',
-                  'feedback_keys', 'hint_keys','notes', 'author', 'tags', 'visibility', 'scaling_factor')
-        help_texts = {
-            'answer_keys': _('Answer keys follow the format: <br> \
+        fields = ('name', 'proof_statement', 'incomplete_proof', 'answer_keys', 'no_correct_response', 'notes', 'author', 'tags', 'visibility', 'scaling_factor')
+        help_texts = {'answer_keys': _('Answer keys follow the format: <br> \
             { <br> \
                 "1": "Strong Induction", <br>\
                 "Blank 2": "(a * 2) ** 2 + 1", <br>\
                 "Third Blank": "3" <br>\
-            }'),
+            }')}
+
+
+    def __init__(self, *args, **kwargs):
+        super(forms.ModelForm, self).__init__(*args, **kwargs)
+        self.save_and_add = Submit('submit', 'Next',
+                               css_class='green-button-right',
+                               formaction='create_next')
+        BaseProblemForm.__init__(self)
+
+
+
+class FeedbackForm(BaseRelatedObjectForm):
+    class Meta:
+        model = Feedback
+        fields = ('feedback_keys', 'hint_keys', 'problem')
+        widgets = {'problem': forms.HiddenInput()}
+        help_texts = {
             'hint_keys': _('Hint keys follow the format: <br> \
             { <br> \
                 "1": "Think of the induction type where you assume for everything before a certain value", <br>\
@@ -39,11 +54,8 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(forms.ModelForm, self).__init__(*args, **kwargs)
-        self.save_and_add = Submit('submit', 'Save',
-                               css_class='green-button-right',
-                               formaction='create_redirect')
-        BaseProblemForm.__init__(self)
+        BaseRelatedObjectForm.__init__(self, *args, formaction='feedback',
+                                       **kwargs)
 
 
 class SubmissionForm(BaseSubmissionForm):
@@ -55,6 +67,7 @@ class SubmissionForm(BaseSubmissionForm):
         incomplete_proof = HTML('<p>{}</p> <br>'.format(problem.incomplete_proof))
         super().__init__(*args, **kwargs)
         fieldsets = []
+        print(problem.feedback_set.all())
         for question in problem.answer_keys:
             self.fields["submission_{}".format(question)] = forms.CharField(widget=forms.Textarea(attrs={'rows':2, 'cols':1, 'size': '5'}), required=False, label=question, max_length=20)
             fieldsets.append(HTML('<span> <label> {}'.format(question)))

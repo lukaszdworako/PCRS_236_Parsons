@@ -15,6 +15,7 @@ from django.contrib.postgres.fields import HStoreField
 from django.dispatch import receiver
 
 from pcrs.model_helpers import has_changed
+from pcrs.models import AbstractSelfAwareModel
 from problems.models import AbstractProblem, AbstractSubmission
 from problems_python.python_language import PythonSpecifics
 
@@ -41,9 +42,7 @@ class Problem(AbstractProblem):
     proof_statement = models.TextField(blank=True)
     incomplete_proof = models.TextField(blank=True)
     no_correct_response = models.BooleanField(default=False)
-    answer_keys = HStoreField(default=None, blank=True)
-    feedback_keys = HStoreField(default=None, blank=True) # {"1": "{"type": "mathexpr", "x > 3": "too big"...}"}
-    hint_keys = HStoreField(default=None, blank=True) # {"1": "think of ...."}
+    answer_keys = HStoreField(default=None, null=True, blank=True)
 
     class Meta:
         app_label = 'problems_proof_blanks'
@@ -58,6 +57,31 @@ class Problem(AbstractProblem):
         """
         content = [self]
         return content
+
+class Feedback(AbstractSelfAwareModel):
+    """
+    A coding problem testcase.
+
+    A testcase has an input and expected output and an optional description.
+    The test input and expected output may or may not be visible to students.
+    This is controlled by is_visible flag.
+    """
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
+                                null=False, blank=False)
+    feedback_keys = HStoreField(default=None, null=True, blank=True) # {"1": "{"type": "mathexpr", "x > 3": "too big"...}"}
+    hint_keys = HStoreField(default=None, null=True, blank=True) # {"1": "think of ...."}
+
+    class Meta:
+        ordering = ['pk']
+
+    def __str__(self):
+        return "Feedback: {}\n Hints: {}\n".format(self.feedback_keys, self.hint_keys)
+
+    def get_absolute_url(self):
+        return '{problem}/feedback/{pk}'.format(
+            problem=self.problem.get_absolute_url(), pk=self.pk)
+
+
 
 class Submission(AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
@@ -136,3 +160,4 @@ class Submission(AbstractSubmission):
 
             except:
                 return "syntax error"
+

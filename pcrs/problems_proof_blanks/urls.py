@@ -3,11 +3,12 @@ from django.conf.urls import url
 from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
                             ProblemDeleteView)
-from problems_proof_blanks.models import Problem, Submission
-from problems_proof_blanks.forms import ProblemForm
+from problems_proof_blanks.models import Problem, Feedback, Submission
+from problems_proof_blanks.forms import ProblemForm, FeedbackForm
 from problems_proof_blanks.views import (SubmissionView, SubmissionAsyncView,
-                                         ProblemCreateRedirectView, ProblemCloneView,
-                                         SubmissionHistoryAsyncView)
+                                         ProblemCreateRedirectView, ProblemCreateAndAddTCView, 
+                                         ProblemCloneView,
+                                         SubmissionHistoryAsyncView, FeedbackCreateView)
 
 urlpatterns = [
 
@@ -23,6 +24,10 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/clone$',
         ProblemCloneView.as_view(model=Problem, form_class=ProblemForm),
         name='proof_blanks_problem_clone'),
+
+    url(r'^create_and_add_testcase$',
+        ProblemCreateAndAddTCView.as_view(model=Problem, form_class=ProblemForm),
+        name='coding_problem_create_and_add_testcase'),
 
     url(r'^create_redirect$',
         ProblemCreateRedirectView.as_view(model=Problem, form_class=ProblemForm),
@@ -40,7 +45,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/delete$',
         ProblemDeleteView.as_view(model=Problem),
         name='proof_blanks_delete'),
-
+    url(r'^(?P<problem>[0-9]+)/feedback$',
+        FeedbackCreateView.as_view(model=Feedback, form_class=FeedbackForm),
+        name='proof_blanks_add_feedback'),
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(),
         name='proof_blanks_submit'),
