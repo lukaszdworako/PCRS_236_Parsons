@@ -8,8 +8,9 @@ from django.utils.timezone import localtime, utc
 from django.contrib.postgres.fields import HStoreField
 from django.utils.translation import gettext as _
 
+from problems.pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
-from problems.models import AbstractProblem, AbstractSubmission, SubmissionPreprocessorMixin
+from problems.models import AbstractProblem, AbstractSubmission, SubmissionPreprocessorMixin, AbstractTestCaseWithDescription, AbstractTestRun, testcase_delete, problem_delete
 from problems_python.python_language import PythonSpecifics
 from multiselectfield import MultiSelectField
 
@@ -129,3 +130,43 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         self.submission = ret[2]
         self.save()
         self.set_best_submission()
+
+class TestCase(AbstractTestCaseWithDescription):
+    """
+    A coding problem testcase.
+
+    A testcase has an input and expected output and an optional description.
+    The test input and expected output may or may not be visible to students.
+    This is controlled by is_visible flag.
+    """
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
+                                null=False, blank=False)
+    pre_code = models.TextField(default="", blank=True)
+    test_input = models.TextField()
+    expected_output = models.TextField()
+
+    def __str__(self):
+        testcase = '{input} -> {output}'.format(input=self.test_input,
+                                                output=self.expected_output)
+        if self.description:
+            return self.description + ' : ' + testcase
+        else:
+            return testcase
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude)
+        if self.pk:
+            if has_changed(self, 'problem_id'):
+                raise ValidationError({
+                    'problem': ['Reassigning a problem is not allowed.']
+                })
+            if self.problem.submission_set.all():
+                clear = 'Submissions must be cleared before editing a testcase.'
+                if has_changed(self, 'test_input'):
+                    raise ValidationError({'test_input': [clear]})
+                if has_changed(self, 'expected_output'):
+                    raise ValidationError({'expected_output': [clear]})
+
+    def run(self, code):
+        runner = GenericLanguage(self.problem.language)
+        return runner.run_test(code, self.test_input, self.expected_output, self.pre_code)
