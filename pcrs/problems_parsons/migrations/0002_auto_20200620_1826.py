@@ -67,32 +67,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='problem',
-            name='groups',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AlterField(
-            model_name='problem',
-            name='inter',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AlterField(
-            model_name='problem',
             name='invariant',
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
             model_name='problem',
-            name='solution',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AlterField(
-            model_name='problem',
             name='starter_code',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AlterField(
-            model_name='problem',
-            name='static',
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
