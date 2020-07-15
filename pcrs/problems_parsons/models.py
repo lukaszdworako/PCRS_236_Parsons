@@ -29,6 +29,40 @@ class Problem(AbstractProblem):
 class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     
+    def run_python_testcases(self, student_code, save=True):
+        """
+        Run all testcases for the submission and create testrun objects.
+        Return the list of testrun results.
+        """
+        results = []
+        error = None
+
+        for testcase in self.problem.testcase_set.all():
+            run = testcase.run(student_code)
+
+            try:
+                passed = run['passed_test']
+            except KeyError:
+                passed = False
+                if 'exception' in run:
+                    error = run['exception']
+                else:
+                    error = "The testcase could not be run"
+            if save:
+                TestRun.objects.create(submission=self, testcase=testcase,
+                                       test_passed=passed)
+
+            run['test_desc'] = testcase.description
+            run['debug'] = False
+            if testcase.is_visible:
+                run['test_input'] = testcase.test_input.replace('\n','<br />')
+                run['debug'] = True
+            else:
+                run['test_input'] = None
+            results.append(run)
+
+        return results, error
+
     def build_code(self, code):
         assembled = ""
         code = json.loads(code)
@@ -168,3 +202,20 @@ class TestCase(AbstractTestCaseWithDescription):
     def run(self, code):
         runner = GenericLanguage(self.problem.language)
         return runner.run_test(code, self.test_input, self.expected_output, self.pre_code)
+
+
+class TestRun(AbstractTestRun):
+    """
+    A coding problem testrun, created for each testcase on each submission.
+    """
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
+    testcase = models.ForeignKey(TestCase, on_delete=models.CASCADE)
+
+    def get_history(self):
+        return {
+            'visible': self.testcase.is_visible,
+            'input': self.testcase.test_input,
+            'output': self.testcase.expected_output,
+            'passed': self.test_passed,
+            'description': self.testcase.description
+        }
