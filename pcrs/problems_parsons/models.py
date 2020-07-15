@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.timezone import localtime, utc
 from django.contrib.postgres.fields import HStoreField
+from django.utils.translation import gettext as _
 
 from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission, SubmissionPreprocessorMixin
@@ -21,8 +22,8 @@ class Problem(AbstractProblem):
     invariant = models.TextField(blank=True)
     unit_tests = models.TextField(blank=True)
     visible_unit = models.BooleanField(default=False)
-    evaluation_choices = ((0, 'Evaluate using all methods'), (1, 'Evaluate using line comparison (simple)'), (2, 'Evaluate using unit tests method'))
-    evaluation_type = MultiSelectField(choices=evaluation_choices, max_choices=1, max_length=1, default=1)
+    evaluation_choices = ((0, _('Evaluate using all methods')), (1, _('Evaluate using line comparison (simple)')), (2, _('Evaluate using unit tests method')))
+    evaluation_type = MultiSelectField(choices=evaluation_choices, max_choices=1, max_length=1)
     
 
 
@@ -34,7 +35,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         code = json.loads(code)
         for line in code:
             if("<br>" in line["code"]):
-                grouped = line.split("<br>")
+                grouped = line["code"].split("<br>")
                 for temp_line in grouped:
                     assembled += line["indent"]*"\t"
                     assembled += temp_line
@@ -43,7 +44,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                 assembled += line["indent"]*"\t"
                 assembled += line["code"]
                 assembled += "\n"
-
         return assembled
 
     def build_sol_code(self, sol_code):
@@ -108,14 +108,15 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     def run_against_solution(self, student_code):
         stu_code = self.build_code(student_code)
         incorrect, result = [], 0
-        if self.problem.evaluation_type == 0 or self.problem.evaluation_type == 1:
+        print(self.problem.evaluation_type[0])
+        if self.problem.evaluation_type[0] == "0" or self.problem.evaluation_type[0] == "1":
             sol_code = self.build_sol_code(self.problem.starter_code)
             incorrect, result = self.line_comparison(stu_code, sol_code)
         
-        if self.problem.evaluation_type == 0 or self.problem.evaluation_type == 2:
+        if self.problem.evaluation_type[0] == "0" or self.problem.evaluation_type[0] == "2":
             # do nothing for now
             pass
-        return (result, incorrect)
+        return (result, incorrect, stu_code)
 
 
     def set_score(self, student_code):
@@ -124,5 +125,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             self.score = 1
         else:
             self.score = 0
+        self.incorrect_lines = ret[1]
+        self.submission = ret[2]
         self.save()
         self.set_best_submission()
