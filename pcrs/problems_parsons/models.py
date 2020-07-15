@@ -21,8 +21,6 @@ class Problem(AbstractProblem):
     description = models.TextField(blank=True)
     starter_code = models.TextField(blank=True)
     invariant = models.TextField(blank=True)
-    unit_tests = models.TextField(blank=True)
-    visible_unit = models.BooleanField(default=False)
     evaluation_choices = ((0, _('Evaluate using all methods')), (1, _('Evaluate using line comparison (simple)')), (2, _('Evaluate using unit tests method')))
     evaluation_type = MultiSelectField(choices=evaluation_choices, max_choices=1, max_length=1)
     

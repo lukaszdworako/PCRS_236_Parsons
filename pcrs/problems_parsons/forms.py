@@ -10,12 +10,9 @@ from django.utils.html import escape
 class ProblemForm(forms.ModelForm, BaseProblemForm):
     class Meta:
         model = Problem
-        fields = ('name', 'description', 'invariant', 'starter_code', 'unit_tests', 'visible_unit', 'author', 'visibility', 'evaluation_type')
+        fields = ('name', 'description', 'invariant', 'starter_code', 'author', 'visibility', 'evaluation_type')
         help_texts = {
             'starter_code': _(escape('To add a distractor line, simply place it anywhere and add #distractor afterwards. To group lines, use the following form: line1<br>line2<br>...<br>lineN')),
-            'unit_tests': _('Please enter as: input:"", output:"" one per line<br>'+
-            'example: input:"[1,2,3]", output:"[3,2,1]"'),
-            'visible_unit': _('Do you want students to see the unit tests'),
             'evaluation_type': _('How do you want to evaluate student submissions (default is line comparison). Please only select one')
         }
 

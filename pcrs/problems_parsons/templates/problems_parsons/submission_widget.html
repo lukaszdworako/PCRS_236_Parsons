@@ -72,11 +72,6 @@
     {% autoescape off %}
     <script>
         var initial = `{{problem.starter_code}}`;
-        if ('{{problem.unit_tests}}')
-        {
-            var unittests = String.raw `{{problem.unit_tests}}`;
-        }
-
         $(document).ready(function () {
             var payload = {'sortableId': 'sortable','trashId': 'sortableTrash'};
             if (unittests)
@@ -103,14 +98,6 @@
         });
     </script>
     {% endautoescape %}
-    {% if user.is_instructor or user.is_ta or problem.visible_unit %}
-    {% if problem.unit_tests %}
-    <div>
-        <h3>Unit tests:</h3>
-        <div>{{problem.unit_tests}}</div>
-    </div>
-    {% endif %}
-    {% endif %}
 </div>
 
 {% autoescape off %}

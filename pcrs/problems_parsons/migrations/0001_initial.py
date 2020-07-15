@@ -24,7 +24,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('starter_code', models.TextField(blank=False, null=False)),
                 ('invariant', models.TextField(blank=False, null=False)),
-                ('unit_tests', models.TextField(blank=True, null=True)),
                 ('visible_unit', models.BooleanField(default=False)),
                 ('evaluation_type', models.PositiveSmallIntegerField(default=0, null=False))
             ],
