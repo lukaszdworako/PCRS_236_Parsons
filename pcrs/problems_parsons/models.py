@@ -36,13 +36,14 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         """
         results = []
         error = None
-
+        over_pass = True
         for testcase in self.problem.testcase_set.all():
             run = testcase.run(student_code)
 
             try:
                 passed = run['passed_test']
             except KeyError:
+                over_pass = False
                 passed = False
                 if 'exception' in run:
                     error = run['exception']
@@ -61,7 +62,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                 run['test_input'] = None
             results.append(run)
 
-        return results, error
+        return results, error, over_pass
 
     def build_code(self, code):
         assembled = ""
@@ -88,16 +89,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                 new_sol += line
                 new_sol += "\n"
         return new_sol
-            
-    def run_testcases(self, student_code):
-        results = None
-        error   = None
-        try:
-            results = self.run_against_solution(student_code)
-
-        except Exception:
-            error = "Submission could not be run"
-            return results, error
 
     # result 0 -> correct answer
     # result 1 -> too many lines
@@ -136,32 +127,34 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                         incorrect_lines.append(i)
         return incorrect_lines, result
 
-
-    # for now, this only supports simple line comparison. In the future will need to implement more advanced comparison
-    def run_against_solution(self, student_code):
+    def set_score(self, student_code):
         stu_code = self.build_code(student_code)
-        incorrect, result = [], 0
-        print(self.problem.evaluation_type[0])
+        incorrect_lines, result_lines = [], -1
+        results_test, error_test, over_pass = [], None, False
+
+        # if we want to run all test cases or if we want line comparison specifically
         if self.problem.evaluation_type[0] == "0" or self.problem.evaluation_type[0] == "1":
             sol_code = self.build_sol_code(self.problem.starter_code)
-            incorrect, result = self.line_comparison(stu_code, sol_code)
-        
-        if self.problem.evaluation_type[0] == "0" or self.problem.evaluation_type[0] == "2":
-            # do nothing for now
-            pass
-        return (result, incorrect, stu_code)
+            incorrect_lines, result_lines = self.line_comparison(stu_code, sol_code)
+            if result_lines == 0:
+                self.score = 1
+            else:
+                self.score = 0
 
+        # if we want to run testcases, we can optimize to not run if it's already an exact match
+        # or, if it is not, run testcases to make sure, or if just want testcase
+        if (self.problem.evaluation_type[0] == "0" and result_lines != 0) or self.problem.evaluation_type[0] == "2":
+            results_test, error_test, over_pass = self.run_python_testcases(stu_code)
+            if over_pass == True:
+                self.score = 1
+            else:
+                self.score = 0
 
-    def set_score(self, student_code):
-        ret = self.run_against_solution(student_code)
-        if(ret[0] == 0):
-            self.score = 1
-        else:
-            self.score = 0
-        self.incorrect_lines = ret[1]
-        self.submission = ret[2]
+        self.incorrect_lines = incorrect_lines
+        self.submission = stu_code
         self.save()
         self.set_best_submission()
+        return incorrect_lines, result_lines, results_test, error_test
 
 class TestCase(AbstractTestCaseWithDescription):
     """
@@ -200,7 +193,7 @@ class TestCase(AbstractTestCaseWithDescription):
                     raise ValidationError({'expected_output': [clear]})
 
     def run(self, code):
-        runner = GenericLanguage(self.problem.language)
+        runner = GenericLanguage('python')
         return runner.run_test(code, self.test_input, self.expected_output, self.pre_code)
 
 

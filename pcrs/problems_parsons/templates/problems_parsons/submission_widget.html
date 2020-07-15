@@ -74,10 +74,6 @@
         var initial = `{{problem.starter_code}}`;
         $(document).ready(function () {
             var payload = {'sortableId': 'sortable','trashId': 'sortableTrash'};
-            if (unittests)
-            {
-                payload.unittests = unittests;
-            }
             
             var parson = new ParsonsWidget(payload);
             parson.init(initial);
