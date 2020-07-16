@@ -43,8 +43,7 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         problem = self.get_problem()
         self.submission = self.model.objects.create(problem=problem,
                               user=request.user, section=self.get_section())
-        self.submission.set_score(request.POST['submission'])
-        return []
+        return self.submission.set_score(request.POST['submission'])
 
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixin,
@@ -97,6 +96,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'best': self.submission.has_best_score,
             'sub_pk': self.submission.pk,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
+            'results': results
             }), content_type='application/json')
 
 

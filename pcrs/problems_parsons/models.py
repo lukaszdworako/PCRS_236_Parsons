@@ -131,11 +131,15 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         stu_code = self.build_code(student_code)
         incorrect_lines, result_lines = [], -1
         results_test, error_test, over_pass = [], None, False
+        ret_json = {}
 
         # if we want to run all test cases or if we want line comparison specifically
         if self.problem.evaluation_type[0] == "0" or self.problem.evaluation_type[0] == "1":
             sol_code = self.build_sol_code(self.problem.starter_code)
             incorrect_lines, result_lines = self.line_comparison(stu_code, sol_code)
+            ret_json["result_lines"] = result_lines
+            # you can optionally choose to return to student the incorrect lines, however not currently supported
+            #ret_json["incorrect_lines"] = incorrect_lines
             if result_lines == 0:
                 self.score = 1
             else:
@@ -154,7 +158,8 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         self.submission = stu_code
         self.save()
         self.set_best_submission()
-        return incorrect_lines, result_lines, results_test, error_test
+
+        return ret_json
 
 class TestCase(AbstractTestCaseWithDescription):
     """
