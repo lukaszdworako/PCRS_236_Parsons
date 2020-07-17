@@ -46,20 +46,20 @@ AdminTabbedCodeMirror.prototype._createTagButtons = function() {
         })).click(function () {
             that._previewCode();
         }))
-        .add($(btnTemplate({
-            type: 'info',
-            glyph: 'pushpin',
-            text: 'Static',
-        })).click(function () {
-            that._createTagAtCurrentSelection('static');
-        }))
-        .add($(btnTemplate({
-            type: 'danger',
-            glyph: 'transfer',
-            text: 'Interchangable',
-        })).click(function () {
-            that._createTagAtCurrentSelection('inter');
-        }))
+        // .add($(btnTemplate({
+        //     type: 'info',
+        //     glyph: 'pushpin',
+        //     text: 'Static',
+        // })).click(function () {
+        //     that._createTagAtCurrentSelection('static');
+        // }))
+        // .add($(btnTemplate({
+        //     type: 'danger',
+        //     glyph: 'transfer',
+        //     text: 'Interchangable',
+        // })).click(function () {
+        //     that._createTagAtCurrentSelection('inter');
+        // }))
 }
 
 /**
