@@ -68,4 +68,16 @@ urlpatterns = [
     url(r'^create_and_add_testcase$',
         ProblemCreateAndAddTCView.as_view(model=Problem, form_class=ProblemForm),
         name='coding_problem_create_and_add_testcase'),
+
+    url(r'^(?P<pk>[0-9]+)/browse_submissions$',
+    BrowseSubmissionsView.as_view(model=Problem),
+    name='coding_problem_browse_submissions'),
+
+    # monitoring
+    url(r'^(?P<pk>[0-9]+)/monitor$',
+        MonitoringView.as_view(model=Problem),
+        name='coding_problem_monitor'),
+    url(r'^(?P<pk>[0-9]+)/monitor_data$',
+        MonitoringAsyncView.as_view(model=Problem),
+        name='coding_problem_get_monitor_data'),
 ]

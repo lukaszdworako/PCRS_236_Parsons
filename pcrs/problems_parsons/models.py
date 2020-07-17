@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.timezone import localtime, utc
 from django.contrib.postgres.fields import HStoreField
 from django.utils.translation import gettext as _
+from django.db.models import Count
 
 from problems.pcrs_languages import GenericLanguage
 from pcrs.model_helpers import has_changed
@@ -24,6 +25,29 @@ class Problem(AbstractProblem):
     evaluation_choices = ((0, _('Evaluate using all methods')), (1, _('Evaluate using line comparison (simple)')), (2, _('Evaluate using unit tests method')))
     evaluation_type = MultiSelectField(choices=evaluation_choices, max_choices=1, max_length=1)
     
+    def get_testitem_data_for_submissions(self, s_ids):
+        """
+        Return a list of tuples summarizing for each testcase how many times it
+        passed and failed in submissions with pk in s_ids.
+        Each tuple has the form (testcase_id, times_passed, times_failed).
+        """
+        data = self.get_testrun_class().objects.filter(submission_id__in=s_ids)\
+            .values('testcase_id', 'test_passed')\
+            .annotate(count=Count('test_passed'))
+        results = {}
+        # data is a list of dictionaries
+        # {test_case_id: '',  test_passed: ', count: ''}
+        # every dictionary encodes how many times a testcase passed or failed
+        for dict in data:
+            opt_id = dict['testcase_id']
+            count = dict['count']
+            res = results.get(opt_id, [0, 0])
+            if dict['test_passed'] is True:
+                res[0] = count
+            if dict['test_passed'] is False:
+                res[1] = count
+            results[opt_id] = res
+        return results
 
 
 class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
@@ -36,14 +60,12 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         """
         results = []
         error = None
-        over_pass = True
+        passed = False
         for testcase in self.problem.testcase_set.all():
             run = testcase.run(student_code)
-
             try:
                 passed = run['passed_test']
             except KeyError:
-                over_pass = False
                 passed = False
                 if 'exception' in run:
                     error = run['exception']
@@ -62,7 +84,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                 run['test_input'] = None
             results.append(run)
 
-        return results, error, over_pass
+        return results, error, passed
 
     def build_code(self, code):
         assembled = ""
@@ -130,7 +152,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     def set_score(self, student_code):
         stu_code = self.build_code(student_code)
         incorrect_lines, result_lines = [], -1
-        results_test, error_test, over_pass = [], None, False
+        over_pass = False
         ret_json = {}
 
         # if we want to run all test cases or if we want line comparison specifically
@@ -149,6 +171,8 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         # or, if it is not, run testcases to make sure, or if just want testcase
         if (self.problem.evaluation_type[0] == "0" and result_lines != 0) or self.problem.evaluation_type[0] == "2":
             results_test, error_test, over_pass = self.run_python_testcases(stu_code)
+            ret_json["result_test"] = results_test
+            ret_json["error_test"]  = error_test
             if over_pass == True:
                 self.score = 1
             else:

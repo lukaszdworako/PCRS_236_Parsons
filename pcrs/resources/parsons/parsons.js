@@ -1311,9 +1311,13 @@
     student_code = parson.minimizeSubmission(student_code);
     var postParams = { "csrfmiddlewaretoken": getCookie("csrftoken"), "submission": JSON.stringify(student_code) };
     var problem_pk = window.location.pathname.match(/\d{1,}/g);
+    var that = this;
+    $('#waitingModal').modal('show');
+
     $.post(root + '/problems/parsons/' + problem_pk + '/run',
       postParams,
       function (data) {
+        $('#waitingModal').modal('hide');
         if (data['past_dead_line']) {
           alert('This submission is past the deadline!');
           $('#' + div_id).find('#deadline_msg').remove();
@@ -1322,32 +1326,37 @@
             .after('<div id="deadline_msg" class="red-alert">Submitted after the deadline!<div>');
         }
 
-        var display_element = $('#parsons-'+problem_pk).find('#alert');
+        var display_element = $('#parsons-' + problem_pk).find('#alert');
         var score = data['score'];
         var max_score = data['max_score'];
         var is_correct = score >= max_score;
-
+        var res;
+        if (data['results']){
+          res = data['results'];
+        } else {
+          alert("This should never be hit... like there's literally nothing, you thanos snapped the universe");
+          return;
+        }
+        
         if (is_correct) {
           // if answer is correct, mark it in the UI
           $(display_element)
-              .toggleClass('green-alert', is_correct);
+            .toggleClass('green-alert', is_correct);
           $(display_element)
-              .children('icon')
-              .toggleClass('ok-icon', is_correct);
+            .children('icon')
+            .toggleClass('ok-icon', is_correct);
           $(display_element)
             .children('span')
             .text('Your solution is complete.');
         } else {
           // if answer is incorrect, mark it in the UI
           $(display_element)
-              .toggleClass('red-alert', !is_correct);
+            .toggleClass('red-alert', !is_correct);
           $(display_element)
-              .children('icon')
-              .toggleClass('remove-icon', !is_correct);
-          if (data['results']) {
+            .children('icon')
+            .toggleClass('remove-icon', !is_correct);
             var alert_msg = 'Your solution is either incorrect or incomplete!';
 
-            res = data['results'];
             if (res['result_lines']) {
               switch (res['result_lines']) {
                 case 1:
@@ -1365,12 +1374,139 @@
             }
             $(display_element).children('span').text(alert_msg);
 
-          } else {
-            alert("This should never be hit... like there's literally nothing, you thanos snapped the universe");
-          }
         }
-      }).fail(function (jqXHR, textStatus, errorThrown) { console.log(jqXHR, textStatus, errorThrown); });
+        console.log(res);
+        if (res['result_test']) {
+          that.prepareGradingTable(res);
+        }
+      }).fail(function (jqXHR, textStatus, errorThrown) { $('#waitingModal').modal('hide'); console.log(jqXHR, textStatus, errorThrown); });
   };
+
+  ParsonsWidget.prototype.prepareGradingTable = function (data) {
+    var error_msg = data['error_test'];
+    var testcases = data['result_test'];
+
+    $("#grade-code").show();
+    var $gradingTable = $("#gradeMatrix");
+    $gradingTable.find(".red-alert").remove();
+    $gradingTable.find('.pcrs-table-row').remove();
+
+    // if we hit an error message, display it and we're done
+    if (error_msg) {
+      $gradingTable.append($('<th class="red-alert"></th>')
+        .attr('style', 'width:100%;')
+        .attr('colspan', '12')
+        .html(error_msg));
+      return;
+    }
+    this._addTestCasesToTable(testcases, $gradingTable);
+
+  };
+
+  ParsonsWidget.prototype._addTestCasesToTable = function (testcases, $gradingTable) {
+    for (var i = 0; i < testcases.length; i++) {
+      var testcase = this._formatTestCaseObject(testcases[i]);
+      var $newRow = this._createTestCaseRow(testcase);
+      console.log($gradingTable.append($newRow));
+    }
+  };
+
+  ParsonsWidget.prototype._formatTestCaseObject = function (testcase) {
+    if (testcase.test_desc == '') {
+      testcase.test_desc = "No Description Provided"
+    }
+    return testcase;
+  };
+
+  ParsonsWidget.prototype._createTestCaseRow = function (testcase) {
+    var $newRow = $('<tr class="pcrs-table-row"></tr>');
+
+    if ("exception" in testcase) {
+      $newRow.append($('<th class="red-alert" colspan="12"></th>')
+        .attr('style', 'width: 100%;')
+        .append("<code>" + testcase.exception + "</code>"));
+    }
+
+    $newRow.append('<td class="description">' + testcase.test_desc + '</td>');
+    if (testcase.test_input != null) {
+      $newRow.append('<td class="expression"><div class="expression_div">' +
+        testcase.test_input + '</div></td>');
+    } else {
+      $newRow.append('<td class="expression">' +
+        "Hidden Test" + '</td>');
+    }
+
+    var expTestValDiv = $('<div class="ExecutionVisualizer"></div>');
+    var testResultDiv = $('<div class="ExecutionVisualizer"></div>');
+
+    $newRow.append($('<td class="expected"></td>')
+      .append($('<div class="ptd"></div>')
+        .append(expTestValDiv)));
+    $newRow.append($('<td class="result"></td>')
+      .append($('<div class="ptd"></div>')
+        .append(testResultDiv)));
+
+    renderData_ignoreID(testcase.test_val, testResultDiv);
+    renderData_ignoreID(testcase.expected_output, expTestValDiv);
+
+    this._addFaceColumnToTestRow($newRow, testcase.passed_test);
+    //this._addDebugColumnToTestRow($newRow, testcase.debug);
+    this._addA11yToTestRow($newRow,
+      this._accessibilityOutput(testcase.test_val),
+      testcase.passed_test,
+      this._accessibilityOutput(testcase.expected_output));
+
+    return $newRow;
+
+  }
+
+  ParsonsWidget.prototype._accessibilityOutput = function(input) {
+    var brakets_o = {"list":"[","tuple":"(","dict":"{"};
+    var brakets_c = {"list":"]","tuple":")","dict":"}"};
+
+    if (input.length == 2) {
+        return this._accessibilityOutput(
+            input[0]) + ":" + this._accessibilityOutput(input[1]);
+    } else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict") {
+        var output = brakets_o[input[0]];
+        for (var o_index = 2; o_index < input.length; o_index++) {
+            output += this._accessibilityOutput(input[o_index]);
+            if (o_index != input.length - 1) {
+                output += ", ";
+            }
+        }
+        output += brakets_c[input[0]];
+        return output
+    } else if (input[0] == "string") {
+        return "'" + input[2] + "'";
+    } else if(input[0] == "float") {
+        if (String(input[2]).indexOf(".") > -1) {
+            return input[2];
+        } else {
+            return input[2] + ".0"
+        }
+    } else {
+        return input[2]
+    }
+}
+
+ParsonsWidget.prototype._addA11yToTestRow = function($row, result, passed,
+    expected) {
+    var pass_status = passed ? 'passed' : 'failed'
+    $row.append('<a class="at" href="">This testcase has ' + pass_status +
+        '. Expected: ' + expected +
+        '. Result: ' + result + '</a>');
+    }
+
+  ParsonsWidget.prototype._addFaceColumnToTestRow = function($row, passed) {
+    var $face = $('<img>').attr({
+        src: passed ? happyFaceURL : sadFaceURL, // Globals :|
+        alt: passed ? 'Smiley Face' : 'Sad Face',
+        height: '36',
+        width: '36',
+    });
+    $row.append($('<td class="passed"></td>').append($face));
+}
 
   ParsonsWidget.prototype.minimizeSubmission = function (student_code) {
     var minimized = [];

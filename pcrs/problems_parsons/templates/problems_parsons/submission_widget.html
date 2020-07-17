@@ -28,6 +28,8 @@
     <script src="{% static "parsons/underscore-min.js" %}" type="text/javascript"></script>
     <script src="{% static "parsons/lis.js" %}" type="text/javascript"></script>
     <script src="{% static "parsons/parsons.js" %}" type="text/javascript"></script>
+    <script src="{% static 'bootstrap_less/bootstrap-3.2.0/js/modal.js' %}"
+        type="text/javascript"></script>
     <link rel="stylesheet" href="{% static "parsons/prettify.css" %}" type="text/css" />
     <link rel="stylesheet" href="{% static "parsons/parsons.css" %}" type="text/css" />
 
@@ -71,10 +73,12 @@
     <div id="jsparson"></div>
     {% autoescape off %}
     <script>
+        var happyFaceURL = "{% static 'problems/img/yellow-happy-face.png' %}";
+        var sadFaceURL = "{% static 'problems/img/red-sad-face.jpg' %}";
         var initial = `{{problem.starter_code}}`;
         $(document).ready(function () {
             var payload = {'sortableId': 'sortable','trashId': 'sortableTrash'};
-            
+            $("#grade-code").hide();
             var parson = new ParsonsWidget(payload);
             parson.init(initial);
             parson.shuffleLines();
@@ -89,6 +93,9 @@
         });
     </script>
     {% endautoescape %}
+    {% include "problems_python/grade_table.html" %}
+    {% include "problems_python/code_trace.html" %}
+    {% include "problems/wait_async_job.html" %}
 </div>
 
 {% autoescape off %}
