@@ -103,14 +103,32 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         return assembled
 
     def build_sol_code(self, sol_code):
-        sol_code.replace("<br>", "\n")
-        sol_list = sol_code.split("\n")
-        new_sol = ""
+        sol_list, assembled = [], ""
+        # need to split to determine which lines have indentation issues due to <br>
+        split = sol_code.split("\n")
+        for i in range(len(split)):
+            # normalize to tabs, cause we aren't monsters but some people are...
+            split[i] = split[i].replace("    ", "\t")
+            # need to know since perhaps multiple lines were on this line
+            num_br = split[i].count("<br>")
+            if num_br:
+                # if the given split line contained it, then we need to prepend tabs
+                line_split = split[i].split("<br>")
+                num_tabs = line_split[0].count("\t")
+                sol_list.append(line_split[0])
+                # can ignore first index since it's tabbing is what we're basing it off of
+                for i in range(1, len(line_split)):
+                    sol_list.append("\t"*num_tabs+line_split[i])
+            else:
+                # if there isn't a <br> then we're OK to just add it
+                sol_list.append(split[i])
+
         for line in sol_list:
+            # the solution cannot contain any distractor lines!
             if("#distractor" not in line):
-                new_sol += line
-                new_sol += "\n"
-        return new_sol
+                assembled += line
+                assembled += "\n"
+        return assembled
 
     # result 0 -> correct answer
     # result 1 -> too many lines
@@ -120,6 +138,8 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     # this entire thing is just a mess not gonna lie...
     def line_comparison(self, student_code, solution_code):
         result = 0
+        student_code = student_code.replace("<br>", "\n")
+        solution_code = solution_code.replace("<br>", "\n")
         student_split = student_code.split("\n")
         solution_split = solution_code.split("\n")
         incorrect_lines = []
@@ -182,7 +202,6 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         self.submission = stu_code
         self.save()
         self.set_best_submission()
-
         return ret_json
 
 class TestCase(AbstractTestCaseWithDescription):

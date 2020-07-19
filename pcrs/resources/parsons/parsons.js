@@ -1359,6 +1359,7 @@
 
             if (res['result_lines']) {
               switch (res['result_lines']) {
+                // in case we want specific message for the error that occured
                 case 1:
                   break;
                 case 2:
@@ -1375,7 +1376,6 @@
             $(display_element).children('span').text(alert_msg);
 
         }
-        console.log(res);
         if (res['result_test']) {
           that.prepareGradingTable(res);
         }
@@ -1407,7 +1407,6 @@
     for (var i = 0; i < testcases.length; i++) {
       var testcase = this._formatTestCaseObject(testcases[i]);
       var $newRow = this._createTestCaseRow(testcase);
-      console.log($gradingTable.append($newRow));
     }
   };
 
