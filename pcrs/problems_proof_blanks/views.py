@@ -3,15 +3,16 @@ import logging
 import datetime
 
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.timezone import localtime, utc
 from django.views.generic import CreateView, FormView, View
 from django.views.generic.detail import SingleObjectMixin
+from django.contrib import messages 
 
-from problems_proof_blanks.models import Problem, Submission
-from problems_proof_blanks.forms import SubmissionForm
-from pcrs.generic_views import GenericItemCreateView
+from problems_proof_blanks.models import Problem, Submission, Feedback
+from problems_proof_blanks.forms import SubmissionForm, FeedbackForm
+from pcrs.generic_views import GenericItemCreateView, GenericItemUpdateView
 import problems.views
 from users.views import UserViewMixin
 from users.views_mixins import ProtectedViewMixin, CourseStaffViewMixin
@@ -34,6 +35,7 @@ class ProblemCreateAndAddTCView(problems.views.ProblemCreateView):
     """
     Create a new problem and add testcases.
     """
+    template_name = 'problems_proof_blanks/problem_form.html'
     def get_success_url(self):
         return '{}/feedback'.format(self.object.get_absolute_url())
 
@@ -156,29 +158,30 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
 
         return HttpResponse(json.dumps(returnable), content_type='application/json')
 
-class FeedbackCreateView(CourseStaffViewMixin, GenericItemCreateView):
+class FeedbackView(problems.views.TestCaseView):
+    template_name = 'problems_proof_blanks/feedback_form.html'
+    form_class = FeedbackForm
+    model = Feedback
+    def get_success_url(self):
+        return "{}/feedback/{}".format(self.get_problem().get_absolute_url(), self.object.pk)
+
+
+class FeedbackCreateView(FeedbackView, GenericItemCreateView):
     """
     Base view for creating and updating testcases for a problem.
     """
-    template_name = 'problems_proof_blanks/feedback_form.html'
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
 
-    def get_problem(self):
-        return get_object_or_404(self.model.get_problem_class(),
-                                 pk=self.kwargs.get('problem'))
+    def post(self, request, *args, **kwargs):
+        request_copy = request.POST.copy()
+        request_copy['problem'] = kwargs.get('problem', '')
+        request.POST = request_copy
+        return super().post(request, args, kwargs)
 
-    def get_initial(self):
-        return {
-            'problem': self.get_problem(),
-        }
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['problem'] = self.get_problem()
-        return context
-
-    def get_queryset(self):
-        visible_problems = self.get_visible_problems(self.request)
-        return self.model.objects.filter(problem__in=visible_problems)
-
-    def get_success_url(self):
-        return self.get_problem().get_absolute_url()
+class FeedbackUpdateView(FeedbackView, GenericItemUpdateView):
+    """
+    Update a problem.
+    """

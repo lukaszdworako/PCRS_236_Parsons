@@ -4,11 +4,11 @@ from problems.views import (ProblemCreateView, ProblemListView,
                             ProblemUpdateView, ProblemClearView,
                             ProblemDeleteView)
 from problems_proof_blanks.models import Problem, Feedback, Submission
-from problems_proof_blanks.forms import ProblemForm, FeedbackForm
+from problems_proof_blanks.forms import ProblemForm
 from problems_proof_blanks.views import (SubmissionView, SubmissionAsyncView,
                                          ProblemCreateRedirectView, ProblemCreateAndAddTCView, 
                                          ProblemCloneView,
-                                         SubmissionHistoryAsyncView, FeedbackCreateView)
+                                         SubmissionHistoryAsyncView, FeedbackCreateView, FeedbackUpdateView)
 
 urlpatterns = [
 
@@ -25,7 +25,7 @@ urlpatterns = [
         ProblemCloneView.as_view(model=Problem, form_class=ProblemForm),
         name='proof_blanks_problem_clone'),
 
-    url(r'^create_and_add_testcase$',
+    url(r'^(?P<pk>[0-9]+)/create_and_add_testcase$',
         ProblemCreateAndAddTCView.as_view(model=Problem, form_class=ProblemForm),
         name='coding_problem_create_and_add_testcase'),
 
@@ -38,6 +38,10 @@ urlpatterns = [
         template_name='problems_proof_blanks/problem_form.html'),
         name='proof_blanks_update'),
 
+    url(r'^(?P<problem>[0-9]+)/feedback/(?P<pk>[0-9]+)/?$',
+        FeedbackUpdateView.as_view(),
+        name='proof_blanks_feedback_update'),
+
     url(r'^(?P<pk>[0-9]+)/clear$',
         ProblemClearView.as_view(model=Problem),
         name='proof_blanks_clear'),
@@ -45,8 +49,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/delete$',
         ProblemDeleteView.as_view(model=Problem),
         name='proof_blanks_delete'),
+
     url(r'^(?P<problem>[0-9]+)/feedback$',
-        FeedbackCreateView.as_view(model=Feedback, form_class=FeedbackForm),
+        FeedbackCreateView.as_view(),
         name='proof_blanks_add_feedback'),
     url(r'^(?P<problem>[0-9]+)/submit$',
         SubmissionView.as_view(),
