@@ -163,8 +163,13 @@ class FeedbackView(problems.views.TestCaseView):
     form_class = FeedbackForm
     model = Feedback
     def get_success_url(self):
-        return "{}/feedback/{}".format(self.get_problem().get_absolute_url(), self.object.pk)
+        return "{}/feedback/{}/".format(self.get_problem().get_absolute_url(), self.object.pk)
 
+    def post(self, request, *args, **kwargs):
+        request_copy = request.POST.copy()
+        request_copy['problem'] = kwargs.get('problem', '')
+        request.POST = request_copy
+        return super().post(request, args, kwargs)
 
 class FeedbackCreateView(FeedbackView, GenericItemCreateView):
     """
@@ -174,14 +179,9 @@ class FeedbackCreateView(FeedbackView, GenericItemCreateView):
         print(form.errors)
         return super().form_invalid(form)
 
-    def post(self, request, *args, **kwargs):
-        request_copy = request.POST.copy()
-        request_copy['problem'] = kwargs.get('problem', '')
-        request.POST = request_copy
-        return super().post(request, args, kwargs)
-
 
 class FeedbackUpdateView(FeedbackView, GenericItemUpdateView):
     """
     Update a problem.
     """
+  
