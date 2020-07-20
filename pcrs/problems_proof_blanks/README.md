@@ -1,7 +1,7 @@
 ### Completed: 
 
 - Instructor side problem creation divded into two different pages. Required making a new model for Feedback, a new form, and new endpoints to update feedback and create it. Took a lot more time than I expected
-- Added some functionality to the submissions. Student submissions are checked in the Submission model, and score sent back to the front end. This is not completely tested out yet -- as in, grading the solutions might be a bit flawed right not because I haven't completely tested it yet. 
+- Added some functionality to the submissions. Student submissions are checked in the Submission model, and score sent back to the front end. This is not completely tested out yet -- as in, grading the solutions might be a bit flawed right not because I haven't completely tested it yet. Code requires a lot more error checking
 
 - Instructor problems rendered with latex (use $ $ in proof). This actually took a lot lesser time than I expected, just had to source mathjax.
 
