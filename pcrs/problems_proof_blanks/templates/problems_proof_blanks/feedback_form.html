@@ -1,6 +1,16 @@
-{% extends "problems/problem_form.html" %}
+{% extends "pcrs/crispy_form.html" %}
 {% load staticfiles %}
 
+{% if object %}
+    {% block page_title %}
+        Edit Feedback
+    {% endblock %}
+{% endif %}
+
+{% block links %}
+    <a class="button" href="{{ problem.get_absolute_url }}">< Back to
+        problem</a>
+{% endblock %}
 {% block scripts %}
     {{ block.super }}
     {% load compress %}
@@ -8,6 +18,21 @@
         <script type="text/javascript" src="{% static 'problems_proof_blanks/js/proof_blanks_feedback_form.js' %}"></script>
     {% endcompress %}
 {% endblock %}
+
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
 
 {% block related_items %}
 {% endblock %}
