@@ -1359,7 +1359,7 @@
 
             if (res['result_lines']) {
               switch (res['result_lines']) {
-                // in case we want specific message for the error that occured
+                // in case we want specific message for the error that occured, currently does nothing other then syntax message since that's a bother
                 case 1:
                   break;
                 case 2:
@@ -1377,7 +1377,12 @@
 
         }
         if (res['result_test']) {
-          that.prepareGradingTable(res);
+          if (res['result_test'].length == 0) {
+            alert_msg += "\nIt seems as though your instructor chose to run testcases, but did not provide any!"
+            $(display_element).children('span').text(alert_msg);
+          } else {
+            that.prepareGradingTable(res);
+          }
         }
       }).fail(function (jqXHR, textStatus, errorThrown) { $('#waitingModal').modal('hide'); console.log(jqXHR, textStatus, errorThrown); });
   };

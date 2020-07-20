@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='problem',
             name='max_score',
-            field=models.SmallIntegerField(blank=True, default=0),
+            field=models.SmallIntegerField(blank=True, default=1),
         ),
         migrations.AddField(
             model_name='problem',
