@@ -66,8 +66,8 @@ class Feedback(AbstractSelfAwareModel):
     The test input and expected output may or may not be visible to students.
     This is controlled by is_visible flag.
     """
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE,
-                                null=False, blank=False)
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE,
+                                null=False, blank=False, primary_key=True)
     feedback_keys = HStoreField(default=None, null=True, blank=True) # {"1": "{"type": "mathexpr", "x > 3": "too big"...}"}
     hint_keys = HStoreField(default=None, null=True, blank=True) # {"1": "think of ...."}
 
