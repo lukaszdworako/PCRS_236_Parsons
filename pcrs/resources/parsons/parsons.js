@@ -1407,6 +1407,7 @@
     for (var i = 0; i < testcases.length; i++) {
       var testcase = this._formatTestCaseObject(testcases[i]);
       var $newRow = this._createTestCaseRow(testcase);
+      $gradingTable.append($newRow);
     }
   };
 
