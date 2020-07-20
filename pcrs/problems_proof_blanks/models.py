@@ -99,25 +99,31 @@ class Submission(AbstractSubmission):
         for key in self.problem.answer_keys.keys():
             sub_ans = self.submission[key]
             inst_ans = self.problem.answer_keys[key]
+            print(sub_ans)
             print("Feedback ")
-            self.problem.feedback_keys[key] = self.problem.feedback_keys[key].replace("'", '"')
-            print(self.problem.feedback_keys[key])
-            feedback = json.loads(self.problem.feedback_keys[key])
+            if hasattr(self.problem, "feedback"):
+                # deal with this 
+                self.problem.feedback.feedback_keys[key] = self.problem.feedback.feedback_keys[key].replace("'", '"')
+                print(self.problem.feedback.feedback_keys[key])
+                feedback = json.loads(self.problem.feedback.feedback_keys[key])
+            else:
+                feedback = {}
 
-            if feedback["type"] == "mathexpr":
+            if feedback.get("type", None) == "mathexpr":
                 new_var = ""
                 # map new variables in instructor answer
-                for char in inst_ans:
-                    if char.isalpha() and char not in var_map: 
-                        var_map[char] = None
-                        new_var = char
+                if feedback.get("autocheck", False) == "True":
+                    for char in inst_ans:
+                        if char.isalpha() and char not in var_map: 
+                            var_map[char] = None
+                            new_var = char
 
-                for char in sub_ans:
-                    if char.isalpha() and char not in var_map.values() and new_var != "":
-                        var_map[new_var] = char
+                    for char in sub_ans:
+                        if char.isalpha() and char not in var_map.values() and new_var != "":
+                            var_map[new_var] = char
 
-                for var in var_map:
-                    sub_ans = sub_ans.replace(var, var_map[var])
+                    for var in var_map:
+                        sub_ans = sub_ans.replace(var, var_map[var])
 
                 try:
                     # check if both mathematical expressions are equal
