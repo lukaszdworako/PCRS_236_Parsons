@@ -10,7 +10,9 @@ from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission
 from problems_python.python_language import PythonSpecifics
 
-# import pads
+# import pads as fa
+# from pads import DFA, _DFAfromNFA
+import problems_fa_visuals.automata as fa
 # from problems_fa_visuals import Automata
 
 # class dfa (Automata.DFA):
@@ -29,8 +31,8 @@ class Problem(AbstractProblem):
     regex = models.CharField(max_length=80)
     dfa = None
 
-    # def save_dfa(obj):
-    #     self.dfa = Automata._DFAfromNFA(Automata.RegExp(regex))
+    def save_dfa(self, obj):
+        self.dfa = fa._DFAfromNFA(fa.RegExp(regex))
 
 
     def clean_fields(self, exclude=None):
@@ -62,24 +64,25 @@ class Submission(AbstractSubmission):
 
     
     def set_score(self, submission):
-    #     self.submission = submission
-    #     result = 0
+        self.submission = submission
+        result = 0
 
-    #     # visual to dfa conversion
-    #     stu_dfa = dfa
-    #     lines = self.submission.split('\n')
-    #     stu_dfa.alphabet = lines[0].split(',')
-    #     stu_dfa.initial = int(lines[1])
-    #     stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
-    #     for i in range(3, len(lines)):
-    #         line = lines[i].split(',')
-    #         stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
+        # visual to dfa conversion
+        stu_dfa = fa.DFA()
+        lines = submission.split('\n')
+        stu_dfa.alphabet = lines[0].split(',')
+        stu_dfa.initial = int(lines[1])
+        stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
+        stu_dfa.transition = {}
+        for i in range(3, len(lines)):
+            line = lines[i].split(',')
+            stu_dfa.transition[(int(line[0]), line[1])] = int(line[2])
 
 
-    #     self.problem.dfa.asDFA(self.problem.regex)
+        self.problem.dfa = fa._DFAfromNFA(fa.RegExp(self.problem.regex))
 
         
-    #     self.score = int(self.problem.dfa == stu_dfa)
+        # self.score = int(self.problem.dfa == stu_dfa)
         self.score = 1
         self.save()
         self.set_best_submission()
