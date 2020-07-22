@@ -110,7 +110,7 @@ class FiniteAutomaton:
      - x.asNFA(): return an equivalent NFA
     """
 
-    initial = alphabet = transition = isfinal = asDFA = asNFA = None
+    initial = alphabet = transitions = isfinal = asDFA = asNFA = None
 
     def __len__(self):
         """How many states does this automaton have?"""
@@ -163,6 +163,10 @@ class FiniteAutomaton:
     def symmetricDifference(self,other):
         """Make automaton recognizing union of two automata's languages."""
         return _ProductDFA(self.asDFA(),other.asDFA(),operator.xor)
+
+    def transition(self, state, symbol):
+        """Return the ending state for a given starting state and a symbol."""
+        return self.transitions[(state, symbol)]
 
 class DFA(FiniteAutomaton):
     """Base class for deterministic finite automaton.  Subclasses are
@@ -226,6 +230,7 @@ class NFA(FiniteAutomaton):
         visited = set()
         unvisited = set(self.initial)
         while unvisited:
+            # print(unvisited, self.transition, visited)
             state = arbitrary_item(unvisited)
             yield state
             unvisited.remove(state)

@@ -70,19 +70,21 @@ class Submission(AbstractSubmission):
         # visual to dfa conversion
         stu_dfa = fa.DFA()
         lines = submission.split('\n')
+        lines = [line.replace('\r', '') for line in lines] 
+        lines = [line.replace(' ', '') for line in lines]           
         stu_dfa.alphabet = lines[0].split(',')
         stu_dfa.initial = int(lines[1])
         stu_dfa.finals = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
-        stu_dfa.transition = {}
+        stu_dfa.transitions = {}
         for i in range(3, len(lines)):
             line = lines[i].split(',')
-            stu_dfa.transition[(int(line[0]), line[1])] = int(line[2])
-
+            stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
+        # raise NameError(stu_dfa.transitions)
 
         self.problem.dfa = fa._DFAfromNFA(fa.RegExp(self.problem.regex))
 
         
-        # self.score = int(self.problem.dfa == stu_dfa)
-        self.score = 1
+        self.score = int(self.problem.dfa == stu_dfa)
+        # self.score = 1
         self.save()
         self.set_best_submission()
