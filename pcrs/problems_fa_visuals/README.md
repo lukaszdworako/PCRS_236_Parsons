@@ -1,3 +1,31 @@
+# Notes (Second Sprint):
+
+## Completed:
+* Created a template for student-side submission. It can validate very specific input, (I haven't tested anything too complicated, still working out), but it works for the string a* at the moment.
+
+* Fixed a bunch of linking errors I had. Some of the existing html files didn't link to fa_visuals and instead linked to short_answers, running the wrong javascript.
+
+* "Resolved" the dependency chain with PADS, by simply including the relevant file into the code(Originally I did resolve it, but then I found out about the code that needed to be edited). Not the best fix, but not only was there poor imports, there was Python2.7 code I had to alter to make into Python3, so I'll have to properly give credit to the authors in some manner. I don't really see a way around this, at the moment. Additionally, I couldn't really find a library that matched it in terms of functionality.
+
+## What remains:
+* Adding fa_visuals to the navbar (small thing to do, but I should remember to do it)
+
+* Fixing any kinks up with the DFA equality checker. I imagine this will take a bunch of time, considering how many issues PADS has given me in general.
+
+* Adding visualization tool (if I have time) to fill out the app specifications laid out from the beginning.
+
+## Example: 
+* Go to http://localhost:8000/problems/fa_visuals/list, and create a new problem with "+"
+
+* Use a* as your regex string.
+
+* The answer should be: 
+```a
+1
+1
+1, a, 1
+```
+
 **Notes:**
 
 * models.py cannot successfully import the PADS package (tried it for a couple hours to no avail)
