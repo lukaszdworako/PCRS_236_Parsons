@@ -14,6 +14,10 @@
 
 * Adding visualization tool (if I have time) to fill out the app specifications laid out from the beginning.
 
+* Addressing the fact that I'm a bunch of commits behind the current? I didn't really work on that.
+
+* Documentation and general cleanup (removal of debug statements, etc).
+
 ## Example: 
 * Go to http://localhost:8000/problems/fa_visuals/list, and create a new problem with "+"
 
