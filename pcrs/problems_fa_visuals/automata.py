@@ -6,14 +6,14 @@ deterministic finite automata, and nondeterministic finite automata.
 D. Eppstein, UC Irvine, November 2003.
 """
 
-from pads.Util import arbitrary_item
+from problems_fa_visuals.Util import arbitrary_item
 
 import sys
 import operator
 import unittest
 
-from pads.PartitionRefinement import PartitionRefinement
-from pads.Sequence import Sequence
+from problems_fa_visuals.PartitionRefinement import PartitionRefinement
+from problems_fa_visuals.Sequence import Sequence
 
 # Hack for Python 3 compatibility
 try:
@@ -193,7 +193,7 @@ class DFA(FiniteAutomaton):
         """Report whether these two DFAs have equivalent states."""
         if not isinstance(other,DFA) or len(self) != len(other) \
                 or self.alphabet != other.alphabet:
-            raise IndexError(str(len(self)) + str(len(other)))
+            # raise IndexError(str(len(self)) + str(len(other)))
             return False
         equivalences = {self.initial:other.initial}
         unprocessed = [self.initial]

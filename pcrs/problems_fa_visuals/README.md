@@ -7,10 +7,12 @@
 
 * "Resolved" the dependency chain with PADS, by simply including the relevant file into the code(Originally I did resolve it, but then I found out about the code that needed to be edited). Not the best fix, but not only was there poor imports, there was Python2.7 code I had to alter to make into Python3, so I'll have to properly give credit to the authors in some manner. I don't really see a way around this, at the moment. Additionally, I couldn't really find a library that matched it in terms of functionality.
 
+* Issues with PADS are documented in issues.md
+
 ## What remains:
 * Adding fa_visuals to the navbar (small thing to do, but I should remember to do it)
 
-* Fixing any kinks up with the DFA equality checker. I imagine this will take a bunch of time, considering how many issues PADS has given me in general.
+* Fixing any kinks up with the DFA equality checker. I imagine this might take a bunch of time, considering how many issues PADS has given me in general, but since I've put the files locally, it shouldn't be too bad. Before I was trying to jump through hoops so as to not modify the source, but it seems that's more of an inevitability at this point.
 
 * Adding visualization tool (if I have time) to fill out the app specifications laid out from the beginning.
 
@@ -30,7 +32,9 @@
 1, a, 1
 ```
 
-**Notes:**
+* Note: Please don't add an extra new line after, PCRS *might* crash. I'll work on that stuff for the next sprint.
+
+# Notes (First Sprint):
 
 * models.py cannot successfully import the PADS package (tried it for a couple hours to no avail)
 
