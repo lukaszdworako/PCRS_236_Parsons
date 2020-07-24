@@ -108,9 +108,13 @@ class FiniteAutomaton:
      - x.isfinal(state): whether the state is an accepting state
      - x.asDFA(): return an equivalent DFA
      - x.asNFA(): return an equivalent NFA
-    """
 
-    initial = alphabet = transitions = isfinal = asDFA = asNFA = None
+    initial: int
+    alphabet: List[str]
+    transitions: Dict[(int, str), int]
+    final: List[int]
+    """
+    initial = alphabet = transitions = final = asDFA = asNFA = None
 
     def __len__(self):
         """How many states does this automaton have?"""
@@ -164,10 +168,6 @@ class FiniteAutomaton:
         """Make automaton recognizing union of two automata's languages."""
         return _ProductDFA(self.asDFA(),other.asDFA(),operator.xor)
 
-    def transition(self, state, symbol):
-        """Return the ending state for a given starting state and a symbol."""
-        return self.transitions[(state, symbol)]
-
 class DFA(FiniteAutomaton):
     """Base class for deterministic finite automaton.  Subclasses are
     responsible for filling out the details of the initial state, alphabet,
@@ -193,6 +193,7 @@ class DFA(FiniteAutomaton):
         """Report whether these two DFAs have equivalent states."""
         if not isinstance(other,DFA) or len(self) != len(other) \
                 or self.alphabet != other.alphabet:
+            raise IndexError(str(len(self)) + str(len(other)))
             return False
         equivalences = {self.initial:other.initial}
         unprocessed = [self.initial]
@@ -212,6 +213,13 @@ class DFA(FiniteAutomaton):
     def __ne__(self,other):
         """Report whether these two DFAs have equivalent states."""
         return not (self == other)
+
+    def transition(self, state, symbol):
+        """Return the ending state for a given starting state and a symbol."""
+        return self.transitions[(state, symbol)]
+    
+    def isfinal(self, state):
+        return state in self.final
 
 class NFA(FiniteAutomaton):
     """Base class for nondeterministic finite automaton.  Subclasses are
