@@ -81,11 +81,11 @@ class Submission(AbstractSubmission):
             stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
         # raise NameError(stu_dfa.transitions)
 
-        # self.problem.dfa = fa._MinimumDFA(fa._DFAfromNFA(fa.RegExp(self.problem.regex)))
+        self.problem.dfa = fa._MinimumDFA(fa._DFAfromNFA(fa.RegExp(self.problem.regex)))
         # raise NameError(self.problem.dfa.transitions)
         
         self.score = int(self.problem.dfa == stu_dfa)
         # debug line, will remove
-        self.score = 1
+        # self.score = 1
         self.save()
         self.set_best_submission()
