@@ -1,0 +1,17 @@
+{% for key, val in results.message.items %}
+    {% if val == "correct" %} 
+    <div class="alert alert-success" role="alert">
+        Your answer for {{key}} is correct
+      </div>
+    
+    {%else%}
+    <div class="alert alert-danger" role="alert">
+        {% if val == "incorrect" %}
+            Your answer for {{key}} is incorrect
+        {% else %}
+            Your answer for {{key}} is incorrect. Feedback: {{val}}
+        {% endif %}
+      </div>
+    {%endif%}  
+{% endfor %}
+

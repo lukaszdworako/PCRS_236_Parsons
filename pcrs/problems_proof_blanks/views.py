@@ -60,12 +60,13 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
             if key.split("_")[0] == "submission":
                 submission[key.split("_")[1]] = request.POST[key]
         print(submission)
-        self.submission.set_score(submission)
+        results, error = self.submission.set_score(submission)
         #submission = {}
 
+        print("We're here")
+        print(results)
 
-
-        return []
+        return results, error
 
 
 class SubmissionView(ProtectedViewMixin, SubmissionViewMixin,
@@ -79,7 +80,9 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin,
         """
         form = self.get_form(self.get_form_class())
         results = self.record_submission(request)
-        return self.render_to_response(self.get_context_data(form=form, results=results,
+        print("now in here")
+        print(results)
+        return self.render_to_response(self.get_context_data(form=form, results=results[0],
                                                              submission=self.submission))
 
 
@@ -112,7 +115,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
                     str(problem.get_problem_type_name()) + " " +
                     str(problem.pk))
 
-        return HttpResponse(json.dumps({
+        ret =  HttpResponse(json.dumps({
             'submission': self.submission.submission,
             'score': self.submission.score,
             'max_score': problem.max_score,
@@ -121,6 +124,10 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'past_dead_line': deadline and self.submission.timestamp > deadline,
             'message': self.submission.message,
             }), content_type='application/json')
+        
+        print("Now hereeee")
+        print(ret)
+        return ret
 
 
 class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,

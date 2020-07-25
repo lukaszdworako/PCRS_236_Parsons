@@ -119,8 +119,6 @@ class SubmissionForm(BaseSubmissionForm):
     submission = forms.CharField(widget=forms.Textarea())
     def __init__(self, *args, **kwargs):
         problem = kwargs.get('problem', None)
-        description = HTML('<p>{}:</p>'.format(problem.proof_statement))
-        incomplete_proof = HTML('<p>{}</p> <br>'.format(problem.incomplete_proof))
         super().__init__(*args, **kwargs)
         fieldsets = []
         for question in problem.answer_keys:
@@ -130,8 +128,6 @@ class SubmissionForm(BaseSubmissionForm):
             fieldsets.append(HTML('<button type="button">Hint</button></label> </span>'))
             
         self.helper.layout = Layout(
-            description,
-            incomplete_proof,
             *fieldsets,
             self.history_button,
             ButtonHolder(self.submit_button, css_class='pull-right'))

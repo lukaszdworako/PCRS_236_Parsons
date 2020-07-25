@@ -96,6 +96,7 @@ class Submission(AbstractSubmission):
         result = 0
         correct = []
         messages = {}
+        self.incomplete_proof = self.problem.incomplete_proof
         for key in self.problem.answer_keys.keys():
             sub_ans = self.submission[key]
             inst_ans = self.problem.answer_keys[key]
@@ -139,13 +140,18 @@ class Submission(AbstractSubmission):
             
             if messages[key] == "correct":
                 result += 1
+                self.incomplete_proof = self.incomplete_proof.replace("{{{}}}".format(key), "<strong> {} </strong>".format(sub_ans))
                 correct.append(key)
+                print(key)
+                print("{{{}}}".format(key))
+                print(self.incomplete_proof)
 
         self.messages = messages
         self.score = result
         print("###Score: {} ####".format(result))
         self.save()
         self.set_best_submission()
+        return {"message": self.messages, "score": self.score}, None
     
     def _check_feedback(self, sub_ans, inst_ans, feedback):
         print("##IN HERE##")
