@@ -68,6 +68,9 @@ urlpatterns = [
     url(r'^create_and_add_testcase$',
         ProblemCreateAndAddTCView.as_view(model=Problem, form_class=ProblemForm),
         name='coding_problem_create_and_add_testcase'),
+    url(r'^(?P<problem>[0-9]+)/testcase/(?P<pk>[0-9]+)/delete$',
+        TestCaseDeleteView.as_view(model=TestCase),
+        name='coding_problem_delete_testcase'),
 
     url(r'^(?P<pk>[0-9]+)/browse_submissions$',
     BrowseSubmissionsView.as_view(model=Problem),
