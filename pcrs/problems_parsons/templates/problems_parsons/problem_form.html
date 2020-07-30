@@ -14,20 +14,22 @@
     {% endcompress %}
 {% endblock %}
 
-{% block content %}
+{% block content %
     {{block.super}}
-    {% load staticfiles %}
-    <script src="{% static "parsons/jquery.sound.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/jquery.ui.touch-punch.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/jquery-ui.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/prettify.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/skulpt.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/skulpt-stdlib.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/underscore-min.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/lis.js" %}" type="text/javascript"></script>
-    <script src="{% static "parsons/parsons.js" %}" type="text/javascript"></script>
-    <link rel="stylesheet" href="{% static "parsons/prettify.css" %}" type="text/css" />
-    <link rel="stylesheet" href="{% static "parsons/parsons.css" %}" type="text/css" />
+    <script src="{% static "problems_parsons/js/underscore-min.js" %}" type="text/javascript"></script>
+    {% load compress %}
+    {% compress js %}
+    <script src="{% static "problems_parsons/js/jquery.sound.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/jquery.ui.touch-punch.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/jquery-ui.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/prettify.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/skulpt.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/skulpt-stdlib.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/lis.js" %}" type="text/javascript"></script>
+    <script src="{% static "problems_parsons/js/parsons.js" %}" type="text/javascript"></script>
+    {% endcompress %}
+    <link rel="stylesheet" href="{% static "problems_parsons/css/prettify.css" %}" type="text/css" />
+    <link rel="stylesheet" href="{% static "problems_parsons/css/parsons.css" %}" type="text/css" />
     <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
             type="text/javascript"></script>
     <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/transition.js" %}"

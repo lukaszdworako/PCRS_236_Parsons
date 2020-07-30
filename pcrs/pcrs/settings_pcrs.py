@@ -17,7 +17,7 @@ INSTALLED_PROBLEM_APPS = {
     # 'problems_timed': '',
     # 'problems_rating': '',
     # 'problems_short_answer': '',
-    'problems_parsons': '',
+    'problems_parsons': 'Parsons',
 }
 
 USE_SAFEEXEC = False              # For C only, for now
