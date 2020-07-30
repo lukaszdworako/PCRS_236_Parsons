@@ -634,15 +634,15 @@
               switch (res['result_lines']) {
                 // in case we want specific message for the error that occured, currently does nothing other then syntax message since that's a bother
                 case 1:
-                  break;
                 case 2:
-                  break;
                 case 3:
+                  alert_msg = "Double check if the invariant holds on all iterations!";
                   break;
                 case 4:
                   alert_msg = "Check your syntax!";
                   break;
                 default:
+                  alert_msg = "Unknown error occured, please try again!";
                   break;
               }
             }
