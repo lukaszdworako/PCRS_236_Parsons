@@ -21,6 +21,7 @@ from problems_python.python_language import PythonSpecifics
 
 # TODO -- add to required imports
 from sympy import simplify
+from sympy.parsing.sympy_parser import parse_expr
 from sympy.abc import *
 
 # Recipe from: 
@@ -47,6 +48,9 @@ class Problem(AbstractProblem):
     class Meta:
         app_label = 'problems_proof_blanks'
 
+    def save(self, *args, **kwargs):
+        self.max_score = len(self.answer_keys)
+        super().save(*args, **kwargs)  # Call the "real" save() method.
 
     def __str__(self):
         return self.name
@@ -98,12 +102,15 @@ class Submission(AbstractSubmission):
         messages = {}
         self.incomplete_proof = self.problem.incomplete_proof
         for key in self.problem.answer_keys.keys():
-            sub_ans = self.submission[key]
+            # submitted answer for question
+            sub_ans = self.submission.get(key, None)
+
+            # instructor answer for question
             inst_ans = self.problem.answer_keys[key]
             print(sub_ans)
             print("Feedback ")
             if hasattr(self.problem, "feedback"):
-                # deal with this 
+                # replace single quotes with double quotes else JSON errors 
                 self.problem.feedback.feedback_keys[key] = self.problem.feedback.feedback_keys[key].replace("'", '"')
                 print(self.problem.feedback.feedback_keys[key])
                 feedback = json.loads(self.problem.feedback.feedback_keys[key])
@@ -148,7 +155,8 @@ class Submission(AbstractSubmission):
 
         self.messages = messages
         self.score = result
-        print("###Score: {} ####".format(result))
+        print("###Score: {} ####".format(self.score))
+
         self.save()
         self.set_best_submission()
         return {"message": self.messages, "score": self.score}, None
@@ -159,6 +167,7 @@ class Submission(AbstractSubmission):
         
         for (condition, _) in feedback.items():
             try:
+                blanks = None # SET TO COPY OF SUBMISSION BLANKS
                 func_verifier = r"lambda . : . (>|<|!|=)=? .+"
                 condition_regex = re.compile(condition)
                 if re.search(condition_regex, sub_ans):
@@ -172,4 +181,3 @@ class Submission(AbstractSubmission):
 
             except:
                 return "syntax error"
-
