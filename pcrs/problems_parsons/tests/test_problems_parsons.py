@@ -229,3 +229,85 @@ class TestParsonsProblemDeleteView(CourseStaffViewTestMixin, test.TestCase):
         self.assertFalse(self.object.submission_set.exists())
         self.assertFalse(self.object.testcase_set.exists())
         self.assertFalse(self.model.objects.exists())
+
+class TestparsonsAddTestcaseView(CourseStaffViewTestMixin, test.TestCase):
+    """
+    Test adding a testcase with no submissions.
+    """
+    url = reverse('coding_problem_add_testcase', kwargs={'problem': 1})
+    successful_redirect_url = reverse('parsons_update', kwargs={'pk': 1})
+    template = 'problems/crispy_form.html'
+    model = Problem
+
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open')
+        CourseStaffViewTestMixin.setUp(self)
+
+    def test_add_minimal(self):
+        post_data = {
+            'test_input': 'question',
+            'expected_output': '42',
+            'problem': 1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertRedirects(response, self.sussessful_redirect_url)
+
+        self.assertEqual(1, self.problem.testcase_set.count())
+        testcase = self.problem.testcase_set.all()[0]
+        self.assertEqual('question', testcase.test_input)
+        self.assertEqual('42', testcase.expected_output)
+        self.assertEqual('', testcase.description)
+        self.assertFalse(testcase.is_visible)
+
+    def test_add_full(self):
+        post_data = {
+            'test_input': 'question',
+            'expected_output': '42',
+            'problem': 1,
+            'description': 'desc',
+            'is_visible': 'on'
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertRedirects(response, self.sussessful_redirect_url)
+
+        self.assertEqual(1, self.problem.testcase_set.count())
+        testcase = self.problem.testcase_set.all()[0]
+        self.assertEqual('question', testcase.test_input)
+        self.assertEqual('42', testcase.expected_output)
+        self.assertEqual('desc', testcase.description)
+        self.assertTrue(testcase.is_visible)
+
+    def test_add_with_invalid_problem_get(self):
+        url = reverse('coding_problem_add_testcase', kwargs={'problem': 100})
+        response = self.client.get(url, {})
+        self.assertEqual(404, response.status_code)
+
+    def test_add_with_invalid_problem_post(self):
+        url = reverse('coding_problem_add_testcase', kwargs={'problem': 100})
+        post_data = {
+            'test_input': 'question',
+            'expected_output': '42',
+            'problem': 100
+        }
+        response = self.client.post(url, post_data)
+        self.assertEqual(404, response.status_code)
+
+    def test_add_with_no_input(self):
+        post_data = {
+            'expected_output': '42',
+            'problem': 1,
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertFormError(response, 'form', 'test_input',
+                             'This field is required.')
+
+    def test_add_with_no_output(self):
+        post_data = {
+            'test_input': 'question',
+            'problem': 1,
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertFormError(response, 'form', 'expected_output',
+                             'This field is required.')
