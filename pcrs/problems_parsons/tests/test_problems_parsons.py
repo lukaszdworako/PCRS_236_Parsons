@@ -352,7 +352,7 @@ class TestUpdateTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     """
     url = reverse('coding_problem_update_testcase',
                   kwargs={'problem': 1, 'pk': 1})
-    successful_redirect_url = reverse('coding_problem_update', kwargs={'pk': 1})
+    successful_redirect_url = reverse('parsons_update', kwargs={'pk': 1})
     template = 'problems/crispy_form.html'
     model = Problem
 
@@ -476,7 +476,7 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
     """
     url = reverse('coding_problem_update_testcase',
                   kwargs={'problem': 1, 'pk': 1})
-    successful_redirect_url = reverse('coding_problem_update', kwargs={'pk': 1})
+    successful_redirect_url = reverse('parsons_update', kwargs={'pk': 1})
     template = 'testcase'
     model = Problem
 
@@ -609,7 +609,7 @@ class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     Test deleting a testcase.
     """
     url = reverse('coding_problem_delete_testcase', kwargs={'problem': 1, 'pk': 1})
-    successful_redirect_url = reverse('coding_problem_update', kwargs={'pk': 1})
+    successful_redirect_url = reverse('parsons_update', kwargs={'pk': 1})
     template = 'problems/check_delete.html'
 
     def setUp(self):
