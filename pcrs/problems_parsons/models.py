@@ -170,7 +170,10 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
         return incorrect_lines, result
 
     def set_score(self, student_code):
-        stu_code = self.build_code(student_code)
+        if student_code != None:
+            stu_code = self.build_code(student_code)
+        else:
+            stu_code = ""
         incorrect_lines, result_lines = [], -1
         over_pass = False
         ret_json = {}

@@ -75,9 +75,4 @@ class Migration(migrations.Migration):
             name='starter_code',
             field=models.TextField(blank=True),
         ),
-        migrations.AlterField(
-            model_name='problem',
-            name='unit_tests',
-            field=models.TextField(blank=True),
-        ),
     ]

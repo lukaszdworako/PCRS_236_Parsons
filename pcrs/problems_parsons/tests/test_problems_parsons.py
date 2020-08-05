@@ -5,8 +5,9 @@ from django.test import TransactionTestCase
 from problems.tests.test_best_attempt_before_deadline import *
 from problems.tests.test_performance import TestSubmissionHistoryDatabaseHits
 from problems_parsons.models import Problem, TestCase, Submission, TestRun
-from ViewTestMixins import ProtectedViewTestMixin, \
+from tests.ViewTestMixins import ProtectedViewTestMixin, \
     CourseStaffViewTestMixin, UsersMixin
+import json
 
 
 class TestParsonsProblemListView(ProtectedViewTestMixin, test.TestCase):
@@ -48,7 +49,7 @@ class TestParsonsProblemCreateView(CourseStaffViewTestMixin, test.TestCase):
         self.assertEqual('closed', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c<br>c = a+b\n  return (a,b,c)', object.starter_code)
-        self.assertEqual('0', object.evaluation_type)
+        self.assertEqual(['0'], object.evaluation_type)
 
     def test_create_problem_no_name(self):
         del(self.post_data['name'])
@@ -98,7 +99,7 @@ class TestParsonsProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
         self.assertEqual('test_desc', object.description)
         self.assertEqual('closed', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
-        self.assertEqual('0', object.evaluation_type)
+        self.assertEqual(['0'], object.evaluation_type)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c<br>c = a+b\n  return (a,b,c)', object.starter_code)
 
     def test_change_name(self):
@@ -112,7 +113,7 @@ class TestParsonsProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
         self.assertEqual('test_desc', object.description)
         self.assertEqual('closed', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
-        self.assertEqual('0', object.evaluation_type)
+        self.assertEqual(['0'], object.evaluation_type)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c<br>c = a+b\n  return (a,b,c)', object.starter_code)
     
     def test_make_visible(self):
@@ -122,11 +123,11 @@ class TestParsonsProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
         self.assertEqual(1, self.model.objects.count())
         object = self.model.objects.all()[0]
-        self.assertEqual('new_name', object.name)
+        self.assertEqual('test_problem', object.name)
         self.assertEqual('test_desc', object.description)
         self.assertEqual('open', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
-        self.assertEqual('0', object.evaluation_type)
+        self.assertEqual(['0'], object.evaluation_type)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c<br>c = a+b\n  return (a,b,c)', object.starter_code)
 
     def test_edit_evaluation_type(self):
@@ -136,11 +137,11 @@ class TestParsonsProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
         self.assertEqual(1, self.model.objects.count())
         object = self.model.objects.all()[0]
-        self.assertEqual('new_name', object.name)
+        self.assertEqual('test_problem', object.name)
         self.assertEqual('test_desc', object.description)
-        self.assertEqual('open', object.visibility)
+        self.assertEqual('closed', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
-        self.assertEqual('2', object.evaluation_type)
+        self.assertEqual(['2'], object.evaluation_type)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c<br>c = a+b\n  return (a,b,c)', object.starter_code)
 
     def test_edit_starter_code(self):
@@ -150,11 +151,11 @@ class TestParsonsProblemUpdateView(CourseStaffViewTestMixin, test.TestCase):
 
         self.assertEqual(1, self.model.objects.count())
         object = self.model.objects.all()[0]
-        self.assertEqual('new_name', object.name)
+        self.assertEqual('test_problem', object.name)
         self.assertEqual('test_desc', object.description)
-        self.assertEqual('open', object.visibility)
+        self.assertEqual('closed', object.visibility)
         self.assertEqual('problem_invariant', object.invariant)
-        self.assertEqual('2', object.evaluation_type)
+        self.assertEqual(['0'], object.evaluation_type)
         self.assertEqual('def function(a,b,c):\n  a = a+b\n  b = b+c\n  c = a+b\n  return (a,b,c)', object.starter_code)
 
 class TestParsonsProblemUpdateViewWithSubmission(TestParsonsProblemUpdateView):
@@ -250,7 +251,7 @@ class TestparsonsAddTestcaseView(CourseStaffViewTestMixin, test.TestCase):
             'problem': 1
         }
         response = self.client.post(self.url, post_data)
-        self.assertRedirects(response, self.sussessful_redirect_url)
+        self.assertRedirects(response, self.successful_redirect_url)
 
         self.assertEqual(1, self.problem.testcase_set.count())
         testcase = self.problem.testcase_set.all()[0]
@@ -268,7 +269,7 @@ class TestparsonsAddTestcaseView(CourseStaffViewTestMixin, test.TestCase):
             'is_visible': 'on'
         }
         response = self.client.post(self.url, post_data)
-        self.assertRedirects(response, self.sussessful_redirect_url)
+        self.assertRedirects(response, self.successful_redirect_url)
 
         self.assertEqual(1, self.problem.testcase_set.count())
         testcase = self.problem.testcase_set.all()[0]
@@ -635,3 +636,77 @@ class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
         self.assertRedirects(response, self.successful_redirect_url)
         self.assertFalse(TestRun.objects.filter(testcase_id=1).exists())
         self.assertEqual(1, Submission.objects.filter(problem_id=1).count())
+
+class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
+    """
+    Test submitting a solution to a coding problem.
+    """
+    url = reverse('parsons_submit', kwargs={'problem': 1})
+
+    template = 'submissions'
+    model = Problem
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='0')
+        TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
+        CourseStaffViewTestMixin.setUp(self)
+    
+    def test_add_submission(self):
+        post_data = {
+            'submission': "[{\"code\": \"my awesome submission\", \"indent\":0}]"
+        }
+
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        self.assertEqual(1, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual('my awesome submission\n', submission.submission)
+        self.assertEqual(0, submission.score)
+
+        self.assertEqual(1, TestRun.objects.count())
+        testrun = TestRun.objects.all()[0]
+        self.assertEqual(1, testrun.testcase.pk)
+        self.assertFalse(testrun.test_passed)
+
+    def test_add_submissions(self):
+        post_data = {
+            'submission': "[{\"code\": \"my awesome submission\", \"indent\":0}]"
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        self.assertEqual(1, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual('my awesome submission\n', submission.submission)
+        self.assertEqual(0, submission.score)
+        self.assertTrue(submission.has_best_score)
+
+        self.assertEqual(1, TestRun.objects.count())
+        testrun = TestRun.objects.all()[0]
+        self.assertEqual(1, testrun.testcase.pk)
+        self.assertFalse(testrun.test_passed)
+
+        # and submit again
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        self.assertEqual(2, Submission.objects.count())
+        submission2, submission1 = Submission.objects.all()
+        self.assertEqual('my awesome submission\n', submission1.submission)
+        self.assertEqual(0, submission1.score)
+        self.assertEqual('my awesome submission\n', submission2.submission)
+        self.assertEqual(0, submission2.score)
+        # self.assertFalse(submission1.has_best_score)
+        self.assertTrue(submission2.has_best_score)
+
+        self.assertEqual(2, TestRun.objects.count())
+        testrun1, testrun2 = TestRun.objects.all()
+        self.assertEqual(1, testrun1.testcase.pk)
+        self.assertFalse(testrun1.test_passed)
+        self.assertEqual(1, testrun2.testcase.pk)
+        self.assertFalse(testrun2.test_passed)
+        
+        #STILL NEED TO CONTINUE ON THIS
