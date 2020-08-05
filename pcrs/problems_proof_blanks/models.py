@@ -95,8 +95,8 @@ class Submission(AbstractSubmission):
     # submission needs to be a dictionary / HStoreField object
     def set_score(self, submission):
         var_map = {} # maps instructor variables to student variables
-        print(submission)
         self.submission = submission
+        blanks = submission.copy() # This is for instructors to use in their lambda function
         result = 0
         correct = []
         messages = {}
@@ -107,12 +107,9 @@ class Submission(AbstractSubmission):
 
             # instructor answer for question
             inst_ans = self.problem.answer_keys[key]
-            print(sub_ans)
-            print("Feedback ")
             if hasattr(self.problem, "feedback"):
                 # replace single quotes with double quotes else JSON errors 
                 self.problem.feedback.feedback_keys[key] = self.problem.feedback.feedback_keys[key].replace("'", '"')
-                print(self.problem.feedback.feedback_keys[key])
                 feedback = json.loads(self.problem.feedback.feedback_keys[key])
             else:
                 feedback = {}
@@ -120,18 +117,18 @@ class Submission(AbstractSubmission):
             if feedback.get("type", None) == "mathexpr":
                 new_var = ""
                 # map new variables in instructor answer
-                if feedback.get("autocheck", False) == "True":
+                if feedback.get("map-variables", False) == True:
                     for char in inst_ans:
                         if char.isalpha() and char not in var_map: 
                             var_map[char] = None
                             new_var = char
-
-                    for char in sub_ans:
+                    for char in sub_ans.split():
                         if char.isalpha() and char not in var_map.values() and new_var != "":
                             var_map[new_var] = char
 
-                    for var in var_map:
-                        sub_ans = sub_ans.replace(var, var_map[var])
+
+                for var in var_map:
+                    sub_ans = sub_ans.replace(var, var_map[var])
 
                 try:
                     # check if both mathematical expressions are equal
@@ -139,31 +136,25 @@ class Submission(AbstractSubmission):
                         messages[key] = "correct"
                         # to convert to latex -- sympy.latex()
                     else:
-                        messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
+                        messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
                 except:
-                    messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
+                    messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
             else:
-                messages[key] = self._check_feedback(sub_ans, inst_ans, feedback)
+                messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
             
             if messages[key] == "correct":
                 result += 1
                 self.incomplete_proof = self.incomplete_proof.replace("{{{}}}".format(key), "<strong> {} </strong>".format(sub_ans))
                 correct.append(key)
-                print(key)
-                print("{{{}}}".format(key))
-                print(self.incomplete_proof)
 
         self.messages = messages
         self.score = result
-        print("###Score: {} ####".format(self.score))
 
         self.save()
         self.set_best_submission()
         return {"message": self.messages, "score": self.score}, None
     
-    def _check_feedback(self, sub_ans, inst_ans, feedback):
-        print("##IN HERE##")
-        print(type(feedback))
+    def _check_feedback(self, sub_ans, inst_ans, feedback, blanks):
         
         for (condition, _) in feedback.items():
             try:
