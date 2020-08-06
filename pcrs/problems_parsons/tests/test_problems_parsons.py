@@ -646,7 +646,7 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
     template = 'submissions'
     model = Problem
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='0')
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='2', starter_code="def foo(uinp):\n\treturn uinp", max_score=1)
         TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
     
@@ -710,3 +710,46 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertFalse(testrun2.test_passed)
         
         #STILL NEED TO CONTINUE ON THIS
+
+    def test_valid_submission(self):
+        submit_1 = "[{\"code\": \"my awesome submission\", \"indent\":0}]"
+        submit_1_back = "my awesome submission\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        self.assertEqual(1, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual('my awesome submission\n', submission.submission)
+        self.assertEqual(0, submission.score)
+        self.assertTrue(submission.has_best_score)
+
+        self.assertEqual(1, TestRun.objects.count())
+        testrun = TestRun.objects.all()[0]
+        self.assertEqual(1, testrun.testcase.pk)
+        self.assertFalse(testrun.test_passed)
+        self.assertEqual(1, Submission.objects.count())
+
+        # and now, we submit with an actually valid input
+        submit_2 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":1}]"
+        submit_2_back = "def foo(uinp):\n\treturn uinp\n"
+        post_data = {
+            'submission': submit_2
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        submission2 = Submission.objects.filter(submission=submit_2_back)[0]
+        self.assertEqual(1, submission2.score)
+        self.assertFalse(submission1.has_best_score)
+        self.assertTrue(submission2.has_best_score)
+
+        self.assertEqual(2, TestRun.objects.count())
+        testrun = TestRun.objects.filter(submission=submission2)[0]
+        self.assertEqual(1, testrun.testcase.pk)
+        self.assertTrue(testrun.test_passed)
