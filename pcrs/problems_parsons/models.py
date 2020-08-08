@@ -187,10 +187,10 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             ret_json["result_lines"] = result_lines
             # you can optionally choose to return to student the incorrect lines, however not currently supported
             #ret_json["incorrect_lines"] = incorrect_lines
+            self.reason_incorrect = result_lines
             if result_lines == 0:
                 self.score = 1
             else:
-                self.reason_incorrect = result_lines
                 self.score = 0
 
         # if we want to run testcases, we can optimize to not run if it's already an exact match

@@ -788,10 +788,26 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
     
-    def test_wrong_order_lines_only(self):
+    def test_correct_submission(self):
         # and now, we submit with an actually valid input
-        submit_1 = "[{\"code\":\"return uinp\", \"indent\":0}, {\"code\":\"def foo(uinp):\", \"indent\":1}]"
-        submit_1_back = "return uinp\n\tdef foo(uinp):\n"
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":1}]"
+        submit_1_back = "def foo(uinp):\n\treturn uinp\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(1, submission1.score)
+        self.assertEqual(0, submission1.reason_incorrect)
+
+    def test_wrong_indent(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":0}]"
+        submit_1_back = "def foo(uinp):\nreturn uinp\n"
         post_data = {
             'submission': submit_1
         }
@@ -803,4 +819,52 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(1, Submission.objects.count())
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
         self.assertEqual(0, submission1.score)
-        self.assertEqual(3, submission1.reason_incorrect)
+        self.assertEqual(4, submission1.reason_incorrect)
+        
+        # due to complications of indents, cannot allow misindented from counting in pure line comparison
+        submit_2 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":2}]"
+        submit_2_back = "def foo(uinp):\n\t\treturn uinp\n"
+        post_data = {
+            'submission': submit_2
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_2_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission2 = Submission.objects.filter(submission=submit_2_back)[0]
+        self.assertEqual(0, submission2.score)
+        self.assertEqual(4, submission2.reason_incorrect)
+        
+    def test_too_few_lines(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}]"
+        submit_1_back = "def foo(uinp):\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(2, submission1.reason_incorrect)
+
+    def test_too_many_lines(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"extra_line()\", \"indent\":1}, {\"code\":\"return uinp\", \"indent\":1}]"
+        submit_1_back = "def foo(uinp):\n\textra_line()\n\treturn uinp\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(1, submission1.reason_incorrect)
