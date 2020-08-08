@@ -52,6 +52,8 @@ class Problem(AbstractProblem):
 
 class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    incorrect_lines = models.TextField(blank=True)
+    reason_incorrect = models.IntegerField(default=-1)
     
     def run_python_testcases(self, student_code, save=True):
         """
@@ -188,6 +190,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             if result_lines == 0:
                 self.score = 1
             else:
+                self.reason_incorrect = result_lines
                 self.score = 0
 
         # if we want to run testcases, we can optimize to not run if it's already an exact match
@@ -199,10 +202,11 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             if over_pass == True:
                 self.score = 1
             else:
+                self.reason_incorrect = 5
                 self.score = 0
 
-        self.incorrect_lines = incorrect_lines
-        self.submission = stu_code
+        self.incorrect_lines    = incorrect_lines
+        self.submission         = stu_code
         self.save()
         self.set_best_submission()
         return ret_json

@@ -753,3 +753,54 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         testrun = TestRun.objects.filter(submission=submission2)[0]
         self.assertEqual(1, testrun.testcase.pk)
         self.assertTrue(testrun.test_passed)
+
+    def test_wrong_order_still_execute(self):
+
+        # and now, we submit with an actually valid input
+        submit_1 = "[{\"code\":\"return uinp\", \"indent\":0}, {\"code\":\"def foo(uinp):\", \"indent\":1}]"
+        submit_1_back = "return uinp\n\tdef foo(uinp):\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(1, TestRun.objects.count())
+        # 5 because we are still going to run the tests
+        self.assertEqual(5, submission1.reason_incorrect)
+
+
+class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
+    """
+    Test submitting a solution to a coding problem.
+    """
+    url = reverse('parsons_submit', kwargs={'problem': 1})
+
+    template = 'submissions'
+    model = Problem
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='1', starter_code="def foo(uinp):\n\treturn uinp", max_score=1)
+        TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
+        CourseStaffViewTestMixin.setUp(self)
+    
+    def test_wrong_order_lines_only(self):
+        # and now, we submit with an actually valid input
+        submit_1 = "[{\"code\":\"return uinp\", \"indent\":0}, {\"code\":\"def foo(uinp):\", \"indent\":1}]"
+        submit_1_back = "return uinp\n\tdef foo(uinp):\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(3, submission1.reason_incorrect)
