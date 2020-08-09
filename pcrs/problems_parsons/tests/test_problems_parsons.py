@@ -868,3 +868,38 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
         self.assertEqual(0, submission1.score)
         self.assertEqual(1, submission1.reason_incorrect)
+
+
+
+
+
+
+class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
+                            TransactionTestCase):
+
+    url = reverse('parsons_async_history', kwargs={'problem': 1})
+
+    def setUp(self):
+        UsersMixin.setUp(self)
+
+        quest = Quest.objects.create(name='1', description='1')
+        SectionQuest.objects.filter(section=self.student.section).update(due_on=localtime(now()))
+
+        challenge = Challenge.objects.create(name='1', description='1', quest=quest, visibility='open')
+
+        self.problem = Problem.objects.create(pk=1, name='1', description='1',
+                                              visibility='open', challenge=challenge)
+        TestCase.objects.bulk_create(
+            [TestCase(problem=self.problem, test_input=1, expected_output=2)
+             for i in range(6)])
+
+        scores = [1, 2, 0, 5, 1, 0, 3]
+        for score in scores:
+            sub = Submission.objects.create(problem=self.problem,
+                                            user=self.student, score=score)
+            sub.set_best_submission()
+            for case in TestCase.objects.all():
+                TestRun.objects.create(submission=sub, testcase=case, test_passed=False)
+
+        self.assertEqual(len(scores), Submission.objects.count())
+        self.assertEqual(len(scores)*6, TestRun.objects.count())

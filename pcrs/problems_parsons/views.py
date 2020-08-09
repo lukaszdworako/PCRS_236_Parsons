@@ -105,32 +105,37 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
     def post(self, request, *args, **kwargs):
         problem = self.get_problem()
         user, section = self.get_user(), self.get_section()
-
         try:
             deadline = problem.challenge.quest.sectionquest_set\
-                              .get(section=section).due_on
+                .get(section=section).due_on
         except Exception:
             deadline = False
-
         try:
             best_score = self.model.objects\
                 .filter(user=user, problem=problem, has_best_score=True).latest("id").score
         except self.model.DoesNotExist:
             best_score = -1
 
-        data = self.model.objects.filter(user=user, problem=problem)
+        data = self.model.objects\
+            .prefetch_related('testrun_set', 'testrun_set__testcase')\
+            .filter(user=user, problem=problem)
+
         returnable = []
         for sub in data:
             returnable.append({
                 'sub_time': sub.timestamp.isoformat(),
                 'submission': sub.submission,
+                'reason_incorrect': sub.reason_incorrect,
+                'incorrect_inlines': sub.incorrect_lines,
                 'score': sub.score,
                 'out_of': problem.max_score,
                 'best': sub.has_best_score and \
                         ((not deadline) or sub.timestamp < deadline),
                 'past_dead_line': deadline and sub.timestamp > deadline,
                 'problem_pk': problem.pk,
-                'sub_pk': sub.pk
+                'sub_pk': sub.pk,
+                'tests': [testrun.get_history()
+                          for testrun in sub.testrun_set.all()]
             })
 
         return HttpResponse(json.dumps(returnable), content_type='application/json')
