@@ -699,7 +699,6 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(0, submission1.score)
         self.assertEqual('my awesome submission\n', submission2.submission)
         self.assertEqual(0, submission2.score)
-        # self.assertFalse(submission1.has_best_score)
         self.assertTrue(submission2.has_best_score)
 
         self.assertEqual(2, TestRun.objects.count())
@@ -709,7 +708,6 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(1, testrun2.testcase.pk)
         self.assertFalse(testrun2.test_passed)
         
-        #STILL NEED TO CONTINUE ON THIS
 
     def test_valid_submission(self):
         submit_1 = "[{\"code\": \"my awesome submission\", \"indent\":0}]"
@@ -869,10 +867,99 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(0, submission1.score)
         self.assertEqual(1, submission1.reason_incorrect)
 
+class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
+    """
+    Test submitting a solution to a coding problem.
+    """
+    url = reverse('parsons_submit', kwargs={'problem': 1})
 
+    template = 'submissions'
+    model = Problem
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='2', starter_code="def foo(uinp):\n\treturn uinp", max_score=1)
+        TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
+        CourseStaffViewTestMixin.setUp(self)
 
+    def test_correct_submission(self):
+        # and now, we submit with an actually valid input
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":1}]"
+        submit_1_back = "def foo(uinp):\n\treturn uinp\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(1, submission1.score)
+        self.assertEqual(0, submission1.reason_incorrect)
 
+    def test_wrong_indent(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":0}]"
+        submit_1_back = "def foo(uinp):\nreturn uinp\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(5, submission1.reason_incorrect)
+        
+        # due to complications of indents, cannot allow misindented from counting in pure line comparison
+        submit_2 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"return uinp\", \"indent\":2}]"
+        submit_2_back = "def foo(uinp):\n\t\treturn uinp\n"
+        post_data = {
+            'submission': submit_2
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_2_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission2 = Submission.objects.filter(submission=submit_2_back)[0]
+        self.assertEqual(1, submission2.score)
+        self.assertEqual(0, submission2.reason_incorrect)
+        
+    def test_too_few_lines(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}]"
+        submit_1_back = "def foo(uinp):\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(5, submission1.reason_incorrect)
 
+    def test_too_many_lines(self):
+        submit_1 = "[{\"code\":\"def foo(uinp):\", \"indent\":0}, {\"code\":\"extra_line()\", \"indent\":1}, {\"code\":\"return uinp\", \"indent\":1}]"
+        submit_1_back = "def foo(uinp):\n\textra_line()\n\treturn uinp\n"
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(5, submission1.reason_incorrect)
 
 class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
                             TransactionTestCase):

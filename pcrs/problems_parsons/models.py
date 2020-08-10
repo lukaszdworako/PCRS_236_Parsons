@@ -200,6 +200,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             ret_json["result_test"] = results_test
             ret_json["error_test"]  = error_test
             if over_pass == True:
+                self.reason_incorrect = 0
                 self.score = 1
             else:
                 self.reason_incorrect = 5
