@@ -48,66 +48,6 @@
   };
   graders.BackEndGrader = BackEndGrader;
 
-  var defaultToggleTypeHandlers = {
-    boolean: ["True", "False"],
-    compop: ["<", ">", "<=", ">=", "==", "!="],
-    mathop: ["+", "-", "*", "/"],
-    boolop: ["and", "or"],
-    range: function ($item) {
-      var min = parseFloat($item.data("min") || "0"),
-        max = parseFloat($item.data("max") || "10"),
-        step = parseFloat($item.data("step") || "1"),
-        opts = [],
-        curr = min;
-      while (curr <= max) {
-        opts.push("" + curr);
-        curr += step;
-      }
-      return opts;
-    }
-  };
-  var addToggleableElements = function (widget) {
-    for (var i = 0; i < widget.modified_lines.length; i++) {
-      widget.modified_lines[i]._addToggles();
-    }
-    // toggleable elements are only enabled for unit tests
-    if (!widget.options.unittests && !widget.options.vartests) { return; }
-    var handlers = $.extend(defaultToggleTypeHandlers, widget.options.toggleTypeHandlers),
-      context = $("#" + widget.options.sortableId + ", #" + widget.options.trashId);
-    $(".jsparson-toggle", context).each(function (index, item) {
-      var type = $(item).data("type");
-      if (!type) { return; }
-      var handler = handlers[type],
-        jspOptions;
-      if ($.isFunction(handler)) {
-        jspOptions = handler($(item));
-      } else {
-        jspOptions = handler;
-      }
-      if (jspOptions && $.isArray(jspOptions)) {
-        $(item).attr("data-jsp-options", JSON.stringify(jspOptions));
-      }
-    });
-    // register a click handler for all the toggleable elements (and unregister existing)
-    context.off("click", ".jsparson-toggle").on("click", ".jsparson-toggle", function () {
-      var $this = $(this),
-        curVal = $this.text(),
-        choices = $this.data("jsp-options"),
-        newVal = choices[(choices.indexOf(curVal) + 1) % choices.length],
-        $parent = $this.parent("li");
-      // clear existing feedback
-      widget.clearFeedback();
-      // change the shown toggle element
-      $this.text(newVal);
-      // log the event
-      widget.addLogEntry({
-        type: "toggle", oldvalue: curVal, newvalue: newVal,
-        target: $parent[0].id,
-        toggleindex: $parent.find(".jsparson-toggle").index($this)
-      });
-    });
-  };
-
   // Create a line object skeleton with only code and indentation from
   // a code string of an assignment definition string (see parseCode)
   var ParsonsCodeline = function (codestring, widget) {
@@ -125,52 +65,6 @@
   ParsonsCodeline.prototype.elem = function () {
     // the element will change on shuffle, so we should re-fetch it every time
     return $("#" + this.id);
-  };
-  ParsonsCodeline.prototype.markCorrect = function () {
-    this.elem().addClass(this.widget.FEEDBACK_STYLES.correctPosition);
-  };
-  ParsonsCodeline.prototype.markIncorrectPosition = function () {
-    this.elem().addClass(this.widget.FEEDBACK_STYLES.incorrectPosition);
-  };
-  ParsonsCodeline.prototype.markIncorrectIndent = function () {
-    this.elem().addClass(this.widget.FEEDBACK_STYLES.incorrectIndent);
-  };
-  //
-  ParsonsCodeline.prototype._addToggles = function () {
-    var toggleRegexp = new RegExp("\\$\\$toggle(" + this.widget.options.toggleSeparator + ".*?)?\\$\\$", "g");
-    var toggles = this.code.match(toggleRegexp);
-    var that = this;
-    this._toggles = [];
-    if (toggles) {
-      var html = this.code;
-      for (var i = 0; i < toggles.length; i++) {
-        var opts = toggles[i].substring(10, toggles[i].length - 2).split(this.widget.options.toggleSeparator);
-        html = html.replace(toggles[i], "<span class='jsparson-toggle' data-jsp-options='" +
-          JSON.stringify(opts).replace("<", "&lt;") + "'></span>");
-
-      }
-      this.elem().html(html);
-      this.elem().find(".jsparson-toggle").each(function (index, item) {
-        that._toggles.push(item);
-      });
-    }
-  };
-  // Returns the number of toggleable elements in this code block
-  ParsonsCodeline.prototype.toggleCount = function () {
-    return this._toggles.length;
-  };
-  // Returns the index of the currently selected toggle option for the
-  // toggle element at given index
-  ParsonsCodeline.prototype.selectedToggleIndex = function (index) {
-    if (index < 0 || index >= this._toggles.length) { return -1; }
-    var elem = this._toggles[index];
-    var opts = $(elem).data("jsp-options");
-    return opts.indexOf(elem.textContent);
-  };
-  // Returns the value of the toggleable element at the given index (0-based)
-  ParsonsCodeline.prototype.toggleValue = function (index) {
-    if (index < 0 || index >= this._toggles.length) { return undefined; }
-    return this._toggles[index].textContent;
   };
   // expose the type for testing, extending etc
   window.ParsonsCodeline = ParsonsCodeline;
@@ -835,14 +729,6 @@ ParsonsWidget.prototype._addA11yToTestRow = function($row, result, passed,
     } else {
       this.createHTMLFromLists(idlist, []);
     }
-    addToggleableElements(this);
-  };
-
-  ParsonsWidget.prototype.createHTMLFromHashes = function (solutionHash, trashHash) {
-    var solution = this.hashToIDList(solutionHash);
-    var trash = this.hashToIDList(trashHash);
-    this.createHTMLFromLists(solution, trash);
-    this.updateIndentsFromHash(solutionHash);
   };
 
   ParsonsWidget.prototype.updateHTMLIndent = function (codelineID) {
