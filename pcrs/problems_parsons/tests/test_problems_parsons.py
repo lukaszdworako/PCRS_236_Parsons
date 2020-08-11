@@ -900,6 +900,23 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
         self.assertEqual(0, submission1.score)
         self.assertEqual(4, submission1.reason_incorrect)
+    
+    def test_empty_submission(self):
+        # and now, we submit with an actually valid input
+        submit_1 = r'[]'
+        submit_1_back = ""
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(2, submission1.reason_incorrect)
 
 class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
     """
@@ -1028,6 +1045,24 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
         self.assertEqual(0, submission1.score)
         self.assertEqual(5, submission1.reason_incorrect)
+    
+    def test_empty_submission(self):
+        # and now, we submit with an actually valid input
+        submit_1 = r'[]'
+        submit_1_back = ""
+        post_data = {
+            'submission': submit_1
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_1_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission1 = Submission.objects.filter(submission=submit_1_back)[0]
+        self.assertEqual(0, submission1.score)
+        self.assertEqual(5, submission1.reason_incorrect)
+
 
 class TestParsonsProblemGradingMixed(TestParsonsProblemGradingTestCase):
     """
