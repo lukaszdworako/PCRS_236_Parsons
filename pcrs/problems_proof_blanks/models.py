@@ -49,7 +49,7 @@ class Problem(AbstractProblem):
         app_label = 'problems_proof_blanks'
 
     def save(self, *args, **kwargs):
-        self.max_score = len(self.answer_keys)
+        if(self.answer_keys): self.max_score = len(self.answer_keys)
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
     def __str__(self):

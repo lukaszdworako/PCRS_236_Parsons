@@ -125,10 +125,11 @@ class SubmissionForm(BaseSubmissionForm):
             self.fields["submission_{}".format(question)] = forms.CharField(widget=forms.Textarea(attrs={'rows':2, 'cols':1, 'size': '5'}), required=False, label=question, max_length=20)
             fieldsets.append(HTML('<span> <label> {}'.format(question)))
             fieldsets.append((Fieldset('', Field("submission_{}".format(question), maxlength=20))))
-            fieldsets.append(HTML('''<div id="proof_blanks-hints-{0}"> 
+            fieldsets.append(HTML('''<div> 
                                      <button type="button" onClick="hintHandler('{0}', '{1}')">Hint</button>
+                                     <p id="proof_blanks-hints-{0}"> </p>
                                      </div>
-                                     </label> </span>'''.format(question, problem.feedback.hint_keys[question])))
+                                     </label> </span>'''.format(question, problem.feedback.hint_keys.get(question, "oops, no hints for this question"))))
             
         self.helper.layout = Layout(
             *fieldsets,

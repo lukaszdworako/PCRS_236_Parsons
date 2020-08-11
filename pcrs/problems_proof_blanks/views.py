@@ -176,19 +176,27 @@ class FeedbackView(problems.views.TestCaseView):
         request_copy = request.POST.copy()
         request_copy['problem'] = kwargs.get('problem', '')
         request.POST = request_copy
+        # print(request.POST)
         return super().post(request, args, kwargs)
+
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
+    
+    def form_valid(self, form):
+        print("form valid")
+        return super().form_valid(form)
 
 class FeedbackCreateView(FeedbackView, GenericItemCreateView):
     """
     Base view for creating and updating testcases for a problem.
     """
-    def form_invalid(self, form):
-        print(form.errors)
-        return super().form_invalid(form)
+    
 
 
 class FeedbackUpdateView(FeedbackView, GenericItemUpdateView):
     """
     Update a problem.
     """
+
   
