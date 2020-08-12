@@ -604,7 +604,6 @@ class TestUpdateTestcaseViewWithSubmissions(CourseStaffViewTestMixin,
         self.assertFormError(response, 'form', 'expected_output',
                              'This field is required.')
 
-
 class TestDeleteTestcaseView(CourseStaffViewTestMixin, test.TestCase):
     """
     Test deleting a testcase.
@@ -772,7 +771,6 @@ class TestParsonsProblemAddSubmission(ProtectedViewTestMixin, test.TestCase):
         # 5 because we are still going to run the tests
         self.assertEqual(5, submission1.reason_incorrect)
 
-
 class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
     """
     Test submitting a solution to a coding problem.
@@ -781,8 +779,9 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
 
     template = 'submissions'
     model = Problem
+    max_score = 1
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='1', starter_code="def foo(uinp):\n\treturn uinp", max_score=1)
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='1', starter_code="def foo(uinp):\n\treturn uinp", max_score=self.max_score)
         TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
     
@@ -800,7 +799,7 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
         self.assertEqual(1, Submission.objects.count())
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
-        self.assertEqual(1, submission1.score)
+        self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
 
     def test_wrong_indent(self):
@@ -881,7 +880,7 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
         self.assertEqual(1, Submission.objects.count())
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
-        self.assertEqual(1, submission1.score)
+        self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
     
     def test_special_case_br_lines_incorrect(self):
@@ -926,8 +925,9 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
 
     template = 'submissions'
     model = Problem
+    max_score = 1
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='2', starter_code="def foo(uinp):\n\treturn uinp", max_score=1)
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='2', starter_code="def foo(uinp):\n\treturn uinp", max_score=self.max_score)
         TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
 
@@ -945,7 +945,7 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
         self.assertEqual(1, Submission.objects.count())
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
-        self.assertEqual(1, submission1.score)
+        self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
 
     def test_wrong_indent(self):
@@ -977,7 +977,7 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
         self.assertEqual(2, Submission.objects.count())
         submission2 = Submission.objects.filter(submission=submit_2_back)[0]
-        self.assertEqual(1, submission2.score)
+        self.assertEqual(self.max_score, submission2.score)
         self.assertEqual(0, submission2.reason_incorrect)
         
     def test_too_few_lines(self):
@@ -1026,7 +1026,7 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         self.assertTemplateUsed(self.template)
         self.assertEqual(1, Submission.objects.count())
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
-        self.assertEqual(1, submission1.score)
+        self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
 
     def test_special_case_br_lines_incorrect(self):
@@ -1063,7 +1063,6 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(0, submission1.score)
         self.assertEqual(5, submission1.reason_incorrect)
 
-
 class TestParsonsProblemGradingMixed(TestParsonsProblemGradingTestCase):
     """
     Test submitting a solution to a coding problem.
@@ -1077,6 +1076,20 @@ class TestParsonsProblemGradingMixed(TestParsonsProblemGradingTestCase):
         TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
         
+class TestParsonsProblemGradingMore(TestParsonsProblemGradingTestCase):
+    """
+    Test submitting a solution to a coding problem.
+    """
+    url = reverse('parsons_submit', kwargs={'problem': 1})
+
+    template = 'submissions'
+    model = Problem
+    max_score = 2
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='0', starter_code="def foo(uinp):\n\treturn uinp", max_score=self.max_score)
+        TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
+        TestCase.objects.create(test_input='foo(False)', expected_output='False', pk=2, problem=self.problem)
+        CourseStaffViewTestMixin.setUp(self)
 
 class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
                             TransactionTestCase):
