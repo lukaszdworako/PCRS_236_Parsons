@@ -189,7 +189,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             #ret_json["incorrect_lines"] = incorrect_lines
             self.reason_incorrect = result_lines
             if result_lines == 0:
-                self.score = 1
+                self.score = self.problem.max_score
             else:
                 self.score = 0
 
@@ -201,7 +201,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
             ret_json["error_test"]  = error_test
             if over_pass == True:
                 self.reason_incorrect = 0
-                self.score = 1
+                self.score = self.testrun_set.filter(test_passed=True).count()
             else:
                 self.reason_incorrect = 5
                 self.score = 0
