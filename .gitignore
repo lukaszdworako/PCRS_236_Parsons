@@ -11,5 +11,3 @@ pcrs*.c
 .pylintrc
 .python-version
 settings_local.py
-.vscode/settings.json
-pcrs/pcrs/settings_pcrs.py
