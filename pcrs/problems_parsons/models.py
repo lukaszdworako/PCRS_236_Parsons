@@ -167,6 +167,7 @@ class Submission(SubmissionPreprocessorMixin, AbstractSubmission):
                     # need to normalize indentation from space to tab still... yucky ucky
                     # this probably isn't the best way but honestly who knows at this point
                     solution_split[i] = solution_split[i].replace("    ", "\t")
+                    student_split[i] = student_split[i].replace("    ", "\t")
                     if solution_split[i].count("\t") != student_split[i].count("\t"):
                         result = 4
                         incorrect_lines.append(i)

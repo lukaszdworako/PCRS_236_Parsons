@@ -6,37 +6,42 @@
     en: {
       trash_label: 'Drag from here',
       solution_label: 'Construct your solution here',
-      order: function() {
-        return "Code fragments in your program are wrong, or in wrong order. This can be fixed by moving, removing, or replacing highlighted fragments.";},
-      lines_missing: function() {
-        return "Your program has too few code fragments.";},
-      lines_too_many: function() {
-        return "Your program has too many code fragments.";},
-      no_matching: function(lineNro) {
-        return "Based on language syntax, the highlighted fragment (" + lineNro + ") is not correctly indented."; },
-      no_matching_open: function(lineNro, block) {
-        return "The " + block + " ended on line " + lineNro + " never started."; },
-      no_matching_close: function(lineNro, block) {
+      order: function () {
+        return "Code fragments in your program are wrong, or in wrong order. This can be fixed by moving, removing, or replacing highlighted fragments.";
+      },
+      lines_missing: function () {
+        return "Your program has too few code fragments.";
+      },
+      lines_too_many: function () {
+        return "Your program has too many code fragments.";
+      },
+      no_matching: function (lineNro) {
+        return "Based on language syntax, the highlighted fragment (" + lineNro + ") is not correctly indented.";
+      },
+      no_matching_open: function (lineNro, block) {
+        return "The " + block + " ended on line " + lineNro + " never started.";
+      },
+      no_matching_close: function (lineNro, block) {
         return "Block " + block + " defined on line " + lineNro + " not ended properly";
       },
-      block_close_mismatch: function(closeLine, closeBlock, openLine, inBlock) {
+      block_close_mismatch: function (closeLine, closeBlock, openLine, inBlock) {
         return "Cannot end block " + closeBlock + " on line " + closeLine + " when still inside block " + inBlock + " started on line " + openLine;
       },
-      block_structure: function(lineNro) { return "The highlighted fragment " + lineNro + " belongs to a wrong block (i.e. indentation)."; },
-      unittest_error: function(errormsg) {
+      block_structure: function (lineNro) { return "The highlighted fragment " + lineNro + " belongs to a wrong block (i.e. indentation)."; },
+      unittest_error: function (errormsg) {
         return "<span class='msg'>Error in parsing/executing your program</span><br/> <span class='errormsg'>" + errormsg + "</span>";
       },
-      unittest_output_assertion: function(expected, actual) {
-       return "Expected output: <span class='expected output'>" + expected + "</span>" +
-             "Output of your program: <span class='actual output'>" + actual + "</span>";
+      unittest_output_assertion: function (expected, actual) {
+        return "Expected output: <span class='expected output'>" + expected + "</span>" +
+          "Output of your program: <span class='actual output'>" + actual + "</span>";
       },
-      unittest_assertion: function(expected, actual) {
-       return "Expected value: <span class='expected'>" + expected + "</span><br>" +
-             "Actual value: <span class='actual'>" + actual + "</span>";
+      unittest_assertion: function (expected, actual) {
+        return "Expected value: <span class='expected'>" + expected + "</span><br>" +
+          "Actual value: <span class='actual'>" + actual + "</span>";
       },
-      variabletest_assertion: function(varname, expected, actual) {
-       return "Expected value of variable " + varname + ": <span class='expected'>" + expected + "</span><br>" +
-             "Actual value: <span class='actual'>" + actual + "</span>";
+      variabletest_assertion: function (varname, expected, actual) {
+        return "Expected value of variable " + varname + ": <span class='expected'>" + expected + "</span><br>" +
+          "Actual value: <span class='actual'>" + actual + "</span>";
       }
     }
   };
@@ -463,7 +468,7 @@
     }
     return ids;
   };
-  
+
   /**
    * @return
    * TODO(petri): Separate UI from here
@@ -498,51 +503,50 @@
         var max_score = data['max_score'];
         var is_correct = score >= max_score;
         var res;
-        if (data['results']){
+        if (data['results']) {
           res = data['results'];
         } else {
           alert("This should never be hit... like there's literally nothing, you thanos snapped the universe");
           return;
         }
-        
+
+        $(display_element)
+          .toggleClass('green-alert', is_correct);
+        $(display_element)
+          .toggleClass('red-alert', !is_correct);
+        $(display_element)
+          .children('icon')
+          .toggleClass('ok-icon', is_correct);
+        $(display_element)
+          .children('icon')
+          .toggleClass('remove-icon', !is_correct);
+
         if (is_correct) {
           // if answer is correct, mark it in the UI
-          $(display_element)
-            .toggleClass('green-alert', is_correct);
-          $(display_element)
-            .children('icon')
-            .toggleClass('ok-icon', is_correct);
           $(display_element)
             .children('span')
             .text('Your solution is complete.');
         } else {
           // if answer is incorrect, mark it in the UI
-          $(display_element)
-            .toggleClass('red-alert', !is_correct);
-          $(display_element)
-            .toggleClass('green-alert', is_correct);
-          $(display_element)
-            .children('icon')
-            .toggleClass('remove-icon', !is_correct);
-            var alert_msg = 'Your solution is either incorrect or incomplete!';
+          var alert_msg = 'Your solution is either incorrect or incomplete!';
 
-            if (res['result_lines']) {
-              switch (res['result_lines']) {
-                // in case we want specific message for the error that occured, currently does nothing other then syntax message since that's a bother
-                case 1:
-                case 2:
-                case 3:
-                  alert_msg = "Double check if the invariant holds on all iterations!";
-                  break;
-                case 4:
-                  alert_msg = "Check your syntax!";
-                  break;
-                default:
-                  alert_msg = "Unknown error occured, please try again!";
-                  break;
-              }
+          if (res['result_lines']) {
+            switch (res['result_lines']) {
+              // in case we want specific message for the error that occured, currently does nothing other then syntax message since that's a bother
+              case 1:
+              case 2:
+              case 3:
+                alert_msg = "Double check if the invariant holds on all iterations!";
+                break;
+              case 4:
+                alert_msg = "Check your syntax!";
+                break;
+              default:
+                alert_msg = "Unknown error occured, please try again!";
+                break;
             }
-            $(display_element).children('span').text(alert_msg);
+          }
+          $(display_element).children('span').text(alert_msg);
 
         }
         if (res['result_test']) {
@@ -634,53 +638,53 @@
 
   }
 
-  ParsonsWidget.prototype._accessibilityOutput = function(input) {
-    var brakets_o = {"list":"[","tuple":"(","dict":"{"};
-    var brakets_c = {"list":"]","tuple":")","dict":"}"};
+  ParsonsWidget.prototype._accessibilityOutput = function (input) {
+    var brakets_o = { "list": "[", "tuple": "(", "dict": "{" };
+    var brakets_c = { "list": "]", "tuple": ")", "dict": "}" };
 
     if (input.length == 2) {
-        return this._accessibilityOutput(
-            input[0]) + ":" + this._accessibilityOutput(input[1]);
+      return this._accessibilityOutput(
+        input[0]) + ":" + this._accessibilityOutput(input[1]);
     } else if (input[0] == "list" || input[0] == "tuple" || input[0] == "dict") {
-        var output = brakets_o[input[0]];
-        for (var o_index = 2; o_index < input.length; o_index++) {
-            output += this._accessibilityOutput(input[o_index]);
-            if (o_index != input.length - 1) {
-                output += ", ";
-            }
+      var output = brakets_o[input[0]];
+      for (var o_index = 2; o_index < input.length; o_index++) {
+        output += this._accessibilityOutput(input[o_index]);
+        if (o_index != input.length - 1) {
+          output += ", ";
         }
-        output += brakets_c[input[0]];
-        return output
+      }
+      output += brakets_c[input[0]];
+      return output
     } else if (input[0] == "string") {
-        return "'" + input[2] + "'";
-    } else if(input[0] == "float") {
-        if (String(input[2]).indexOf(".") > -1) {
-            return input[2];
-        } else {
-            return input[2] + ".0"
-        }
+      return "'" + input[2] + "'";
+    } else if (input[0] == "float") {
+      if (String(input[2]).indexOf(".") > -1) {
+        return input[2];
+      } else {
+        return input[2] + ".0"
+      }
     } else {
-        return input[2]
+      return input[2]
     }
-}
+  }
 
-ParsonsWidget.prototype._addA11yToTestRow = function($row, result, passed,
+  ParsonsWidget.prototype._addA11yToTestRow = function ($row, result, passed,
     expected) {
     var pass_status = passed ? 'passed' : 'failed'
     $row.append('<a class="at" href="">This testcase has ' + pass_status +
-        '. Expected: ' + expected +
-        '. Result: ' + result + '</a>');
-    }
+      '. Expected: ' + expected +
+      '. Result: ' + result + '</a>');
+  }
 
-  ParsonsWidget.prototype._addFaceColumnToTestRow = function($row, passed) {
+  ParsonsWidget.prototype._addFaceColumnToTestRow = function ($row, passed) {
     var $face = $('<img>').attr({
-        src: passed ? happyFaceURL : sadFaceURL, // Globals :|
-        alt: passed ? 'Smiley Face' : 'Sad Face',
-        height: '36',
-        width: '36',
+      src: passed ? happyFaceURL : sadFaceURL, // Globals :|
+      alt: passed ? 'Smiley Face' : 'Sad Face',
+      height: '36',
+      width: '36',
     });
     $row.append($('<td class="passed"></td>').append($face));
-}
+  }
 
   ParsonsWidget.prototype.minimizeSubmission = function (student_code) {
     var minimized = [];
