@@ -24,6 +24,7 @@ class Problem(AbstractProblem):
     invariant = models.TextField(blank=True)
     evaluation_choices = ((0, _('Evaluate using all methods')), (1, _('Evaluate using line comparison (simple)')), (2, _('Evaluate using unit tests method')))
     evaluation_type = MultiSelectField(choices=evaluation_choices, max_choices=1, max_length=1)
+    max_score = models.SmallIntegerField(blank=True, default=1)
     
     def get_testitem_data_for_submissions(self, s_ids):
         """
