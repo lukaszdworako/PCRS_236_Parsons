@@ -5,6 +5,7 @@
     {% autoescape off %}
     {% if problem.is_visible_to_students %}
     <h4 class="problem-description">{{ problem.description|linebreaksbr }}</h4>
+    <h4 class="problem-description">Invariant: {{ problem.invariant|linebreaksbr }}</h4>
     <h5>Construct a solution by dragging blocks from left hand side to right hand side such that the invariant would be
         true for all iterations</h5>
     {% else %}

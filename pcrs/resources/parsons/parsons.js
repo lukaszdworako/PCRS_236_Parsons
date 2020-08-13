@@ -520,6 +520,8 @@
           $(display_element)
             .toggleClass('red-alert', !is_correct);
           $(display_element)
+            .toggleClass('green-alert', is_correct);
+          $(display_element)
             .children('icon')
             .toggleClass('remove-icon', !is_correct);
             var alert_msg = 'Your solution is either incorrect or incomplete!';
