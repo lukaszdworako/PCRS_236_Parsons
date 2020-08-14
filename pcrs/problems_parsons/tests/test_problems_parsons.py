@@ -1121,6 +1121,19 @@ class TestParsonsProblemGradingMore(TestParsonsProblemGradingTestCase):
         TestCase.objects.create(test_input='foo(False)', expected_output='False', pk=2, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
 
+class TestParsonsProblemBadCode(TestParsonsProblemGradingTestCase):
+    """
+    Test submitting a solution to a coding problem.
+    """
+    url = reverse('parsons_submit', kwargs={'problem': 1})
+
+    template = 'submissions'
+    model = Problem
+    def setUp(self):
+        self.problem = self.model.objects.create(pk=1, name='test_problem', visibility='open', evaluation_type='0', starter_code="def foo(uinp):\n    return uinp", max_score=1)
+        TestCase.objects.create(test_input='foo(True)', expected_output='True', pk=1, problem=self.problem)
+        CourseStaffViewTestMixin.setUp(self)
+
 class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
                             TransactionTestCase):
 
