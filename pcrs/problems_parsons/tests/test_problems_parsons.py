@@ -882,6 +882,21 @@ class TestParsonsProblemGradingLines(ProtectedViewTestMixin, test.TestCase):
         submission1 = Submission.objects.filter(submission=submit_1_back)[0]
         self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
+        
+        submit_2 = r'[{"code":"def foo(uinp):<br>    return uinp", "indent":0}]'
+        submit_2_back = "def foo(uinp):\n    return uinp\n"
+        post_data = {
+            'submission': submit_2
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_2_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission2 = Submission.objects.filter(submission=submit_2_back)[0]
+        self.assertEqual(self.max_score, submission2.score)
+        self.assertEqual(0, submission2.reason_incorrect)
     
     def test_special_case_br_lines_incorrect(self):
         # and now, we submit with an actually valid input
@@ -1029,6 +1044,21 @@ class TestParsonsProblemGradingTestCase(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(self.max_score, submission1.score)
         self.assertEqual(0, submission1.reason_incorrect)
 
+        submit_2 = r'[{"code":"def foo(uinp):<br>    return uinp", "indent":0}]'
+        submit_2_back = "def foo(uinp):\n    return uinp\n"
+        post_data = {
+            'submission': submit_2
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(submit_2_back, submission.submission)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission2 = Submission.objects.filter(submission=submit_2_back)[0]
+        self.assertEqual(self.max_score, submission2.score)
+        self.assertEqual(0, submission2.reason_incorrect)
+    
     def test_special_case_br_lines_incorrect(self):
         # and now, we submit with an actually valid input
         submit_1 = r'[{"code":"def foo(uinp):<br>return uinp", "indent":0}]'
