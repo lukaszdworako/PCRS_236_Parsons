@@ -91,12 +91,13 @@ class FeedbackForm(CrispyFormMixin, forms.ModelForm):
                 "1": "Think of the induction type where you assume for everything before a certain value", <br>\
                 "Blank 2": "A mathematical expression" <br>\
             }'),
-            'feedback_keys': _('Hint keys follow the format: <br> \
+            'feedback_keys': _('''Feedback keys follow the format: <br> \
             { <br> \
-                "1": {"type": "string", "Weak Induction": "Think of something stronger"}, <br>\
-                "Blank 2": {"type": "mathexpr"}, <br>\
+                {"1": "{'type': 'int', '2': 'correct', 'lambda ans : ans > 2': 'correct'}", <br>\
+                "Blank 2": "{'type': 'mathexpr'}", <br>\
+                "3": "{'type': 'mathexpr', 'map-variables': 'True'}", <br>\
                 "third": {"type": "int", "lambda ans: ans > 3"}, <br>\
-            }'),
+            }'''),
         }
 
     def __init__(self, *args, **kwargs):
