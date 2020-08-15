@@ -96,10 +96,24 @@ class Submission(AbstractSubmission):
     class Meta:
         app_label = 'problems_proof_blanks'
     # submission needs to be a dictionary / HStoreField object
-    def set_score(self, submission):
+    def set_score(self):
+        # not really applicable to actual submission through webapp but applicable to POSt requests
+        if not isinstance(self.submission, dict):
+            if type(self.submission) == str:
+                try:
+                    # saving as a text field causes this issue
+                    self.submission = self.submission.replace("'", '"') 
+                    # because super class submission is a textfield
+                    self.submission = json.loads(self.submission)
+                    
+                except:
+                    self.save()
+                    return {"message": {}, "score": 0}, None
+            else:
+                self.save()
+                return {"message": {}, "score": 0}, None
         var_map = {} # maps instructor variables to student variables
-        self.submission = submission
-        blanks = submission.copy() # This is for instructors to use in their lambda function
+        blanks = self.submission.copy() # This is for instructors to use in their lambda function
         result = 0
         correct = []
         messages = {}
@@ -107,51 +121,50 @@ class Submission(AbstractSubmission):
         if not self.problem.answer_keys: self.problem.answer_keys = {}
         for key in self.problem.answer_keys.keys():
             # submitted answer for question
-            sub_ans = self.submission.get(key, None)
-
+            sub_ans = self.submission.get(key, "")
             # instructor answer for question
             inst_ans = self.problem.answer_keys[key]
-            if hasattr(self.problem, "feedback"):
-                # replace single quotes with double quotes else JSON errors 
-                self.problem.feedback.feedback_keys[key] = self.problem.feedback.feedback_keys[key].replace("'", '"')
-                feedback = json.loads(self.problem.feedback.feedback_keys[key])
-            else:
-                feedback = {}
+            if sub_ans != "":
+                if hasattr(self.problem, "feedback") and hasattr(self.problem.feedback, "feedback_keys"):
+                    # replace single quotes with double quotes else JSON errors 
+                    self.problem.feedback.feedback_keys[key] = self.problem.feedback.feedback_keys.get(key, "{}").replace("'", '"')
+                    feedback = json.loads(self.problem.feedback.feedback_keys[key])
+                else:
+                    feedback = {}
 
-            if feedback.get("type", None) == "mathexpr":
-                new_var = ""
-                # map new variables in instructor answer
-                if feedback.get("map-variables", False):
-                    for char in inst_ans:
-                        if char.isalpha() and char not in var_map: 
-                            var_map[char] = ""
-                            new_var = char
-                    for char in sub_ans.split():
-                        if char.isalpha() and char not in var_map.values() and new_var != "":
-                            var_map[new_var] = char
+                if feedback.get("type", None) == "mathexpr":
+                    new_var = ""
+                    # map new variables in instructor answer
+                    if feedback.get("map-variables", False):
+                        for char in inst_ans:
+                            if char.isalpha() and char not in var_map: 
+                                var_map[char] = ""
+                                new_var = char
+                        for char in sub_ans.split():
+                            if char.isalpha() and char not in var_map.values() and new_var != "":
+                                var_map[new_var] = char
 
 
-                for var in var_map:
-                    inst_ans= inst_ans.replace(var, var_map[var])
-                
-
-                try:
-                    # check if both mathematical expressions are equal
-                    if simplify(parse_expr(sub_ans) - parse_expr(inst_ans)) == 0:
-                        messages[key] = "correct"
-                    else:
+                    for var in var_map:
+                        inst_ans= inst_ans.replace(var, var_map[var])
+                    try:
+                        # check if both mathematical expressions are equal
+                        if simplify(parse_expr(sub_ans) - parse_expr(inst_ans)) == 0:
+                            messages[key] = "correct"
+                        else:
+                            messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
+                    except:
                         messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
-                except:
+                else:
                     messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
             else:
-                messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
-            
+                messages[key] = "incomplete"
             if messages.get(key, None) == "correct":
                 result += 1
+                
                 # replace incomplete proof so student can get a better picture
                 self.incomplete_proof = self.incomplete_proof.replace("{{{}}}".format(key), "<strong> {} </strong>".format(sub_ans))
                 correct.append(key)
-
         self.messages = messages
         self.score = result
         self.save()
@@ -160,7 +173,7 @@ class Submission(AbstractSubmission):
     
     def _check_feedback(self, sub_ans, inst_ans, feedback, blanks):
         if feedback.get("type", None) == "int":
-            if sub_ans.isdigit(): 
+            if sub_ans and sub_ans.isdigit(): 
                 sub_ans = int(sub_ans)
                 inst_ans = int(inst_ans)
 
@@ -187,6 +200,5 @@ class Submission(AbstractSubmission):
 def update_score(sender, **kwargs):
     problem = kwargs.get('instance')
     for submission in problem.submission_set.all():
-        if submission.score > problem.max_score:
-            submission.score -= 1
-            submission.save()
+        submission.set_score()
+        submission.save()
