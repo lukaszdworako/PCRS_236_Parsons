@@ -23,5 +23,3 @@ $(document).ready(function() {
         }));
     }
 });
-
-

@@ -51,20 +51,12 @@ class SubmissionViewMixin(problems.views.SubmissionViewMixin, FormView):
         problem = self.get_problem()
         self.submission = self.model.objects.create(problem=problem,
                               user=request.user, section=self.get_section())
-        print("## Submission ##")
         submission = {}
-        '''
-        <QueryDict: {'csrfmiddlewaretoken': ['MZIkJ8Q2vP4upf2xBvzKBBTvCRscvjvhsq1zk6q3jTlVQbzD3wRn2svsmGTzZ1Jx'], 'sub2': ['{"a": "b"}'], 'Submit': ['Submit']}>
-        '''
         for key in request.POST:
             if key.split("_")[0] == "submission":
                 submission[key.split("_")[1]] = request.POST[key]
-        print(submission)
-        results, error = self.submission.set_score(submission)
-        #submission = {}
-
-        print("We're here")
-        print(results)
+        self.submission.submission = submission
+        results, error = self.submission.set_score()
 
         return results, error
 
@@ -80,8 +72,6 @@ class SubmissionView(ProtectedViewMixin, SubmissionViewMixin,
         """
         form = self.get_form(self.get_form_class())
         results = self.record_submission(request)
-        print("now in here")
-        print(results)
         return self.render_to_response(self.get_context_data(form=form, results=results[0],
                                                              submission=self.submission))
 
@@ -125,8 +115,7 @@ class SubmissionAsyncView(SubmissionViewMixin, SingleObjectMixin, View,
             'message': self.submission.message,
             }), content_type='application/json')
         
-        print("Now hereeee")
-        print(ret)
+
         return ret
 
 
@@ -176,7 +165,6 @@ class FeedbackView(problems.views.TestCaseView):
         request_copy = request.POST.copy()
         request_copy['problem'] = kwargs.get('problem', '')
         request.POST = request_copy
-        # print(request.POST)
         return super().post(request, args, kwargs)
 
     def form_invalid(self, form):
@@ -184,7 +172,6 @@ class FeedbackView(problems.views.TestCaseView):
         return super().form_invalid(form)
     
     def form_valid(self, form):
-        print("form valid")
         return super().form_valid(form)
 
 class FeedbackCreateView(FeedbackView, GenericItemCreateView):

@@ -24,7 +24,7 @@
             type="text/javascript"></script>
         <script> 
         function hintHandler(question, message) {
-            document.getElementById(`proof_blanks-hints-${question}`).innerHTML += `<p>${message} </p>`;
+            document.getElementById(`proof_blanks-hints-${question}`).innerHTML = `<p>${message} </p>`;
         }
         </script>
     {% endcompress %}

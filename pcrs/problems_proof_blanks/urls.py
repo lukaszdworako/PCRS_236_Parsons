@@ -14,7 +14,7 @@ urlpatterns = [
 
     url(r'^list$',
         ProblemListView.as_view(model=Problem),
-        name='proof_blanks_list'),
+        name='proof_blanks_problem_list'),
 
     url(r'^create$',
         ProblemCreateView.as_view(model=Problem, form_class=ProblemForm,
@@ -25,9 +25,6 @@ urlpatterns = [
         ProblemCloneView.as_view(model=Problem, form_class=ProblemForm),
         name='proof_blanks_problem_clone'),
 
-    url(r'^(?P<pk>[0-9]+)/create_and_add_testcase$',
-        ProblemCreateAndAddTCView.as_view(model=Problem, form_class=ProblemForm),
-        name='coding_problem_create_and_add_testcase'),
 
     url(r'^create_redirect$',
         ProblemCreateRedirectView.as_view(model=Problem, form_class=ProblemForm),
@@ -43,8 +40,8 @@ urlpatterns = [
         name='proof_blanks_feedback_update'),
 
     url(r'^(?P<pk>[0-9]+)/clear$',
-        ProblemClearView.as_view(model=Problem),
-        name='proof_blanks_clear'),
+        ProblemClearView.as_view(model=Problem, template_name = 'problems_proof_blanks/problem_form.html'),
+        name='proof_blanks_clear',),
 
     url(r'^(?P<pk>[0-9]+)/delete$',
         ProblemDeleteView.as_view(model=Problem),
