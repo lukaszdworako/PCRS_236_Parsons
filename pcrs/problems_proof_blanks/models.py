@@ -9,7 +9,9 @@ from pcrs.model_helpers import has_changed
 
 from django.core.exceptions import ValidationError
 from django.db import connection, models
-from django.db.models.signals import pre_migrate
+from django.db.models.signals import pre_migrate, post_save
+from django.db.models import F
+from django.forms.models import model_to_dict
 from django.utils.timezone import localtime, utc
 from django.contrib.postgres.fields import HStoreField
 from django.dispatch import receiver
@@ -37,7 +39,7 @@ def setup_postgres_hstore(sender, **kwargs):
     cursor.execute("CREATE EXTENSION IF NOT EXISTS hstore")
 
 
-# Create your models here.
+
 class Problem(AbstractProblem):
     name = models.CharField(max_length=150)
     proof_statement = models.TextField(blank=True)
@@ -49,6 +51,7 @@ class Problem(AbstractProblem):
         app_label = 'problems_proof_blanks'
 
     def save(self, *args, **kwargs):
+        self.max_score = 0
         if(self.answer_keys): self.max_score = len(self.answer_keys)
         super().save(*args, **kwargs)  # Call the "real" save() method.
 
@@ -101,6 +104,7 @@ class Submission(AbstractSubmission):
         correct = []
         messages = {}
         self.incomplete_proof = self.problem.incomplete_proof
+        if not self.problem.answer_keys: self.problem.answer_keys = {}
         for key in self.problem.answer_keys.keys():
             # submitted answer for question
             sub_ans = self.submission.get(key, None)
@@ -117,10 +121,10 @@ class Submission(AbstractSubmission):
             if feedback.get("type", None) == "mathexpr":
                 new_var = ""
                 # map new variables in instructor answer
-                if feedback.get("map-variables", False) == True:
+                if feedback.get("map-variables", False):
                     for char in inst_ans:
                         if char.isalpha() and char not in var_map: 
-                            var_map[char] = None
+                            var_map[char] = ""
                             new_var = char
                     for char in sub_ans.split():
                         if char.isalpha() and char not in var_map.values() and new_var != "":
@@ -128,13 +132,13 @@ class Submission(AbstractSubmission):
 
 
                 for var in var_map:
-                    sub_ans = sub_ans.replace(var, var_map[var])
+                    inst_ans= inst_ans.replace(var, var_map[var])
+                
 
                 try:
                     # check if both mathematical expressions are equal
                     if simplify(parse_expr(sub_ans) - parse_expr(inst_ans)) == 0:
                         messages[key] = "correct"
-                        # to convert to latex -- sympy.latex()
                     else:
                         messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
                 except:
@@ -142,33 +146,47 @@ class Submission(AbstractSubmission):
             else:
                 messages[key] = self._check_feedback(sub_ans, inst_ans, feedback, blanks)
             
-            if messages[key] == "correct":
+            if messages.get(key, None) == "correct":
                 result += 1
+                # replace incomplete proof so student can get a better picture
                 self.incomplete_proof = self.incomplete_proof.replace("{{{}}}".format(key), "<strong> {} </strong>".format(sub_ans))
                 correct.append(key)
 
         self.messages = messages
         self.score = result
-
         self.save()
         self.set_best_submission()
         return {"message": self.messages, "score": self.score}, None
     
     def _check_feedback(self, sub_ans, inst_ans, feedback, blanks):
-        
+        if feedback.get("type", None) == "int":
+            if sub_ans.isdigit(): 
+                sub_ans = int(sub_ans)
+                inst_ans = int(inst_ans)
+
+
         for (condition, _) in feedback.items():
             try:
-                blanks = None # SET TO COPY OF SUBMISSION BLANKS
-                func_verifier = r"lambda . : . (>|<|!|=)=? .+"
+                blanks = None # SET TO COPY OF SUBMISSION BLANKS -- this is for variable expansion purposes (eventually To Be Done)
+                func_verifier = r"lambda .+ : .+ (>|<|!|=)=? .+"
                 condition_regex = re.compile(condition)
-                if re.search(condition_regex, sub_ans):
+                # if instructor added a regex to check then check student answer against that
+                if re.search(condition_regex, str(sub_ans)):
                     return _
 
+                # if instructor added a function to check then check student answer against that
                 elif re.search(func_verifier, condition) and eval(condition)(sub_ans):
                     return _
-                # default
-                else:
-                    return "correct" if sub_ans == inst_ans else "incorrect"
-
-            except:
+                
+            except Exception as e:
                 return "syntax error"
+        # default -- we will do a direct comparison
+        return "correct" if sub_ans == inst_ans else "incorrect"
+
+@receiver(post_save, sender=Problem)
+def update_score(sender, **kwargs):
+    problem = kwargs.get('instance')
+    for submission in problem.submission_set.all():
+        if submission.score > problem.max_score:
+            submission.score -= 1
+            submission.save()

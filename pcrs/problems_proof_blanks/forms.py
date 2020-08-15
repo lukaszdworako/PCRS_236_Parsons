@@ -55,11 +55,11 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
 
         # if existing feedback, redirect to edit page
         if hasattr(self.instance, 'feedback'):
-            add_button = Submit('submit', 'Save and edit feedback',
+            add_button = Submit('submit', 'Edit feedback',
                 css_class='green-button-right',
                 formaction='{0}/feedback/{0}'.format(self.instance.pk))
         else:
-            add_button = Submit('submit', 'Save and add feedback',
+            add_button = Submit('submit', 'Add feedback',
                 css_class='green-button-right',
                 formaction='{}/feedback'.format(self.instance.pk))
 
@@ -105,7 +105,7 @@ class FeedbackForm(CrispyFormMixin, forms.ModelForm):
         self.save_button = Submit('submit', 'Save',
                                    css_class='green-button-right')
         if self.instance.pk:
-            self.buttons = Div(self.delete_button, Div(self.save_button, 
+            self.buttons = Div(Div(self.save_button, 
                                    css_class='button-group-right'))
         else:
             self.buttons = Div(Div(self.save_button, 
@@ -121,11 +121,13 @@ class SubmissionForm(BaseSubmissionForm):
         problem = kwargs.get('problem', None)
         super().__init__(*args, **kwargs)
         fieldsets = []
+        if not problem.answer_keys: problem.answer_keys = {}
         for question in problem.answer_keys:
             self.fields["submission_{}".format(question)] = forms.CharField(widget=forms.Textarea(attrs={'rows':2, 'cols':1, 'size': '5'}), required=False, label=question, max_length=20)
             fieldsets.append(HTML('<span> <label> {}'.format(question)))
             fieldsets.append((Fieldset('', Field("submission_{}".format(question), maxlength=20))))
-            fieldsets.append(HTML('''<div> 
+            if(hasattr(problem, "feedback")):
+                fieldsets.append(HTML('''<div> 
                                      <button type="button" onClick="hintHandler('{0}', '{1}')">Hint</button>
                                      <p id="proof_blanks-hints-{0}"> </p>
                                      </div>
