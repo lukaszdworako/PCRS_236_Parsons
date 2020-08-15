@@ -474,16 +474,19 @@ class ProofBlanksAddSubmission(ProtectedViewTestMixin, test.TestCase):
     model = Problem
 
     def setUp(self):
-        self.problem = self.model.objects.create(pk=1, name='test_problem', answer_keys={"1": "2"},
-                                                 visibility='open')
-        Feedback.objects.create(hint_keys={"1": "this is an int"},feedback_keys={"1": "{'type': 'int'}"},
+        self.problem = self.model.objects.create(pk=1, name='test_problem', answer_keys={"1": "string", 
+        "2": "3", "3": "x", "4": "y", "5": "x * y"}, visibility='open')
+        Feedback.objects.create(hint_keys={"1": "this is a string"}, feedback_keys={"2": "{'type': 'int', 'lambda x : x >= 3': 'correct'}", 
+        "3": "{'type': 'mathexpr', 'map-variables': 'True'}",
+        "4": "{'type': 'mathexpr', 'map-variables': 'True'}",
+        "5": "{'type': 'mathexpr', 'map-variables': 'True'}"},
                                 pk=1, problem=self.problem)
         CourseStaffViewTestMixin.setUp(self)
 
     def test_add_submission(self):
         post_data = {
             'problem': '1',
-            'submission_1': ['2'],
+            'submission_1': ['string'],
             'user': self.student
         }
         response = self.client.post(self.url, post_data)
@@ -496,7 +499,7 @@ class ProofBlanksAddSubmission(ProtectedViewTestMixin, test.TestCase):
     def test_add_submissions(self):
         post_data = {
             'problem': '1',
-            'submission_1': ['2'],
+            'submission_1': ['string'],
             'user': self.student
         }
         response = self.client.post(self.url, post_data)
@@ -513,6 +516,78 @@ class ProofBlanksAddSubmission(ProtectedViewTestMixin, test.TestCase):
         self.assertEqual(2, Submission.objects.count())
         submission = Submission.objects.all()[0]
         self.assertEqual(1, submission.score)
+
+    def test_int_function(self):
+        post_data = {
+            'problem': '1',
+            'submission_2': ['3'],
+            'user': self.student
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(1, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual(1, submission.score)
+
+        # now with a value greater than 3
+        post_data['submission_3'] = ['100']
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(2, Submission.objects.count())
+        submission = Submission.objects.all()[0]
+        self.assertEqual(1, submission.score)
+    
+    def  test_variable_mapping(self):
+        post_data = {
+            'problem': '1',
+            'submission_3': ['u'],
+            'submission_5': ['u * v'],
+            'user': self.student
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        submission = Submission.objects.all()[0]
+        self.assertEqual(2, submission.score)
+        # same next var
+        post_data['submission_4'] = ['u']
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        submission = Submission.objects.all()[1]
+        self.assertEqual(1, submission.score)
+
+        # not an alphabet 
+        post_data['submission_4'] = ['1']
+
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        submission = Submission.objects.all()[2]
+        print(submission.submission)
+
+        # delete last equation
+        post_data['submission_4'] = ['v']
+        
+        del(post_data['submission_5'])
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+
+        submission = Submission.objects.all()[3]     
+
+        post_data['submission_5'] = ["u * v"]
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(self.template)
+        self.assertEqual(5, Submission.objects.count())
+        submission = Submission.objects.all()[4]
+        self.assertEqual(3, submission.score)
+
+       
+    
 
 class TestScoreUpdate(UsersMixin, test.TestCase):
     """
@@ -547,7 +622,6 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
         self.problem.save()
         submission = Submission.objects.all()[0]
         submission.refresh_from_db()
-        # CHANGE
         self.assertEqual(1, submission.score)
 
 
@@ -589,4 +663,12 @@ class TestSubmissionHistory(TestSubmissionHistoryDatabaseHits, UsersMixin,
 
         self.assertEqual(len(scores), Submission.objects.count())
 
-    
+# does not work right now
+class TestGrading(TestProblemSubmissionGradesBeforeDeadline, test.TestCase):
+    problem_class = Problem
+    submission_class = Submission
+
+    def setUp(self):
+        super().setUp()
+        self.problem = self.problem_class.objects.create(name='Q1')
+        self.problem2 = self.problem_class.objects.create(name='Q2')
