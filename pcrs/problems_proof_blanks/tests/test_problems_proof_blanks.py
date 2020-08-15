@@ -530,7 +530,7 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
         Feedback.objects.create(hint_keys={"1": "this is an int"},feedback_keys={"1": "{'type': 'int'}"},
                                 pk=1, problem=self.problem)
         self.submission = Submission(section=self.section, user=self.student,
-                                     submission='sub', problem=self.problem,
+                                     submission={"1": "2", "2": "3"}, problem=self.problem,
                                      score=2, pk=1)
         self.submission.save()
     
@@ -546,6 +546,7 @@ class TestScoreUpdate(UsersMixin, test.TestCase):
         self.problem.answer_keys = {"1": "2"}
         self.problem.save()
         submission = Submission.objects.all()[0]
+        submission.refresh_from_db()
         # CHANGE
         self.assertEqual(1, submission.score)
 
