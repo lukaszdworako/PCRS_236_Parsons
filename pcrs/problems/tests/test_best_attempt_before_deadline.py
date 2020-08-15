@@ -142,7 +142,7 @@ class TestBestSubmission:
         s2 = self.Submission.objects.create(user=self.student, section=self.section,
                                        problem=self.problem, score=2)
         s2.set_best_submission()
-        s2, s1 = self.Submission.objects.all()
+        s1, s2 = self.Submission.objects.all()
         self.assertFalse(s1.has_best_score)
         self.assertTrue(s2.has_best_score)
 
@@ -155,7 +155,7 @@ class TestBestSubmission:
         s2 = self.Submission.objects.create(user=self.student, section=self.section,
                                        problem=self.problem, score=0)
         s2.set_best_submission()
-        s2, s1 = self.Submission.objects.all()
+        s1, s2 = self.Submission.objects.all()
         self.assertTrue(s1.has_best_score)
         self.assertFalse(s2.has_best_score)
 
@@ -168,7 +168,7 @@ class TestBestSubmission:
         s2 = self.Submission.objects.create(user=self.student, section=self.section,
                                        problem=self.problem, score=2)
         s2.set_best_submission()
-        s2, s1 = self.Submission.objects.all()
+        s1, s2 = self.Submission.objects.all()
         self.assertFalse(s1.has_best_score)
         self.assertTrue(s2.has_best_score)
 
