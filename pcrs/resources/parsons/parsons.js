@@ -625,7 +625,16 @@
         .append(testResultDiv)));
 
     renderData_ignoreID(testcase.test_val, testResultDiv);
-    renderData_ignoreID(testcase.expected_output, expTestValDiv);
+    var expected;
+    if (testcase.expected_output)
+    {
+      expected = testcase.expected_output;
+    }
+    else
+    {
+      expected = "Hidden Result";
+    }
+    renderData_ignoreID(expected, expTestValDiv);
 
     this._addFaceColumnToTestRow($newRow, testcase.passed_test);
     //this._addDebugColumnToTestRow($newRow, testcase.debug);
