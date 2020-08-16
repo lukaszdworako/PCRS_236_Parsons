@@ -14,16 +14,35 @@
             type="text/javascript"></script>
         <script src="{% static "problems_fa_visuals/js/fa_visuals.js" %}"
             type="text/javascript"></script>
+        <script src="{% static "problems_fa_visuals/js/visualizer.js" %}"
+            type="text/javascript"></script>
         <script src="{% static "bootstrap_less/bootstrap-3.2.0/js/modal.js" %}"
             type="text/javascript"></script>
+    {% endcompress %}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "problems_fa_visuals/css/style.css" %}"/>
     {% endcompress %}
 
 {% endblock %}
 
 {% block content %}
 
-    <div id="short_answer-{{ problem.pk }}">
+    <div id="fa_visuals-{{ problem.pk }}">
         {% include "problems_fa_visuals/submission_widget.html" %}
     </div>
+    <!--canvas id="myCanvas" width="200" height="500" style="border:1px solid #c3c3c3;"> Please update your browser</canvas>
+    <div id="instr" onload="load()">How to use: <br/>
+        <ul>
+            <li> Left-click to add a state
+            <li> Clicking on a state and ending on another draws a line
+            <li> Click on a state/line to select it
+            <li> Press del or backspace to delete lines/states
+            <li> Press 'a' on a state to make it accepting
+            <li> Press a character on a line to make it accept that.
+            <li> When you're done, click the button to get your text output.
+        </ul>
+    </div>
+    <button id="button" onClick="buttonClick()">Output!</button> 
+    <div id="output"></div-->
 
 {% endblock %}

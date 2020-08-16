@@ -8,6 +8,7 @@ from django.contrib.postgres.fields import HStoreField
 
 from pcrs.model_helpers import has_changed
 from problems.models import AbstractProblem, AbstractSubmission
+from pcrs.models import AbstractSelfAwareModel
 from problems_python.python_language import PythonSpecifics
 
 # import pads as fa
@@ -67,7 +68,11 @@ class Submission(AbstractSubmission):
         self.submission = submission
         result = 0
 
-        # visual to dfa conversion
+        # save DFA if it hasn't been saved before
+        if self.problem.dfa is None:
+            self.problem.dfa = fa._MinimumDFA(fa._DFAfromNFA(fa.RegExp(self.problem.regex)))
+
+        # parsing the text input
         stu_dfa = fa.DFA()
         lines = submission.split('\n')
         lines = [line.replace('\r', '') for line in lines] 
@@ -82,13 +87,8 @@ class Submission(AbstractSubmission):
         for i in range(3, len(lines)):
             line = lines[i].split(',')
             stu_dfa.transitions[(int(line[0]), line[1])] = int(line[2])
-        # raise NameError(stu_dfa.transitions)
 
-        self.problem.dfa = fa._MinimumDFA(fa._DFAfromNFA(fa.RegExp(self.problem.regex)))
-        # raise NameError(self.problem.dfa.transitions)
-        
+        # visual to dfa conversion (the dfa datatype equality works cause they're both minimal DFAs)
         self.score = int(self.problem.dfa == fa._MinimumDFA(stu_dfa))
-        # debug line, will remove
-        # self.score = 1
         self.save()
         self.set_best_submission()

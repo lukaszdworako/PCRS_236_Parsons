@@ -136,3 +136,4 @@ class SubmissionHistoryAsyncView(SubmissionViewMixin, SingleObjectMixin,
             })
 
         return HttpResponse(json.dumps(returnable), content_type='application/json')
+
