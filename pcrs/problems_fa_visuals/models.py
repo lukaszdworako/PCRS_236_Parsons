@@ -84,7 +84,7 @@ class Submission(AbstractSubmission):
         self.problem.dfa = fa._MinimumDFA(fa._DFAfromNFA(fa.RegExp(self.problem.regex)))
         # raise NameError(self.problem.dfa.transitions)
         
-        self.score = int(self.problem.dfa == stu_dfa)
+        self.score = int(self.problem.dfa == fa._MinimumDFA(stu_dfa))
         # debug line, will remove
         # self.score = 1
         self.save()

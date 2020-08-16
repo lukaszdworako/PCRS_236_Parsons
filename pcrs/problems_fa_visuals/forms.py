@@ -16,10 +16,11 @@ class ProblemForm(forms.ModelForm, BaseProblemForm):
             # ε is the empty string <br> \
             +'() for grouping <br> \
             * for Kleene star <br> '
+            + 'concatenation has no symbol <br>'
             # Put a space between expressions for concatenation <br> \
              +
             ' + for alternation <br>' +
-            'e.g. (a|b)+cd is valid <br>' 
+            'e.g. (a*b)+cd is valid <br>' 
             ),
         }
 
