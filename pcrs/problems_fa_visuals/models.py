@@ -71,7 +71,10 @@ class Submission(AbstractSubmission):
         stu_dfa = fa.DFA()
         lines = submission.split('\n')
         lines = [line.replace('\r', '') for line in lines] 
-        lines = [line.replace(' ', '') for line in lines]           
+        lines = [line.replace(' ', '') for line in lines]       
+        for i in range(len(lines)):
+            if '' in lines:
+                lines.remove('')
         stu_dfa.alphabet = set(lines[0].split(','))
         stu_dfa.initial = int(lines[1])
         stu_dfa.final = [int(lines[2].split(",")[i]) for i in range (len(lines[2].split(",")))]
