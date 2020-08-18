@@ -64,6 +64,7 @@ PROBLEM_APPS = (
     'problems_timed',
     'problems_rating',
     'problems_short_answer',
+	'problems_fa_visuals',
 )
 
 CRON_CLASSES = {

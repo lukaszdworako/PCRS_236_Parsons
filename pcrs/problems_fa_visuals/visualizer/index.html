@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>dfa visualizer</title>
+
+        <link rel="stylesheet" href="css/style.css"/>
+
+        <!--script type="text/javascript" src="js/script.js"></script-->
+    </head>
+    <body>
+        <canvas id="myCanvas" width="200" height="500" style="border:1px solid #c3c3c3;"> Please update your browser</canvas>
+        <script src="js/main.js"></script>
+        <div id="instr">How to use: <br/>
+            <ul>
+                <li> Left-click to add a state
+                <li> Clicking on a state and ending on another draws a line
+                <li> Click on a state/line to select it
+                <li> Press del or backspace to delete lines/states
+                <li> Press 'a' on a state to make it accepting
+                <li> Press a character on a line to make it accept that.
+                <li> When you're done, click the button to get your text output.
+            </ul>
+        </div>
+        <button id="button" onClick="buttonClick()">Output!</button> 
+        <div id="output"></div>
+    </body>
+</html>
