@@ -38,6 +38,11 @@
                             <a href="{{ site_prefix }}/problems/short_answer/list">Short Answer</a>
                         </li>
                         {% endif %}
+                        {% if 'problems_fa_visuals' in problem_types %}
+                        <li>
+                            <a href="{{ site_prefix }}/problems/fa_visuals/list">DFA Problems</a>
+                        </li>
+                        {% endif %}
                         {% if 'problems_python' in problem_types or 'problems_c' in problem_types or 'problems_java' in problem_types %}
                             <li class="divider"></li>
                         {% endif %}

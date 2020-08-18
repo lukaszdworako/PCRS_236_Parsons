@@ -223,4 +223,8 @@ PYTA = False
 try:
     from .settings_local import *
 except ImportError as e:
+<<<<<<< HEAD
     print("No local settings file found. Please create a settings_local.py and set your settings there.")
+=======
+    print("No local settings file found. Please create a settings_local.py and set your settings there.")
+>>>>>>> akira_dev
